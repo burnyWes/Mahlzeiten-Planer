@@ -1,4 +1,4 @@
-import type { ItemId, ShoppingItem } from '../domain/shoppingItem'
+import { checkOff, reopen, type ShoppingItem } from '../domain/shoppingItem'
 import type { ShoppingListClient } from './shoppingListClient'
 
 export type InMemoryShoppingListClient = ShoppingListClient & {
@@ -18,10 +18,11 @@ export function createInMemoryShoppingListClient(
     listeners.forEach((listener) => listener([...items]))
   }
 
-  function replace(id: ItemId, change: Partial<ShoppingItem>) {
-    items = items.map((item) =>
-      item.id === id ? { ...item, ...change } : item,
-    )
+  function change(
+    id: string,
+    transition: (item: ShoppingItem) => ShoppingItem,
+  ) {
+    items = items.map((item) => (item.id === id ? transition(item) : item))
     publish()
   }
 
@@ -39,10 +40,10 @@ export function createInMemoryShoppingListClient(
       return id
     },
     checkOffItem(id) {
-      replace(id, { checkedOffAt: clock() })
+      change(id, (item) => checkOff(item, clock()))
     },
     reopenItem(id) {
-      replace(id, { checkedOffAt: null })
+      change(id, reopen)
     },
     itemsArriveFromElsewhere(arriving) {
       items = [...items, ...arriving]

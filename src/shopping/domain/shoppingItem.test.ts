@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  checkOff,
   createShoppingItem,
   findOpenItemWithSameName,
   formatItemForAnnouncement,
@@ -8,6 +9,7 @@ import {
   isCheckedOff,
   isOpen,
   normalizeItemName,
+  reopen,
   type ShoppingItem,
 } from './shoppingItem'
 
@@ -217,5 +219,30 @@ describe('inCreationOrder', () => {
     inCreationOrder(items)
 
     expect(items[0].id).toBe('newer')
+  })
+})
+
+describe('checkOff and reopen', () => {
+  it('remembers when an item was checked off', () => {
+    expect(checkOff(item(), 500).checkedOffAt).toBe(500)
+  })
+
+  it('leaves the item itself untouched', () => {
+    const open = item()
+
+    checkOff(open, 500)
+
+    expect(open.checkedOffAt).toBeNull()
+  })
+
+  it('keeps everything but the check off time', () => {
+    const checkedOff = checkOff(item({ name: 'Brot' }), 500)
+
+    expect(checkedOff.name).toBe('Brot')
+    expect(checkedOff.id).toBe('anId')
+  })
+
+  it('makes a checked off item open again', () => {
+    expect(reopen(checkOff(item(), 500)).checkedOffAt).toBeNull()
   })
 })

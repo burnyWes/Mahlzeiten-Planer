@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/generateIcons.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-mahlzeitenplaner \"vitest run --config vitest.rules.config.ts\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-mahlzeitenplaner \"vitest run --config vitest.rules.config.ts\"",
+    "build:e2e": "vite build --mode emulator",
+    "test:e2e": "firebase emulators:exec --only auth,firestore --project mahlzeiten-planer-ecd26 \"npm run build:e2e && playwright test\""
   },
   "dependencies": {
     "firebase": "^12.19.0",

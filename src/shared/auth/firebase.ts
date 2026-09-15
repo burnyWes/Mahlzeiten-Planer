@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { connectAuthEmulator, getAuth } from 'firebase/auth'
 import {
+  connectFirestoreEmulator,
   initializeFirestore,
   memoryLocalCache,
   persistentLocalCache,
@@ -38,6 +39,11 @@ const localStore = openLocalStore()
 
 export const auth = getAuth(app)
 export const firestore = localStore.firestore
+
+if (import.meta.env.VITE_USE_EMULATORS === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
+  connectFirestoreEmulator(firestore, '127.0.0.1', 8080)
+}
 export const storageWarning = localStore.survivesRestart
   ? ''
   : 'Ohne Speicher auf diesem Gerät. Änderungen gehen beim Schließen verloren.'

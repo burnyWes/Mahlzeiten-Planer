@@ -16,7 +16,8 @@ export function ShoppingApp({
   announce,
 }: ShoppingAppProps) {
   const [client] = useState(() => createShoppingListClient(announce))
-  const { items, openCount, addItem } = useShoppingList(client)
+  const { items, openCount, pendingChanges, addItem, toggleItem, cleanUp } =
+    useShoppingList(client)
   const [addingItem, setAddingItem] = useState(false)
 
   if (addingItem) {
@@ -33,7 +34,10 @@ export function ShoppingApp({
     <ShoppingListPage
       items={items}
       openCount={openCount}
+      pendingChanges={pendingChanges}
       onAddItem={() => setAddingItem(true)}
+      onToggleItem={(item) => announce(toggleItem(item))}
+      onCleanUp={() => announce(cleanUp())}
     />
   )
 }

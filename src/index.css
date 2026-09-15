@@ -111,3 +111,25 @@ button:disabled {
 .amountField {
   width: 6rem;
 }
+
+.itemList label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+}
+
+.itemList input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+}
+
+.itemCheckedOff span {
+  text-decoration: line-through;
+}
+
+h1:focus-visible {
+  outline: 3px solid #14532d;
+  outline-offset: 4px;
+}

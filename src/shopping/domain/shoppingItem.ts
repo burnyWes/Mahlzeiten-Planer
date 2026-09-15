@@ -116,3 +116,11 @@ export function inCreationOrder(
       one.createdAt - other.createdAt || one.id.localeCompare(other.id),
   )
 }
+
+export function checkOff(item: ShoppingItem, at: number): ShoppingItem {
+  return { ...item, checkedOffAt: at }
+}
+
+export function reopen(item: ShoppingItem): ShoppingItem {
+  return { ...item, checkedOffAt: null }
+}

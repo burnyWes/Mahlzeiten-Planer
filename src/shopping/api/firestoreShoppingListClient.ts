@@ -58,29 +58,35 @@ export function createFirestoreShoppingListClient(
     observeItems(onItems) {
       const openItems = new Map<ItemId, ShoppingItem>()
       const checkedOffThisSession = new Map<ItemId, ShoppingItem>()
+      const answered = new Set<string>()
 
       function publish() {
+        if (answered.size < 2) return
         const merged = new Map([...checkedOffThisSession, ...openItems])
         onItems([...merged.values()])
       }
 
-      function collectInto(known: Map<ItemId, ShoppingItem>) {
+      function collectInto(
+        known: Map<ItemId, ShoppingItem>,
+        observation: string,
+      ) {
         return (snapshot: QuerySnapshot) => {
           known.clear()
           snapshot.forEach((document) => {
             known.set(document.id, toShoppingItem(document.id, document.data()))
           })
+          answered.add(observation)
           publish()
         }
       }
 
       const unsubscribeOpen = onSnapshot(
         query(items, where('checkedOffAt', '==', null)),
-        collectInto(openItems),
+        collectInto(openItems, 'open'),
       )
       const unsubscribeCheckedOff = onSnapshot(
         query(items, where('checkedOffAt', '>=', sessionStartedAt)),
-        collectInto(checkedOffThisSession),
+        collectInto(checkedOffThisSession, 'checkedOff'),
       )
 
       return () => {

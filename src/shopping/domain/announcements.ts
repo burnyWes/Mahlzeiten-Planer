@@ -32,3 +32,33 @@ export function listHeading(openCount: number): string {
     ? 'Einkaufsliste, nichts offen'
     : `Einkaufsliste, ${openCount} offen`
 }
+
+function openCountPhrase(openCount: number): string {
+  return openCount === 0 ? 'nichts mehr offen' : `noch ${openCount} offen`
+}
+
+export function checkOffAnnouncement(
+  item: ShoppingItem,
+  openCount: number,
+): string {
+  return `${item.name} abgehakt, ${openCountPhrase(openCount)}`
+}
+
+export function reopenAnnouncement(
+  item: ShoppingItem,
+  openCount: number,
+): string {
+  return `${item.name} wieder offen, ${openCount} offen`
+}
+
+export function cleanUpLabel(pendingChanges: number): string {
+  return pendingChanges === 1
+    ? 'Aufräumen, 1 Änderung'
+    : `Aufräumen, ${pendingChanges} Änderungen`
+}
+
+export function cleanUpAnnouncement(openCount: number): string {
+  return openCount === 0
+    ? 'Aufgeräumt, die Liste ist leer'
+    : `Aufgeräumt, ${openCount} offen`
+}

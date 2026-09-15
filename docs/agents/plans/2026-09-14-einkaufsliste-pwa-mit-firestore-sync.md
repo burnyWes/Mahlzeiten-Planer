@@ -428,8 +428,8 @@ echte Formular und damit die Gelegenheit, das VoiceOver-Vorgehen einzuüben.
 
 - [x] Anmeldung auf dem iPhone gelingt; nach dem Schliessen und erneuten Öffnen der App
       erscheint kein Anmeldebildschirm mehr
-- [ ] VoiceOver liest beide Felder samt Beschriftung vor und meldet den Passwortmodus
-- [ ] Eine falsche Eingabe wird von VoiceOver vorgelesen, ohne dass der Fokus springt
+- [x] VoiceOver liest beide Felder samt Beschriftung vor und meldet den Passwortmodus
+- [x] Eine falsche Eingabe wird von VoiceOver vorgelesen, ohne dass der Fokus springt
 
 ---
 
@@ -511,11 +511,11 @@ Erster fachlicher Schnitt. `domain` entsteht test-getrieben, wie in `CLAUDE.md` 
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone lassen sich vier Artikel hintereinander eintragen, ohne die Seite zu
+- [x] Auf dem iPhone lassen sich vier Artikel hintereinander eintragen, ohne die Seite zu
       verlassen; VoiceOver sagt jeden einzeln an
-- [ ] Im Flugmodus hinzugefügte Artikel erscheinen sofort in der Liste
-- [ ] Nach dem Verlassen des Flugmodus stehen sie auf dem zweiten Gerät
-- [ ] VoiceOver liest die Überschrift samt Anzahl und jeden Artikel mit Menge vor
+- [x] Im Flugmodus hinzugefügte Artikel erscheinen sofort in der Liste
+- [x] Nach dem Verlassen des Flugmodus stehen sie auf dem zweiten Gerät
+- [x] VoiceOver liest die Überschrift samt Anzahl und jeden Artikel mit Menge vor
 
 ---
 
@@ -527,7 +527,7 @@ Schliesst MZP-001 ab und liefert das Verhalten, das den VoiceOver-Anspruch träg
 
 **Aufgaben**:
 
-- [ ] `shopping/domain/stableList.ts` test-getrieben entwickeln. Zuerst die Tests:
+- [x] `shopping/domain/stableList.ts` test-getrieben entwickeln. Zuerst die Tests:
       - `projectStableList` behält die eingefrorene Reihenfolge bei, auch wenn die
         Live-Daten anders sortiert sind
       - ein neu in den Live-Daten erschienener Artikel taucht **nicht** auf
@@ -536,36 +536,36 @@ Schliesst MZP-001 ab und liefert das Verhalten, das den VoiceOver-Anspruch träg
       - `pendingChangeCount` zählt Zugänge und Abgänge gegenüber der eingefrorenen Liste
       - `nextFrozenOrder` enthält nach dem Aufräumen genau die offenen Artikel
       - `appendToFrozenOrder` hängt eine neue Kennung hinten an
-- [ ] `checkOff` und `reopen` in `shoppingItem.ts` ergänzen, ebenfalls test-getrieben
-- [ ] `ShoppingItemRow.tsx` mit echtem `<input type="checkbox">` und `<label>`; der
+- [x] `checkOff` und `reopen` in `shoppingItem.ts` ergänzen, ebenfalls test-getrieben
+- [x] `ShoppingItemRow.tsx` mit echtem `<input type="checkbox">` und `<label>`; der
       abgehakte Zustand wird nicht nur farblich, sondern über den Kontrollkästchen-Zustand
       und durchgestrichenen Text abgebildet
-- [ ] Beim Abhaken bleibt der Fokus auf dem Kontrollkästchen; die Ansage lautet
+- [x] Beim Abhaken bleibt der Fokus auf dem Kontrollkästchen; die Ansage lautet
       "<Name> abgehakt, noch <n> offen"
-- [ ] Aufräum-Knopf unter der Liste, beschriftet mit der Zahl der anstehenden Änderungen
+- [x] Aufräum-Knopf unter der Liste, beschriftet mit der Zahl der anstehenden Änderungen
       ("Aufräumen, 2 Änderungen"). Nach dem Druck: Liste neu einfrieren, Fokus auf die
       Überschrift setzen, Ergebnis ansagen
-- [ ] Ist nichts aufzuräumen, wird der Knopf nicht angezeigt — kein deaktivierter Knopf,
+- [x] Ist nichts aufzuräumen, wird der Knopf nicht angezeigt — kein deaktivierter Knopf,
       den VoiceOver ansteuert, ohne dass er etwas tut
-- [ ] `useShoppingList.ts` hält die eingefrorene Reihenfolge und verbindet sie mit
+- [x] `useShoppingList.ts` hält die eingefrorene Reihenfolge und verbindet sie mit
       `observeItems`
 
 **Automatisierte Verifikation**:
 
-- [ ] Alle Tests in `stableList.test.ts` laufen grün, ohne React und ohne Firebase
-- [ ] Ein Komponententest belegt: ein über den Fake nachträglich eingespielter fremder
+- [x] Alle Tests in `stableList.test.ts` laufen grün, ohne React und ohne Firebase
+- [x] Ein Komponententest belegt: ein über den Fake nachträglich eingespielter fremder
       Artikel verändert die angezeigte Liste nicht, erhöht aber die Zahl am Aufräum-Knopf
-- [ ] Ein Komponententest belegt: nach dem Abhaken steht der Artikel an derselben
+- [x] Ein Komponententest belegt: nach dem Abhaken steht der Artikel an derselben
       Position und das Kontrollkästchen ist gesetzt
-- [ ] Ein Komponententest belegt: nach dem Aufräumen sind abgehakte Artikel verschwunden
+- [x] Ein Komponententest belegt: nach dem Aufräumen sind abgehakte Artikel verschwunden
       und der Fokus liegt auf der Überschrift
-- [ ] Playwright-Ablauf `e2e/shoppingList.spec.ts`: anmelden, Artikel hinzufügen,
+- [x] Playwright-Ablauf `e2e/shoppingList.spec.ts`: anmelden, Artikel hinzufügen,
       abhaken, aufräumen — vollständig über die Tastatur, ohne Mausklick. Der Ablauf
       läuft gegen die Emulatoren für Auth und Firestore, nicht gegen die echte Datenbank;
       er teilt sich damit die Java-Voraussetzung mit `npm run test:rules` und läuft
       ebenfalls als eigener Befehl, nicht im Standard-Testlauf
-- [ ] axe meldet in allen Zuständen der Liste keine Verstösse
-- [ ] `npm run lint`, `npm run test` und `npm run build` laufen durch
+- [x] axe meldet in allen Zuständen der Liste keine Verstösse
+- [x] `npm run lint`, `npm run test` und `npm run build` laufen durch
 
 **Manuelle Verifikation**:
 
@@ -611,6 +611,22 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
 - **`inCreationOrder` in `shoppingItem.ts`** haelt die Eingabereihenfolge fest. Firestore
   sortiert nicht mit, weil `where` plus `orderBy` einen zusammengesetzten Index
   verlangen wuerde.
+
+### Abweichungen vom Plan (Phase 4)
+
+- **Der Firestore-Client veroeffentlicht erst, wenn beide Beobachtungen geantwortet
+  haben.** Sonst koennte die Liste auf dem leeren Ergebnis der Abfrage nach den in
+  dieser Sitzung abgehakten Artikeln einfrieren und der ganze Bestand als anstehende
+  Aenderung erscheinen.
+- **Der In-Memory-Fake nutzt `checkOff` und `reopen` aus der Domaene.** Damit sind die
+  beiden Zustandsuebergaenge an genau einer Stelle beschrieben statt zweimal.
+- **Der Playwright-Ablauf braucht einen eigenen Build:** `npm run test:e2e` baut mit
+  `--mode emulator` (`.env.emulator` setzt `VITE_USE_EMULATORS`), startet Auth- und
+  Firestore-Emulator unter der echten Projekt-Id und legt das Haushaltskonto mit
+  **derselben UID** an, die in `firestore.rules` steht - nur so gelten im Test die
+  echten Regeln. Voraussetzungen: Java und einmalig `npx playwright install chromium`.
+- **Zusaetzlicher E2E-Fall:** Ein Geraet, das die App zum ersten Mal startet, zeigt den
+  Bestand des anderen Geraets sofort an, statt ihn als anstehende Aenderung zu fuehren.
 
 ### Bekannte Stolpersteine
 
