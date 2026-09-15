@@ -133,3 +133,8 @@ h1:focus-visible {
   outline: 3px solid #14532d;
   outline-offset: 4px;
 }
+
+.appUpdate {
+  padding: 1rem max(1rem, env(safe-area-inset-left));
+  border-top: 1px solid #d1d5db;
+}

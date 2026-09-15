@@ -1,4 +1,7 @@
 import { useEffect } from 'react'
+import { AppUpdateOffer } from './shared/appUpdate/AppUpdateOffer'
+import type { AppUpdateClient } from './shared/appUpdate/appUpdateClient'
+import { useAppUpdate } from './shared/appUpdate/useAppUpdate'
 import type { AuthClient } from './shared/auth/authClient'
 import { SignInPage } from './shared/auth/SignInPage'
 import { useSession } from './shared/auth/useSession'
@@ -13,16 +16,19 @@ type AppProps = {
   createShoppingListClient: (
     onWriteFailure: (message: string) => void,
   ) => ShoppingListClient
+  appUpdateClient: AppUpdateClient
   storageWarning?: string
 }
 
 export function App({
   authClient,
   createShoppingListClient,
+  appUpdateClient,
   storageWarning = '',
 }: AppProps) {
   const { spokenText, announce } = useAnnouncer()
   const session = useSession(authClient)
+  const installUpdate = useAppUpdate(appUpdateClient, announce)
 
   useConnectionAnnouncements(announce)
 
@@ -41,6 +47,9 @@ export function App({
           createShoppingListClient={createShoppingListClient}
           announce={announce}
         />
+      )}
+      {installUpdate !== null && (
+        <AppUpdateOffer installUpdate={installUpdate} />
       )}
       <Announcer text={spokenText} />
     </>

@@ -16,13 +16,13 @@ Legende:
 TODO-List
 --------- 
 DONE 
+x Update-Verhalten des Service Workers pruefen: registerType autoUpdate laedt die App
+  beim Update ggf. mitten in der Bedienung neu - mit VoiceOver unangenehm.
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
 ----------------------------------------------------------------------------------------------------------------------------------
 
-- Update-Verhalten des Service Workers pruefen: registerType autoUpdate laedt die App
-  beim Update ggf. mitten in der Bedienung neu - mit VoiceOver unangenehm.
 - Firebase haerten: Selbstregistrierung abschalten (Authentication - Settings -
   User actions - "Erstellen (Registrierung) aktivieren" aus). Das Konto besteht,
   die Registrierung wird nicht mehr gebraucht; sonst kann sich mit dem oeffentlichen
