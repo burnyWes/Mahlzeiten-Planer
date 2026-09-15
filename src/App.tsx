@@ -4,15 +4,27 @@ import { SignInPage } from './shared/auth/SignInPage'
 import { useSession } from './shared/auth/useSession'
 import { Announcer } from './shared/ui/Announcer'
 import { useAnnouncer } from './shared/ui/useAnnouncer'
+import { useConnectionAnnouncements } from './shared/ui/useConnectionAnnouncements'
+import type { ShoppingListClient } from './shopping/api/shoppingListClient'
+import { ShoppingApp } from './shopping/ui/ShoppingApp'
 
 type AppProps = {
   authClient: AuthClient
+  createShoppingListClient: (
+    onWriteFailure: (message: string) => void,
+  ) => ShoppingListClient
   storageWarning?: string
 }
 
-export function App({ authClient, storageWarning = '' }: AppProps) {
+export function App({
+  authClient,
+  createShoppingListClient,
+  storageWarning = '',
+}: AppProps) {
   const { spokenText, announce } = useAnnouncer()
   const session = useSession(authClient)
+
+  useConnectionAnnouncements(announce)
 
   useEffect(() => {
     if (storageWarning !== '') announce(storageWarning)
@@ -25,9 +37,10 @@ export function App({ authClient, storageWarning = '' }: AppProps) {
         <SignInPage authClient={authClient} announce={announce} />
       )}
       {session.status === 'signedIn' && (
-        <main className="page">
-          <h1>Einkaufsliste</h1>
-        </main>
+        <ShoppingApp
+          createShoppingListClient={createShoppingListClient}
+          announce={announce}
+        />
       )}
       <Announcer text={spokenText} />
     </>

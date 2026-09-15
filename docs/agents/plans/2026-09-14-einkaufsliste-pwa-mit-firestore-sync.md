@@ -426,7 +426,7 @@ echte Formular und damit die Gelegenheit, das VoiceOver-Vorgehen einzuüben.
 
 **Manuelle Verifikation**:
 
-- [ ] Anmeldung auf dem iPhone gelingt; nach dem Schliessen und erneuten Öffnen der App
+- [x] Anmeldung auf dem iPhone gelingt; nach dem Schliessen und erneuten Öffnen der App
       erscheint kein Anmeldebildschirm mehr
 - [ ] VoiceOver liest beide Felder samt Beschriftung vor und meldet den Passwortmodus
 - [ ] Eine falsche Eingabe wird von VoiceOver vorgelesen, ohne dass der Fokus springt
@@ -441,13 +441,13 @@ Erster fachlicher Schnitt. `domain` entsteht test-getrieben, wie in `CLAUDE.md` 
 
 **Aufgaben**:
 
-- [ ] `shopping/domain/shoppingItem.ts` test-getrieben entwickeln. Zuerst die Tests:
+- [x] `shopping/domain/shoppingItem.ts` test-getrieben entwickeln. Zuerst die Tests:
       - Name wird getrimmt, leerer Name wird abgewiesen, Länge ist begrenzt
       - Menge ist entweder nicht gesetzt oder positiv; null und negativ werden abgewiesen
       - Eine Einheit ohne Menge wird abgewiesen
       - `normalizeItemName` behandelt Gross-/Kleinschreibung und Leerzeichen
       - `findOpenItemWithSameName` findet nur offene, nicht abgehakte Artikel
-- [ ] Datenform festlegen:
+- [x] Datenform festlegen:
       ```ts
       type ShoppingItem = {
         id: ItemId
@@ -458,7 +458,7 @@ Erster fachlicher Schnitt. `domain` entsteht test-getrieben, wie in `CLAUDE.md` 
       }
       type Quantity = { amount: number; unit: string | null }
       ```
-- [ ] `shopping/api/shoppingListClient.ts` als Interface, das ausschliesslich
+- [x] `shopping/api/shoppingListClient.ts` als Interface, das ausschliesslich
       Domänentypen führt:
       ```ts
       export interface ShoppingListClient {
@@ -468,13 +468,13 @@ Erster fachlicher Schnitt. `domain` entsteht test-getrieben, wie in `CLAUDE.md` 
         reopenItem(id: ItemId): void
       }
       ```
-- [ ] `firestoreShoppingListClient.ts` implementieren. **Wichtig:** Schreibvorgänge
+- [x] `firestoreShoppingListClient.ts` implementieren. **Wichtig:** Schreibvorgänge
       dürfen nicht erwartet werden — offline löst das Promise von `setDoc` erst bei
       Serverkontakt auf. Deshalb geben die Methoden nichts zurück, was auf den Server
       wartet: Die Kennung wird lokal über `doc(collection(...))` erzeugt, der
       Schreibvorgang läuft im Hintergrund, Fehler landen in der Statuszeile. Der lokale
       Cache und damit `onSnapshot` reagieren sofort
-- [ ] Abfrage begrenzen, aber **zwei** Beobachtungen führen und ihr Ergebnis vereinen:
+- [x] Abfrage begrenzen, aber **zwei** Beobachtungen führen und ihr Ergebnis vereinen:
       - `where('checkedOffAt', '==', null)` — alle offenen Artikel, unabhängig vom Alter
       - `where('checkedOffAt', '>=', sitzungsbeginn)` — die in dieser Sitzung abgehakten
 
@@ -482,32 +482,32 @@ Erster fachlicher Schnitt. `domain` entsteht test-getrieben, wie in `CLAUDE.md` 
       fiele sofort aus den Daten und könnte in der stabilen Liste nicht mehr dargestellt
       werden — genau das Springen, das Phase 4 verhindern soll. Der vollständige Verlauf
       wird dabei trotzdem nie geladen
-- [ ] `inMemoryShoppingListClient.ts` als handgeschriebener Fake für die Tests
-- [ ] `shared/ui/Announcer.tsx` — eine `role="status"`-Region, die von Beginn an im
+- [x] `inMemoryShoppingListClient.ts` als handgeschriebener Fake für die Tests
+- [x] `shared/ui/Announcer.tsx` — eine `role="status"`-Region, die von Beginn an im
       Dokument steht; Live-Regionen, die erst beim Ereignis eingefügt werden, sagt
       VoiceOver nicht zuverlässig an
-- [ ] `ShoppingListPage.tsx` — `<h1>` mit Anzahl offener Artikel, Plus-Knopf oben rechts
+- [x] `ShoppingListPage.tsx` — `<h1>` mit Anzahl offener Artikel, Plus-Knopf oben rechts
       mit `aria-label="Artikel hinzufügen"`, Liste als `<ul>`
-- [ ] Leerzustand: "Die Liste ist leer." als vorgelesener Text
-- [ ] `AddItemPage.tsx` — Namensfeld mit Fokus beim Öffnen, schmales Mengenfeld,
+- [x] Leerzustand: "Die Liste ist leer." als vorgelesener Text
+- [x] `AddItemPage.tsx` — Namensfeld mit Fokus beim Öffnen, schmales Mengenfeld,
       Einheitenfeld mit `<datalist>` (Stück, g, kg, ml, l, Pck.)
-- [ ] Nach dem Absenden: Feld leeren, Fokus zurück ins Namensfeld, Ansage absetzen.
+- [x] Nach dem Absenden: Feld leeren, Fokus zurück ins Namensfeld, Ansage absetzen.
       Steht der Name bereits offen auf der Liste, wird die Ansage um den Hinweis
       erweitert; hinzugefügt wird ohne Rückfrage
-- [ ] Verbindungszustand über `navigator.onLine` und die Ereignisse `online`/`offline`
+- [x] Verbindungszustand über `navigator.onLine` und die Ereignisse `online`/`offline`
       in die Statuszeile spiegeln
 
 **Automatisierte Verifikation**:
 
-- [ ] Alle Tests in `shoppingItem.test.ts` laufen grün und kommen ohne React,
+- [x] Alle Tests in `shoppingItem.test.ts` laufen grün und kommen ohne React,
       ohne Firebase und ohne Mocks aus
-- [ ] Ein Test mit dem In-Memory-Fake belegt: Hinzufügen erzeugt einen offenen Artikel
+- [x] Ein Test mit dem In-Memory-Fake belegt: Hinzufügen erzeugt einen offenen Artikel
       mit Zeitstempel
-- [ ] Ein Komponententest belegt: nach dem Absenden ist das Namensfeld leer und hat den
+- [x] Ein Komponententest belegt: nach dem Absenden ist das Namensfeld leer und hat den
       Fokus
-- [ ] Ein Komponententest belegt: bei gleichem Namen enthält die Ansage den Hinweis
-- [ ] axe meldet auf `ShoppingListPage` und `AddItemPage` keine Verstösse
-- [ ] `npm run lint`, `npm run test` und `npm run build` laufen durch
+- [x] Ein Komponententest belegt: bei gleichem Namen enthält die Ansage den Hinweis
+- [x] axe meldet auf `ShoppingListPage` und `AddItemPage` keine Verstösse
+- [x] `npm run lint`, `npm run test` und `npm run build` laufen durch
 
 **Manuelle Verifikation**:
 
@@ -598,6 +598,19 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
 - **Icons entstehen aus `scripts/generateIcons.mjs`** (`npm run icons`), einem
   abhängigkeitsfreien PNG-Erzeuger. Kein Bildwerkzeug und kein `sharp` nötig; die
   erzeugten Dateien liegen in `public/` und sind eingecheckt.
+
+### Abweichungen vom Plan (Phase 3)
+
+- **Dritte Datei in `domain`: `announcements.ts`.** Der Plan sieht nur `shoppingItem.ts`
+  und `stableList.ts` vor. Die Formulierungen der Ansagen (Bestaetigung, Duplikat-Hinweis,
+  Ueberschrift, Meldungen zu ungueltigen Eingaben) stehen dort getrennt von den Regeln,
+  damit `shoppingItem.ts` die Fachregeln behaelt und nicht zur Textsammlung wird.
+- **`ShoppingApp.tsx` schaltet zwischen Liste und Eingabeseite.** `App.tsx` entscheidet
+  nur noch ueber Anmeldung; die Firestore-Beobachtung startet damit erst nach der
+  Anmeldung und laeuft nie gegen die Regeln.
+- **`inCreationOrder` in `shoppingItem.ts`** haelt die Eingabereihenfolge fest. Firestore
+  sortiert nicht mit, weil `where` plus `orderBy` einen zusammengesetzten Index
+  verlangen wuerde.
 
 ### Bekannte Stolpersteine
 

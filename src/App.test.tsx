@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { App } from './App'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
+import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
 
 const household = {
   email: 'haushalt@example.com',
@@ -14,6 +15,7 @@ function renderApp(storageWarning?: string) {
   return render(
     <App
       authClient={createInMemoryAuthClient(household)}
+      createShoppingListClient={() => createInMemoryShoppingListClient()}
       storageWarning={storageWarning}
     />,
   )
@@ -37,7 +39,9 @@ describe('App', () => {
     await signIn()
 
     expect(
-      await screen.findByRole('heading', { name: 'Einkaufsliste' }),
+      await screen.findByRole('heading', {
+        name: 'Einkaufsliste, nichts offen',
+      }),
     ).toBeInTheDocument()
   })
 
