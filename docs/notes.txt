@@ -27,3 +27,18 @@ x Update-Verhalten des Service Workers pruefen: registerType autoUpdate laedt di
 TODO 
 ----------------------------------------------------------------------------------------------------------------------------------
 
+- Tab-Leiste oben fixiert
+  - Einkaufsliste | Gerichte
+  - Später erweitern zu
+    - Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
+- Gerichte-Seite
+  - Liste mit Gerichten (rechts Button "Auf die Einkaufsliste")
+  - +-Icon oben rechts um ein Gericht hinzuzufügen
+    - Dialog mit Name, Liste von Shopping-Items, Freitexfeld Zutaten, Freitextfeld Rezept
+    - Wenn bereits angelegt zusätzlich Löschen-Button
+- Wochenplaner
+- Einstellungen
+  - Push-Benachrichtigungen
+- Alexa-Integration
+- PDF-Import
+
