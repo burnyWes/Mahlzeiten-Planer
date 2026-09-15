@@ -42,8 +42,15 @@ Zugriff begrenzen zwei Einstellungen:
    User actions → Haken bei *Erstellen (Registrierung) aktivieren* entfernen.
    Das Haushaltskonto besteht bereits, registriert wird nichts mehr. Ohne diesen
    Haken kann sich jeder mit dem oeffentlichen `apiKey` ein Konto im Projekt anlegen.
-   Ist die Registrierung aus, antwortet die API auf einen Anmeldeversuch mit
-   `ADMIN_ONLY_OPERATION`.
+   Nachpruefen laesst sich das ohne Konsole, die Antwort muss
+   `ADMIN_ONLY_OPERATION` lauten:
+
+   ```
+   curl -X POST -H "Content-Type: application/json" -d '{"email":"probe@example.com","password":"egal-was"}' "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=<apiKey>"
+   ```
+
+   Steht in der Antwort stattdessen ein `idToken`, ist die Registrierung offen — und
+   die Probe hat gerade selbst ein Konto angelegt, das wieder weg muss.
 2. **Regeln auf den Haushalt festgenagelt** — `firestore.rules` gibt Lesen und
    Schreiben nur der einen Haushalts-UID frei. Ein fremdes Konto koennte also auch
    ohne Schritt 1 keine Daten sehen. `npm run test:rules` prueft das.
