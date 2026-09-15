@@ -31,3 +31,19 @@ Die Dauerregeln stehen in [CLAUDE.md](CLAUDE.md), die projektspezifischen Angabe
 - Firebase Projekt-Id
   mahlzeiten-planer-ecd26 
 - 
+
+## Firebase absichern
+
+Der `apiKey` in `src/shared/auth/firebaseConfig.ts` ist oeffentlich — das ist bei
+Firebase so vorgesehen. Er ist kein Geheimnis, sondern nur die Projektadresse. Den
+Zugriff begrenzen zwei Einstellungen:
+
+1. **Selbstregistrierung aus** — Firebase-Konsole → Authentication → Settings →
+   User actions → Haken bei *Erstellen (Registrierung) aktivieren* entfernen.
+   Das Haushaltskonto besteht bereits, registriert wird nichts mehr. Ohne diesen
+   Haken kann sich jeder mit dem oeffentlichen `apiKey` ein Konto im Projekt anlegen.
+   Ist die Registrierung aus, antwortet die API auf einen Anmeldeversuch mit
+   `ADMIN_ONLY_OPERATION`.
+2. **Regeln auf den Haushalt festgenagelt** — `firestore.rules` gibt Lesen und
+   Schreiben nur der einen Haushalts-UID frei. Ein fremdes Konto koennte also auch
+   ohne Schritt 1 keine Daten sehen. `npm run test:rules` prueft das.
