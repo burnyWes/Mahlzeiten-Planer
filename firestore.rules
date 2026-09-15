@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isHousehold() {
+      return request.auth != null && request.auth.uid == 't4DhGc8Dm6XAGMOwcenilJH4c6S2';
+    }
+
+    match /items/{itemId} {
+      allow read, write: if isHousehold();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

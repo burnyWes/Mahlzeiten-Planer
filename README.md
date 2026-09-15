@@ -27,3 +27,7 @@ Die Dauerregeln stehen in [CLAUDE.md](CLAUDE.md), die projektspezifischen Angabe
 |--------|-------------------|
 | Kuerzel | `MZP` — Praefix der Story-Nummern (`MZP-007`) |
 | Bauart | `onion` — Domain-Driven Design mit Onion-Architektur |
+
+- Firebase Projekt-Id
+  mahlzeiten-planer-ecd26 
+- 

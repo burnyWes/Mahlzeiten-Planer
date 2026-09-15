@@ -18,7 +18,9 @@
   "include": [
     "vite.config.ts",
     "vitest.config.ts",
+    "vitest.rules.config.ts",
     "playwright.config.ts",
+    "firestore.rules.test.ts",
     "e2e/**/*.ts",
     "test/**/*.ts"
   ]

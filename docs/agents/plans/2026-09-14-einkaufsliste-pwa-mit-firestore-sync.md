@@ -276,7 +276,7 @@ Windows-Rechner gebaute PWA tatsächlich als Vollbild-App auf dem iPhone landet.
 - [x] Repository `burnyWes/Mahlzeiten-Planer` auf GitHub, Remote gesetzt, `main`
       hochgeschoben. Der Repository-Name bestimmt `base` und damit die Adresse der App:
       `https://burnyWes.github.io/Mahlzeiten-Planer/`
-- [ ] Sicherstellen, dass das Repository **öffentlich** ist — GitHub Pages ist im
+- [x] Sicherstellen, dass das Repository **öffentlich** ist — GitHub Pages ist im
       kostenlosen Tarif nur für öffentliche Repositories verfügbar. Bei einem privaten
       Repository entweder auf öffentlich umstellen oder auf Cloudflare Pages ausweichen
 
@@ -320,7 +320,7 @@ Windows-Rechner gebaute PWA tatsächlich als Vollbild-App auf dem iPhone landet.
       `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`,
       `actions/deploy-pages@v5`, dazu `permissions: contents read, pages write,
       id-token write` und `concurrency: group pages`
-- [ ] GitHub Pages im Repository auf Quelle "GitHub Actions" stellen
+- [x] GitHub Pages im Repository auf Quelle "GitHub Actions" stellen
 - [x] `.claude/projekt.md` ausfüllen: Stack, Test-, Lint-, Format- und Build-Befehl,
       fachlicher Kontext `shopping`
 - [x] Startseite mit `<h1>Einkaufsliste</h1>` als Platzhalter
@@ -339,16 +339,16 @@ Windows-Rechner gebaute PWA tatsächlich als Vollbild-App auf dem iPhone landet.
       })
       expect(results[0].errorCount).toBeGreaterThan(0)
       ```
-- [ ] Der Workflow läuft auf GitHub grün durch und die Seite ist unter
+- [x] Der Workflow läuft auf GitHub grün durch und die Seite ist unter
       `https://burnyWes.github.io/Mahlzeiten-Planer/` erreichbar
 
 **Manuelle Verifikation**:
 
-- [ ] Die veröffentlichte Adresse lässt sich auf dem iPhone in Safari öffnen
-- [ ] "Zum Home-Bildschirm" erzeugt ein Symbol mit korrektem Bild und Namen
-- [ ] Der Start über das Symbol öffnet die App im Vollbild ohne Safari-Leiste
-- [ ] VoiceOver liest die Überschrift als Überschrift vor
-- [ ] Bei aktivierter Systemeinstellung "Farben umkehren" bleibt die Seite lesbar
+- [x] Die veröffentlichte Adresse lässt sich auf dem iPhone in Safari öffnen
+- [x] "Zum Home-Bildschirm" erzeugt ein Symbol mit korrektem Bild und Namen
+- [x] Der Start über das Symbol öffnet die App im Vollbild ohne Safari-Leiste
+- [x] VoiceOver liest die Überschrift als Überschrift vor
+- [x] Bei aktivierter Systemeinstellung "Farben umkehren" bleibt die Seite lesbar
 
 ---
 
@@ -361,15 +361,15 @@ echte Formular und damit die Gelegenheit, das VoiceOver-Vorgehen einzuüben.
 
 **Vorbereitung durch den Nutzer** (nicht automatisierbar):
 
-- [ ] Firebase-Projekt anlegen, Region `europe-west3` (Frankfurt)
-- [ ] Anmeldeart "E-Mail und Passwort" aktivieren
-- [ ] Ein einziges Konto anlegen, Zugangsdaten in beide Passwortmanager
-- [ ] Die UID dieses Kontos notieren — sie wird in `firestore.rules` eingetragen
+- [x] Firebase-Projekt anlegen, Region `europe-west3` (Frankfurt)
+- [x] Anmeldeart "E-Mail und Passwort" aktivieren
+- [x] Ein einziges Konto anlegen, Zugangsdaten in beide Passwortmanager
+- [x] Die UID dieses Kontos notieren — sie wird in `firestore.rules` eingetragen
 
 **Aufgaben**:
 
-- [ ] `firebase` (12.19.0) als Abhängigkeit aufnehmen
-- [ ] `shared/auth/firebase.ts` mit Persistenz einrichten. `initializeFirestore` muss
+- [x] `firebase` (12.19.0) als Abhängigkeit aufnehmen
+- [x] `shared/auth/firebase.ts` mit Persistenz einrichten. `initializeFirestore` muss
       **vor** dem ersten `getFirestore` laufen, sonst wirft es:
       ```ts
       export const firestore = initializeFirestore(app, {
@@ -378,18 +378,18 @@ echte Formular und damit die Gelegenheit, das VoiceOver-Vorgehen einzuüben.
         }),
       })
       ```
-- [ ] Rückfall absichern: In Safaris privatem Modus steht IndexedDB nicht zur Verfügung.
+- [x] Rückfall absichern: In Safaris privatem Modus steht IndexedDB nicht zur Verfügung.
       Schlägt die Initialisierung fehl, auf `memoryLocalCache` ausweichen und den
       Umstand als Statusmeldung ansagen, statt die App abstürzen zu lassen
-- [ ] Die Firebase-Konfiguration steht als Klartext im Repository. Das ist zulässig, weil
+- [x] Die Firebase-Konfiguration steht als Klartext im Repository. Das ist zulässig, weil
       sie das Projekt nur benennt; der Schutz kommt aus Anmeldung und Regeln
-- [ ] `shared/auth/useSession.ts` — beobachtet den Anmeldezustand, unterscheidet
+- [x] `shared/auth/useSession.ts` — beobachtet den Anmeldezustand, unterscheidet
       "wird geladen", "angemeldet", "nicht angemeldet"
-- [ ] `shared/auth/SignInPage.tsx` mit echten `<label>`-Elementen, `type="email"`,
+- [x] `shared/auth/SignInPage.tsx` mit echten `<label>`-Elementen, `type="email"`,
       `type="password"`, `autocomplete="username"` und `autocomplete="current-password"`
-- [ ] Fehlermeldungen bei falschen Zugangsdaten über die Live-Region ansagen und mit
+- [x] Fehlermeldungen bei falschen Zugangsdaten über die Live-Region ansagen und mit
       `aria-describedby` an das Formular binden
-- [ ] `firestore.rules` schreiben:
+- [x] `firestore.rules` schreiben:
       ```
       rules_version = '2';
       service cloud.firestore {
@@ -406,23 +406,23 @@ echte Formular und damit die Gelegenheit, das VoiceOver-Vorgehen einzuüben.
         }
       }
       ```
-- [ ] Regeltests mit `@firebase/rules-unit-testing` (5.0.2) gegen den Emulator aus
+- [x] Regeltests mit `@firebase/rules-unit-testing` (5.0.2) gegen den Emulator aus
       `firebase-tools` (15.30.0). **Voraussetzung:** Der Firestore-Emulator benötigt eine
       installierte Java-Laufzeit. Der Regeltest läuft deshalb als eigener Befehl
       `npm run test:rules` und nicht im Standard-Testlauf
-- [ ] Die Regeln in Betrieb nehmen: `firebase deploy --only firestore:rules`. Ohne diesen
+- [x] Die Regeln in Betrieb nehmen: `firebase deploy --only firestore:rules`. Ohne diesen
       Schritt gelten weiterhin die Voreinstellungen des Projekts, und der Regeltest
       belegt nur die Datei, nicht den tatsächlichen Zustand der Datenbank
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test:rules` belegt: angemeldet mit der Haushalts-UID gelingt Lesen und
+- [x] `npm run test:rules` belegt: angemeldet mit der Haushalts-UID gelingt Lesen und
       Schreiben auf `items`
-- [ ] `npm run test:rules` belegt: eine andere UID scheitert
-- [ ] `npm run test:rules` belegt: ohne Anmeldung scheitert jeder Zugriff
-- [ ] Ein Komponententest belegt, dass `SignInPage` bei leerem Passwort nicht absendet
-- [ ] axe meldet auf `SignInPage` keine Verstösse
-- [ ] `npm run lint`, `npm run test` und `npm run build` laufen durch
+- [x] `npm run test:rules` belegt: eine andere UID scheitert
+- [x] `npm run test:rules` belegt: ohne Anmeldung scheitert jeder Zugriff
+- [x] Ein Komponententest belegt, dass `SignInPage` bei leerem Passwort nicht absendet
+- [x] axe meldet auf `SignInPage` keine Verstösse
+- [x] `npm run lint`, `npm run test` und `npm run build` laufen durch
 
 **Manuelle Verifikation**:
 

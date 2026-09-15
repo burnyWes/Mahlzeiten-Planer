@@ -22,3 +22,6 @@ Thumbs.db
 *.local
 
 .claude/settings.local.json
+
+.idea/
+.vscode/
