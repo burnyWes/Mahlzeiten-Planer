@@ -5,7 +5,7 @@ branch: main
 story: MZP-001
 topic: "Einkaufsliste als PWA mit Firestore-Sync"
 tags: [plan, shopping, pwa, firestore, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-001 — Einkaufsliste als PWA mit Firestore-Sync
@@ -18,27 +18,27 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-14.
 
 ## Akzeptanzkriterien
 
-- [ ] Die App lässt sich auf beiden iPhones über Safari zum Home-Bildschirm hinzufügen
+- [x] Die App lässt sich auf beiden iPhones über Safari zum Home-Bildschirm hinzufügen
       und startet dort im Vollbild ohne Safari-Leiste.
-- [ ] Anmeldung mit dem gemeinsamen Haushaltskonto ist einmal je Gerät nötig; danach
+- [x] Anmeldung mit dem gemeinsamen Haushaltskonto ist einmal je Gerät nötig; danach
       startet die App direkt in der Liste.
-- [ ] Ein Artikel wird mit Name (Pflicht) sowie optionaler Menge und Einheit angelegt.
+- [x] Ein Artikel wird mit Name (Pflicht) sowie optionaler Menge und Einheit angelegt.
       Die Eingabeseite bleibt danach offen, das Namensfeld ist geleert und hat den Fokus.
-- [ ] Steht derselbe Name bereits offen auf der Liste, wird das angesagt; hinzugefügt
+- [x] Steht derselbe Name bereits offen auf der Liste, wird das angesagt; hinzugefügt
       wird trotzdem, ohne Rückfrage und ohne zusätzlichen Bedienschritt.
-- [ ] Die Liste zeigt offene Artikel in Eingabereihenfolge, neue unten.
-- [ ] Abhaken setzt einen Zeitstempel und löscht nichts. Der Artikel bleibt an seiner
+- [x] Die Liste zeigt offene Artikel in Eingabereihenfolge, neue unten.
+- [x] Abhaken setzt einen Zeitstempel und löscht nichts. Der Artikel bleibt an seiner
       Position stehen, der Fokus bleibt auf ihm.
-- [ ] Die Liste verändert weder Reihenfolge noch Zusammensetzung von selbst — auch nicht
+- [x] Die Liste verändert weder Reihenfolge noch Zusammensetzung von selbst — auch nicht
       durch Änderungen vom zweiten Gerät. Erst "Aufräumen" oder ein Neustart der App
       arbeitet Änderungen ein.
-- [ ] Ohne Netz sind Ansehen, Abhaken und Hinzufügen unverändert möglich. Sobald wieder
+- [x] Ohne Netz sind Ansehen, Abhaken und Hinzufügen unverändert möglich. Sobald wieder
       Netz da ist, gleichen sich beide Geräte ohne Zutun ab.
-- [ ] Die gesamte App ist mit VoiceOver vollständig bedienbar, jede Aktion wird angesagt,
+- [x] Die gesamte App ist mit VoiceOver vollständig bedienbar, jede Aktion wird angesagt,
       und keine Funktion ist nur über eine Wischgeste erreichbar.
-- [ ] Kein Dunkelmodus. Die iOS-Systemfunktionen für Kontrast und Farbumkehr bleiben
+- [x] Kein Dunkelmodus. Die iOS-Systemfunktionen für Kontrast und Farbumkehr bleiben
       wirksam.
-- [ ] Firestore weist jeden Zugriff ab, der nicht vom Haushaltskonto kommt.
+- [x] Firestore weist jeden Zugriff ab, der nicht vom Haushaltskonto kommt.
 
 ## Wesentliche Entscheidungen und Abwägungen
 
@@ -569,13 +569,13 @@ Schliesst MZP-001 ab und liefert das Verhalten, das den VoiceOver-Anspruch träg
 
 **Manuelle Verifikation**:
 
-- [ ] Beide iPhones nebeneinander: Abhaken auf Gerät A verändert die Liste auf Gerät B
+- [x] Beide iPhones nebeneinander: Abhaken auf Gerät A verändert die Liste auf Gerät B
       nicht sichtbar, erhöht dort aber die Zahl am Aufräum-Knopf
-- [ ] Gerät A im Flugmodus abhaken, Gerät B online abhaken, Flugmodus beenden: beide
+- [x] Gerät A im Flugmodus abhaken, Gerät B online abhaken, Flugmodus beenden: beide
       zeigen nach dem Aufräumen denselben Stand
-- [ ] Mit VoiceOver durch eine Liste von acht Artikeln wischen und dabei drei abhaken:
+- [x] Mit VoiceOver durch eine Liste von acht Artikeln wischen und dabei drei abhaken:
       der Fokus bleibt durchgehend an der erwarteten Stelle, keine Ansage fehlt
-- [ ] Der Aufräum-Knopf ist mit VoiceOver erreichbar und seine Beschriftung nennt die
+- [x] Der Aufräum-Knopf ist mit VoiceOver erreichbar und seine Beschriftung nennt die
       Zahl der Änderungen
 
 ## Notizen zur Umsetzung
