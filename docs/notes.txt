@@ -41,4 +41,8 @@ TODO
   - Push-Benachrichtigungen
 - Alexa-Integration
 - PDF-Import
-
+- Use case
+  - given: Milch bereits auf Einkaufsliste
+  - when: Milch hinzufügen
+  - then: ein Eintrag Milch 2x auf Liste und bereits existierende Warnung, nicht 2 Einträge
+   
