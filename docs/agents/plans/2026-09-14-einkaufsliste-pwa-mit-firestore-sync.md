@@ -282,16 +282,16 @@ Windows-Rechner gebaute PWA tatsächlich als Vollbild-App auf dem iPhone landet.
 
 **Aufgaben**:
 
-- [ ] Gerüst mit `npm create vite@latest` erzeugen. **Achtung:** Das Verzeichnis ist nicht
+- [x] Gerüst mit `npm create vite@latest` erzeugen. **Achtung:** Das Verzeichnis ist nicht
       leer (`CLAUDE.md`, `README.md`, `.claude/`, `docs/`), weshalb der Assistent
       interaktiv nachfragt und im Zweifel löscht. Deshalb in einen temporären Unterordner
       erzeugen und die erzeugten Dateien herüberziehen, statt im Projektwurzelverzeichnis
       zu starten
-- [ ] `.gitignore` ergänzen — sie enthält bisher nur `.claude/settings.local.json`,
+- [x] `.gitignore` ergänzen — sie enthält bisher nur `.claude/settings.local.json`,
       es fehlen `node_modules/`, `dist/`, `dev-dist/`, `.env*`, `playwright-report/`,
       `test-results/`, `.firebase/`
-- [ ] Prettier, ESLint, Vitest, Testing Library und Playwright einrichten
-- [ ] ESLint-Regel für die Schichtgrenze ergänzen — das ist der Architekturtest:
+- [x] Prettier, ESLint, Vitest, Testing Library und Playwright einrichten
+- [x] ESLint-Regel für die Schichtgrenze ergänzen — das ist der Architekturtest:
       ```js
       {
         files: ['src/**/domain/**/*.ts'],
@@ -303,34 +303,34 @@ Windows-Rechner gebaute PWA tatsächlich als Vollbild-App auf dem iPhone landet.
         },
       }
       ```
-- [ ] `vite-plugin-pwa` (1.3.0) einrichten, `base: '/Mahlzeiten-Planer/'` setzen
-- [ ] Manifest mit `name`, `short_name`, `theme_color` und Icons in 192 und 512 Pixeln
+- [x] `vite-plugin-pwa` (1.3.0) einrichten, `base: '/Mahlzeiten-Planer/'` setzen
+- [x] Manifest mit `name`, `short_name`, `theme_color` und Icons in 192 und 512 Pixeln
       sowie einer zusätzlichen `maskable`-Variante
-- [ ] `apple-touch-icon` in 180x180 als PNG **ohne Transparenz** und ohne selbst gerundete
+- [x] `apple-touch-icon` in 180x180 als PNG **ohne Transparenz** und ohne selbst gerundete
       Ecken erzeugen; iOS stellt Alphakanäle schwarz dar
-- [ ] `<head>` ergänzen: `viewport` mit `viewport-fit=cover`,
+- [x] `<head>` ergänzen: `viewport` mit `viewport-fit=cover`,
       `apple-mobile-web-app-title`, `apple-mobile-web-app-status-bar-style` und
       `apple-mobile-web-app-capable` — letzteres ist ab iOS 26 entbehrlich, für ältere
       Versionen aber weiterhin nötig, sonst öffnet das Symbol nur einen Safari-Tab
-- [ ] `public/.nojekyll` anlegen, sonst ignoriert Jekyll Pfade mit Unterstrich
-- [ ] Feste helle Darstellung: `color-scheme: light` setzen, keine
+- [x] `public/.nojekyll` anlegen, sonst ignoriert Jekyll Pfade mit Unterstrich
+- [x] Feste helle Darstellung: `color-scheme: light` setzen, keine
       `prefers-color-scheme`-Regeln, keine erzwungenen Farben, die
       "Farben umkehren" oder "Kontrast erhöhen" aushebeln
-- [ ] `.github/workflows/deploy.yml` mit `actions/checkout@v7`, `actions/setup-node@v7`,
+- [x] `.github/workflows/deploy.yml` mit `actions/checkout@v7`, `actions/setup-node@v7`,
       `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`,
       `actions/deploy-pages@v5`, dazu `permissions: contents read, pages write,
       id-token write` und `concurrency: group pages`
 - [ ] GitHub Pages im Repository auf Quelle "GitHub Actions" stellen
-- [ ] `.claude/projekt.md` ausfüllen: Stack, Test-, Lint-, Format- und Build-Befehl,
+- [x] `.claude/projekt.md` ausfüllen: Stack, Test-, Lint-, Format- und Build-Befehl,
       fachlicher Kontext `shopping`
-- [ ] Startseite mit `<h1>Einkaufsliste</h1>` als Platzhalter
+- [x] Startseite mit `<h1>Einkaufsliste</h1>` als Platzhalter
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run build` erzeugt `dist/` samt `sw.js` und `manifest.webmanifest`
-- [ ] `npm run lint` läuft durch
-- [ ] `npm run test` läuft durch
-- [ ] Ein Test belegt, dass die ESLint-Grenze greift. In dieser Phase gibt es noch keinen
+- [x] `npm run build` erzeugt `dist/` samt `sw.js` und `manifest.webmanifest`
+- [x] `npm run lint` läuft durch
+- [x] `npm run test` läuft durch
+- [x] Ein Test belegt, dass die ESLint-Grenze greift. In dieser Phase gibt es noch keinen
       `domain`-Ordner, deshalb prüft der Test die Regel über die ESLint-Node-API gegen
       einen virtuellen Dateipfad, statt eine fachlich unbegründete Datei anzulegen:
       ```ts
@@ -581,6 +581,23 @@ Schliesst MZP-001 ab und liefert das Verhalten, das den VoiceOver-Anspruch träg
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+### Abweichungen vom Plan (Phase 1)
+
+- **oxlint statt ESLint im Gerüst.** `npm create vite@latest` (create-vite 9.2.1) legt
+  inzwischen oxlint als Linter an. Entfernt und ESLint eingerichtet, wie Plan und
+  `references/typescript.md` es verlangen — der Grenztest braucht die ESLint-Node-API.
+- **ESLint bleibt auf 9.x.** `eslint-plugin-jsx-a11y` 6.10.2 führt ESLint 10 nicht als
+  Peer. Ein Wechsel auf 10 ginge nur ohne a11y-Lint oder mit erzwungener Auflösung.
+- **`.gitignore` war bereits vollständig** — der Aufgabenpunkt entfiel.
+- **Prettier ist auf den Code begrenzt.** Der erste Lauf hat `.claude/`, `docs/`,
+  `CLAUDE.md` und `README.md` umformatiert; diese Pfade stehen jetzt in
+  `.prettierignore`, damit Template und Nutzernotizen unangetastet bleiben.
+- **Vitest läuft in zwei Projekten:** `unit` (Node, `*.test.ts`) und `ui` (jsdom,
+  `*.test.tsx`). Domänentests laufen damit ohne DOM, so wie die Architektur es fordert.
+- **Icons entstehen aus `scripts/generateIcons.mjs`** (`npm run icons`), einem
+  abhängigkeitsfreien PNG-Erzeuger. Kein Bildwerkzeug und kein `sharp` nötig; die
+  erzeugten Dateien liegen in `public/` und sind eingecheckt.
 
 ### Bekannte Stolpersteine
 

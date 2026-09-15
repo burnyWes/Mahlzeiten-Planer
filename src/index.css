@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.page {
+  padding: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+button,
+input {
+  font: inherit;
+  min-height: 44px;
+}

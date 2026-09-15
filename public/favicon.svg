@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Einkaufsliste">
+  <rect width="512" height="512" rx="113" fill="#14532d" />
+  <rect x="102" y="82" width="308" height="348" rx="26" fill="#ffffff" />
+  <rect x="138" y="143" width="51" height="51" rx="10" fill="#15803d" />
+  <path d="M150 169l13 13 25-29" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="138" y="230" width="51" height="51" rx="10" fill="#374151" />
+  <rect x="138" y="317" width="51" height="51" rx="10" fill="#374151" />
+  <rect x="215" y="154" width="159" height="29" rx="14" fill="#6b7280" />
+  <rect x="215" y="241" width="159" height="29" rx="14" fill="#6b7280" />
+  <rect x="215" y="328" width="113" height="29" rx="14" fill="#6b7280" />
+</svg>

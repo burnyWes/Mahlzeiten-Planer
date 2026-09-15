@@ -21,3 +21,5 @@ DONE
 TODO 
 ----------------------------------------------------------------------------------------------------------------------------------
 
+- Update-Verhalten des Service Workers pruefen: registerType autoUpdate laedt die App
+  beim Update ggf. mitten in der Bedienung neu - mit VoiceOver unangenehm.

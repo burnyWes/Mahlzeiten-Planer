@@ -1,0 +1,12 @@
+.claude
+docs
+dist
+dev-dist
+coverage
+node_modules
+playwright-report
+test-results
+package-lock.json
+public/*.png
+CLAUDE.md
+README.md

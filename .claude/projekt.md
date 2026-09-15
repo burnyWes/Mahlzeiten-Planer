@@ -6,19 +6,20 @@
 
 Name:    Mahlzeiten-Planer
 Kürzel:  MZP
-Stack:   <noch nicht gesetzt>
+Stack:   TypeScript, React 19, Vite 8, vite-plugin-pwa, Firebase/Firestore, GitHub Pages
 Bauart:  onion
 
 ## Befehle
 
-Test:    -
-Lint:    -
-Format:  -
-Build:   -
+Test:    npm run test
+Lint:    npm run lint
+Format:  npm run format
+Build:   npm run build
 
 ## Fachliche Kontexte
 
-<noch keine>
+- **shopping** — die gemeinsame Einkaufsliste des Haushalts: Artikel anlegen, abhaken
+  und aufraeumen.
 
 ---
 
