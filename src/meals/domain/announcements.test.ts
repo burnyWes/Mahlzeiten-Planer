@@ -5,6 +5,7 @@ import {
   mealFailureMessage,
   mealItemAddedAnnouncement,
   mealItemsHeading,
+  mealDeletedAnnouncement,
   mealItemRemovedAnnouncement,
   mealSavedAnnouncement,
   mealsHeading,
@@ -110,6 +111,26 @@ describe('mealSavedAnnouncement', () => {
   it('confirms the meal by its name', () => {
     expect(mealSavedAnnouncement(bolognese)).toBe(
       'Spaghetti Bolognese gespeichert.',
+    )
+  })
+})
+
+describe('mealDeletedAnnouncement', () => {
+  it('counts the meals that are left', () => {
+    expect(mealDeletedAnnouncement(bolognese, 2)).toBe(
+      'Spaghetti Bolognese gelöscht, noch 2 Gerichte.',
+    )
+  })
+
+  it('speaks of a single meal in the singular', () => {
+    expect(mealDeletedAnnouncement(bolognese, 1)).toBe(
+      'Spaghetti Bolognese gelöscht, noch 1 Gericht.',
+    )
+  })
+
+  it('says that no meal is left', () => {
+    expect(mealDeletedAnnouncement(bolognese, 0)).toBe(
+      'Spaghetti Bolognese gelöscht, keine Gerichte mehr.',
     )
   })
 })

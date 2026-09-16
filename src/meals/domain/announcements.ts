@@ -57,6 +57,20 @@ export function mealSavedAnnouncement(meal: NewMeal): string {
   return `${meal.name} gespeichert.`
 }
 
+function remainingMealPhrase(remainingMeals: number): string {
+  if (remainingMeals === 0) return 'keine Gerichte mehr'
+  return remainingMeals === 1
+    ? 'noch 1 Gericht'
+    : `noch ${remainingMeals} Gerichte`
+}
+
+export function mealDeletedAnnouncement(
+  meal: NewMeal,
+  remainingMeals: number,
+): string {
+  return `${meal.name} gelöscht, ${remainingMealPhrase(remainingMeals)}.`
+}
+
 export function mealWithoutItemsAnnouncement(meal: NewMeal): string {
   return `${meal.name} hat keine Einkaufs-Items.`
 }

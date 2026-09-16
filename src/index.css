@@ -185,6 +185,12 @@ h2 {
   gap: 1rem;
 }
 
+.pageActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .mealNameButton {
   flex: 1;
   text-align: left;

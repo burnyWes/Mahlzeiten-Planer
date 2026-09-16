@@ -1,6 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import { mealSavedAnnouncement } from '../domain/announcements'
-import type { MealId, NewMeal } from '../domain/meal'
+import {
+  mealDeletedAnnouncement,
+  mealSavedAnnouncement,
+} from '../domain/announcements'
+import type { Meal, MealId, NewMeal } from '../domain/meal'
+import { DeleteMealPage } from './DeleteMealPage'
 import { MealFormPage } from './MealFormPage'
 import { MealListPage } from './MealListPage'
 import { MealPage } from './MealPage'
@@ -10,6 +14,7 @@ type MealsPage =
   | { kind: 'list' }
   | { kind: 'meal'; id: MealId }
   | { kind: 'form'; id: MealId | null }
+  | { kind: 'delete'; id: MealId }
 
 type MealsAreaProps = {
   meals: Meals
@@ -20,32 +25,68 @@ type MealsAreaProps = {
 export function MealsArea({ meals, announce, navigation }: MealsAreaProps) {
   const [page, setPage] = useState<MealsPage>({ kind: 'list' })
 
+  const addressedMeal =
+    page.kind === 'list' || page.id === null
+      ? null
+      : (meals.meals.find((meal) => meal.id === page.id) ?? null)
+
   function showList() {
     setPage({ kind: 'list' })
   }
 
-  function saveNewMeal(newMeal: NewMeal) {
-    setPage({ kind: 'meal', id: meals.addMeal(newMeal) })
+  function showMeal(id: MealId) {
+    setPage({ kind: 'meal', id })
+  }
+
+  function saveMeal(editedId: MealId | null, newMeal: NewMeal) {
+    if (editedId === null) {
+      showMeal(meals.addMeal(newMeal))
+    } else {
+      meals.changeMeal(editedId, newMeal)
+      showMeal(editedId)
+    }
     announce(mealSavedAnnouncement(newMeal))
   }
 
-  if (page.kind === 'form') {
+  function deleteMeal(meal: Meal) {
+    meals.removeMeal(meal.id)
+    showList()
+    announce(mealDeletedAnnouncement(meal, meals.meals.length - 1))
+  }
+
+  if (page.kind === 'form' && (page.id === null || addressedMeal !== null)) {
+    const editedId = page.id
     return (
       <MealFormPage
-        onSave={saveNewMeal}
-        onBack={showList}
+        editedMeal={addressedMeal}
+        onSave={(newMeal) => saveMeal(editedId, newMeal)}
+        onBack={
+          addressedMeal === null ? showList : () => showMeal(addressedMeal.id)
+        }
         announce={announce}
       />
     )
   }
 
-  const shownMeal =
-    page.kind === 'meal'
-      ? (meals.meals.find((meal) => meal.id === page.id) ?? null)
-      : null
+  if (page.kind === 'meal' && addressedMeal !== null) {
+    return (
+      <MealPage
+        meal={addressedMeal}
+        onBack={showList}
+        onEdit={() => setPage({ kind: 'form', id: addressedMeal.id })}
+        onDelete={() => setPage({ kind: 'delete', id: addressedMeal.id })}
+      />
+    )
+  }
 
-  if (shownMeal !== null) {
-    return <MealPage meal={shownMeal} onBack={showList} />
+  if (page.kind === 'delete' && addressedMeal !== null) {
+    return (
+      <DeleteMealPage
+        meal={addressedMeal}
+        onDelete={() => deleteMeal(addressedMeal)}
+        onCancel={() => showMeal(addressedMeal.id)}
+      />
+    )
   }
 
   return (

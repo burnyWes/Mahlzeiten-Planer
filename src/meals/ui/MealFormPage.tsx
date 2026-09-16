@@ -3,6 +3,7 @@ import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealFailureMessage } from '../domain/announcements'
 import {
   createMeal,
+  type Meal,
   type MealDraft,
   type MealItem,
   type NewMeal,
@@ -10,6 +11,7 @@ import {
 import { MealItemsEditor } from './MealItemsEditor'
 
 type MealFormPageProps = {
+  editedMeal: Meal | null
   onSave: (meal: NewMeal) => void
   onBack: () => void
   announce: (text: string) => void
@@ -17,10 +19,26 @@ type MealFormPageProps = {
 
 const EMPTY_DRAFT: MealDraft = { name: '', ingredientNotes: '', recipe: '' }
 
-export function MealFormPage({ onSave, onBack, announce }: MealFormPageProps) {
+function draftOf(meal: Meal | null): MealDraft {
+  if (meal === null) return EMPTY_DRAFT
+  return {
+    name: meal.name,
+    ingredientNotes: meal.ingredientNotes,
+    recipe: meal.recipe,
+  }
+}
+
+export function MealFormPage({
+  editedMeal,
+  onSave,
+  onBack,
+  announce,
+}: MealFormPageProps) {
   const heading = useHeadingFocus()
-  const [draft, setDraft] = useState(EMPTY_DRAFT)
-  const [items, setItems] = useState<readonly MealItem[]>([])
+  const [draft, setDraft] = useState(() => draftOf(editedMeal))
+  const [items, setItems] = useState<readonly MealItem[]>(
+    editedMeal?.items ?? [],
+  )
   const [failureMessage, setFailureMessage] = useState('')
   const nameField = useRef<HTMLInputElement>(null)
 
@@ -47,10 +65,10 @@ export function MealFormPage({ onSave, onBack, announce }: MealFormPageProps) {
   return (
     <main className="page">
       <button type="button" onClick={onBack}>
-        Zurück zu den Gerichten
+        {editedMeal === null ? 'Zurück zu den Gerichten' : 'Zurück zum Gericht'}
       </button>
       <h1 ref={heading} tabIndex={-1}>
-        Gericht anlegen
+        {editedMeal === null ? 'Gericht anlegen' : 'Gericht bearbeiten'}
       </h1>
       <p className="field">
         <label htmlFor="mealName">Name</label>

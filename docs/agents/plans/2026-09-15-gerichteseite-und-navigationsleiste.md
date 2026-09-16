@@ -41,7 +41,7 @@ vom 2026-09-15.
       (Name/Menge/Einheit), Freitext Zutaten und Freitext Rezept angelegt.
 - [x] Die Ansichtsseite gibt Zutaten und Rezept als normalen Text aus, in Absätzen, die
       VoiceOver einzeln erreicht.
-- [ ] Löschen führt über eine eigene Bestätigungsseite; Abbrechen kehrt zur Ansicht
+- [x] Löschen führt über eine eigene Bestätigungsseite; Abbrechen kehrt zur Ansicht
       zurück, Löschen zur Gerichteliste.
 - [ ] "Auf die Einkaufsliste" überträgt alle Items des Gerichts, hängt sie sofort an die
       eingefrorene Liste an und fasst das Ergebnis in einer Ansage zusammen.
@@ -881,33 +881,33 @@ entfernen.
 
 **Aufgaben**:
 
-- [ ] `src/meals/ui/MealPage.tsx` um die Knöpfe "Bearbeiten" und "Löschen" ergänzen.
+- [x] `src/meals/ui/MealPage.tsx` um die Knöpfe "Bearbeiten" und "Löschen" ergänzen.
 
-- [ ] `src/meals/ui/MealFormPage.tsx` für den Änderungsfall öffnen: bei gesetzter `id`
+- [x] `src/meals/ui/MealFormPage.tsx` für den Änderungsfall öffnen: bei gesetzter `id`
       lautet die Überschrift "Gericht bearbeiten", Name, Items, Zutaten und Rezept sind
       vorbelegt, und `Speichern` ruft `changeMeal`.
 
-- [ ] `src/meals/ui/DeleteMealPage.tsx` anlegen: Zurück-Knopf zum Gericht, `h1`
+- [x] `src/meals/ui/DeleteMealPage.tsx` anlegen: Zurück-Knopf zum Gericht, `h1`
       "<Name> löschen?" über `useHeadingFocus`, erklärender Absatz "Das Gericht wird für
       beide Geräte entfernt.", Knöpfe "Löschen" und "Abbrechen". "Löschen" führt auf die
       Gerichteliste mit der Ansage `mealDeletedAnnouncement`, "Abbrechen" zurück auf die
       Ansicht.
 
-- [ ] `mealDeletedAnnouncement` in `meals/domain/announcements.ts` ergänzen, mit Test.
+- [x] `mealDeletedAnnouncement` in `meals/domain/announcements.ts` ergänzen, mit Test.
 
-- [ ] `MealsArea` fällt auf die Liste zurück, wenn das angezeigte oder zu löschende
+- [x] `MealsArea` fällt auf die Liste zurück, wenn das angezeigte oder zu löschende
       Gericht nicht mehr im Bestand ist — etwa weil das zweite Gerät es entfernt hat.
 
-- [ ] Fälle in `MealsArea.test.tsx`: Bearbeiten übernimmt die Änderung, Abbrechen des
+- [x] Fälle in `MealsArea.test.tsx`: Bearbeiten übernimmt die Änderung, Abbrechen des
       Löschens lässt das Gericht bestehen, Löschen entfernt es aus dem Bestand des
       Clients, ein per `mealsArriveFromElsewhere` entferntes Gericht führt zurück zur
       Liste, `accessibilityViolations` auf der Bestätigungsseite ist leer.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — die neuen Fälle in `MealsArea.test.tsx` und
+- [x] `npm run test` — die neuen Fälle in `MealsArea.test.tsx` und
       `announcements.test.ts` laufen grün.
-- [ ] `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run lint` und `npm run build` laufen durch.
 
 **Manuelle Verifikation**:
 
@@ -1030,6 +1030,17 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   `firestore.rules` aus, also galt in der Produktion weiter die Auffangregel. Der
   Deploy von Hand behob es; der fehlende Schritt steht jetzt in `README.md` und als
   offener Punkt in `docs/notes.txt`.
+
+### Phase 4
+
+- **Der Zurück-Knopf des Formulars richtet sich nach dem Fall.** Beim Anlegen führt er
+  wie bisher "Zurück zu den Gerichten", beim Bearbeiten "Zurück zum Gericht". Das
+  Zielbild zeichnet beide Fälle in einem Bild und nennt nur die erste Beschriftung;
+  aus dem Gericht heraus auf die Liste zurückzufallen widerspräche aber dem Weg, den
+  Abbrechen beim Löschen nimmt.
+- **Der Fokus bleibt im Formular auf dem Namensfeld**, auch beim Bearbeiten. Das ist
+  das Verhalten aus Phase 3; die Überschrift "Gericht bearbeiten" wird dabei nicht
+  vorgelesen, das vorbelegte Namensfeld aber schon.
 
 ## Verweise
 

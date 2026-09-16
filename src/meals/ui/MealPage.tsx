@@ -6,6 +6,8 @@ import { paragraphsOf } from '../domain/text'
 type MealPageProps = {
   meal: Meal
   onBack: () => void
+  onEdit: () => void
+  onDelete: () => void
 }
 
 type TextSectionProps = {
@@ -27,7 +29,7 @@ function TextSection({ title, text }: TextSectionProps) {
   )
 }
 
-export function MealPage({ meal, onBack }: MealPageProps) {
+export function MealPage({ meal, onBack, onEdit, onDelete }: MealPageProps) {
   const heading = useHeadingFocus()
 
   return (
@@ -50,6 +52,14 @@ export function MealPage({ meal, onBack }: MealPageProps) {
       )}
       <TextSection title="Zutaten" text={meal.ingredientNotes} />
       <TextSection title="Rezept" text={meal.recipe} />
+      <div className="pageActions">
+        <button type="button" onClick={onEdit}>
+          Bearbeiten
+        </button>
+        <button type="button" onClick={onDelete}>
+          Löschen
+        </button>
+      </div>
     </main>
   )
 }

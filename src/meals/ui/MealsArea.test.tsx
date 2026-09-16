@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
@@ -73,6 +73,26 @@ async function takeOverItem(name: string, amount = '', unit = '') {
   await userEvent.click(
     within(itemForm).getByRole('button', { name: 'Item hinzufügen' }),
   )
+}
+
+function editMeal() {
+  return userEvent.click(screen.getByRole('button', { name: 'Bearbeiten' }))
+}
+
+function askToDeleteMeal() {
+  return userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
+}
+
+function confirmDeletion() {
+  return userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
+}
+
+function cancelDeletion() {
+  return userEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
+}
+
+function clearField(label: string) {
+  return userEvent.clear(screen.getByLabelText(label))
 }
 
 function save() {
@@ -264,6 +284,138 @@ describe('MealsArea', () => {
     await openMeal('Suppe')
 
     expect(screen.queryByTestId('navigation')).toBeNull()
+  })
+
+  it('opens a known meal for editing with everything filled in', async () => {
+    renderMealsArea([
+      meal('bolognese', 'Bolognese', {
+        items: [{ name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } }],
+        ingredientNotes: 'Zwiebel',
+        recipe: 'Anbraten.',
+      }),
+    ])
+
+    await openMeal('Bolognese')
+    await editMeal()
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Gericht bearbeiten' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('Bolognese')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+    expect(screen.getByLabelText('Zutaten')).toHaveValue('Zwiebel')
+    expect(screen.getByLabelText('Rezept')).toHaveValue('Anbraten.')
+    expect(screen.getByText('Hackfleisch, 500 g')).toBeInTheDocument()
+  })
+
+  it('keeps the change to a meal instead of creating a second one', async () => {
+    const { client, announcements } = renderMealsArea([
+      meal('bolognese', 'Bolognese', { recipe: 'Anbraten.' }),
+    ])
+
+    await openMeal('Bolognese')
+    await editMeal()
+    await clearField('Name')
+    await fillIn('Name', 'Bolognese vom Rind')
+    await save()
+
+    expect(client.storedMeals()).toEqual([
+      {
+        id: 'bolognese',
+        name: 'Bolognese vom Rind',
+        items: [],
+        ingredientNotes: '',
+        recipe: 'Anbraten.',
+      },
+    ])
+    expect(announcements).toContain('Bolognese vom Rind gespeichert.')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Bolognese vom Rind' }),
+    ).toHaveFocus()
+  })
+
+  it('returns from editing to the meal without changing it', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Gericht' }),
+    )
+
+    expect(client.storedMeals()[0].name).toBe('Suppe')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Suppe' }),
+    ).toHaveFocus()
+  })
+
+  it('asks before it deletes a meal and keeps it when asked to cancel', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await askToDeleteMeal()
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Suppe löschen?' }),
+    ).toHaveFocus()
+
+    await cancelDeletion()
+
+    expect(client.storedMeals()).toHaveLength(1)
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Suppe' }),
+    ).toHaveFocus()
+  })
+
+  it('deletes a meal once the deletion is confirmed', async () => {
+    const { client, announcements } = renderMealsArea([
+      meal('soup', 'Suppe'),
+      meal('stew', 'Eintopf'),
+    ])
+
+    await openMeal('Suppe')
+    await askToDeleteMeal()
+    await confirmDeletion()
+
+    expect(client.storedMeals()).toEqual([meal('stew', 'Eintopf')])
+    expect(announcements).toContain('Suppe gelöscht, noch 1 Gericht.')
+    expect(screen.getByRole('heading', { name: 'Gerichte, 1' })).toHaveFocus()
+  })
+
+  it('returns to the list when the other device removes the shown meal', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await act(async () => {
+      client.mealsArriveFromElsewhere([])
+    })
+
+    expect(
+      screen.getByRole('heading', { name: 'Gerichte, keine' }),
+    ).toBeInTheDocument()
+  })
+
+  it('returns to the list when the meal to be deleted is already gone', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await askToDeleteMeal()
+    await act(async () => {
+      client.mealsArriveFromElsewhere([])
+    })
+
+    expect(
+      screen.getByRole('heading', { name: 'Gerichte, keine' }),
+    ).toBeInTheDocument()
+  })
+
+  it('has no accessibility violations on the confirmation page', async () => {
+    const { rendered } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await askToDeleteMeal()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the list', async () => {
