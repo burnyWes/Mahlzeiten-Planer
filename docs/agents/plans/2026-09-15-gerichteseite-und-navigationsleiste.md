@@ -866,7 +866,7 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver ein Gericht mit drei Items, Zutatennotiz und einem
+- [x] Auf dem iPhone mit VoiceOver ein Gericht mit drei Items, Zutatennotiz und einem
       mehrabsätzigen Rezept anlegen und anschliessend auf der Ansichtsseite Absatz für
       Absatz durchwischen.
 
@@ -1025,6 +1025,11 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
 - **Der Rückfall auf die Liste bei verschwundenem Gericht** (Plan: Phase 4) steckt
   schon in `MealsArea`, weil die Ansichtsseite sonst kein Gericht zum Rendern hätte.
   Die Tests dazu folgen in Phase 4.
+- **Beim Prüfen auf dem Gerät scheiterte das Speichern**, obwohl alle Regeltests grün
+  waren: die Freigabe der Sammlung `meals` lag nur im Repository. Kein Workflow rollt
+  `firestore.rules` aus, also galt in der Produktion weiter die Auffangregel. Der
+  Deploy von Hand behob es; der fehlende Schritt steht jetzt in `README.md` und als
+  offener Punkt in `docs/notes.txt`.
 
 ## Verweise
 
