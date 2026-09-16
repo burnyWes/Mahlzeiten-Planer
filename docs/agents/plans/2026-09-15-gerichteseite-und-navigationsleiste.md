@@ -24,7 +24,7 @@ vom 2026-09-15.
 - [x] Eine Leiste am oberen Rand führt zwischen "Einkaufsliste" und "Gerichte"; der
       aktive Bereich trägt `aria-current="page"`, der Fokus springt beim Wechsel auf die
       Überschrift des neuen Bereichs.
-- [ ] Die Leiste bleibt beim Scrollen stehen und erscheint nur auf den beiden
+- [x] Die Leiste bleibt beim Scrollen stehen und erscheint nur auf den beiden
       Hauptseiten, nicht auf Formular-, Ansichts- oder Bestätigungsseiten.
 - [x] Ein Wechsel zu den Gerichten und zurück verändert die Einkaufsliste nicht:
       Reihenfolge, Zusammensetzung und die Anzahl offener Änderungen bleiben, als wäre
@@ -518,10 +518,10 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver zwischen den Bereichen wechseln: beim Wechsel wird die
+- [x] Auf dem iPhone mit VoiceOver zwischen den Bereichen wechseln: beim Wechsel wird die
       Überschrift des neuen Bereichs vorgelesen, der aktive Knopf meldet "aktuelle
       Seite".
-- [ ] Mit einer langen Einkaufsliste scrollen: die Leiste bleibt sichtbar am oberen Rand,
+- [x] Mit einer langen Einkaufsliste scrollen: die Leiste bleibt sichtbar am oberen Rand,
       und der Inhalt beginnt nicht unter der Statusleiste des Geräts.
 
 ---
