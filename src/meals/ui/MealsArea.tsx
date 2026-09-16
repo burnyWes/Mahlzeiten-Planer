@@ -21,6 +21,7 @@ type MealsAreaProps = {
   announce: (text: string) => void
   navigation: ReactNode
   onAddToShoppingList: (meal: Meal) => void
+  suggestNames: (typed: string) => readonly string[]
 }
 
 export function MealsArea({
@@ -28,6 +29,7 @@ export function MealsArea({
   announce,
   navigation,
   onAddToShoppingList,
+  suggestNames,
 }: MealsAreaProps) {
   const [page, setPage] = useState<MealsPage>({ kind: 'list' })
 
@@ -70,6 +72,7 @@ export function MealsArea({
           addressedMeal === null ? showList : () => showMeal(addressedMeal.id)
         }
         announce={announce}
+        suggestNames={suggestNames}
       />
     )
   }

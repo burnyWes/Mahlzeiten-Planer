@@ -15,6 +15,7 @@ type MealFormPageProps = {
   onSave: (meal: NewMeal) => void
   onBack: () => void
   announce: (text: string) => void
+  suggestNames: (typed: string) => readonly string[]
 }
 
 const EMPTY_DRAFT: MealDraft = { name: '', ingredientNotes: '', recipe: '' }
@@ -33,6 +34,7 @@ export function MealFormPage({
   onSave,
   onBack,
   announce,
+  suggestNames,
 }: MealFormPageProps) {
   const heading = useHeadingFocus()
   const [draft, setDraft] = useState(() => draftOf(editedMeal))
@@ -40,6 +42,7 @@ export function MealFormPage({
     editedMeal?.items ?? [],
   )
   const [failureMessage, setFailureMessage] = useState('')
+  const [suggestNamesOnOpen] = useState(() => suggestNames)
   const nameField = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -86,6 +89,7 @@ export function MealFormPage({
           setItems((taken) => taken.filter((_, at) => at !== position))
         }
         announce={announce}
+        suggestNames={suggestNamesOnOpen}
       />
       <p className="field">
         <label htmlFor="mealIngredientNotes">Zutaten</label>

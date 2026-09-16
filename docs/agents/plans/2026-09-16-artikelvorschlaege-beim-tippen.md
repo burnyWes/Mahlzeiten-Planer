@@ -412,37 +412,37 @@ unter dem Feld "Item".
 
 **Aufgaben**:
 
-- [ ] `src/shopping/domain/knownItem.test.ts` — test-getrieben:
+- [x] `src/shopping/domain/knownItem.test.ts` — test-getrieben:
   - `withNamesInUse` ergänzt unbekannte Namen mit `timesUsed = 0` und `lastUsedAt = 0`
   - lässt einen normalisiert schon bekannten Namen unverändert (Katalog gewinnt)
   - nimmt einen Namen, der in mehreren Gerichten steht, nur einmal auf
-- [ ] `src/shopping/domain/knownItem.ts` — `withNamesInUse(knownItems, names:
+- [x] `src/shopping/domain/knownItem.ts` — `withNamesInUse(knownItems, names:
   readonly string[]): readonly KnownItem[]`.
-- [ ] `src/SignedInApp.tsx` — `mealItemNames = meals.meals.flatMap((meal) =>
+- [x] `src/SignedInApp.tsx` — `mealItemNames = meals.meals.flatMap((meal) =>
   meal.items.map((item) => item.name))`; `suggestNames` rechnet über
   `withNamesInUse(knownItems, mealItemNames)` und geht an `ShoppingArea` und
   `MealsArea`.
-- [ ] `src/meals/ui/MealsArea.tsx` — Prop `suggestNames` an `MealFormPage`.
-- [ ] `src/meals/ui/MealFormPage.tsx` — Prop `suggestNames`, beim ersten Rendern
+- [x] `src/meals/ui/MealsArea.tsx` — Prop `suggestNames` an `MealFormPage`.
+- [x] `src/meals/ui/MealFormPage.tsx` — Prop `suggestNames`, beim ersten Rendern
   festhalten, an `MealItemsEditor`.
-- [ ] `src/meals/ui/MealItemsEditor.tsx` — Prop `suggestNames`, `NameSuggestions`
+- [x] `src/meals/ui/MealItemsEditor.tsx` — Prop `suggestNames`, `NameSuggestions`
   zwischen "Item" und den Mengenfeldern, `amountField`-Ref, `onChoose` setzt den Namen
   und fokussiert "Menge".
-- [ ] `src/meals/ui/MealsArea.test.tsx` — Testaufbau um `suggestNames` ergänzen; neue
+- [x] `src/meals/ui/MealsArea.test.tsx` — Testaufbau um `suggestNames` ergänzen; neue
   Fälle:
   - zeigt unter "Item" die gereichten Vorschläge
   - übernimmt einen Vorschlag ins Feld "Item" und fokussiert "Menge"
   - keine Barrierefreiheitsverstösse im Formular mit sichtbaren Vorschlägen
-- [ ] `src/SignedInApp.test.tsx` — neue Fälle:
+- [x] `src/SignedInApp.test.tsx` — neue Fälle:
   - schlägt in "Artikel hinzufügen" ein Item eines Gerichts vor, das nie gekauft wurde
   - schlägt im Gericht-Editor einen gekauften Artikel vor
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` grün, darunter die neuen Fälle in `knownItem.test.ts`,
+- [x] `npm run test` grün, darunter die neuen Fälle in `knownItem.test.ts`,
       `MealsArea.test.tsx` und `SignedInApp.test.tsx`
-- [ ] `npm run lint` ohne Befund — insbesondere kein Import aus `shopping` in `meals`
-- [ ] `npm run build` erfolgreich
+- [x] `npm run lint` ohne Befund — insbesondere kein Import aus `shopping` in `meals`
+- [x] `npm run build` erfolgreich
 
 **Manuelle Verifikation**:
 

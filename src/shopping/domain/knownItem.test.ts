@@ -4,6 +4,7 @@ import {
   knownItemsFromHistory,
   recordUse,
   suggestNames,
+  withNamesInUse,
   type KnownItem,
 } from './knownItem'
 import type { ShoppingItem } from './shoppingItem'
@@ -129,6 +130,27 @@ describe('knownItemsFromHistory', () => {
 
   it('knows nothing without a history', () => {
     expect(knownItemsFromHistory([])).toEqual([])
+  })
+})
+
+describe('withNamesInUse', () => {
+  it('adds a name unknown so far as never used', () => {
+    expect(withNamesInUse([known('Brot', 2, 5)], ['Hackfleisch'])).toEqual([
+      known('Brot', 2, 5),
+      known('Hackfleisch', 0, 0),
+    ])
+  })
+
+  it('keeps the catalog entry of a name that is already known', () => {
+    expect(withNamesInUse([known('Milch', 3, 7)], [' milch'])).toEqual([
+      known('Milch', 3, 7),
+    ])
+  })
+
+  it('adds a name used in several meals only once', () => {
+    expect(withNamesInUse([], ['Zwiebel', 'zwiebel ', 'Zwiebel'])).toEqual([
+      known('Zwiebel', 0, 0),
+    ])
   })
 })
 

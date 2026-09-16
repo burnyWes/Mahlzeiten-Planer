@@ -51,6 +51,23 @@ export function knownItemsFromHistory(
   return [...gathered.values()]
 }
 
+export function withNamesInUse(
+  knownItems: readonly KnownItem[],
+  names: readonly string[],
+): readonly KnownItem[] {
+  const takenNames = new Set(
+    knownItems.map((knownItem) => normalizeItemName(knownItem.name)),
+  )
+  const gathered = [...knownItems]
+  for (const name of names) {
+    const normalizedName = normalizeItemName(name)
+    if (takenNames.has(normalizedName)) continue
+    takenNames.add(normalizedName)
+    gathered.push({ name, lastUsedAt: 0, timesUsed: 0 })
+  }
+  return gathered
+}
+
 function startsWithTyped(knownItem: KnownItem, typed: string): boolean {
   return normalizeItemName(knownItem.name).startsWith(typed)
 }

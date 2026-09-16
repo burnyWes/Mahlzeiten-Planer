@@ -16,12 +16,14 @@ type MealsAreaUnderTestProps = {
   client: MealsClient
   announce: (text: string) => void
   onAddToShoppingList: (meal: Meal) => void
+  suggestNames: (typed: string) => readonly string[]
 }
 
 function MealsAreaUnderTest({
   client,
   announce,
   onAddToShoppingList,
+  suggestNames,
 }: MealsAreaUnderTestProps) {
   return (
     <MealsArea
@@ -29,11 +31,24 @@ function MealsAreaUnderTest({
       announce={announce}
       navigation={<div data-testid="navigation" />}
       onAddToShoppingList={onAddToShoppingList}
+      suggestNames={suggestNames}
     />
   )
 }
 
-function renderMealsArea(initialMeals: readonly Meal[] = []) {
+function suggestingFrom(suggestableNames: readonly string[]) {
+  return (typed: string) =>
+    typed.length < 2
+      ? []
+      : suggestableNames.filter((name) =>
+          name.toLowerCase().includes(typed.toLowerCase()),
+        )
+}
+
+function renderMealsArea(
+  initialMeals: readonly Meal[] = [],
+  suggestableNames: readonly string[] = [],
+) {
   const client = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
   const transferred: Meal[] = []
@@ -46,6 +61,7 @@ function renderMealsArea(initialMeals: readonly Meal[] = []) {
       onAddToShoppingList={(meal) => {
         transferred.push(meal)
       }}
+      suggestNames={suggestingFrom(suggestableNames)}
     />,
   )
   return { client, announcements, transferred, rendered }
@@ -463,6 +479,40 @@ describe('MealsArea', () => {
 
     await openMealForm()
 
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('suggests names below the item field', async () => {
+    renderMealsArea([], ['Hackfleisch', 'Schafskäse', 'Spaghetti'])
+
+    await openMealForm()
+    await userEvent.type(screen.getByLabelText('Item'), 'ha')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' }))
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Hackfleisch', 'Schafskäse'])
+  })
+
+  it('takes a suggestion into the item field and moves the focus to the amount', async () => {
+    renderMealsArea([], ['Hackfleisch'])
+
+    await openMealForm()
+    await userEvent.type(screen.getByLabelText('Item'), 'hack')
+    await userEvent.click(screen.getByRole('button', { name: 'Hackfleisch' }))
+
+    expect(screen.getByLabelText('Item')).toHaveValue('Hackfleisch')
+    expect(screen.getByLabelText('Menge')).toHaveFocus()
+  })
+
+  it('has no accessibility violations on the form with suggestions shown', async () => {
+    const { rendered } = renderMealsArea([], ['Hackfleisch'])
+
+    await openMealForm()
+    await userEvent.type(screen.getByLabelText('Item'), 'hack')
+
+    expect(screen.getByRole('list', { name: 'Vorschläge' })).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

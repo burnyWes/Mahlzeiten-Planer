@@ -252,6 +252,52 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('suggests an item of a meal that was never bought while adding an item', async () => {
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikel hinzufügen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Name'), 'hack')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' })).getByRole(
+        'button',
+        { name: 'Hackfleisch' },
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('suggests a bought item in the meal editor', async () => {
+    renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient([
+        { name: 'Hafermilch', lastUsedAt: 1, timesUsed: 1 },
+      ]),
+    )
+
+    await goToArea('Gerichte')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Gericht hinzufügen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Item'), 'milch')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' })).getByRole(
+        'button',
+        { name: 'Hafermilch' },
+      ),
+    ).toBeInTheDocument()
+  })
+
   it('has no accessibility violations on the shopping list', async () => {
     const { rendered } = renderSignedInApp([openItem('bread', 'Brot', 1)])
 

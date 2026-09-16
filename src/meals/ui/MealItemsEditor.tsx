@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { UNITS } from '../../shared/domain/quantity'
+import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import {
   mealFailureMessage,
   mealItemAddedAnnouncement,
@@ -18,6 +19,7 @@ type MealItemsEditorProps = {
   onAddItem: (item: MealItem) => void
   onRemoveItem: (position: number) => void
   announce: (text: string) => void
+  suggestNames: (typed: string) => readonly string[]
 }
 
 const EMPTY_DRAFT: MealItemDraft = { name: '', amount: '', unit: '' }
@@ -27,13 +29,20 @@ export function MealItemsEditor({
   onAddItem,
   onRemoveItem,
   announce,
+  suggestNames,
 }: MealItemsEditorProps) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [failureMessage, setFailureMessage] = useState('')
   const nameField = useRef<HTMLInputElement>(null)
+  const amountField = useRef<HTMLInputElement>(null)
 
   function change(part: Partial<MealItemDraft>) {
     setDraft((previous) => ({ ...previous, ...part }))
+  }
+
+  function chooseSuggestion(name: string) {
+    change({ name })
+    amountField.current?.focus()
   }
 
   function takeOverItem(event: FormEvent<HTMLFormElement>) {
@@ -92,11 +101,16 @@ export function MealItemsEditor({
             onChange={(event) => change({ name: event.target.value })}
           />
         </p>
+        <NameSuggestions
+          names={suggestNames(draft.name)}
+          onChoose={chooseSuggestion}
+        />
         <div className="quantityFields">
           <p className="field">
             <label htmlFor="mealItemAmount">Menge</label>
             <input
               id="mealItemAmount"
+              ref={amountField}
               className="amountField"
               inputMode="decimal"
               value={draft.amount}

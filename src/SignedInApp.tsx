@@ -8,7 +8,7 @@ import { NavigationBar, type Area } from './shared/ui/NavigationBar'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 import { additionsAnnouncement } from './shopping/domain/announcements'
-import { suggestNames } from './shopping/domain/knownItem'
+import { suggestNames, withNamesInUse } from './shopping/domain/knownItem'
 import type { NewShoppingItem } from './shopping/domain/shoppingItem'
 import { ShoppingArea } from './shopping/ui/ShoppingArea'
 import { useKnownItems } from './shopping/ui/useKnownItems'
@@ -65,7 +65,10 @@ export function SignedInApp({
   }
 
   function suggestKnownNames(typed: string) {
-    return suggestNames(knownItems, typed)
+    const mealItemNames = meals.meals.flatMap((meal) =>
+      meal.items.map((item) => item.name),
+    )
+    return suggestNames(withNamesInUse(knownItems, mealItemNames), typed)
   }
 
   const navigation = (
@@ -83,6 +86,7 @@ export function SignedInApp({
         announce={announce}
         navigation={navigation}
         onAddToShoppingList={addMealToShoppingList}
+        suggestNames={suggestKnownNames}
       />
     )
 
