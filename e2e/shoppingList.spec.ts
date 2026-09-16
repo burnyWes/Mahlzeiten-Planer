@@ -75,6 +75,24 @@ test('sign in, add, check off and clean up using the keyboard only', async ({
   ).toBeFocused()
 })
 
+test('counts a second item of the same name into the first', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await addItem(page, 'Milch', '2', 'l')
+  await addItem(page, 'Milch', '1', 'l')
+
+  await expect(shownItems(page)).toHaveText(['Milch, 3 l'])
+  await expect(
+    page.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
+  ).toBeVisible()
+  await expect(page.getByRole('status')).toContainText(
+    'Milch, 1 l hinzugefügt. Stand bereits offen, jetzt 3 l.',
+  )
+})
+
 test('keeps the added item after a reload', async ({ page }) => {
   await page.goto('/')
   await signIn(page)

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
   checkOff,
   createShoppingItem,
@@ -10,6 +11,7 @@ import {
   isOpen,
   normalizeItemName,
   reopen,
+  withQuantity,
   type ShoppingItem,
 } from './shoppingItem'
 
@@ -67,51 +69,16 @@ describe('createShoppingItem', () => {
     ).toHaveLength(100)
   })
 
-  it('leaves out the quantity when no amount is given', () => {
-    expect(createShoppingItem(draft(), createdAt).quantity).toBeNull()
-  })
-
-  it('reads a positive amount', () => {
+  it('takes the quantity from the draft', () => {
     expect(
       createShoppingItem(draft({ amount: '2', unit: 'l' }), createdAt).quantity,
     ).toEqual({ amount: 2, unit: 'l' })
   })
 
-  it('reads an amount written with a comma', () => {
-    expect(
-      createShoppingItem(draft({ amount: '1,5', unit: 'kg' }), createdAt)
-        .quantity,
-    ).toEqual({ amount: 1.5, unit: 'kg' })
-  })
-
-  it('keeps an amount without a unit', () => {
-    expect(
-      createShoppingItem(draft({ amount: '3' }), createdAt).quantity,
-    ).toEqual({ amount: 3, unit: null })
-  })
-
-  it('rejects an amount of zero', () => {
-    expect(() => createShoppingItem(draft({ amount: '0' }), createdAt)).toThrow(
-      InvalidShoppingItem,
-    )
-  })
-
-  it('rejects a negative amount', () => {
-    expect(() =>
-      createShoppingItem(draft({ amount: '-2' }), createdAt),
-    ).toThrow(InvalidShoppingItem)
-  })
-
-  it('rejects an amount that is not a number', () => {
+  it('lets an unreadable quantity through', () => {
     expect(() =>
       createShoppingItem(draft({ amount: 'viel' }), createdAt),
-    ).toThrow(InvalidShoppingItem)
-  })
-
-  it('rejects a unit without an amount', () => {
-    expect(() =>
-      createShoppingItem(draft({ amount: '  ', unit: 'l' }), createdAt),
-    ).toThrow(InvalidShoppingItem)
+    ).toThrow(InvalidQuantity)
   })
 
   it('names the reason it refused', () => {
@@ -244,5 +211,26 @@ describe('checkOff and reopen', () => {
 
   it('makes a checked off item open again', () => {
     expect(reopen(checkOff(item(), 500)).checkedOffAt).toBeNull()
+  })
+})
+
+describe('withQuantity', () => {
+  it('replaces the quantity and keeps everything else', () => {
+    const changed = withQuantity(item({ name: 'Milch' }), {
+      amount: 3,
+      unit: 'l',
+    })
+
+    expect(changed.quantity).toEqual({ amount: 3, unit: 'l' })
+    expect(changed.name).toBe('Milch')
+    expect(changed.id).toBe('anId')
+  })
+
+  it('leaves the item itself untouched', () => {
+    const untouched = item()
+
+    withQuantity(untouched, { amount: 3, unit: 'l' })
+
+    expect(untouched.quantity).toBeNull()
   })
 })

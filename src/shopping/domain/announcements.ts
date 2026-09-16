@@ -1,30 +1,39 @@
 import {
+  formatQuantity,
+  InvalidQuantity,
+  invalidQuantityMessage,
+} from '../../shared/domain/quantity'
+import type { AdditionOutcome } from './addition'
+import {
   formatItemForAnnouncement,
+  InvalidShoppingItem,
   type InvalidReason,
-  type NewShoppingItem,
   type ShoppingItem,
 } from './shoppingItem'
 
 const messagesByReason: Record<InvalidReason, string> = {
   nameMissing: 'Bitte einen Namen eingeben.',
   nameTooLong: 'Der Name ist zu lang.',
-  amountNotANumber: 'Die Menge muss eine Zahl sein.',
-  amountNotPositive: 'Die Menge muss größer als null sein.',
-  unitWithoutAmount: 'Zur Einheit fehlt die Menge.',
 }
 
 export function invalidShoppingItemMessage(reason: InvalidReason): string {
   return messagesByReason[reason]
 }
 
-export function additionAnnouncement(
-  added: NewShoppingItem,
-  alreadyOpen: ShoppingItem | null,
-): string {
-  const confirmation = `${formatItemForAnnouncement(added)} hinzugefügt.`
-  return alreadyOpen === null
-    ? confirmation
-    : `${confirmation} Achtung, ${alreadyOpen.name} steht bereits offen auf der Liste.`
+export function additionFailureMessage(error: unknown): string | null {
+  if (error instanceof InvalidShoppingItem)
+    return invalidShoppingItemMessage(error.reason)
+  if (error instanceof InvalidQuantity)
+    return invalidQuantityMessage(error.reason)
+  return null
+}
+
+export function additionAnnouncement(outcome: AdditionOutcome): string {
+  const confirmation = `${formatItemForAnnouncement(outcome.item)} hinzugefügt.`
+  if (outcome.kind === 'newItem') return confirmation
+  if (outcome.kind === 'mergedInto')
+    return `${confirmation} Stand bereits offen, jetzt ${formatQuantity(outcome.quantity)}.`
+  return `${confirmation} Achtung, ${outcome.open.name} steht bereits offen auf der Liste.`
 }
 
 export function listHeading(openCount: number): string {

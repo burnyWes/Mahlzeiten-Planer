@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ShoppingListClient } from '../api/shoppingListClient'
+import { planAddition, type AdditionOutcome } from '../domain/addition'
 import {
   additionAnnouncement,
   checkOffAnnouncement,
@@ -8,8 +9,8 @@ import {
 } from '../domain/announcements'
 import {
   createShoppingItem,
-  findOpenItemWithSameName,
   isOpen,
+  withQuantity,
   type ShoppingItem,
   type ShoppingItemDraft,
 } from '../domain/shoppingItem'
@@ -20,6 +21,12 @@ import {
   projectStableList,
   type FrozenOrder,
 } from '../domain/stableList'
+import {
+  dropConfirmedWrites,
+  rememberWrite,
+  withUnconfirmedWrites,
+  type UnconfirmedWrites,
+} from '../domain/unconfirmedWrites'
 
 export type ShoppingList = {
   items: readonly ShoppingItem[]
@@ -33,12 +40,16 @@ export type ShoppingList = {
 export function useShoppingList(client: ShoppingListClient): ShoppingList {
   const [liveItems, setLiveItems] = useState<readonly ShoppingItem[]>([])
   const [frozenOrder, setFrozenOrder] = useState<FrozenOrder>([])
+  const [unconfirmedWrites, setUnconfirmedWrites] = useState<UnconfirmedWrites>(
+    [],
+  )
   const frozenOnFirstItems = useRef(false)
 
   useEffect(
     () =>
       client.observeItems((items) => {
         setLiveItems(items)
+        setUnconfirmedWrites((writes) => dropConfirmedWrites(writes, items))
         if (!frozenOnFirstItems.current) {
           frozenOnFirstItems.current = true
           setFrozenOrder(nextFrozenOrder(items))
@@ -47,18 +58,37 @@ export function useShoppingList(client: ShoppingListClient): ShoppingList {
     [client],
   )
 
+  const knownItems = withUnconfirmedWrites(liveItems, unconfirmedWrites)
   const shownItems = projectStableList(frozenOrder, liveItems)
   const openCount = shownItems.filter(isOpen).length
 
+  const carryOut = useCallback(
+    (outcome: AdditionOutcome): ShoppingItem => {
+      if (outcome.kind === 'mergedInto') {
+        client.changeQuantity(outcome.into.id, outcome.quantity)
+        return withQuantity(outcome.into, outcome.quantity)
+      }
+      return {
+        ...outcome.item,
+        id: client.addItem(outcome.item),
+        checkedOffAt: null,
+      }
+    },
+    [client],
+  )
+
   const addItem = useCallback(
     (draft: ShoppingItemDraft) => {
-      const newItem = createShoppingItem(draft, Date.now())
-      const alreadyOpen = findOpenItemWithSameName(liveItems, newItem.name)
-      const id = client.addItem(newItem)
-      setFrozenOrder((order) => appendToFrozenOrder(order, id))
-      return additionAnnouncement(newItem, alreadyOpen)
+      const outcome = planAddition(
+        createShoppingItem(draft, Date.now()),
+        knownItems,
+      )
+      const written = carryOut(outcome)
+      setUnconfirmedWrites((writes) => rememberWrite(writes, written))
+      setFrozenOrder((order) => appendToFrozenOrder(order, written.id))
+      return additionAnnouncement(outcome)
     },
-    [client, liveItems],
+    [carryOut, knownItems],
   )
 
   const toggleItem = useCallback(

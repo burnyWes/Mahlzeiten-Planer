@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import type { Quantity } from '../../shared/domain/quantity'
 import { accessibilityViolations } from '../../testSupport/accessibility'
 import { createInMemoryShoppingListClient } from '../api/inMemoryShoppingListClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
@@ -8,8 +9,13 @@ import type { ShoppingItem } from '../domain/shoppingItem'
 import { ShoppingArea } from './ShoppingArea'
 import { useShoppingList } from './useShoppingList'
 
-function openItem(id: string, name: string, createdAt: number): ShoppingItem {
-  return { id, name, quantity: null, createdAt, checkedOffAt: null }
+function openItem(
+  id: string,
+  name: string,
+  createdAt: number,
+  quantity: Quantity | null = null,
+): ShoppingItem {
+  return { id, name, quantity, createdAt, checkedOffAt: null }
 }
 
 type ShoppingAreaUnderTestProps = {
@@ -29,6 +35,31 @@ function ShoppingAreaUnderTest({
       navigation={null}
     />
   )
+}
+
+type LaggingShoppingListClient = ShoppingListClient & {
+  deliverSnapshot: () => void
+  storedItems: () => readonly ShoppingItem[]
+}
+
+function createLaggingShoppingListClient(): LaggingShoppingListClient {
+  const client = createInMemoryShoppingListClient()
+  let latest: readonly ShoppingItem[] = []
+  let waitingForSnapshot: ((items: readonly ShoppingItem[]) => void) | null =
+    null
+
+  return {
+    ...client,
+    observeItems(onItems) {
+      waitingForSnapshot = onItems
+      return client.observeItems((items) => {
+        latest = items
+      })
+    },
+    deliverSnapshot() {
+      waitingForSnapshot?.(latest)
+    },
+  }
 }
 
 function renderShoppingArea(initialItems: readonly ShoppingItem[] = []) {
@@ -62,6 +93,16 @@ async function addItem(name: string, amount = '', unit = '') {
   await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
 }
 
+async function backToList() {
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Zurück zur Liste' }),
+  )
+}
+
+function shownItems() {
+  return screen.getAllByRole('listitem').map((row) => row.textContent)
+}
+
 describe('ShoppingArea', () => {
   it('says that the list is empty', () => {
     renderShoppingArea()
@@ -86,9 +127,7 @@ describe('ShoppingArea', () => {
       openItem('bread', 'Brot', 1),
     ])
 
-    expect(
-      screen.getAllByRole('listitem').map((row) => row.textContent),
-    ).toEqual(['Brot', 'Milch'])
+    expect(shownItems()).toEqual(['Brot', 'Milch'])
   })
 
   it('stores an added item as open and with a creation time', async () => {
@@ -137,18 +176,20 @@ describe('ShoppingArea', () => {
     expect(announcements).toContain('Milch, 2 l hinzugefügt.')
   })
 
-  it('warns when the same name is already open, but adds it anyway', async () => {
+  it('warns and adds beside the open item when the units differ', async () => {
     const { announcements, client } = renderShoppingArea([
-      openItem('milk', 'Milch', 1),
+      openItem('milk', 'Milch', 1, { amount: 2, unit: 'l' }),
     ])
 
     await openAddItemPage()
-    await addItem('milch')
+    await addItem('milch', '500', 'g')
+    await backToList()
 
     expect(announcements).toContain(
-      'milch hinzugefügt. Achtung, Milch steht bereits offen auf der Liste.',
+      'milch, 500 g hinzugefügt. Achtung, Milch steht bereits offen auf der Liste.',
     )
     expect(client.storedItems()).toHaveLength(2)
+    expect(shownItems()).toEqual(['Milch, 2 l', 'milch, 500 g'])
   })
 
   it('refuses an item without a name', async () => {
@@ -189,6 +230,112 @@ describe('ShoppingArea', () => {
   })
 })
 
+describe('adding what is already open', () => {
+  it('counts a second item of the same name instead of listing it twice', async () => {
+    const { announcements, client } = renderShoppingArea()
+
+    await openAddItemPage()
+    await addItem('Milch')
+    await addItem('Milch')
+    await backToList()
+
+    expect(client.storedItems()).toHaveLength(1)
+    expect(shownItems()).toEqual(['Milch, 2'])
+    expect(announcements).toContain(
+      'Milch hinzugefügt. Stand bereits offen, jetzt 2.',
+    )
+  })
+
+  it('adds up two amounts of the same unit', async () => {
+    const { announcements } = renderShoppingArea([
+      openItem('milk', 'Milch', 1, { amount: 2, unit: 'l' }),
+    ])
+
+    await openAddItemPage()
+    await addItem('Milch', '1', 'l')
+    await backToList()
+
+    expect(shownItems()).toEqual(['Milch, 3 l'])
+    expect(announcements).toContain(
+      'Milch, 1 l hinzugefügt. Stand bereits offen, jetzt 3 l.',
+    )
+  })
+
+  it('leaves the merged entry where it stood', async () => {
+    renderShoppingArea([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2, { amount: 2, unit: 'l' }),
+      openItem('cheese', 'Käse', 3),
+    ])
+
+    await openAddItemPage()
+    await addItem('Milch', '1', 'l')
+    await backToList()
+
+    expect(shownItems()).toEqual(['Brot', 'Milch, 3 l', 'Käse'])
+  })
+
+  it('shows an item that arrived from the other device once it is merged into', async () => {
+    const { client } = renderShoppingArea([openItem('bread', 'Brot', 1)])
+
+    await act(async () => {
+      client.itemsArriveFromElsewhere([
+        openItem('milk', 'Milch', 2, { amount: 2, unit: 'l' }),
+      ])
+    })
+    await openAddItemPage()
+    await addItem('Milch', '1', 'l')
+    await backToList()
+
+    expect(shownItems()).toEqual(['Brot', 'Milch, 3 l'])
+  })
+})
+
+describe('adding before the snapshot has caught up', () => {
+  function renderWithLaggingSnapshots() {
+    const client = createLaggingShoppingListClient()
+    render(<ShoppingAreaUnderTest client={client} announce={() => {}} />)
+    return client
+  }
+
+  it('counts a second item of the same name into the first', async () => {
+    const client = renderWithLaggingSnapshots()
+
+    await openAddItemPage()
+    await addItem('Milch', '2', 'l')
+    await addItem('Milch', '1', 'l')
+
+    expect(client.storedItems()).toHaveLength(1)
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 3, unit: 'l' })
+  })
+
+  it('adds up three items of the same name', async () => {
+    const client = renderWithLaggingSnapshots()
+
+    await openAddItemPage()
+    await addItem('Milch', '1', 'l')
+    await addItem('Milch', '1', 'l')
+    await addItem('Milch', '1', 'l')
+
+    expect(client.storedItems()).toHaveLength(1)
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 3, unit: 'l' })
+  })
+
+  it('shows the merged entry once the snapshot arrives', async () => {
+    const client = renderWithLaggingSnapshots()
+
+    await openAddItemPage()
+    await addItem('Milch', '2', 'l')
+    await addItem('Milch', '1', 'l')
+    await backToList()
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+
+    expect(shownItems()).toEqual(['Milch, 3 l'])
+  })
+})
+
 describe('the stable list', () => {
   it('does not show an item that arrived from the other device', async () => {
     const { client } = renderShoppingArea([openItem('bread', 'Brot', 1)])
@@ -197,9 +344,7 @@ describe('the stable list', () => {
       client.itemsArriveFromElsewhere([openItem('milk', 'Milch', 2)])
     })
 
-    expect(
-      screen.getAllByRole('listitem').map((row) => row.textContent),
-    ).toEqual(['Brot'])
+    expect(shownItems()).toEqual(['Brot'])
   })
 
   it('counts the arrived item on the clean up button', async () => {
@@ -235,9 +380,7 @@ describe('the stable list', () => {
       true,
       false,
     ])
-    expect(
-      screen.getAllByRole('listitem').map((row) => row.textContent),
-    ).toEqual(['Brot', 'Milch', 'Käse'])
+    expect(shownItems()).toEqual(['Brot', 'Milch', 'Käse'])
   })
 
   it('leaves the focus on the checkbox that was just ticked', async () => {
@@ -282,9 +425,7 @@ describe('the stable list', () => {
       screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
     )
 
-    expect(
-      screen.getAllByRole('listitem').map((row) => row.textContent),
-    ).toEqual(['Brot'])
+    expect(shownItems()).toEqual(['Brot'])
     expect(
       screen.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
     ).toHaveFocus()
@@ -302,9 +443,7 @@ describe('the stable list', () => {
       screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
     )
 
-    expect(
-      screen.getAllByRole('listitem').map((row) => row.textContent),
-    ).toEqual(['Brot', 'Milch'])
+    expect(shownItems()).toEqual(['Brot', 'Milch'])
     expect(announcements).toContain('Aufgeräumt, 2 offen')
   })
 

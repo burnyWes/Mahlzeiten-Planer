@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { invalidShoppingItemMessage } from '../domain/announcements'
-import {
-  InvalidShoppingItem,
-  type ShoppingItemDraft,
-} from '../domain/shoppingItem'
+import { UNITS } from '../../shared/domain/quantity'
+import { additionFailureMessage } from '../domain/announcements'
+import type { ShoppingItemDraft } from '../domain/shoppingItem'
 
 type AddItemPageProps = {
   addItem: (draft: ShoppingItemDraft) => string
   announce: (text: string) => void
   onBack: () => void
 }
-
-const UNITS = ['Stück', 'g', 'kg', 'ml', 'l', 'Pck.']
 
 const EMPTY_DRAFT: ShoppingItemDraft = { name: '', amount: '', unit: '' }
 
@@ -37,8 +33,8 @@ export function AddItemPage({ addItem, announce, onBack }: AddItemPageProps) {
       nameField.current?.focus()
       announce(confirmation)
     } catch (error) {
-      if (!(error instanceof InvalidShoppingItem)) throw error
-      const message = invalidShoppingItemMessage(error.reason)
+      const message = additionFailureMessage(error)
+      if (message === null) throw error
       setFailureMessage(message)
       announce(message)
     }

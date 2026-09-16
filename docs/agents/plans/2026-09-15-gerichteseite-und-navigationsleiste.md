@@ -536,7 +536,7 @@ zweiten Eintrag mehr.
 
 **Aufgaben**:
 
-- [ ] `src/shared/domain/quantity.test.ts` zuerst schreiben. Die Fälle zum Einlesen
+- [x] `src/shared/domain/quantity.test.ts` zuerst schreiben. Die Fälle zum Einlesen
       wandern aus `shopping/domain/shoppingItem.test.ts` hierher, dazu die neue
       Additionsregel:
 
@@ -548,7 +548,7 @@ zweiten Eintrag mehr.
   {2,'l'}   + {500,'g'}  -> nicht addierbar
   ```
 
-- [ ] `src/shared/domain/quantity.ts` anlegen:
+- [x] `src/shared/domain/quantity.ts` anlegen:
 
   ```ts
   export type Quantity = { amount: number; unit: string | null }
@@ -572,13 +572,13 @@ zweiten Eintrag mehr.
   `canAddQuantities` und `addQuantities` behandeln `null` als `{ amount: 1, unit: null }`
   und verlangen für die Addition dieselbe Einheit.
 
-- [ ] `src/shopping/domain/shoppingItem.ts` bereinigen: `Quantity`, `readAmount`,
+- [x] `src/shopping/domain/shoppingItem.ts` bereinigen: `Quantity`, `readAmount`,
       `readQuantity` und die drei Mengen-Gründe entfallen. `InvalidShoppingItem` behält
       `nameMissing` und `nameTooLong`. `createShoppingItem` ruft `readQuantity` aus
       `shared/domain` auf und lässt `InvalidQuantity` durch.
       `formatItemForAnnouncement` setzt sich aus Name und `formatQuantity` zusammen.
 
-- [ ] `src/shopping/domain/addition.test.ts` zuerst schreiben, dann
+- [x] `src/shopping/domain/addition.test.ts` zuerst schreiben, dann
       `src/shopping/domain/addition.ts`:
 
   ```ts
@@ -602,26 +602,44 @@ zweiten Eintrag mehr.
   gleiche Items **einer** Übertragung ebenfalls zusammenfallen. Grundlage ist das
   vorhandene `findOpenItemWithSameName` (`shoppingItem.ts:91`).
 
-- [ ] `src/shopping/domain/announcements.ts` erweitern:
+- [x] `src/shopping/domain/announcements.ts` erweitern:
   - `additionAnnouncement(outcome)` — je nach Ergebnis "… hinzugefügt.",
     "… hinzugefügt. Stand bereits offen, jetzt 3 l." oder die heutige Warnung
   - `additionFailureMessage(error)` — löst `InvalidShoppingItem` und `InvalidQuantity`
     auf und gibt `null` für alles andere zurück
   - Fälle in `announcements.test.ts` ergänzen
 
-- [ ] `src/shopping/api/shoppingListClient.ts`: `changeQuantity(id, quantity)` ergänzen;
+- [x] `src/shopping/api/shoppingListClient.ts`: `changeQuantity(id, quantity)` ergänzen;
       `firestoreShoppingListClient.ts` (`updateDoc` auf das Feld `quantity`) und
       `inMemoryShoppingListClient.ts` nachziehen.
 
-- [ ] `src/shopping/ui/useShoppingList.ts`: `addItem` wertet `planAddition` aus. Bei
+- [x] `src/shopping/ui/useShoppingList.ts`: `addItem` wertet `planAddition` aus. Bei
       `mergedInto` wird `changeQuantity` gerufen und die Id des vorhandenen Eintrags an
       die eingefrorene Reihenfolge angehängt — so wird ein Artikel sichtbar, den das
       andere Gerät nach dem Einfrieren eingetragen hat.
 
-- [ ] `src/shopping/ui/AddItemPage.tsx`: Fehlerbehandlung auf `additionFailureMessage`
+- [x] `src/shopping/ui/AddItemPage.tsx`: Fehlerbehandlung auf `additionFailureMessage`
       umstellen, `UNITS` aus `shared/domain/quantity` beziehen.
+- [x] **Nachtrag aus der Umsetzung:** `src/shopping/domain/unconfirmedWrites.ts` mit
+      `rememberWrite`, `withUnconfirmedWrites` und `dropConfirmedWrites`, dazu
+      `sameQuantity` in `shared/domain/quantity.ts`.
 
-- [ ] Fälle in `ShoppingArea.test.tsx` ergänzen:
+      Gegen Firestore war `liveItems` beim zweiten Hinzufügen oft noch leer: die
+      Momentaufnahme braucht gelegentlich über eine Sekunde, und `observeItems`
+      veröffentlicht erst, wenn beide Abfragen geantwortet haben
+      (`firestoreShoppingListClient.ts:63-66`). `planAddition` sah den eigenen
+      ersten Artikel deshalb nicht und legte einen zweiten Eintrag an — der
+      E2E-Durchlauf war in zwei von drei Wiederholungen rot.
+
+      `useShoppingList` plant jetzt gegen `withUnconfirmedWrites(liveItems, writes)`.
+      Die Überlagerung hängt eigene, noch nicht ausgelieferte Artikel an und hebt die
+      Menge derer, die die Momentaufnahme noch alt zeigt; den Abhak-Zustand lässt sie
+      der Momentaufnahme. `dropConfirmedWrites` wirft einen Schreibvorgang weg,
+      sobald die Momentaufnahme die geschriebene Menge trägt. Die **Anzeige** bleibt
+      bei `liveItems`; dass ein eigener Artikel dort verzögert erscheint, steht als
+      Bug in `docs/notes.txt` und besteht schon vor dieser Phase.
+
+- [x] Fälle in `ShoppingArea.test.tsx` ergänzen:
   - "Milch" zweimal hinzufügen ergibt eine Zeile "Milch, 2" und eine Ansage
   - "Milch, 2 l" und "Milch, 1 l" ergeben "Milch, 3 l"
   - "Milch, 2 l" und "Milch, 500 g" ergeben zwei Zeilen mit der Warnung
@@ -629,20 +647,20 @@ zweiten Eintrag mehr.
   - ein Artikel, den `itemsArriveFromElsewhere` nach dem Einfrieren gebracht hat, wird
     beim Zusammenführen sichtbar
 
-- [ ] `e2e/shoppingList.spec.ts` um einen Durchlauf erweitern: denselben Artikel zweimal
+- [x] `e2e/shoppingList.spec.ts` um einen Durchlauf erweitern: denselben Artikel zweimal
       anlegen und prüfen, dass genau eine Zeile mit summierter Menge entsteht — das
       deckt den Firestore-Weg von `changeQuantity` ab.
 
-- [ ] `docs/notes.txt`: den Punkt "Use case / given: Milch bereits auf Einkaufsliste" auf
+- [x] `docs/notes.txt`: den Punkt "Use case / given: Milch bereits auf Einkaufsliste" auf
       `x` setzen und nach DONE verschieben.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — `quantity.test.ts`, `addition.test.ts`, `announcements.test.ts`,
+- [x] `npm run test` — `quantity.test.ts`, `addition.test.ts`, `announcements.test.ts`,
       `shoppingItem.test.ts` und `ShoppingArea.test.tsx` laufen grün.
-- [ ] `npm run lint` — insbesondere bleibt `shared/domain/quantity.ts` frei von React-
+- [x] `npm run lint` — insbesondere bleibt `shared/domain/quantity.ts` frei von React-
       und Firebase-Importen.
-- [ ] `npm run test:e2e` — der neue Zusammenführungs-Durchlauf ist grün.
+- [x] `npm run test:e2e` — der neue Zusammenführungs-Durchlauf ist grün.
 - [ ] `npm run build` läuft durch.
 
 **Manuelle Verifikation**:

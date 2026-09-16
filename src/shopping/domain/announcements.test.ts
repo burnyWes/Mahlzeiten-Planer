@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { InvalidQuantity } from '../../shared/domain/quantity'
+import type { AdditionOutcome } from './addition'
 import {
   additionAnnouncement,
+  additionFailureMessage,
   checkOffAnnouncement,
   cleanUpAnnouncement,
   cleanUpLabel,
@@ -8,7 +11,7 @@ import {
   listHeading,
   reopenAnnouncement,
 } from './announcements'
-import type { ShoppingItem } from './shoppingItem'
+import { InvalidShoppingItem, type ShoppingItem } from './shoppingItem'
 
 const added = {
   name: 'Milch',
@@ -27,14 +30,53 @@ function openItem(name: string): ShoppingItem {
 }
 
 describe('additionAnnouncement', () => {
-  it('confirms the item with its quantity', () => {
-    expect(additionAnnouncement(added, null)).toBe('Milch, 2 l hinzugefügt.')
+  it('confirms a new item with its quantity', () => {
+    const outcome: AdditionOutcome = { kind: 'newItem', item: added }
+
+    expect(additionAnnouncement(outcome)).toBe('Milch, 2 l hinzugefügt.')
   })
 
-  it('warns that the same name is already on the list', () => {
-    expect(additionAnnouncement(added, openItem('Milch'))).toBe(
+  it('names the quantity the merged entry now holds', () => {
+    const outcome: AdditionOutcome = {
+      kind: 'mergedInto',
+      item: { ...added, quantity: { amount: 1, unit: 'l' } },
+      into: openItem('Milch'),
+      quantity: { amount: 3, unit: 'l' },
+    }
+
+    expect(additionAnnouncement(outcome)).toBe(
+      'Milch, 1 l hinzugefügt. Stand bereits offen, jetzt 3 l.',
+    )
+  })
+
+  it('warns when another unit put the item beside the open one', () => {
+    const outcome: AdditionOutcome = {
+      kind: 'besideDifferentUnit',
+      item: added,
+      open: openItem('Milch'),
+    }
+
+    expect(additionAnnouncement(outcome)).toBe(
       'Milch, 2 l hinzugefügt. Achtung, Milch steht bereits offen auf der Liste.',
     )
+  })
+})
+
+describe('additionFailureMessage', () => {
+  it('explains a refused item', () => {
+    expect(additionFailureMessage(new InvalidShoppingItem('nameMissing'))).toBe(
+      'Bitte einen Namen eingeben.',
+    )
+  })
+
+  it('explains a refused quantity', () => {
+    expect(
+      additionFailureMessage(new InvalidQuantity('unitWithoutAmount')),
+    ).toBe('Zur Einheit fehlt die Menge.')
+  })
+
+  it('keeps quiet about anything else', () => {
+    expect(additionFailureMessage(new Error('boom'))).toBeNull()
   })
 })
 
@@ -45,15 +87,9 @@ describe('invalidShoppingItemMessage', () => {
     )
   })
 
-  it('explains a missing amount next to a unit', () => {
-    expect(invalidShoppingItemMessage('unitWithoutAmount')).toBe(
-      'Zur Einheit fehlt die Menge.',
-    )
-  })
-
-  it('explains an amount that is not a number', () => {
-    expect(invalidShoppingItemMessage('amountNotANumber')).toBe(
-      'Die Menge muss eine Zahl sein.',
+  it('explains a name that is too long', () => {
+    expect(invalidShoppingItemMessage('nameTooLong')).toBe(
+      'Der Name ist zu lang.',
     )
   })
 })

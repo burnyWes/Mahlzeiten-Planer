@@ -1,9 +1,11 @@
-export type ItemId = string
+import {
+  formatQuantity,
+  readQuantity,
+  type Quantity,
+  type QuantityDraft,
+} from '../../shared/domain/quantity'
 
-export type Quantity = {
-  amount: number
-  unit: string | null
-}
+export type ItemId = string
 
 export type NewShoppingItem = {
   name: string
@@ -16,18 +18,11 @@ export type ShoppingItem = NewShoppingItem & {
   checkedOffAt: number | null
 }
 
-export type ShoppingItemDraft = {
+export type ShoppingItemDraft = QuantityDraft & {
   name: string
-  amount: string
-  unit: string
 }
 
-export type InvalidReason =
-  | 'nameMissing'
-  | 'nameTooLong'
-  | 'amountNotANumber'
-  | 'amountNotPositive'
-  | 'unitWithoutAmount'
+export type InvalidReason = 'nameMissing' | 'nameTooLong'
 
 export class InvalidShoppingItem extends Error {
   reason: InvalidReason
@@ -40,22 +35,6 @@ export class InvalidShoppingItem extends Error {
 }
 
 const MAXIMUM_NAME_LENGTH = 100
-
-function readAmount(written: string): number {
-  const amount = Number(written.trim().replace(',', '.'))
-  if (Number.isNaN(amount)) throw new InvalidShoppingItem('amountNotANumber')
-  if (amount <= 0) throw new InvalidShoppingItem('amountNotPositive')
-  return amount
-}
-
-function readQuantity(draft: ShoppingItemDraft): Quantity | null {
-  const unit = draft.unit.trim()
-  if (draft.amount.trim() === '') {
-    if (unit !== '') throw new InvalidShoppingItem('unitWithoutAmount')
-    return null
-  }
-  return { amount: readAmount(draft.amount), unit: unit === '' ? null : unit }
-}
 
 function readName(written: string): string {
   const name = written.trim()
@@ -101,11 +80,8 @@ export function findOpenItemWithSameName(
 }
 
 export function formatItemForAnnouncement(item: NewShoppingItem): string {
-  if (item.quantity === null) return item.name
-  const { amount, unit } = item.quantity
-  return unit === null
-    ? `${item.name}, ${amount}`
-    : `${item.name}, ${amount} ${unit}`
+  const quantity = formatQuantity(item.quantity)
+  return quantity === '' ? item.name : `${item.name}, ${quantity}`
 }
 
 export function inCreationOrder(
@@ -123,4 +99,11 @@ export function checkOff(item: ShoppingItem, at: number): ShoppingItem {
 
 export function reopen(item: ShoppingItem): ShoppingItem {
   return { ...item, checkedOffAt: null }
+}
+
+export function withQuantity(
+  item: ShoppingItem,
+  quantity: Quantity | null,
+): ShoppingItem {
+  return { ...item, quantity }
 }

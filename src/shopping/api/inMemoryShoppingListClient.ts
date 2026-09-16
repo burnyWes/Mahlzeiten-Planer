@@ -1,4 +1,9 @@
-import { checkOff, reopen, type ShoppingItem } from '../domain/shoppingItem'
+import {
+  checkOff,
+  reopen,
+  withQuantity,
+  type ShoppingItem,
+} from '../domain/shoppingItem'
 import type { ShoppingListClient } from './shoppingListClient'
 
 export type InMemoryShoppingListClient = ShoppingListClient & {
@@ -38,6 +43,9 @@ export function createInMemoryShoppingListClient(
       items = [...items, { ...newItem, id, checkedOffAt: null }]
       publish()
       return id
+    },
+    changeQuantity(id, quantity) {
+      change(id, (item) => withQuantity(item, quantity))
     },
     checkOffItem(id) {
       change(id, (item) => checkOff(item, clock()))

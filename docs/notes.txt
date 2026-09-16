@@ -24,6 +24,10 @@ x Update-Verhalten des Service Workers pruefen: registerType autoUpdate laedt di
   beim Update ggf. mitten in der Bedienung neu - mit VoiceOver unangenehm.
 x Tab-Leiste oben fixiert
   x Einkaufsliste | Gerichte
+x Use case
+  x given: Milch bereits auf Einkaufsliste
+  x when: Milch hinzufügen
+  x then: ein Eintrag Milch 2x auf Liste und bereits existierende Warnung, nicht 2 Einträge
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -41,8 +45,8 @@ TODO
   - Push-Benachrichtigungen
 - Alexa-Integration
 - PDF-Import
-- Use case
-  - given: Milch bereits auf Einkaufsliste
-  - when: Milch hinzufügen
-  - then: ein Eintrag Milch 2x auf Liste und bereits existierende Warnung, nicht 2 Einträge
-
+b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in der
+  Liste: die Anzeige zeigt nur, was die Firestore-Momentaufnahme schon gebracht hat.
+  Die Zusammenführung rechnet seit MZP-002 Phase 2 mit den eigenen Schreibvorgängen,
+  die Anzeige noch nicht. Der E2E-Test "sign in, add, check off and clean up" ist
+  deshalb gelegentlich rot, auch schon vor Phase 2.

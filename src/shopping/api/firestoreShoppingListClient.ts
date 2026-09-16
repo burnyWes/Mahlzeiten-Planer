@@ -10,7 +10,8 @@ import {
   type Firestore,
   type QuerySnapshot,
 } from 'firebase/firestore'
-import type { ItemId, Quantity, ShoppingItem } from '../domain/shoppingItem'
+import type { Quantity } from '../../shared/domain/quantity'
+import type { ItemId, ShoppingItem } from '../domain/shoppingItem'
 import type { ShoppingListClient } from './shoppingListClient'
 
 const ITEMS = 'items'
@@ -99,6 +100,10 @@ export function createFirestoreShoppingListClient(
       const reference = doc(items)
       writeInBackground(setDoc(reference, { ...newItem, checkedOffAt: null }))
       return reference.id
+    },
+
+    changeQuantity(id, quantity) {
+      writeInBackground(updateDoc(itemDocument(id), { quantity }))
     },
 
     checkOffItem(id) {
