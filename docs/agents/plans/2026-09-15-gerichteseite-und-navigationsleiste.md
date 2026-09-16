@@ -911,7 +911,7 @@ entfernen.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver ein Gericht ändern, danach eines löschen und den
+- [x] Auf dem iPhone mit VoiceOver ein Gericht ändern, danach eines löschen und den
       Abbrechen-Weg mindestens einmal gehen.
 
 ---
