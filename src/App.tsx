@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { SignedInApp } from './SignedInApp'
 import { AppUpdateOffer } from './shared/appUpdate/AppUpdateOffer'
 import type { AppUpdateClient } from './shared/appUpdate/appUpdateClient'
 import { useAppUpdate } from './shared/appUpdate/useAppUpdate'
@@ -9,7 +10,6 @@ import { Announcer } from './shared/ui/Announcer'
 import { useAnnouncer } from './shared/ui/useAnnouncer'
 import { useConnectionAnnouncements } from './shared/ui/useConnectionAnnouncements'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
-import { ShoppingApp } from './shopping/ui/ShoppingApp'
 
 type AppProps = {
   authClient: AuthClient
@@ -43,7 +43,7 @@ export function App({
         <SignInPage authClient={authClient} announce={announce} />
       )}
       {session.status === 'signedIn' && (
-        <ShoppingApp
+        <SignedInApp
           createShoppingListClient={createShoppingListClient}
           announce={announce}
         />

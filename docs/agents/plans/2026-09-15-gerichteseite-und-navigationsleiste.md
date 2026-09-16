@@ -21,15 +21,15 @@ vom 2026-09-15.
 
 ## Akzeptanzkriterien
 
-- [ ] Eine Leiste am oberen Rand führt zwischen "Einkaufsliste" und "Gerichte"; der
+- [x] Eine Leiste am oberen Rand führt zwischen "Einkaufsliste" und "Gerichte"; der
       aktive Bereich trägt `aria-current="page"`, der Fokus springt beim Wechsel auf die
       Überschrift des neuen Bereichs.
 - [ ] Die Leiste bleibt beim Scrollen stehen und erscheint nur auf den beiden
       Hauptseiten, nicht auf Formular-, Ansichts- oder Bestätigungsseiten.
-- [ ] Ein Wechsel zu den Gerichten und zurück verändert die Einkaufsliste nicht:
+- [x] Ein Wechsel zu den Gerichten und zurück verändert die Einkaufsliste nicht:
       Reihenfolge, Zusammensetzung und die Anzahl offener Änderungen bleiben, als wäre
       man nie weg gewesen.
-- [ ] Nach einem Neustart der App ist die Einkaufsliste aktiv.
+- [x] Nach einem Neustart der App ist die Einkaufsliste aktiv.
 - [ ] Wird ein Artikel hinzugefügt, dessen Name bereits offen auf der Liste steht,
       entsteht kein zweiter Eintrag: bei gleicher Einheit werden die Mengen addiert,
       fehlende Menge zählt als 1 ohne Einheit. Nur bei unterschiedlicher Einheit
@@ -366,7 +366,7 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
 
 **Aufgaben**:
 
-- [ ] `src/shared/ui/useHeadingFocus.ts` anlegen — das Fokusmuster aus
+- [x] `src/shared/ui/useHeadingFocus.ts` anlegen — das Fokusmuster aus
       `ShoppingListPage.tsx:23-28` verallgemeinern.
 
   ```ts
@@ -379,7 +379,7 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
   }
   ```
 
-- [ ] `src/shared/ui/NavigationBar.tsx` anlegen, generisch über die Bereichs-Id, ohne
+- [x] `src/shared/ui/NavigationBar.tsx` anlegen, generisch über die Bereichs-Id, ohne
       Kenntnis eines Kontexts.
 
   ```tsx
@@ -410,29 +410,29 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
   }
   ```
 
-- [ ] `src/SignedInApp.tsx` anlegen: hält `activeArea` (Startwert `'shopping'`), erzeugt
+- [x] `src/SignedInApp.tsx` anlegen: hält `activeArea` (Startwert `'shopping'`), erzeugt
       den Einkaufslisten-Client einmalig und ruft `useShoppingList` auf dieser Ebene auf.
       Die Leiste entsteht hier und wird als `navigation`-Prop an den aktiven Bereich
       gereicht.
 
-- [ ] `src/shopping/ui/ShoppingApp.tsx` in `ShoppingArea.tsx` umbenennen. Die Komponente
+- [x] `src/shopping/ui/ShoppingApp.tsx` in `ShoppingArea.tsx` umbenennen. Die Komponente
       erzeugt den Client nicht mehr und ruft `useShoppingList` nicht mehr auf, sondern
       nimmt dessen Rückgabe als Prop `shoppingList` entgegen. Sie behält ihren eigenen
       Unterseiten-Zustand `addingItem` und reicht `navigation` an `ShoppingListPage`
       weiter.
 
-- [ ] `src/shopping/ui/ShoppingListPage.tsx`: `navigation`-Prop vor dem `<main>`
+- [x] `src/shopping/ui/ShoppingListPage.tsx`: `navigation`-Prop vor dem `<main>`
       rendern, `useRef` durch `useHeadingFocus` ersetzen. Der Fokus landet damit auch
       beim Rückweg aus `AddItemPage` auf der Überschrift — heute geht er dort verloren.
 
-- [ ] `src/meals/ui/MealsArea.tsx` als Platzhalter anlegen: `navigation`, `h1` über
+- [x] `src/meals/ui/MealsArea.tsx` als Platzhalter anlegen: `navigation`, `h1` über
       `useHeadingFocus` mit dem Text "Gerichte, keine" und dem Absatz "Noch keine
       Gerichte.".
 
-- [ ] `src/App.tsx`: `ShoppingApp` durch `SignedInApp` ersetzen, Props unverändert
+- [x] `src/App.tsx`: `ShoppingApp` durch `SignedInApp` ersetzen, Props unverändert
       durchreichen.
 
-- [ ] `src/index.css`: Leiste ergänzen.
+- [x] `src/index.css`: Leiste ergänzen.
 
   ```css
   .navigationBar {
@@ -473,12 +473,12 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
   }
   ```
 
-- [ ] Hauptseiten bekommen `className="page pageBelowNavigation"`, damit der
+- [x] Hauptseiten bekommen `className="page pageBelowNavigation"`, damit der
       `safe-area-inset-top` nicht doppelt zählt — die Leiste trägt ihn bereits.
       `.pageBelowNavigation` hat dieselbe Spezifität wie `.page` und muss deshalb **nach**
       dem `.page`-Block in `index.css` stehen, sonst gewinnt dessen `padding-top`.
 
-- [ ] `src/shopping/ui/ShoppingApp.test.tsx` in `ShoppingArea.test.tsx` umbenennen. Die
+- [x] `src/shopping/ui/ShoppingApp.test.tsx` in `ShoppingArea.test.tsx` umbenennen. Die
       bestehenden Fälle bleiben inhaltlich unverändert; der Testaufbau ruft
       `useShoppingList` in einer kleinen Hülle auf, damit die Tests des Kontexts im
       Kontext bleiben.
@@ -495,7 +495,7 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
   }
   ```
 
-- [ ] `src/SignedInApp.test.tsx` anlegen mit den neuen Fällen:
+- [x] `src/SignedInApp.test.tsx` anlegen mit den neuen Fällen:
   - wechselt zwischen den Bereichen und markiert den aktiven mit `aria-current`
   - setzt den Fokus nach dem Wechsel auf die Überschrift des neuen Bereichs
   - zeigt die Leiste nicht auf der Seite "Artikel hinzufügen"
@@ -504,17 +504,17 @@ Wechsel unverändert. Der Bereich *Gerichte* ist noch leer.
     "Aufräumen, 1 Änderung" steht unverändert da
   - `accessibilityViolations` ist auf beiden Bereichen leer
 
-- [ ] `docs/notes.txt`: den Punkt "Tab-Leiste oben fixiert" samt Unterpunkten auf `x`
+- [x] `docs/notes.txt`: den Punkt "Tab-Leiste oben fixiert" samt Unterpunkten auf `x`
       setzen und nach DONE verschieben. Die Erweiterung um Wochenplaner und Einstellungen
       bleibt als offener Unterpunkt stehen.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — `SignedInApp.test.tsx` und `ShoppingArea.test.tsx` laufen grün,
+- [x] `npm run test` — `SignedInApp.test.tsx` und `ShoppingArea.test.tsx` laufen grün,
       insbesondere die Regression zum Zustandserhalt.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` läuft durch.
-- [ ] `npm run test:e2e` — der bestehende Tastatur-Durchlauf bleibt grün.
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` läuft durch.
+- [x] `npm run test:e2e` — der bestehende Tastatur-Durchlauf bleibt grün.
 
 **Manuelle Verifikation**:
 

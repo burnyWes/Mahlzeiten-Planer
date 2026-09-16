@@ -3,19 +3,40 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
 import { createInMemoryShoppingListClient } from '../api/inMemoryShoppingListClient'
+import type { ShoppingListClient } from '../api/shoppingListClient'
 import type { ShoppingItem } from '../domain/shoppingItem'
-import { ShoppingApp } from './ShoppingApp'
+import { ShoppingArea } from './ShoppingArea'
+import { useShoppingList } from './useShoppingList'
 
 function openItem(id: string, name: string, createdAt: number): ShoppingItem {
   return { id, name, quantity: null, createdAt, checkedOffAt: null }
 }
 
-function renderShoppingApp(initialItems: readonly ShoppingItem[] = []) {
+type ShoppingAreaUnderTestProps = {
+  client: ShoppingListClient
+  announce: (text: string) => void
+}
+
+function ShoppingAreaUnderTest({
+  client,
+  announce,
+}: ShoppingAreaUnderTestProps) {
+  const shoppingList = useShoppingList(client)
+  return (
+    <ShoppingArea
+      shoppingList={shoppingList}
+      announce={announce}
+      navigation={null}
+    />
+  )
+}
+
+function renderShoppingArea(initialItems: readonly ShoppingItem[] = []) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
   const rendered = render(
-    <ShoppingApp
-      createShoppingListClient={() => client}
+    <ShoppingAreaUnderTest
+      client={client}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -41,15 +62,15 @@ async function addItem(name: string, amount = '', unit = '') {
   await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
 }
 
-describe('ShoppingApp', () => {
+describe('ShoppingArea', () => {
   it('says that the list is empty', () => {
-    renderShoppingApp()
+    renderShoppingArea()
 
     expect(screen.getByText('Die Liste ist leer.')).toBeInTheDocument()
   })
 
   it('counts the open items in the heading', () => {
-    renderShoppingApp([
+    renderShoppingArea([
       openItem('bread', 'Brot', 1),
       openItem('milk', 'Milch', 2),
     ])
@@ -60,7 +81,7 @@ describe('ShoppingApp', () => {
   })
 
   it('shows the items in the order they were entered', () => {
-    renderShoppingApp([
+    renderShoppingArea([
       openItem('milk', 'Milch', 2),
       openItem('bread', 'Brot', 1),
     ])
@@ -71,7 +92,7 @@ describe('ShoppingApp', () => {
   })
 
   it('stores an added item as open and with a creation time', async () => {
-    const { client } = renderShoppingApp()
+    const { client } = renderShoppingArea()
 
     await openAddItemPage()
     await addItem('Milch', '2', 'l')
@@ -85,7 +106,7 @@ describe('ShoppingApp', () => {
   })
 
   it('clears the name field and keeps the focus there', async () => {
-    renderShoppingApp()
+    renderShoppingArea()
 
     await openAddItemPage()
     await addItem('Milch')
@@ -96,7 +117,7 @@ describe('ShoppingApp', () => {
   })
 
   it('stays on the add page so the next item can follow', async () => {
-    renderShoppingApp()
+    renderShoppingArea()
 
     await openAddItemPage()
     await addItem('Milch')
@@ -108,7 +129,7 @@ describe('ShoppingApp', () => {
   })
 
   it('announces the addition with quantity', async () => {
-    const { announcements } = renderShoppingApp()
+    const { announcements } = renderShoppingArea()
 
     await openAddItemPage()
     await addItem('Milch', '2', 'l')
@@ -117,7 +138,7 @@ describe('ShoppingApp', () => {
   })
 
   it('warns when the same name is already open, but adds it anyway', async () => {
-    const { announcements, client } = renderShoppingApp([
+    const { announcements, client } = renderShoppingArea([
       openItem('milk', 'Milch', 1),
     ])
 
@@ -131,7 +152,7 @@ describe('ShoppingApp', () => {
   })
 
   it('refuses an item without a name', async () => {
-    const { announcements, client } = renderShoppingApp()
+    const { announcements, client } = renderShoppingArea()
 
     await openAddItemPage()
     await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
@@ -141,7 +162,7 @@ describe('ShoppingApp', () => {
   })
 
   it('goes back to the list', async () => {
-    renderShoppingApp()
+    renderShoppingArea()
 
     await openAddItemPage()
     await userEvent.click(
@@ -154,13 +175,13 @@ describe('ShoppingApp', () => {
   })
 
   it('has no accessibility violations on the list', async () => {
-    const { rendered } = renderShoppingApp([openItem('bread', 'Brot', 1)])
+    const { rendered } = renderShoppingArea([openItem('bread', 'Brot', 1)])
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the add page', async () => {
-    const { rendered } = renderShoppingApp()
+    const { rendered } = renderShoppingArea()
 
     await openAddItemPage()
 
@@ -170,7 +191,7 @@ describe('ShoppingApp', () => {
 
 describe('the stable list', () => {
   it('does not show an item that arrived from the other device', async () => {
-    const { client } = renderShoppingApp([openItem('bread', 'Brot', 1)])
+    const { client } = renderShoppingArea([openItem('bread', 'Brot', 1)])
 
     await act(async () => {
       client.itemsArriveFromElsewhere([openItem('milk', 'Milch', 2)])
@@ -182,7 +203,7 @@ describe('the stable list', () => {
   })
 
   it('counts the arrived item on the clean up button', async () => {
-    const { client } = renderShoppingApp([openItem('bread', 'Brot', 1)])
+    const { client } = renderShoppingArea([openItem('bread', 'Brot', 1)])
 
     await act(async () => {
       client.itemsArriveFromElsewhere([openItem('milk', 'Milch', 2)])
@@ -194,13 +215,13 @@ describe('the stable list', () => {
   })
 
   it('hides the clean up button while nothing is pending', () => {
-    renderShoppingApp([openItem('bread', 'Brot', 1)])
+    renderShoppingArea([openItem('bread', 'Brot', 1)])
 
     expect(screen.queryByRole('button', { name: /Aufräumen/ })).toBeNull()
   })
 
   it('keeps a checked off item in place with its box ticked', async () => {
-    renderShoppingApp([
+    renderShoppingArea([
       openItem('bread', 'Brot', 1),
       openItem('milk', 'Milch', 2),
       openItem('cheese', 'Käse', 3),
@@ -220,7 +241,7 @@ describe('the stable list', () => {
   })
 
   it('leaves the focus on the checkbox that was just ticked', async () => {
-    renderShoppingApp([openItem('milk', 'Milch', 2)])
+    renderShoppingArea([openItem('milk', 'Milch', 2)])
 
     const box = screen.getByRole('checkbox', { name: 'Milch' })
     await userEvent.click(box)
@@ -229,7 +250,7 @@ describe('the stable list', () => {
   })
 
   it('announces the check off with the remaining open count', async () => {
-    const { announcements } = renderShoppingApp([
+    const { announcements } = renderShoppingArea([
       openItem('bread', 'Brot', 1),
       openItem('milk', 'Milch', 2),
     ])
@@ -240,7 +261,7 @@ describe('the stable list', () => {
   })
 
   it('opens a checked off item again', async () => {
-    const { announcements } = renderShoppingApp([openItem('milk', 'Milch', 2)])
+    const { announcements } = renderShoppingArea([openItem('milk', 'Milch', 2)])
 
     const box = screen.getByRole('checkbox', { name: 'Milch' })
     await userEvent.click(box)
@@ -251,7 +272,7 @@ describe('the stable list', () => {
   })
 
   it('removes checked off items when cleaning up and moves the focus to the heading', async () => {
-    renderShoppingApp([
+    renderShoppingArea([
       openItem('bread', 'Brot', 1),
       openItem('milk', 'Milch', 2),
     ])
@@ -270,7 +291,7 @@ describe('the stable list', () => {
   })
 
   it('takes over the arrived items when cleaning up', async () => {
-    const { client, announcements } = renderShoppingApp([
+    const { client, announcements } = renderShoppingArea([
       openItem('bread', 'Brot', 1),
     ])
 
@@ -288,7 +309,7 @@ describe('the stable list', () => {
   })
 
   it('has no accessibility violations with a checked off item', async () => {
-    const { rendered } = renderShoppingApp([openItem('milk', 'Milch', 2)])
+    const { rendered } = renderShoppingArea([openItem('milk', 'Milch', 2)])
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Milch' }))
 

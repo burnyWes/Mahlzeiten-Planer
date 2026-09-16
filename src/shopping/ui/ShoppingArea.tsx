@@ -1,23 +1,21 @@
-import { useState } from 'react'
-import type { ShoppingListClient } from '../api/shoppingListClient'
+import { useState, type ReactNode } from 'react'
 import { AddItemPage } from './AddItemPage'
 import { ShoppingListPage } from './ShoppingListPage'
-import { useShoppingList } from './useShoppingList'
+import type { ShoppingList } from './useShoppingList'
 
-type ShoppingAppProps = {
-  createShoppingListClient: (
-    onWriteFailure: (message: string) => void,
-  ) => ShoppingListClient
+type ShoppingAreaProps = {
+  shoppingList: ShoppingList
   announce: (text: string) => void
+  navigation: ReactNode
 }
 
-export function ShoppingApp({
-  createShoppingListClient,
+export function ShoppingArea({
+  shoppingList,
   announce,
-}: ShoppingAppProps) {
-  const [client] = useState(() => createShoppingListClient(announce))
+  navigation,
+}: ShoppingAreaProps) {
   const { items, openCount, pendingChanges, addItem, toggleItem, cleanUp } =
-    useShoppingList(client)
+    shoppingList
   const [addingItem, setAddingItem] = useState(false)
 
   if (addingItem) {
@@ -32,6 +30,7 @@ export function ShoppingApp({
 
   return (
     <ShoppingListPage
+      navigation={navigation}
       items={items}
       openCount={openCount}
       pendingChanges={pendingChanges}

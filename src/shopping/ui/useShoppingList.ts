@@ -21,7 +21,16 @@ import {
   type FrozenOrder,
 } from '../domain/stableList'
 
-export function useShoppingList(client: ShoppingListClient) {
+export type ShoppingList = {
+  items: readonly ShoppingItem[]
+  openCount: number
+  pendingChanges: number
+  addItem: (draft: ShoppingItemDraft) => string
+  toggleItem: (item: ShoppingItem) => string
+  cleanUp: () => string
+}
+
+export function useShoppingList(client: ShoppingListClient): ShoppingList {
   const [liveItems, setLiveItems] = useState<readonly ShoppingItem[]>([])
   const [frozenOrder, setFrozenOrder] = useState<FrozenOrder>([])
   const frozenOnFirstItems = useRef(false)

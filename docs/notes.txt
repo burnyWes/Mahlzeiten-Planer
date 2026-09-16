@@ -22,15 +22,15 @@ x Firebase haerten: Selbstregistrierung abschalten (Authentication - Settings -
   apiKey jeder ein Konto im Projekt anlegen.
 x Update-Verhalten des Service Workers pruefen: registerType autoUpdate laedt die App
   beim Update ggf. mitten in der Bedienung neu - mit VoiceOver unangenehm.
+x Tab-Leiste oben fixiert
+  x Einkaufsliste | Gerichte
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
 ----------------------------------------------------------------------------------------------------------------------------------
 
-- Tab-Leiste oben fixiert
-  - Einkaufsliste | Gerichte
-  - Später erweitern zu
-    - Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
+- Später erweitern zu
+  - Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
 - Gerichte-Seite
   - Liste mit Gerichten (rechts Button "Auf die Einkaufsliste")
   - +-Icon oben rechts um ein Gericht hinzuzufügen
@@ -45,4 +45,4 @@ TODO
   - given: Milch bereits auf Einkaufsliste
   - when: Milch hinzufügen
   - then: ein Eintrag Milch 2x auf Liste und bereits existierende Warnung, nicht 2 Einträge
-   
+

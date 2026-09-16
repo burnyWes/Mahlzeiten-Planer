@@ -19,6 +19,10 @@ async function pressButton(page: Page, name: string) {
   await page.keyboard.press('Enter')
 }
 
+function shownItems(page: Page) {
+  return page.getByRole('main').getByRole('listitem')
+}
+
 async function signIn(page: Page) {
   await typeInto(page, 'E-Mail', household.email)
   await typeInto(page, 'Passwort', household.password)
@@ -47,7 +51,7 @@ test('sign in, add, check off and clean up using the keyboard only', async ({
   await addItem(page, 'Brot')
   await addItem(page, 'Milch', '2', 'l')
 
-  await expect(page.getByRole('listitem')).toHaveText(['Brot', 'Milch, 2 l'])
+  await expect(shownItems(page)).toHaveText(['Brot', 'Milch, 2 l'])
   await expect(
     page.getByRole('heading', { name: 'Einkaufsliste, 2 offen' }),
   ).toBeVisible()
@@ -57,14 +61,14 @@ test('sign in, add, check off and clean up using the keyboard only', async ({
   await page.keyboard.press('Space')
 
   await expect(milk).toBeChecked()
-  await expect(page.getByRole('listitem')).toHaveText(['Brot', 'Milch, 2 l'])
+  await expect(shownItems(page)).toHaveText(['Brot', 'Milch, 2 l'])
   await expect(page.getByRole('status')).toContainText(
     'Milch abgehakt, noch 1 offen',
   )
 
   await pressButton(page, 'Aufräumen, 1 Änderung')
 
-  await expect(page.getByRole('listitem')).toHaveText(['Brot'])
+  await expect(shownItems(page)).toHaveText(['Brot'])
   await expect(page.getByRole('status')).toContainText('Aufgeräumt, 1 offen')
   await expect(
     page.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
@@ -75,11 +79,11 @@ test('keeps the added item after a reload', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
   await addItem(page, 'Käse')
-  await expect(page.getByRole('listitem')).toHaveText(['Käse'])
+  await expect(shownItems(page)).toHaveText(['Käse'])
 
   await page.reload()
 
-  await expect(page.getByRole('listitem')).toHaveText(['Käse'])
+  await expect(shownItems(page)).toHaveText(['Käse'])
 })
 
 test('shows what the other device stored before this device ever ran', async ({
@@ -91,6 +95,6 @@ test('shows what the other device stored before this device ever ran', async ({
   await page.goto('/')
   await signIn(page)
 
-  await expect(page.getByRole('listitem')).toHaveText(['Brot', 'Milch'])
+  await expect(shownItems(page)).toHaveText(['Brot', 'Milch'])
   await expect(page.getByRole('button', { name: /Aufräumen/ })).toHaveCount(0)
 })

@@ -24,6 +24,43 @@ body {
   margin: 0 auto;
 }
 
+.pageBelowNavigation {
+  padding-top: 1rem;
+}
+
+.navigationBar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #ffffff;
+  border-bottom: 1px solid #d1d5db;
+  padding-top: env(safe-area-inset-top);
+}
+
+.navigationBar ul {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0.5rem max(1rem, env(safe-area-inset-left));
+  max-width: 40rem;
+}
+
+.navigationBar li {
+  flex: 1;
+}
+
+.navigationBar button {
+  width: 100%;
+  background-color: #ffffff;
+  color: #14532d;
+}
+
+.navigationBar button[aria-current='page'] {
+  background-color: #14532d;
+  color: #ffffff;
+}
+
 button,
 input {
   font: inherit;
