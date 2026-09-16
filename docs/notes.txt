@@ -33,6 +33,7 @@ x Gerichte-Seite
   x +-Icon oben rechts um ein Gericht hinzuzufügen
     x Dialog mit Name, Liste von Shopping-Items, Freitexfeld Zutaten, Freitextfeld Rezept
     x Wenn bereits angelegt zusätzlich Löschen-Button
+x Design Gerichte-Seite anpassen (Gericht-Butten NICHT füllen, Buttons immer gleiche Breite)
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -56,4 +57,3 @@ b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in
   "npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26"
   aufruft. Entweder in den Workflow aufnehmen (braucht ein Service-Account-Secret)
   oder wenigstens in die Freigabe-Schritte schreiben.
-- Design Gerichte-Seite anpassen (Gericht-Butten NICHT füllen, Buttons immer gleiche Breite)
