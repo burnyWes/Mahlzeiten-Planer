@@ -193,7 +193,15 @@ h2 {
 
 .mealNameButton {
   flex: 1;
+  min-width: 0;
   text-align: left;
+  overflow-wrap: anywhere;
+  background-color: #ffffff;
+  color: #14532d;
+}
+
+.mealTransferButton {
+  flex: none;
 }
 
 h1:focus-visible {
