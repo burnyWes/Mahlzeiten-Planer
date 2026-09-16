@@ -52,3 +52,10 @@ Zugriff begrenzen zwei Einstellungen:
 2. **Regeln auf den Haushalt festgenagelt** — `firestore.rules` gibt Lesen und
    Schreiben nur der einen Haushalts-UID frei. Ein fremdes Konto koennte also auch
    ohne Schritt 1 keine Daten sehen. `npm run test:rules` prueft das.
+
+   Die Regeln rollt **kein** Workflow aus. Wer eine Sammlung ergaenzt, muss sie von
+   Hand ausrollen, sonst weist die Produktion jeden Zugriff darauf ab:
+
+   ```
+   npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26
+   ```

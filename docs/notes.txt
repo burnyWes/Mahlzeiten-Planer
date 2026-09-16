@@ -50,3 +50,9 @@ b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in
   Die Zusammenführung rechnet seit MZP-002 Phase 2 mit den eigenen Schreibvorgängen,
   die Anzeige noch nicht. Der E2E-Test "sign in, add, check off and clean up" ist
   deshalb gelegentlich rot, auch schon vor Phase 2.
+- Firestore-Regeln werden nirgends automatisch ausgerollt: deploy.yml schiebt nur die
+  App nach GitHub Pages. Eine neue Sammlung ist deshalb in der Produktion so lange
+  gesperrt, bis jemand von Hand
+  "npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26"
+  aufruft. Entweder in den Workflow aufnehmen (braucht ein Service-Account-Secret)
+  oder wenigstens in die Freigabe-Schritte schreiben.
