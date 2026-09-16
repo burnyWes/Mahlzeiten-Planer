@@ -394,14 +394,14 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
 
 - [x] Vor dem Test: `npx firebase deploy --only firestore:rules --project
       mahlzeiten-planer-ecd26` ausgeführt.
-- [ ] Auf dem iPhone mit VoiceOver: "Artikel hinzufügen" öffnen, zwei Zeichen eines
+- [x] Auf dem iPhone mit VoiceOver: "Artikel hinzufügen" öffnen, zwei Zeichen eines
       bekannten Artikels tippen, nach rechts wischen — VoiceOver erreicht die Liste
       "Vorschläge" direkt nach dem Namensfeld und sagt die Anzahl.
-- [ ] Doppeltipp auf einen Vorschlag: Name steht im Feld, Fokus liegt auf "Menge".
-- [ ] Ein alter, längst abgehakter Artikel wird vorgeschlagen (Übernahme hat gegriffen).
-- [ ] Nach dem Hinzufügen eines neuen Artikels und erneutem Öffnen der Seite wird er
+- [x] Doppeltipp auf einen Vorschlag: Name steht im Feld, Fokus liegt auf "Menge".
+- [x] Ein alter, längst abgehakter Artikel wird vorgeschlagen (Übernahme hat gegriffen).
+- [x] Nach dem Hinzufügen eines neuen Artikels und erneutem Öffnen der Seite wird er
       vorgeschlagen; auf dem zweiten Gerät ebenso.
-- [ ] Im Flugmodus hinzufügen: keine Fehleransage, der Artikel steht auf der Liste.
+- [x] Im Flugmodus hinzufügen: keine Fehleransage, der Artikel steht auf der Liste.
 
 ### Phase 2: Vorschläge im Gericht-Editor
 
