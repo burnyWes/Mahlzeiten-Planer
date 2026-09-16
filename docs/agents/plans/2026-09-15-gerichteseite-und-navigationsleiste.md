@@ -30,11 +30,11 @@ vom 2026-09-15.
       Reihenfolge, Zusammensetzung und die Anzahl offener Änderungen bleiben, als wäre
       man nie weg gewesen.
 - [x] Nach einem Neustart der App ist die Einkaufsliste aktiv.
-- [ ] Wird ein Artikel hinzugefügt, dessen Name bereits offen auf der Liste steht,
+- [x] Wird ein Artikel hinzugefügt, dessen Name bereits offen auf der Liste steht,
       entsteht kein zweiter Eintrag: bei gleicher Einheit werden die Mengen addiert,
       fehlende Menge zählt als 1 ohne Einheit. Nur bei unterschiedlicher Einheit
       entstehen zwei Einträge, dann mit der heutigen Warnung.
-- [ ] Der zusammengeführte Eintrag behält seine Position in der eingefrorenen Liste.
+- [x] Der zusammengeführte Eintrag behält seine Position in der eingefrorenen Liste.
 - [ ] Die Gerichteseite zeigt alle Gerichte alphabetisch mit deutscher Sortierung, je
       Zeile den Namen als Knopf und rechts "Auf die Einkaufsliste".
 - [ ] Ein Gericht wird mit Name (Pflicht), beliebig vielen Einkaufs-Items
@@ -665,7 +665,7 @@ zweiten Eintrag mehr.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver einen Artikel hinzufügen, der bereits offen auf der
+- [x] Auf dem iPhone mit VoiceOver einen Artikel hinzufügen, der bereits offen auf der
       Liste steht: die Ansage nennt die neue Gesamtmenge, und die Liste springt nicht.
 
 ---
