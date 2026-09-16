@@ -20,31 +20,31 @@ Vorlage ist der Punkt *Beim Tippen von Items Vorschläge aus der Datenbank mache
 
 ## Akzeptanzkriterien
 
-- [ ] Ab 2 getippten Zeichen erscheinen in "Artikel hinzufügen" und im Item-Feld des
+- [x] Ab 2 getippten Zeichen erscheinen in "Artikel hinzufügen" und im Item-Feld des
       Gericht-Editors direkt unter dem Namensfeld höchstens 5 Vorschläge als Knöpfe in
       einer Liste mit dem Namen "Vorschläge".
-- [ ] Ein Name passt, wenn die Eingabe irgendwo in ihm steht; Gross-/Kleinschreibung und
+- [x] Ein Name passt, wenn die Eingabe irgendwo in ihm steht; Gross-/Kleinschreibung und
       mehrfache Leerzeichen zählen nicht.
-- [ ] Reihenfolge: Treffer am Namensanfang vor Treffern in der Mitte, dann öfter
+- [x] Reihenfolge: Treffer am Namensanfang vor Treffern in der Mitte, dann öfter
       benutzt, dann zuletzt benutzt, dann alphabetisch (`de-DE`).
-- [ ] Ein Vorschlag, der genau der Eingabe entspricht, erscheint nicht. Ohne Treffer
+- [x] Ein Vorschlag, der genau der Eingabe entspricht, erscheint nicht. Ohne Treffer
       gibt es keine Liste.
-- [ ] Ein Vorschlag übernimmt nur den Namen ins Feld und setzt den Fokus auf "Menge".
-- [ ] Beim Tippen wird nichts angesagt.
-- [ ] Vorgeschlagen werden alle Namen, die je auf die Einkaufsliste kamen, und die
+- [x] Ein Vorschlag übernimmt nur den Namen ins Feld und setzt den Fokus auf "Menge".
+- [x] Beim Tippen wird nichts angesagt.
+- [x] Vorgeschlagen werden alle Namen, die je auf die Einkaufsliste kamen, und die
       Item-Namen aller aktuell vorhandenen Gerichte.
-- [ ] Jedes Hinzufügen zur Einkaufsliste zählt den Namen um 1 hoch — auch beim
+- [x] Jedes Hinzufügen zur Einkaufsliste zählt den Namen um 1 hoch — auch beim
       Zusammenführen mit einem offenen Artikel und beim Übertragen eines Gerichts — und
       merkt sich die benutzte Schreibweise. Das gilt ohne Netz und über zwei Geräte.
-- [ ] Solange die Seite offen ist, ändern sich die Vorschläge nicht durch Abgleich von
+- [x] Solange die Seite offen ist, ändern sich die Vorschläge nicht durch Abgleich von
       aussen.
-- [ ] Meldet der Server einen leeren Katalog, übernimmt die App einmalig die gesamte
+- [x] Meldet der Server einen leeren Katalog, übernimmt die App einmalig die gesamte
       Historie aus `items`. Ohne Netz geschieht nichts.
-- [ ] Scheitert ein Schreibvorgang in den Katalog, gibt es keine Fehleransage; der
+- [x] Scheitert ein Schreibvorgang in den Katalog, gibt es keine Fehleransage; der
       Artikel steht trotzdem auf der Liste.
-- [ ] Firestore weist jeden Zugriff auf `knownItems` ab, der nicht vom Haushaltskonto
+- [x] Firestore weist jeden Zugriff auf `knownItems` ab, der nicht vom Haushaltskonto
       kommt.
-- [ ] `meals` importiert weiterhin nichts aus `shopping`.
+- [x] `meals` importiert weiterhin nichts aus `shopping`.
 
 ## Wesentliche Entscheidungen und Abwägungen
 
@@ -446,10 +446,10 @@ unter dem Feld "Item".
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: Gericht anlegen, im Feld "Item" zwei Zeichen tippen,
+- [x] Auf dem iPhone mit VoiceOver: Gericht anlegen, im Feld "Item" zwei Zeichen tippen,
       nach rechts wischen — die Liste "Vorschläge" folgt direkt; Doppeltipp übernimmt
       den Namen, Fokus liegt auf "Menge".
-- [ ] Ein Item eines Gerichts, das noch nie eingekauft wurde, wird in "Artikel
+- [x] Ein Item eines Gerichts, das noch nie eingekauft wurde, wird in "Artikel
       hinzufügen" vorgeschlagen.
 
 ## Notizen zur Umsetzung
