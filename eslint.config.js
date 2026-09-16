@@ -16,6 +16,29 @@ const forbiddenInDomain = [
   '../../api/*',
 ]
 
+const contexts = [
+  { name: 'shopping', other: 'meals' },
+  { name: 'meals', other: 'shopping' },
+]
+
+const contextBoundaries = contexts.flatMap(({ name, other }) => [
+  {
+    files: [`src/${name}/**/*.{ts,tsx}`],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [`**/${other}/**`] }],
+    },
+  },
+  {
+    files: [`src/${name}/domain/**/*.ts`],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [...forbiddenInDomain, `**/${other}/**`] },
+      ],
+    },
+  },
+])
+
 export default tseslint.config(
   {
     ignores: [
@@ -44,6 +67,7 @@ export default tseslint.config(
       'no-restricted-imports': ['error', { patterns: forbiddenInDomain }],
     },
   },
+  ...contextBoundaries,
   {
     files: ['e2e/**/*.ts', 'scripts/**/*.mjs', '*.config.ts', 'test/**/*.ts'],
     languageOptions: {

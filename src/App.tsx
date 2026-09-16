@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { MealsClient } from './meals/api/mealsClient'
 import { SignedInApp } from './SignedInApp'
 import { AppUpdateOffer } from './shared/appUpdate/AppUpdateOffer'
 import type { AppUpdateClient } from './shared/appUpdate/appUpdateClient'
@@ -16,6 +17,7 @@ type AppProps = {
   createShoppingListClient: (
     onWriteFailure: (message: string) => void,
   ) => ShoppingListClient
+  createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
   appUpdateClient: AppUpdateClient
   storageWarning?: string
 }
@@ -23,6 +25,7 @@ type AppProps = {
 export function App({
   authClient,
   createShoppingListClient,
+  createMealsClient,
   appUpdateClient,
   storageWarning = '',
 }: AppProps) {
@@ -45,6 +48,7 @@ export function App({
       {session.status === 'signedIn' && (
         <SignedInApp
           createShoppingListClient={createShoppingListClient}
+          createMealsClient={createMealsClient}
           announce={announce}
         />
       )}

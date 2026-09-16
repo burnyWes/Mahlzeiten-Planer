@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { App } from './App'
 import { createInMemoryAppUpdateClient } from './shared/appUpdate/inMemoryAppUpdateClient'
+import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
 
@@ -18,6 +19,7 @@ function renderApp(storageWarning?: string) {
     <App
       authClient={createInMemoryAuthClient(household)}
       createShoppingListClient={() => createInMemoryShoppingListClient()}
+      createMealsClient={() => createInMemoryMealsClient()}
       appUpdateClient={appUpdateClient}
       storageWarning={storageWarning}
     />,

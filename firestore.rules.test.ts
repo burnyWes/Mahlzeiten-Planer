@@ -36,12 +36,25 @@ beforeEach(async () => {
   await testEnvironment.clearFirestore()
 })
 
-function itemsOf(uid: string | null) {
-  const context =
-    uid === null
-      ? testEnvironment.unauthenticatedContext()
-      : testEnvironment.authenticatedContext(uid)
-  return (itemId: string) => doc(context.firestore(), 'items', itemId)
+function collectionOf(collectionName: string) {
+  return (uid: string | null) => {
+    const context =
+      uid === null
+        ? testEnvironment.unauthenticatedContext()
+        : testEnvironment.authenticatedContext(uid)
+    return (documentId: string) =>
+      doc(context.firestore(), collectionName, documentId)
+  }
+}
+
+const itemsOf = collectionOf('items')
+const mealsOf = collectionOf('meals')
+
+const bolognese = {
+  name: 'Spaghetti Bolognese',
+  items: [],
+  ingredientNotes: '',
+  recipe: '',
 }
 
 describe('firestore security rules', () => {
@@ -69,7 +82,25 @@ describe('firestore security rules', () => {
     await assertFails(setDoc(itemsOf(null)('bread'), { name: 'Brot' }))
   })
 
-  it('refuses the household outside the items collection', async () => {
+  it('lets the household write a meal', async () => {
+    await assertSucceeds(setDoc(mealsOf(householdUid)('bolognese'), bolognese))
+  })
+
+  it('lets the household read a meal', async () => {
+    await assertSucceeds(getDoc(mealsOf(householdUid)('bolognese')))
+  })
+
+  it('refuses another account on the meals', async () => {
+    await assertFails(getDoc(mealsOf(strangerUid)('bolognese')))
+    await assertFails(setDoc(mealsOf(strangerUid)('bolognese'), bolognese))
+  })
+
+  it('refuses an unauthenticated visitor on the meals', async () => {
+    await assertFails(getDoc(mealsOf(null)('bolognese')))
+    await assertFails(setDoc(mealsOf(null)('bolognese'), bolognese))
+  })
+
+  it('refuses the household outside the released collections', async () => {
     const context = testEnvironment.authenticatedContext(householdUid)
 
     await assertFails(

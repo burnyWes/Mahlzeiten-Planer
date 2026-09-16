@@ -10,6 +10,10 @@ service cloud.firestore {
       allow read, write: if isHousehold();
     }
 
+    match /meals/{mealId} {
+      allow read, write: if isHousehold();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

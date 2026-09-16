@@ -35,19 +35,19 @@ vom 2026-09-15.
       fehlende Menge zählt als 1 ohne Einheit. Nur bei unterschiedlicher Einheit
       entstehen zwei Einträge, dann mit der heutigen Warnung.
 - [x] Der zusammengeführte Eintrag behält seine Position in der eingefrorenen Liste.
-- [ ] Die Gerichteseite zeigt alle Gerichte alphabetisch mit deutscher Sortierung, je
+- [x] Die Gerichteseite zeigt alle Gerichte alphabetisch mit deutscher Sortierung, je
       Zeile den Namen als Knopf und rechts "Auf die Einkaufsliste".
-- [ ] Ein Gericht wird mit Name (Pflicht), beliebig vielen Einkaufs-Items
+- [x] Ein Gericht wird mit Name (Pflicht), beliebig vielen Einkaufs-Items
       (Name/Menge/Einheit), Freitext Zutaten und Freitext Rezept angelegt.
-- [ ] Die Ansichtsseite gibt Zutaten und Rezept als normalen Text aus, in Absätzen, die
+- [x] Die Ansichtsseite gibt Zutaten und Rezept als normalen Text aus, in Absätzen, die
       VoiceOver einzeln erreicht.
 - [ ] Löschen führt über eine eigene Bestätigungsseite; Abbrechen kehrt zur Ansicht
       zurück, Löschen zur Gerichteliste.
 - [ ] "Auf die Einkaufsliste" überträgt alle Items des Gerichts, hängt sie sofort an die
       eingefrorene Liste an und fasst das Ergebnis in einer Ansage zusammen.
-- [ ] Firestore weist jeden Zugriff auf die Gerichte ab, der nicht vom Haushaltskonto
+- [x] Firestore weist jeden Zugriff auf die Gerichte ab, der nicht vom Haushaltskonto
       kommt.
-- [ ] Kein Kontext importiert aus einem anderen Kontext; ESLint erzwingt das und ein Test
+- [x] Kein Kontext importiert aus einem anderen Kontext; ESLint erzwingt das und ein Test
       prüft die Regel.
 - [ ] Ohne Netz sind Anlegen, Ändern, Löschen und Übertragen unverändert möglich.
 
@@ -661,7 +661,7 @@ zweiten Eintrag mehr.
 - [x] `npm run lint` — insbesondere bleibt `shared/domain/quantity.ts` frei von React-
       und Firebase-Importen.
 - [x] `npm run test:e2e` — der neue Zusammenführungs-Durchlauf ist grün.
-- [ ] `npm run build` läuft durch.
+- [x] `npm run build` läuft durch.
 
 **Manuelle Verifikation**:
 
@@ -679,7 +679,7 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
 
 **Aufgaben**:
 
-- [ ] `eslint.config.js` um die Kontextgrenze erweitern. Achtung: ESLint-Flat-Config
+- [x] `eslint.config.js` um die Kontextgrenze erweitern. Achtung: ESLint-Flat-Config
       **ersetzt** einen Regeleintrag, der in einem späteren Block erneut vorkommt. Ein
       eigener Block für `src/<kontext>/**` würde die Domänen-Muster für
       `src/<kontext>/domain/**` also stillschweigend aushebeln. Deshalb werden die Muster
@@ -710,7 +710,7 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
   ])
   ```
 
-- [ ] `test/domainLayerBoundary.test.ts` erweitern:
+- [x] `test/domainLayerBoundary.test.ts` erweitern:
   - verbietet einen Import aus `meals` in einer Datei unter `src/shopping/`
   - verbietet einen Import aus `shopping` in einer Datei unter `src/meals/`
   - verbietet weiterhin `react` in `src/meals/domain/`
@@ -718,7 +718,7 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
     `src/meals/domain/` — dieser Fall sichert ab, dass die neuen Muster den geteilten
     Wert nicht versehentlich mit abschneiden
 
-- [ ] `src/meals/domain/meal.test.ts` zuerst, dann `src/meals/domain/meal.ts`:
+- [x] `src/meals/domain/meal.test.ts` zuerst, dann `src/meals/domain/meal.ts`:
 
   ```ts
   export type MealId = string
@@ -747,16 +747,16 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
   5000 Zeichen. `byName` sortiert mit `localeCompare('de-DE')`. `createMealItem` nutzt
   `readQuantity` aus `shared/domain`.
 
-- [ ] `src/meals/domain/text.test.ts` zuerst, dann `src/meals/domain/text.ts` mit
+- [x] `src/meals/domain/text.test.ts` zuerst, dann `src/meals/domain/text.ts` mit
       `paragraphsOf(text)`: zerlegt Freitext in Absätze, verwirft Leerzeilen und
       umschliessende Leerzeichen. Grundlage der Ansichtsseite.
 
-- [ ] `src/meals/domain/announcements.test.ts` zuerst, dann
+- [x] `src/meals/domain/announcements.test.ts` zuerst, dann
       `src/meals/domain/announcements.ts` mit `mealsHeading`, `invalidMealMessage`,
       `mealItemAddedAnnouncement`, `mealItemRemovedAnnouncement`, `mealSavedAnnouncement`,
       `mealWithoutItemsAnnouncement`.
 
-- [ ] `src/meals/api/mealsClient.ts`:
+- [x] `src/meals/api/mealsClient.ts`:
 
   ```ts
   export interface MealsClient {
@@ -767,16 +767,16 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
   }
   ```
 
-- [ ] `src/meals/api/inMemoryMealsClient.ts` nach dem Vorbild von
+- [x] `src/meals/api/inMemoryMealsClient.ts` nach dem Vorbild von
       `inMemoryShoppingListClient.ts`, mit `storedMeals()` und
       `mealsArriveFromElsewhere()` für die Tests.
 
-- [ ] `src/meals/api/firestoreMealsClient.ts` — ein `onSnapshot` über die Sammlung
+- [x] `src/meals/api/firestoreMealsClient.ts` — ein `onSnapshot` über die Sammlung
       `meals`, defensives Einlesen der Dokumente wie in
       `firestoreShoppingListClient.ts:20-40`, Schreiben im Hintergrund mit
       `onWriteFailure`.
 
-- [ ] `firestore.rules` um die Sammlung ergänzen:
+- [x] `firestore.rules` um die Sammlung ergänzen:
 
   ```
   match /meals/{mealId} {
@@ -784,13 +784,13 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
   }
   ```
 
-- [ ] `firestore.rules.test.ts` erweitern: Haushalt darf ein Gericht schreiben und lesen,
+- [x] `firestore.rules.test.ts` erweitern: Haushalt darf ein Gericht schreiben und lesen,
       ein fremdes Konto und ein nicht angemeldeter Besucher werden abgewiesen.
 
-- [ ] `src/meals/ui/useMeals.ts` — abonniert den Client, gibt `meals` (über `byName`
+- [x] `src/meals/ui/useMeals.ts` — abonniert den Client, gibt `meals` (über `byName`
       sortiert), `addMeal`, `changeMeal` und `removeMeal` zurück.
 
-- [ ] `src/meals/ui/MealsArea.tsx` vom Platzhalter zur Seitensteuerung ausbauen:
+- [x] `src/meals/ui/MealsArea.tsx` vom Platzhalter zur Seitensteuerung ausbauen:
 
   ```ts
   type MealsPage =
@@ -802,67 +802,67 @@ Kontextgrenze — und liefert Liste, Formular zum Anlegen und Ansichtsseite.
 
   In dieser Phase entstehen `list`, `form` mit `id: null` und `meal`.
 
-- [ ] `src/meals/ui/MealListPage.tsx` — `navigation`-Slot, `h1` über `useHeadingFocus`
+- [x] `src/meals/ui/MealListPage.tsx` — `navigation`-Slot, `h1` über `useHeadingFocus`
       mit `mealsHeading(count)`, Knopf "Gericht hinzufügen" (`+`) wie in
       `ShoppingListPage.tsx:36-43`, Liste aus `MealListRow`. Leerfall: "Noch keine
       Gerichte.".
 
-- [ ] `src/meals/ui/MealListRow.tsx` — der Name ist ein Knopf, der die Ansichtsseite
+- [x] `src/meals/ui/MealListRow.tsx` — der Name ist ein Knopf, der die Ansichtsseite
       öffnet. Der Übertragungsknopf folgt in Phase 5.
 
-- [ ] `src/meals/ui/MealItemsEditor.tsx` — die erfassten Items als Liste mit je einem
+- [x] `src/meals/ui/MealItemsEditor.tsx` — die erfassten Items als Liste mit je einem
       Knopf `aria-label={'Entfernen, ' + formatMealItem(item)}`, darunter die drei Felder
       Name, Menge, Einheit und der Knopf "Item hinzufügen". Nach dem Übernehmen werden die
       Felder geleert und der Fokus kehrt auf das Namensfeld zurück — dasselbe Muster wie
       `AddItemPage.tsx:36-38`. Die Einheiten kommen aus `UNITS` über eine `datalist`.
 
-- [ ] `src/meals/ui/MealFormPage.tsx` — Zurück-Knopf, `h1` "Gericht anlegen",
+- [x] `src/meals/ui/MealFormPage.tsx` — Zurück-Knopf, `h1` "Gericht anlegen",
       Namensfeld, `MealItemsEditor`, zwei `textarea` für Zutaten und Rezept, Knopf
       "Speichern". Fehler erscheinen wie in `AddItemPage` in einem über
       `aria-describedby` verbundenen Absatz. Die Items leben bis zum Speichern im
       lokalen Zustand.
 
-- [ ] `src/meals/ui/MealPage.tsx` — Zurück-Knopf, `h1` mit dem Namen über
+- [x] `src/meals/ui/MealPage.tsx` — Zurück-Knopf, `h1` mit dem Namen über
       `useHeadingFocus`, Abschnitt "Einkaufs-Items, N" als Liste, Abschnitte "Zutaten"
       und "Rezept" als Absätze aus `paragraphsOf`. Leere Abschnitte werden ganz
       weggelassen, damit VoiceOver nicht an leeren Überschriften vorbeiwischt.
 
-- [ ] Nach dem Speichern führt der Weg auf die Ansichtsseite des Gerichts, der Fokus
+- [x] Nach dem Speichern führt der Weg auf die Ansichtsseite des Gerichts, der Fokus
       liegt auf dessen `h1`, die Ansage bestätigt das Speichern.
 
-- [ ] `src/SignedInApp.tsx`: `useMeals` aufrufen und `MealsArea` versorgen. `src/App.tsx`
+- [x] `src/SignedInApp.tsx`: `useMeals` aufrufen und `MealsArea` versorgen. `src/App.tsx`
       bekommt die Prop `createMealsClient` und reicht sie durch, `src/main.tsx` verdrahtet
       `createFirestoreMealsClient`, und `src/App.test.tsx` versorgt die neue Prop mit
       `createInMemoryMealsClient` — sonst schlägt die Typprüfung im Build fehl.
 
-- [ ] `src/index.css`: Gerichtezeile (Name links, Platz für den Knopf rechts),
+- [x] `src/index.css`: Gerichtezeile (Name links, Platz für den Knopf rechts),
       `textarea` auf `font: inherit` und ausreichende Höhe, Abstände der Abschnitte.
       `textarea` in die bestehende Regel für `button, input` aufnehmen.
 
-- [ ] `src/meals/ui/MealsArea.test.tsx` — Gericht anlegen und in der Liste sehen,
+- [x] `src/meals/ui/MealsArea.test.tsx` — Gericht anlegen und in der Liste sehen,
       alphabetische Sortierung mit Umlaut, Pflichtfeld Name meldet einen Fehler, Items
       übernehmen und entfernen, Ansichtsseite zeigt Absätze, leere Abschnitte fehlen,
       `accessibilityViolations` ist auf jeder Seite leer.
 
-- [ ] `.claude/projekt.md`: den Kontext ergänzen.
+- [x] `.claude/projekt.md`: den Kontext ergänzen.
 
   ```
   - **meals** — die Gerichte des Haushalts: anlegen, nachschlagen und auf die
     Einkaufsliste übertragen.
   ```
 
-- [ ] `README.md`: den überholten Satz "Ein Stack ist noch nicht festgelegt, es existiert
+- [x] `README.md`: den überholten Satz "Ein Stack ist noch nicht festgelegt, es existiert
       noch kein Quellcode." entfernen — er stand schon vor diesem Vorhaben falsch da und
       wird beim Bearbeiten der Projektunterlagen mit erledigt.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — Domänentests von `meals`, `MealsArea.test.tsx` und die
+- [x] `npm run test` — Domänentests von `meals`, `MealsArea.test.tsx` und die
       erweiterten Tests in `test/domainLayerBoundary.test.ts` laufen grün.
-- [ ] `npm run test:rules` — die Regeln für `meals` sind grün, der Zugriff Fremder wird
+- [x] `npm run test:rules` — die Regeln für `meals` sind grün, der Zugriff Fremder wird
       abgewiesen.
-- [ ] `npm run lint` — kein Querimport zwischen den Kontexten.
-- [ ] `npm run build` läuft durch.
+- [x] `npm run lint` — kein Querimport zwischen den Kontexten.
+- [x] `npm run build` läuft durch.
 
 **Manuelle Verifikation**:
 
@@ -1003,6 +1003,28 @@ Der Knopf aus `notes.txt` schliesst die beiden Kontexte zusammen.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+### Phase 3
+
+- **Das Formular des Gerichts ist kein `<form>`.** HTML erlaubt keine geschachtelten
+  Formulare, der Item-Editor sitzt aber mitten im Gericht. Gelöst ist das umgekehrt:
+  der Item-Editor ist das einzige `<form>` der Seite (`aria-label="Einkaufs-Item
+  hinzufügen"`), das Gericht wird über den Knopf "Speichern" gesichert. Dadurch legt
+  die Eingabetaste im Item-Bereich ein Item an und speichert nicht versehentlich das
+  halbe Gericht. Der Fehlerabsatz hängt über `aria-describedby` am Speichern-Knopf.
+- **Das Namensfeld des Items heißt "Item", nicht "Name".** Zwei Felder mit dem Label
+  "Name" auf einer Seite sind unter VoiceOver nicht auseinanderzuhalten; die
+  Ortsangabe durch die Überschrift geht beim Wischen verloren.
+- **Zwei Ansagen mehr als geplant:** `mealItemsHeading` für die Überschrift
+  "Einkaufs-Items, N" — sie zählt und gehört damit zur Domäne, nicht in die
+  Komponente — und `mealFailureMessage` als Gegenstück zu `additionFailureMessage`,
+  weil auch im Gerichteformular `InvalidMeal` und `InvalidQuantity` zusammentreffen.
+- **`mealsArriveFromElsewhere` ersetzt den Bestand**, statt wie
+  `itemsArriveFromElsewhere` anzuhängen. Phase 4 braucht den Fall, dass das zweite
+  Gerät ein Gericht *entfernt*.
+- **Der Rückfall auf die Liste bei verschwundenem Gericht** (Plan: Phase 4) steckt
+  schon in `MealsArea`, weil die Ansichtsseite sonst kein Gericht zum Rendern hätte.
+  Die Tests dazu folgen in Phase 4.
 
 ## Verweise
 

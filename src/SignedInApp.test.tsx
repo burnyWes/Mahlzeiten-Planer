@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
+import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { SignedInApp } from './SignedInApp'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
 import type { ShoppingItem } from './shopping/domain/shoppingItem'
@@ -13,7 +14,11 @@ function openItem(id: string, name: string, createdAt: number): ShoppingItem {
 function renderSignedInApp(initialItems: readonly ShoppingItem[] = []) {
   const client = createInMemoryShoppingListClient(initialItems)
   const rendered = render(
-    <SignedInApp createShoppingListClient={() => client} announce={() => {}} />,
+    <SignedInApp
+      createShoppingListClient={() => client}
+      createMealsClient={() => createInMemoryMealsClient()}
+      announce={() => {}}
+    />,
   )
   return { client, rendered }
 }

@@ -2,8 +2,6 @@
 
 Private Anwendung zur Planung von Mahlzeiten.
 
-Ein Stack ist noch nicht festgelegt, es existiert noch kein Quellcode.
-
 ## Arbeitsweise
 
 Die Dauerregeln stehen in [CLAUDE.md](CLAUDE.md), die projektspezifischen Angaben in

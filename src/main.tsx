@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App.tsx'
+import { createFirestoreMealsClient } from './meals/api/firestoreMealsClient.ts'
 import { createServiceWorkerAppUpdateClient } from './shared/appUpdate/serviceWorkerAppUpdateClient.ts'
 import { auth, firestore, storageWarning } from './shared/auth/firebase.ts'
 import { createFirebaseAuthClient } from './shared/auth/firebaseAuthClient.ts'
@@ -12,6 +13,9 @@ const sessionStartedAt = Date.now()
 const openShoppingList = (onWriteFailure: (message: string) => void) =>
   createFirestoreShoppingListClient(firestore, sessionStartedAt, onWriteFailure)
 
+const openMeals = (onWriteFailure: (message: string) => void) =>
+  createFirestoreMealsClient(firestore, onWriteFailure)
+
 const appUpdateClient = createServiceWorkerAppUpdateClient()
 
 createRoot(document.getElementById('root')!).render(
@@ -19,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
     <App
       authClient={createFirebaseAuthClient(auth)}
       createShoppingListClient={openShoppingList}
+      createMealsClient={openMeals}
       appUpdateClient={appUpdateClient}
       storageWarning={storageWarning}
     />

@@ -62,7 +62,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
   min-height: 44px;
 }
@@ -79,10 +80,15 @@ input {
   margin: 0 0 1rem;
 }
 
-input {
+input,
+textarea {
   border: 1px solid #4b5563;
   border-radius: 6px;
   padding: 0.5rem;
+}
+
+textarea {
+  resize: vertical;
 }
 
 button {
@@ -164,6 +170,24 @@ button:disabled {
 
 .itemCheckedOff span {
   text-decoration: line-through;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.mealRow,
+.mealItemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mealNameButton {
+  flex: 1;
+  text-align: left;
 }
 
 h1:focus-visible {
