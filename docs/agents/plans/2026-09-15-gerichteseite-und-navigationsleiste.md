@@ -43,7 +43,7 @@ vom 2026-09-15.
       VoiceOver einzeln erreicht.
 - [x] Löschen führt über eine eigene Bestätigungsseite; Abbrechen kehrt zur Ansicht
       zurück, Löschen zur Gerichteliste.
-- [ ] "Auf die Einkaufsliste" überträgt alle Items des Gerichts, hängt sie sofort an die
+- [x] "Auf die Einkaufsliste" überträgt alle Items des Gerichts, hängt sie sofort an die
       eingefrorene Liste an und fasst das Ergebnis in einer Ansage zusammen.
 - [x] Firestore weist jeden Zugriff auf die Gerichte ab, der nicht vom Haushaltskonto
       kommt.
@@ -924,7 +924,7 @@ Der Knopf aus `notes.txt` schliesst die beiden Kontexte zusammen.
 
 **Aufgaben**:
 
-- [ ] `src/shopping/ui/useShoppingList.ts` um `addItems(newItems)` erweitern: plant alle
+- [x] `src/shopping/ui/useShoppingList.ts` um `addItems(newItems)` erweitern: plant alle
       Ergänzungen mit `planAdditions` gegen denselben Bestand, führt sie aus, hängt jede
       betroffene Id an die eingefrorene Reihenfolge an und gibt eine Zusammenfassung
       zurück.
@@ -937,12 +937,12 @@ Der Knopf aus `notes.txt` schliesst die beiden Kontexte zusammen.
   }
   ```
 
-- [ ] `additionsAnnouncement(summary)` in `shopping/domain/announcements.ts` mit Tests:
+- [x] `additionsAnnouncement(summary)` in `shopping/domain/announcements.ts` mit Tests:
       "3 Artikel hinzugefügt.", zusätzlich "1 zusammengefasst." und je Konflikt "Achtung,
       Milch steht mit anderer Einheit bereits offen.". Die Funktion kennt kein Gericht —
       den Namen setzt die Kompositionswurzel davor.
 
-- [ ] `src/SignedInApp.tsx`: `addMealToShoppingList(meal)` übersetzt `MealItem` nach
+- [x] `src/SignedInApp.tsx`: `addMealToShoppingList(meal)` übersetzt `MealItem` nach
       `NewShoppingItem` (Name, Menge, `createdAt: Date.now()`), ruft `addItems` und setzt
       die Ansage zusammen:
 
@@ -955,41 +955,41 @@ Der Knopf aus `notes.txt` schliesst die beiden Kontexte zusammen.
   angesagt und nichts geschrieben. Diese Datei ist der einzige Ort, an dem beide
   Kontexte zusammentreffen — die ESLint-Kontextgrenze greift hier bewusst nicht.
 
-- [ ] `MealsArea` bekommt die Prop `onAddToShoppingList: (meal: Meal) => void` und reicht
+- [x] `MealsArea` bekommt die Prop `onAddToShoppingList: (meal: Meal) => void` und reicht
       sie an `MealListRow` und `MealPage` durch. Der Typ nennt nur `Meal`, also keinen
       Begriff aus `shopping`.
 
-- [ ] Knopf in `MealListRow` und auf `MealPage`: sichtbarer Text "Auf die Einkaufsliste",
+- [x] Knopf in `MealListRow` und auf `MealPage`: sichtbarer Text "Auf die Einkaufsliste",
       in der Zeile zusätzlich
       `aria-label={'Auf die Einkaufsliste, ' + meal.name}`, damit VoiceOver die Zeilen
       auseinanderhalten kann und die Sprachsteuerung den sichtbaren Text weiterhin trifft.
 
-- [ ] Nach der Übertragung bleibt die Ansicht stehen; der Bereich wechselt nicht.
+- [x] Nach der Übertragung bleibt die Ansicht stehen; der Bereich wechselt nicht.
 
-- [ ] `src/shopping/domain/addition.test.ts` um `planAdditions` erweitern: zwei gleiche
+- [x] `src/shopping/domain/addition.test.ts` um `planAdditions` erweitern: zwei gleiche
       Items einer Übertragung fallen zu einem zusammen; ein Item mit anderer Einheit
       bleibt daneben stehen.
 
-- [ ] `src/SignedInApp.test.tsx`: ein Gericht übertragen, in die Einkaufsliste wechseln
+- [x] `src/SignedInApp.test.tsx`: ein Gericht übertragen, in die Einkaufsliste wechseln
       und die Artikel am Ende der Liste vorfinden; dasselbe Gericht ein zweites Mal
       übertragen und prüfen, dass die Zeilenzahl gleich bleibt und die Mengen summiert
       sind; die Sammelansage prüfen; ein Gericht ohne Items meldet das und schreibt
       nichts.
 
-- [ ] `e2e/shoppingList.spec.ts` (oder eine neue Datei `e2e/meals.spec.ts`): ein Gericht
+- [x] `e2e/shoppingList.spec.ts` (oder eine neue Datei `e2e/meals.spec.ts`): ein Gericht
       anlegen, übertragen und die Artikel auf der Einkaufsliste wiederfinden — nur mit der
       Tastatur, wie die bestehenden Abläufe.
 
-- [ ] `docs/notes.txt`: den Punkt "Gerichte-Seite" samt Unterpunkten auf `x` setzen und
+- [x] `docs/notes.txt`: den Punkt "Gerichte-Seite" samt Unterpunkten auf `x` setzen und
       nach DONE verschieben.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — Übertragung, Zusammenfassung und Sammelansage sind grün.
-- [ ] `npm run test:e2e` — der Durchlauf von der Gerichteseite auf die Einkaufsliste ist
+- [x] `npm run test` — Übertragung, Zusammenfassung und Sammelansage sind grün.
+- [x] `npm run test:e2e` — der Durchlauf von der Gerichteseite auf die Einkaufsliste ist
       grün.
-- [ ] `npm run test:rules` bleibt grün.
-- [ ] `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:rules` bleibt grün.
+- [x] `npm run lint` und `npm run build` laufen durch.
 
 **Manuelle Verifikation**:
 
@@ -1041,6 +1041,31 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
 - **Der Fokus bleibt im Formular auf dem Namensfeld**, auch beim Bearbeiten. Das ist
   das Verhalten aus Phase 3; die Überschrift "Gericht bearbeiten" wird dabei nicht
   vorgelesen, das vorbelegte Namensfeld aber schon.
+
+### Phase 5
+
+- **`planAdditions` und seine Tests gab es schon.** Sie entstanden als Nachtrag in
+  Phase 2, weil `planAddition` damals ohnehin angefasst wurde. Neu ist nur
+  `summarizeAdditions`: es zählt die Ergebnisse einer Übertragung aus und hält damit
+  die Zählregel in der Domäne statt im Hook.
+- **Der Plan nennt `AdditionsSummary` beim Hook, der Typ liegt aber in
+  `shopping/domain/addition.ts`.** Sonst müsste `announcements.ts` einen Typ aus
+  `ui/` importieren — genau die Kante, die die Domänengrenze verbietet.
+- **`firstFrozenOrder` als Nachtrag.** Der E2E-Durchlauf der Übertragung war rot: die
+  Artikel standen in umgekehrter Reihenfolge auf der Liste. Ursache ist das Einfrieren
+  beim ersten Snapshot (`useShoppingList.ts:53-56`) — es ersetzte die Reihenfolge und
+  warf damit weg, was dieses Gerät vorher angehängt hatte. Gegen Firestore trifft die
+  erste Momentaufnahme erst nach dem Anlegen des Gerichts ein, und `nextFrozenOrder`
+  sortierte die beiden Artikel mit gleichem `createdAt` nach der zufälligen
+  Firestore-Id. `firstFrozenOrder` stellt die ankommenden Artikel jetzt **vor** die
+  bereits angehängten, statt sie zu überschreiben.
+- **Alle Artikel einer Übertragung tragen dasselbe `createdAt`** (so der Plan). Ihre
+  Reihenfolge untereinander hält die eingefrorene Liste; nach einem "Aufräumen" ordnet
+  `inCreationOrder` sie nach der Firestore-Id, also beliebig. Sie bleiben dabei
+  beieinander, nur ihre innere Reihenfolge ist dann nicht mehr die des Gerichts.
+- **Die E2E-Helfer liegen jetzt in `e2e/keyboard.ts`** und treffen Knöpfe und Felder
+  exakt (`exact: true`). Ohne das kollidiert der Name des Navigationsknopfes
+  "Einkaufsliste" mit "Auf die Einkaufsliste, <Gericht>".
 
 ## Verweise
 

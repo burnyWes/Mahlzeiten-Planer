@@ -3,9 +3,14 @@ import type { Meal } from '../domain/meal'
 type MealListRowProps = {
   meal: Meal
   onOpenMeal: (meal: Meal) => void
+  onAddToShoppingList: (meal: Meal) => void
 }
 
-export function MealListRow({ meal, onOpenMeal }: MealListRowProps) {
+export function MealListRow({
+  meal,
+  onOpenMeal,
+  onAddToShoppingList,
+}: MealListRowProps) {
   return (
     <li className="mealRow">
       <button
@@ -14,6 +19,13 @@ export function MealListRow({ meal, onOpenMeal }: MealListRowProps) {
         onClick={() => onOpenMeal(meal)}
       >
         {meal.name}
+      </button>
+      <button
+        type="button"
+        onClick={() => onAddToShoppingList(meal)}
+        aria-label={`Auf die Einkaufsliste, ${meal.name}`}
+      >
+        Auf die Einkaufsliste
       </button>
     </li>
   )

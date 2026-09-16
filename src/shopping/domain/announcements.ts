@@ -3,7 +3,7 @@ import {
   InvalidQuantity,
   invalidQuantityMessage,
 } from '../../shared/domain/quantity'
-import type { AdditionOutcome } from './addition'
+import type { AdditionOutcome, AdditionsSummary } from './addition'
 import {
   formatItemForAnnouncement,
   InvalidShoppingItem,
@@ -34,6 +34,19 @@ export function additionAnnouncement(outcome: AdditionOutcome): string {
   if (outcome.kind === 'mergedInto')
     return `${confirmation} Stand bereits offen, jetzt ${formatQuantity(outcome.quantity)}.`
   return `${confirmation} Achtung, ${outcome.open.name} steht bereits offen auf der Liste.`
+}
+
+export function additionsAnnouncement(summary: AdditionsSummary): string {
+  const merged =
+    summary.merged > 0 ? [`${summary.merged} zusammengefasst.`] : []
+  const conflicts = summary.differentUnit.map(
+    (name) => `Achtung, ${name} steht mit anderer Einheit bereits offen.`,
+  )
+  return [
+    `${summary.added} Artikel hinzugefügt.`,
+    ...merged,
+    ...conflicts,
+  ].join(' ')
 }
 
 export function listHeading(openCount: number): string {

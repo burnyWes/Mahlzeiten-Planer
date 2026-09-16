@@ -1,33 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
-import {
-  household,
-  prepareEmulators,
-  storeItemOnServer,
-} from './emulatorHousehold.ts'
+import { prepareEmulators, storeItemOnServer } from './emulatorHousehold.ts'
+import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
 
 test.beforeEach(async () => {
   await prepareEmulators()
 })
-
-async function typeInto(page: Page, label: string, text: string) {
-  await page.getByLabel(label).focus()
-  await page.keyboard.type(text)
-}
-
-async function pressButton(page: Page, name: string) {
-  await page.getByRole('button', { name }).focus()
-  await page.keyboard.press('Enter')
-}
-
-function shownItems(page: Page) {
-  return page.getByRole('main').getByRole('listitem')
-}
-
-async function signIn(page: Page) {
-  await typeInto(page, 'E-Mail', household.email)
-  await typeInto(page, 'Passwort', household.password)
-  await pressButton(page, 'Anmelden')
-}
 
 async function addItem(page: Page, name: string, amount = '', unit = '') {
   await pressButton(page, 'Artikel hinzufügen')

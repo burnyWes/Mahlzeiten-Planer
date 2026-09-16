@@ -15,14 +15,20 @@ function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
 type MealsAreaUnderTestProps = {
   client: MealsClient
   announce: (text: string) => void
+  onAddToShoppingList: (meal: Meal) => void
 }
 
-function MealsAreaUnderTest({ client, announce }: MealsAreaUnderTestProps) {
+function MealsAreaUnderTest({
+  client,
+  announce,
+  onAddToShoppingList,
+}: MealsAreaUnderTestProps) {
   return (
     <MealsArea
       meals={useMeals(client)}
       announce={announce}
       navigation={<div data-testid="navigation" />}
+      onAddToShoppingList={onAddToShoppingList}
     />
   )
 }
@@ -30,15 +36,19 @@ function MealsAreaUnderTest({ client, announce }: MealsAreaUnderTestProps) {
 function renderMealsArea(initialMeals: readonly Meal[] = []) {
   const client = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
+  const transferred: Meal[] = []
   const rendered = render(
     <MealsAreaUnderTest
       client={client}
       announce={(text) => {
         announcements.push(text)
       }}
+      onAddToShoppingList={(meal) => {
+        transferred.push(meal)
+      }}
     />,
   )
-  return { client, announcements, rendered }
+  return { client, announcements, transferred, rendered }
 }
 
 function openMealForm() {
@@ -102,7 +112,7 @@ function save() {
 function shownMealNames() {
   return within(screen.getByRole('main'))
     .getAllByRole('listitem')
-    .map((row) => row.textContent)
+    .map((row) => within(row).getAllByRole('button')[0].textContent)
 }
 
 describe('MealsArea', () => {
@@ -406,6 +416,30 @@ describe('MealsArea', () => {
 
     expect(
       screen.getByRole('heading', { name: 'Gerichte, keine' }),
+    ).toBeInTheDocument()
+  })
+
+  it('hands the meal of a row over for the transfer', async () => {
+    const { transferred } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Auf die Einkaufsliste, Suppe' }),
+    )
+
+    expect(transferred).toEqual([meal('soup', 'Suppe')])
+  })
+
+  it('hands the shown meal over for the transfer and stays on it', async () => {
+    const { transferred } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
+    )
+
+    expect(transferred).toEqual([meal('soup', 'Suppe')])
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Suppe' }),
     ).toBeInTheDocument()
   })
 

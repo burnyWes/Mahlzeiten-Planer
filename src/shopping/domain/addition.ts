@@ -76,3 +76,21 @@ export function planAdditions(
     return outcome
   })
 }
+
+export type AdditionsSummary = {
+  added: number
+  merged: number
+  differentUnit: readonly string[]
+}
+
+export function summarizeAdditions(
+  outcomes: readonly AdditionOutcome[],
+): AdditionsSummary {
+  return {
+    added: outcomes.length,
+    merged: outcomes.filter((outcome) => outcome.kind === 'mergedInto').length,
+    differentUnit: outcomes
+      .filter((outcome) => outcome.kind === 'besideDifferentUnit')
+      .map((outcome) => outcome.open.name),
+  }
+}

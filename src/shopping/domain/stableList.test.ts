@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ShoppingItem } from './shoppingItem'
 import {
   appendToFrozenOrder,
+  firstFrozenOrder,
   nextFrozenOrder,
   pendingChangeCount,
   projectStableList,
@@ -112,5 +113,27 @@ describe('appendToFrozenOrder', () => {
       'bread',
       'milk',
     ])
+  })
+})
+
+describe('firstFrozenOrder', () => {
+  it('freezes the arriving items in creation order', () => {
+    expect(firstFrozenOrder([], [cheese, bread, milk])).toEqual([
+      'bread',
+      'milk',
+      'cheese',
+    ])
+  })
+
+  it('leaves out what is already checked off', () => {
+    expect(firstFrozenOrder([], [bread, item('milk', 2, 500)])).toEqual([
+      'bread',
+    ])
+  })
+
+  it('keeps items this device appended before the first snapshot at the end', () => {
+    expect(firstFrozenOrder(['cheese', 'milk'], [bread, milk, cheese])).toEqual(
+      ['bread', 'cheese', 'milk'],
+    )
   })
 })

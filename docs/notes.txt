@@ -28,6 +28,11 @@ x Use case
   x given: Milch bereits auf Einkaufsliste
   x when: Milch hinzufügen
   x then: ein Eintrag Milch 2x auf Liste und bereits existierende Warnung, nicht 2 Einträge
+x Gerichte-Seite
+  x Liste mit Gerichten (rechts Button "Auf die Einkaufsliste")
+  x +-Icon oben rechts um ein Gericht hinzuzufügen
+    x Dialog mit Name, Liste von Shopping-Items, Freitexfeld Zutaten, Freitextfeld Rezept
+    x Wenn bereits angelegt zusätzlich Löschen-Button
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -35,11 +40,6 @@ TODO
 
 - Später erweitern zu
   - Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
-- Gerichte-Seite
-  - Liste mit Gerichten (rechts Button "Auf die Einkaufsliste")
-  - +-Icon oben rechts um ein Gericht hinzuzufügen
-    - Dialog mit Name, Liste von Shopping-Items, Freitexfeld Zutaten, Freitextfeld Rezept
-    - Wenn bereits angelegt zusätzlich Löschen-Button
 - Wochenplaner
 - Einstellungen
   - Push-Benachrichtigungen

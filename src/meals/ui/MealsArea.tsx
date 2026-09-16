@@ -20,9 +20,15 @@ type MealsAreaProps = {
   meals: Meals
   announce: (text: string) => void
   navigation: ReactNode
+  onAddToShoppingList: (meal: Meal) => void
 }
 
-export function MealsArea({ meals, announce, navigation }: MealsAreaProps) {
+export function MealsArea({
+  meals,
+  announce,
+  navigation,
+  onAddToShoppingList,
+}: MealsAreaProps) {
   const [page, setPage] = useState<MealsPage>({ kind: 'list' })
 
   const addressedMeal =
@@ -73,6 +79,7 @@ export function MealsArea({ meals, announce, navigation }: MealsAreaProps) {
       <MealPage
         meal={addressedMeal}
         onBack={showList}
+        onAddToShoppingList={() => onAddToShoppingList(addressedMeal)}
         onEdit={() => setPage({ kind: 'form', id: addressedMeal.id })}
         onDelete={() => setPage({ kind: 'delete', id: addressedMeal.id })}
       />
@@ -95,6 +102,7 @@ export function MealsArea({ meals, announce, navigation }: MealsAreaProps) {
       meals={meals.meals}
       onAddMeal={() => setPage({ kind: 'form', id: null })}
       onOpenMeal={(meal) => setPage({ kind: 'meal', id: meal.id })}
+      onAddToShoppingList={onAddToShoppingList}
     />
   )
 }

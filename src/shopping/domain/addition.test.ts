@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Quantity } from '../../shared/domain/quantity'
-import { planAddition, planAdditions } from './addition'
+import { planAddition, planAdditions, summarizeAdditions } from './addition'
 import type { NewShoppingItem, ShoppingItem } from './shoppingItem'
 
 const createdAt = 1_700_000_000_000
@@ -140,5 +140,47 @@ describe('planAdditions', () => {
     planAdditions([newItem('Milch', { amount: 1, unit: 'l' })], items)
 
     expect(items[0].quantity).toEqual({ amount: 2, unit: 'l' })
+  })
+})
+
+describe('summarizeAdditions', () => {
+  it('counts nothing for a transfer without items', () => {
+    expect(summarizeAdditions([])).toEqual({
+      added: 0,
+      merged: 0,
+      differentUnit: [],
+    })
+  })
+
+  it('counts every planned outcome as an added article', () => {
+    const planned = planAdditions([newItem('Milch'), newItem('Brot')], [])
+
+    expect(summarizeAdditions(planned)).toEqual({
+      added: 2,
+      merged: 0,
+      differentUnit: [],
+    })
+  })
+
+  it('counts how many outcomes went into an entry that was already open', () => {
+    const planned = planAdditions(
+      [newItem('Milch'), newItem('Brot')],
+      [openItem('Milch')],
+    )
+
+    expect(summarizeAdditions(planned)).toMatchObject({ added: 2, merged: 1 })
+  })
+
+  it('names the open item every conflicting unit landed beside', () => {
+    const planned = planAdditions(
+      [newItem('Milch', { amount: 500, unit: 'g' })],
+      [openItem('Milch', { amount: 2, unit: 'l' })],
+    )
+
+    expect(summarizeAdditions(planned)).toEqual({
+      added: 1,
+      merged: 0,
+      differentUnit: ['Milch'],
+    })
   })
 })

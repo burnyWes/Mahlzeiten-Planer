@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ShoppingListClient } from '../api/shoppingListClient'
-import { planAddition, type AdditionOutcome } from '../domain/addition'
+import {
+  planAddition,
+  planAdditions,
+  summarizeAdditions,
+  type AdditionOutcome,
+  type AdditionsSummary,
+} from '../domain/addition'
 import {
   additionAnnouncement,
   checkOffAnnouncement,
@@ -11,11 +17,13 @@ import {
   createShoppingItem,
   isOpen,
   withQuantity,
+  type NewShoppingItem,
   type ShoppingItem,
   type ShoppingItemDraft,
 } from '../domain/shoppingItem'
 import {
   appendToFrozenOrder,
+  firstFrozenOrder,
   nextFrozenOrder,
   pendingChangeCount,
   projectStableList,
@@ -33,6 +41,7 @@ export type ShoppingList = {
   openCount: number
   pendingChanges: number
   addItem: (draft: ShoppingItemDraft) => string
+  addItems: (newItems: readonly NewShoppingItem[]) => AdditionsSummary
   toggleItem: (item: ShoppingItem) => string
   cleanUp: () => string
 }
@@ -52,7 +61,7 @@ export function useShoppingList(client: ShoppingListClient): ShoppingList {
         setUnconfirmedWrites((writes) => dropConfirmedWrites(writes, items))
         if (!frozenOnFirstItems.current) {
           frozenOnFirstItems.current = true
-          setFrozenOrder(nextFrozenOrder(items))
+          setFrozenOrder((appended) => firstFrozenOrder(appended, items))
         }
       }),
     [client],
@@ -77,18 +86,39 @@ export function useShoppingList(client: ShoppingListClient): ShoppingList {
     [client],
   )
 
+  const carryOutAll = useCallback(
+    (outcomes: readonly AdditionOutcome[]) => {
+      const written = outcomes.map(carryOut)
+      setUnconfirmedWrites((writes) => written.reduce(rememberWrite, writes))
+      setFrozenOrder((order) =>
+        written.reduce(
+          (sofar, item) => appendToFrozenOrder(sofar, item.id),
+          order,
+        ),
+      )
+    },
+    [carryOut],
+  )
+
   const addItem = useCallback(
     (draft: ShoppingItemDraft) => {
       const outcome = planAddition(
         createShoppingItem(draft, Date.now()),
         knownItems,
       )
-      const written = carryOut(outcome)
-      setUnconfirmedWrites((writes) => rememberWrite(writes, written))
-      setFrozenOrder((order) => appendToFrozenOrder(order, written.id))
+      carryOutAll([outcome])
       return additionAnnouncement(outcome)
     },
-    [carryOut, knownItems],
+    [carryOutAll, knownItems],
+  )
+
+  const addItems = useCallback(
+    (newItems: readonly NewShoppingItem[]) => {
+      const outcomes = planAdditions(newItems, knownItems)
+      carryOutAll(outcomes)
+      return summarizeAdditions(outcomes)
+    },
+    [carryOutAll, knownItems],
   )
 
   const toggleItem = useCallback(
@@ -114,6 +144,7 @@ export function useShoppingList(client: ShoppingListClient): ShoppingList {
     openCount,
     pendingChanges: pendingChangeCount(frozenOrder, liveItems),
     addItem,
+    addItems,
     toggleItem,
     cleanUp,
   }

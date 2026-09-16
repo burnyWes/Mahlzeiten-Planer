@@ -4,6 +4,7 @@ import type { AdditionOutcome } from './addition'
 import {
   additionAnnouncement,
   additionFailureMessage,
+  additionsAnnouncement,
   checkOffAnnouncement,
   cleanUpAnnouncement,
   cleanUpLabel,
@@ -147,5 +148,32 @@ describe('cleanUpAnnouncement', () => {
 
   it('reports an empty list', () => {
     expect(cleanUpAnnouncement(0)).toBe('Aufgeräumt, die Liste ist leer')
+  })
+})
+
+describe('additionsAnnouncement', () => {
+  it('counts what a transfer brought to the list', () => {
+    expect(
+      additionsAnnouncement({ added: 3, merged: 0, differentUnit: [] }),
+    ).toBe('3 Artikel hinzugefügt.')
+  })
+
+  it('names how many of them went into an entry that was already open', () => {
+    expect(
+      additionsAnnouncement({ added: 3, merged: 1, differentUnit: [] }),
+    ).toBe('3 Artikel hinzugefügt. 1 zusammengefasst.')
+  })
+
+  it('warns about every article that met another unit', () => {
+    expect(
+      additionsAnnouncement({
+        added: 2,
+        merged: 0,
+        differentUnit: ['Milch', 'Mehl'],
+      }),
+    ).toBe(
+      '2 Artikel hinzugefügt. Achtung, Milch steht mit anderer Einheit bereits offen. ' +
+        'Achtung, Mehl steht mit anderer Einheit bereits offen.',
+    )
   })
 })

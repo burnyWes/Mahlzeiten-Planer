@@ -9,6 +9,7 @@ type MealListPageProps = {
   meals: readonly Meal[]
   onAddMeal: () => void
   onOpenMeal: (meal: Meal) => void
+  onAddToShoppingList: (meal: Meal) => void
 }
 
 export function MealListPage({
@@ -16,6 +17,7 @@ export function MealListPage({
   meals,
   onAddMeal,
   onOpenMeal,
+  onAddToShoppingList,
 }: MealListPageProps) {
   const heading = useHeadingFocus()
 
@@ -41,7 +43,12 @@ export function MealListPage({
         ) : (
           <ul className="itemList">
             {meals.map((meal) => (
-              <MealListRow key={meal.id} meal={meal} onOpenMeal={onOpenMeal} />
+              <MealListRow
+                key={meal.id}
+                meal={meal}
+                onOpenMeal={onOpenMeal}
+                onAddToShoppingList={onAddToShoppingList}
+              />
             ))}
           </ul>
         )}
