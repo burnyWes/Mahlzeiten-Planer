@@ -5,7 +5,7 @@ branch: main
 story: MZP-002
 topic: "Gerichteseite und Navigationsleiste"
 tags: [plan, meals, shopping, navigation, accessibility, firestore]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-002 — Gerichteseite und Navigationsleiste
@@ -49,7 +49,7 @@ vom 2026-09-15.
       kommt.
 - [x] Kein Kontext importiert aus einem anderen Kontext; ESLint erzwingt das und ein Test
       prüft die Regel.
-- [ ] Ohne Netz sind Anlegen, Ändern, Löschen und Übertragen unverändert möglich.
+- [x] Ohne Netz sind Anlegen, Ändern, Löschen und Übertragen unverändert möglich.
 
 ## Wesentliche Entscheidungen und Abwägungen
 
@@ -993,11 +993,11 @@ Der Knopf aus `notes.txt` schliesst die beiden Kontexte zusammen.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver ein Gericht übertragen, die Sammelansage anhören, in
+- [x] Auf dem iPhone mit VoiceOver ein Gericht übertragen, die Sammelansage anhören, in
       die Einkaufsliste wechseln und die Artikel dort vorfinden.
-- [ ] Dasselbe Gericht ein zweites Mal übertragen: es entstehen keine Dubletten, die
+- [x] Dasselbe Gericht ein zweites Mal übertragen: es entstehen keine Dubletten, die
       Ansage nennt die zusammengefassten Artikel.
-- [ ] Im Flugmodus ein Gericht anlegen und übertragen, dann das Netz wieder einschalten
+- [x] Im Flugmodus ein Gericht anlegen und übertragen, dann das Netz wieder einschalten
       und auf dem zweiten Gerät nachsehen.
 
 ## Notizen zur Umsetzung
