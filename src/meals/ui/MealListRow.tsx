@@ -1,4 +1,5 @@
 import type { Meal } from '../domain/meal'
+import { AddToShoppingListIcon } from './AddToShoppingListIcon'
 
 type MealListRowProps = {
   meal: Meal
@@ -26,7 +27,7 @@ export function MealListRow({
         onClick={() => onAddToShoppingList(meal)}
         aria-label={`Auf die Einkaufsliste, ${meal.name}`}
       >
-        Auf die Einkaufsliste
+        <AddToShoppingListIcon />
       </button>
     </li>
   )
