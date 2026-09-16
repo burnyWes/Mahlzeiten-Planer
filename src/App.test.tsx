@@ -5,6 +5,7 @@ import { App } from './App'
 import { createInMemoryAppUpdateClient } from './shared/appUpdate/inMemoryAppUpdateClient'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
+import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
 
 const household = {
@@ -20,6 +21,7 @@ function renderApp(storageWarning?: string) {
       authClient={createInMemoryAuthClient(household)}
       createShoppingListClient={() => createInMemoryShoppingListClient()}
       createMealsClient={() => createInMemoryMealsClient()}
+      createKnownItemsClient={() => createInMemoryKnownItemsClient()}
       appUpdateClient={appUpdateClient}
       storageWarning={storageWarning}
     />,

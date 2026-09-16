@@ -15,6 +15,27 @@ async function addItem(page: Page, name: string, amount = '', unit = '') {
   await pressButton(page, 'Zurück zur Liste')
 }
 
+async function openAddItemPageUntilSuggested(
+  page: Page,
+  typed: string,
+  suggestion: string,
+) {
+  await expect(async () => {
+    await pressButton(page, 'Artikel hinzufügen')
+    await typeInto(page, 'Name', typed)
+    try {
+      await expect(
+        page
+          .getByRole('list', { name: 'Vorschläge' })
+          .getByRole('button', { name: suggestion, exact: true }),
+      ).toBeVisible({ timeout: 1000 })
+    } catch (notYetSuggested) {
+      await pressButton(page, 'Zurück zur Liste')
+      throw notYetSuggested
+    }
+  }).toPass()
+}
+
 test('sign in, add, check off and clean up using the keyboard only', async ({
   page,
 }) => {
@@ -92,4 +113,29 @@ test('shows what the other device stored before this device ever ran', async ({
 
   await expect(shownItems(page)).toHaveText(['Brot', 'Milch'])
   await expect(page.getByRole('button', { name: /Aufräumen/ })).toHaveCount(0)
+})
+
+test('suggests an item from the history taken over at start', async ({
+  page,
+}) => {
+  await storeItemOnServer('Hafermilch', 1)
+
+  await page.goto('/')
+  await signIn(page)
+  await openAddItemPageUntilSuggested(page, 'milch', 'Hafermilch')
+
+  await pressButton(page, 'Hafermilch')
+
+  await expect(page.getByLabel('Name', { exact: true })).toHaveValue(
+    'Hafermilch',
+  )
+  await expect(page.getByLabel('Menge', { exact: true })).toBeFocused()
+})
+
+test('suggests an item that was added before', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+  await addItem(page, 'Brot')
+
+  await openAddItemPageUntilSuggested(page, 'br', 'Brot')
 })

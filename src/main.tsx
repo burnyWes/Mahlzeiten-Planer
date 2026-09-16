@@ -5,6 +5,7 @@ import { createFirestoreMealsClient } from './meals/api/firestoreMealsClient.ts'
 import { createServiceWorkerAppUpdateClient } from './shared/appUpdate/serviceWorkerAppUpdateClient.ts'
 import { auth, firestore, storageWarning } from './shared/auth/firebase.ts'
 import { createFirebaseAuthClient } from './shared/auth/firebaseAuthClient.ts'
+import { createFirestoreKnownItemsClient } from './shopping/api/firestoreKnownItemsClient.ts'
 import { createFirestoreShoppingListClient } from './shopping/api/firestoreShoppingListClient.ts'
 import './index.css'
 
@@ -16,6 +17,8 @@ const openShoppingList = (onWriteFailure: (message: string) => void) =>
 const openMeals = (onWriteFailure: (message: string) => void) =>
   createFirestoreMealsClient(firestore, onWriteFailure)
 
+const openKnownItems = () => createFirestoreKnownItemsClient(firestore)
+
 const appUpdateClient = createServiceWorkerAppUpdateClient()
 
 createRoot(document.getElementById('root')!).render(
@@ -24,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
       authClient={createFirebaseAuthClient(auth)}
       createShoppingListClient={openShoppingList}
       createMealsClient={openMeals}
+      createKnownItemsClient={openKnownItems}
       appUpdateClient={appUpdateClient}
       storageWarning={storageWarning}
     />

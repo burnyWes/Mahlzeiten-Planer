@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import type { Meal } from './meals/domain/meal'
 import { SignedInApp } from './SignedInApp'
+import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
 import type { ShoppingItem } from './shopping/domain/shoppingItem'
 import { accessibilityViolations } from './testSupport/accessibility'
@@ -15,6 +16,7 @@ function openItem(id: string, name: string, createdAt: number): ShoppingItem {
 function renderSignedInApp(
   initialItems: readonly ShoppingItem[] = [],
   initialMeals: readonly Meal[] = [],
+  knownItemsClient = createInMemoryKnownItemsClient(),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -22,6 +24,7 @@ function renderSignedInApp(
     <SignedInApp
       createShoppingListClient={() => client}
       createMealsClient={() => createInMemoryMealsClient(initialMeals)}
+      createKnownItemsClient={() => knownItemsClient}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -201,6 +204,52 @@ describe('SignedInApp', () => {
 
     expect(client.storedItems()).toEqual([])
     expect(announcements).toContain('Suppe hat keine Einkaufs-Items.')
+  })
+
+  it('counts every item of a transferred meal in the catalog', async () => {
+    const knownItemsClient = createInMemoryKnownItemsClient()
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+          { name: 'Spaghetti', quantity: null },
+        ]),
+      ],
+      knownItemsClient,
+    )
+
+    await goToArea('Gerichte')
+    await transferToShoppingList('Bolognese')
+    await transferToShoppingList('Bolognese')
+
+    expect(knownItemsClient.storedKnownItems()).toEqual([
+      expect.objectContaining({ name: 'Hackfleisch', timesUsed: 2 }),
+      expect.objectContaining({ name: 'Spaghetti', timesUsed: 2 }),
+    ])
+  })
+
+  it('takes over the history into an empty catalog and suggests it', async () => {
+    renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient(
+        [],
+        [{ ...openItem('oat', 'Hafermilch', 1), checkedOffAt: 2 }],
+      ),
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikel hinzufügen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Name'), 'milch')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' })).getByRole(
+        'button',
+        { name: 'Hafermilch' },
+      ),
+    ).toBeInTheDocument()
   })
 
   it('has no accessibility violations on the shopping list', async () => {

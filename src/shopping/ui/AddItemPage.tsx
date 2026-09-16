@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { UNITS } from '../../shared/domain/quantity'
+import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import { additionFailureMessage } from '../domain/announcements'
 import type { ShoppingItemDraft } from '../domain/shoppingItem'
 
@@ -7,14 +8,22 @@ type AddItemPageProps = {
   addItem: (draft: ShoppingItemDraft) => string
   announce: (text: string) => void
   onBack: () => void
+  suggestNames: (typed: string) => readonly string[]
 }
 
 const EMPTY_DRAFT: ShoppingItemDraft = { name: '', amount: '', unit: '' }
 
-export function AddItemPage({ addItem, announce, onBack }: AddItemPageProps) {
+export function AddItemPage({
+  addItem,
+  announce,
+  onBack,
+  suggestNames,
+}: AddItemPageProps) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [failureMessage, setFailureMessage] = useState('')
+  const [suggestNamesOnOpen] = useState(() => suggestNames)
   const nameField = useRef<HTMLInputElement>(null)
+  const amountField = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     nameField.current?.focus()
@@ -22,6 +31,11 @@ export function AddItemPage({ addItem, announce, onBack }: AddItemPageProps) {
 
   function change(part: Partial<ShoppingItemDraft>) {
     setDraft((previous) => ({ ...previous, ...part }))
+  }
+
+  function chooseSuggestion(name: string) {
+    change({ name })
+    amountField.current?.focus()
   }
 
   function submitDraft(event: FormEvent<HTMLFormElement>) {
@@ -60,11 +74,16 @@ export function AddItemPage({ addItem, announce, onBack }: AddItemPageProps) {
             onChange={(event) => change({ name: event.target.value })}
           />
         </p>
+        <NameSuggestions
+          names={suggestNamesOnOpen(draft.name)}
+          onChoose={chooseSuggestion}
+        />
         <div className="quantityFields">
           <p className="field">
             <label htmlFor="itemAmount">Menge</label>
             <input
               id="itemAmount"
+              ref={amountField}
               className="amountField"
               inputMode="decimal"
               value={draft.amount}

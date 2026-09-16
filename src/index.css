@@ -146,6 +146,23 @@ button:disabled {
   border-bottom: 1px solid #d1d5db;
 }
 
+.suggestionList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.suggestionList button {
+  width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+  background-color: #ffffff;
+  color: #14532d;
+}
+
 .quantityFields {
   display: flex;
   gap: 1rem;

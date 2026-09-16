@@ -49,6 +49,9 @@ function collectionOf(collectionName: string) {
 
 const itemsOf = collectionOf('items')
 const mealsOf = collectionOf('meals')
+const knownItemsOf = collectionOf('knownItems')
+
+const milk = { name: 'Milch', lastUsedAt: 1, timesUsed: 1 }
 
 const bolognese = {
   name: 'Spaghetti Bolognese',
@@ -98,6 +101,24 @@ describe('firestore security rules', () => {
   it('refuses an unauthenticated visitor on the meals', async () => {
     await assertFails(getDoc(mealsOf(null)('bolognese')))
     await assertFails(setDoc(mealsOf(null)('bolognese'), bolognese))
+  })
+
+  it('lets the household write a known item', async () => {
+    await assertSucceeds(setDoc(knownItemsOf(householdUid)('milch'), milk))
+  })
+
+  it('lets the household read a known item', async () => {
+    await assertSucceeds(getDoc(knownItemsOf(householdUid)('milch')))
+  })
+
+  it('refuses another account on the known items', async () => {
+    await assertFails(getDoc(knownItemsOf(strangerUid)('milch')))
+    await assertFails(setDoc(knownItemsOf(strangerUid)('milch'), milk))
+  })
+
+  it('refuses an unauthenticated visitor on the known items', async () => {
+    await assertFails(getDoc(knownItemsOf(null)('milch')))
+    await assertFails(setDoc(knownItemsOf(null)('milch'), milk))
   })
 
   it('refuses the household outside the released collections', async () => {

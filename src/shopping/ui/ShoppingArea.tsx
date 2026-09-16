@@ -7,12 +7,14 @@ type ShoppingAreaProps = {
   shoppingList: ShoppingList
   announce: (text: string) => void
   navigation: ReactNode
+  suggestNames: (typed: string) => readonly string[]
 }
 
 export function ShoppingArea({
   shoppingList,
   announce,
   navigation,
+  suggestNames,
 }: ShoppingAreaProps) {
   const { items, openCount, pendingChanges, addItem, toggleItem, cleanUp } =
     shoppingList
@@ -24,6 +26,7 @@ export function ShoppingArea({
         addItem={addItem}
         announce={announce}
         onBack={() => setAddingItem(false)}
+        suggestNames={suggestNames}
       />
     )
   }

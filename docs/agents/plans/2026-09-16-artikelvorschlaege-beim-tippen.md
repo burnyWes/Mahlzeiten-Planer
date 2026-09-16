@@ -250,7 +250,7 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
 
 **Aufgaben**:
 
-- [ ] `src/shopping/domain/knownItem.test.ts` test-getrieben zuerst, mindestens:
+- [x] `src/shopping/domain/knownItem.test.ts` test-getrieben zuerst, mindestens:
   - findet einen Namen, der die Eingabe in der Mitte enthält ("milch" → "Hafermilch")
   - ignoriert Gross-/Kleinschreibung und mehrfache Leerzeichen
   - schlägt unter 2 Zeichen nichts vor
@@ -266,7 +266,7 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
     Schreibweise
   - `knownItemIdOf` ergibt für "Milch" und " milch " dieselbe ID und enthält weder `/`
     noch ist sie `.` oder `..`, noch hat sie die Form `__…__`
-- [ ] `src/shopping/domain/knownItem.ts` umsetzen.
+- [x] `src/shopping/domain/knownItem.ts` umsetzen.
   ```ts
   export type KnownItem = { name: string; lastUsedAt: number; timesUsed: number }
 
@@ -287,7 +287,7 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
   ```
   Firestore-Vorgaben für Dokument-IDs: kein `/`, nicht `.` oder `..`, nicht `__.*__`
   (siehe Verweise).
-- [ ] `src/shopping/api/knownItemsClient.ts` — Port:
+- [x] `src/shopping/api/knownItemsClient.ts` — Port:
   ```ts
   export interface KnownItemsClient {
     observeKnownItems(
@@ -297,13 +297,13 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
     takeOverHistoryIfEmpty(): void
   }
   ```
-- [ ] `src/shopping/api/inMemoryKnownItemsClient.ts` — Fake mit
+- [x] `src/shopping/api/inMemoryKnownItemsClient.ts` — Fake mit
   `createInMemoryKnownItemsClient(initialKnownItems = [], history = [])`,
   `recordUse` über die Domänenfunktion, `takeOverHistoryIfEmpty` übernimmt `history`
   nur bei leerem Katalog, zusätzlich `storedKnownItems()` und
   `knownItemsArriveFromElsewhere(knownItems)` für Tests.
-- [ ] `src/shopping/api/firestoreShoppingListClient.ts` — `toShoppingItem` exportieren.
-- [ ] `src/shopping/api/firestoreKnownItemsClient.ts` — Adapter
+- [x] `src/shopping/api/firestoreShoppingListClient.ts` — `toShoppingItem` exportieren.
+- [x] `src/shopping/api/firestoreKnownItemsClient.ts` — Adapter
   `createFirestoreKnownItemsClient(firestore)`:
   - `observeKnownItems`: `onSnapshot` auf `knownItems`, Felder defensiv lesen wie in
     `toShoppingItem`.
@@ -314,17 +314,17 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
     leer `getDocsFromServer(collection(firestore, 'items'))`, über `toShoppingItem` und
     `knownItemsFromHistory` rechnen und mit `writeBatch` in Blöcken von höchstens 500
     schreiben (`set` ohne `merge`). Jeder Fehler in der Kette wird verschluckt.
-- [ ] `firestore.rules` — `match /knownItems/{knownItemId} { allow read, write: if
+- [x] `firestore.rules` — `match /knownItems/{knownItemId} { allow read, write: if
   isHousehold(); }`.
-- [ ] `firestore.rules.test.ts` — `knownItemsOf = collectionOf('knownItems')` mit den
+- [x] `firestore.rules.test.ts` — `knownItemsOf = collectionOf('knownItems')` mit den
   vier Fällen wie bei den Gerichten (Haushalt schreibt, Haushalt liest, anderes Konto
   abgewiesen, Unangemeldete abgewiesen).
-- [ ] `src/shopping/ui/useKnownItems.ts` — beobachtet den Katalog und ruft einmal je
+- [x] `src/shopping/ui/useKnownItems.ts` — beobachtet den Katalog und ruft einmal je
   Client `takeOverHistoryIfEmpty()` auf; liefert `readonly KnownItem[]`.
-- [ ] `src/shopping/ui/useShoppingList.ts` — Signatur
+- [x] `src/shopping/ui/useShoppingList.ts` — Signatur
   `useShoppingList(client, knownItemsClient)`; in `carryOutAll` je Ergebnis
   `knownItemsClient.recordUse(outcome.item.name, outcome.item.createdAt)`.
-- [ ] `src/shared/ui/NameSuggestions.tsx` — reine Darstellung:
+- [x] `src/shared/ui/NameSuggestions.tsx` — reine Darstellung:
   ```tsx
   type NameSuggestionsProps = {
     names: readonly string[]
@@ -333,26 +333,26 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
   ```
   Rendert nichts bei leerer Liste, sonst `<ul aria-label="Vorschläge"
   className="suggestionList">` mit je `<li><button type="button">{name}</button></li>`.
-- [ ] `src/index.css` — `.suggestionList` im Stil der vorhandenen Listen (keine
+- [x] `src/index.css` — `.suggestionList` im Stil der vorhandenen Listen (keine
   Aufzählungszeichen, Knöpfe untereinander, gleiche Mindesthöhe wie die übrigen Knöpfe).
-- [ ] `src/shopping/ui/AddItemPage.tsx` — neue Prop `suggestNames: (typed: string) =>
+- [x] `src/shopping/ui/AddItemPage.tsx` — neue Prop `suggestNames: (typed: string) =>
   readonly string[]`, beim ersten Rendern festhalten
   (`const [suggestNamesOnOpen] = useState(() => suggestNames)`), `NameSuggestions`
   zwischen Namensfeld und Mengenfeldern, `amountField`-Ref; `onChoose` setzt den Namen
   und fokussiert "Menge".
-- [ ] `src/shopping/ui/ShoppingArea.tsx` — Prop `suggestNames` an `AddItemPage` reichen.
-- [ ] `src/SignedInApp.tsx` — Prop `createKnownItemsClient: () => KnownItemsClient`,
+- [x] `src/shopping/ui/ShoppingArea.tsx` — Prop `suggestNames` an `AddItemPage` reichen.
+- [x] `src/SignedInApp.tsx` — Prop `createKnownItemsClient: () => KnownItemsClient`,
   Client einmal per `useState`, `useKnownItems`, an `useShoppingList` übergeben,
   `suggestNames = (typed) => suggestNames(knownItems, typed)` an `ShoppingArea`.
-- [ ] `src/App.tsx` — Prop `createKnownItemsClient` durchreichen.
-- [ ] `src/main.tsx` — `createKnownItemsClient={() =>
+- [x] `src/App.tsx` — Prop `createKnownItemsClient` durchreichen.
+- [x] `src/main.tsx` — `createKnownItemsClient={() =>
   createFirestoreKnownItemsClient(firestore)}`.
-- [ ] Bestehende Testaufbauten anpassen: `SignedInApp.test.tsx` und `App.test.tsx`
+- [x] Bestehende Testaufbauten anpassen: `SignedInApp.test.tsx` und `App.test.tsx`
   mit `createInMemoryKnownItemsClient`; `ShoppingAreaUnderTest` in
   `ShoppingArea.test.tsx` verdrahtet `useKnownItems`, `useShoppingList(client,
   knownItemsClient)` und `suggestNames` genauso wie `SignedInApp` und gibt den
   Katalog-Fake aus `renderShoppingArea` zurück.
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx` — neue Fälle:
+- [x] `src/shopping/ui/ShoppingArea.test.tsx` — neue Fälle:
   - zeigt nach "mil" die passenden Vorschläge in der Liste "Vorschläge" in der
     festgelegten Reihenfolge
   - zeigt unter 2 Zeichen und ohne Treffer keine Liste
@@ -363,10 +363,10 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
     aussen eintrifft
   - kündigt beim Tippen nichts an
   - keine Barrierefreiheitsverstösse mit sichtbaren Vorschlägen
-- [ ] `src/SignedInApp.test.tsx` — neue Fälle:
+- [x] `src/SignedInApp.test.tsx` — neue Fälle:
   - zählt jedes Item eines übertragenen Gerichts im Katalog
   - übernimmt die Historie bei leerem Katalog und schlägt sie danach vor
-- [ ] `e2e/shoppingList.spec.ts` — zwei Tests, die zugleich den Integrationstest des
+- [x] `e2e/shoppingList.spec.ts` — zwei Tests, die zugleich den Integrationstest des
   Firestore-Katalog-Adapters bilden. Weil die Seite die Vorschläge beim Öffnen
   einfriert, die Übernahme aber asynchron nach der Anmeldung läuft, wird das Öffnen,
   Tippen und Prüfen in `await expect(async () => { … }).toPass()` wiederholt (jeweils
@@ -377,22 +377,22 @@ Historie und liefert Vorschläge auf der Seite "Artikel hinzufügen".
     hat den Fokus.
   - *suggests an item that was added before*: "Brot" hinzufügen, zurück, erneut
     öffnen, "br" tippen, Knopf "Brot" erscheint.
-- [ ] `docs/notes.txt` — unter TODO anhängen:
+- [x] `docs/notes.txt` — unter TODO anhängen:
   `- Vorschläge verwalten: Tippfehler aus dem Artikelkatalog (knownItems) löschen können,
   z. B. unter Einstellungen.`
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` grün, darunter `knownItem.test.ts`, die neuen Fälle in
+- [x] `npm run test` grün, darunter `knownItem.test.ts`, die neuen Fälle in
       `ShoppingArea.test.tsx` und `SignedInApp.test.tsx`
-- [ ] `npm run test:rules` grün mit den vier `knownItems`-Fällen
-- [ ] `npm run test:e2e` grün mit dem neuen Vorschlagsfall
-- [ ] `npm run lint` ohne Befund
-- [ ] `npm run build` erfolgreich
+- [x] `npm run test:rules` grün mit den vier `knownItems`-Fällen
+- [x] `npm run test:e2e` grün mit dem neuen Vorschlagsfall
+- [x] `npm run lint` ohne Befund
+- [x] `npm run build` erfolgreich
 
 **Manuelle Verifikation**:
 
-- [ ] Vor dem Test: `npx firebase deploy --only firestore:rules --project
+- [x] Vor dem Test: `npx firebase deploy --only firestore:rules --project
       mahlzeiten-planer-ecd26` ausgeführt.
 - [ ] Auf dem iPhone mit VoiceOver: "Artikel hinzufügen" öffnen, zwei Zeichen eines
       bekannten Artikels tippen, nach rechts wischen — VoiceOver erreicht die Liste

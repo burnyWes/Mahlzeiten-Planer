@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { KnownItemsClient } from '../api/knownItemsClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
 import {
   planAddition,
@@ -46,7 +47,10 @@ export type ShoppingList = {
   cleanUp: () => string
 }
 
-export function useShoppingList(client: ShoppingListClient): ShoppingList {
+export function useShoppingList(
+  client: ShoppingListClient,
+  knownItemsClient: KnownItemsClient,
+): ShoppingList {
   const [liveItems, setLiveItems] = useState<readonly ShoppingItem[]>([])
   const [frozenOrder, setFrozenOrder] = useState<FrozenOrder>([])
   const [unconfirmedWrites, setUnconfirmedWrites] = useState<UnconfirmedWrites>(
@@ -89,6 +93,9 @@ export function useShoppingList(client: ShoppingListClient): ShoppingList {
   const carryOutAll = useCallback(
     (outcomes: readonly AdditionOutcome[]) => {
       const written = outcomes.map(carryOut)
+      outcomes.forEach((outcome) =>
+        knownItemsClient.recordUse(outcome.item.name, outcome.item.createdAt),
+      )
       setUnconfirmedWrites((writes) => written.reduce(rememberWrite, writes))
       setFrozenOrder((order) =>
         written.reduce(
@@ -97,7 +104,7 @@ export function useShoppingList(client: ShoppingListClient): ShoppingList {
         ),
       )
     },
-    [carryOut],
+    [carryOut, knownItemsClient],
   )
 
   const addItem = useCallback(

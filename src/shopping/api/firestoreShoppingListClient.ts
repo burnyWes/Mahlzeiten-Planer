@@ -27,7 +27,7 @@ function readQuantity(stored: DocumentData): Quantity | null {
   }
 }
 
-function toShoppingItem(id: ItemId, stored: DocumentData): ShoppingItem {
+export function toShoppingItem(id: ItemId, stored: DocumentData): ShoppingItem {
   return {
     id,
     name: String(stored.name ?? ''),

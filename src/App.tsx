@@ -10,6 +10,7 @@ import { useSession } from './shared/auth/useSession'
 import { Announcer } from './shared/ui/Announcer'
 import { useAnnouncer } from './shared/ui/useAnnouncer'
 import { useConnectionAnnouncements } from './shared/ui/useConnectionAnnouncements'
+import type { KnownItemsClient } from './shopping/api/knownItemsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 
 type AppProps = {
@@ -18,6 +19,7 @@ type AppProps = {
     onWriteFailure: (message: string) => void,
   ) => ShoppingListClient
   createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
+  createKnownItemsClient: () => KnownItemsClient
   appUpdateClient: AppUpdateClient
   storageWarning?: string
 }
@@ -26,6 +28,7 @@ export function App({
   authClient,
   createShoppingListClient,
   createMealsClient,
+  createKnownItemsClient,
   appUpdateClient,
   storageWarning = '',
 }: AppProps) {
@@ -49,6 +52,7 @@ export function App({
         <SignedInApp
           createShoppingListClient={createShoppingListClient}
           createMealsClient={createMealsClient}
+          createKnownItemsClient={createKnownItemsClient}
           announce={announce}
         />
       )}

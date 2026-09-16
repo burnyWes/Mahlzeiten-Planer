@@ -1,12 +1,16 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { Quantity } from '../../shared/domain/quantity'
 import { accessibilityViolations } from '../../testSupport/accessibility'
+import { createInMemoryKnownItemsClient } from '../api/inMemoryKnownItemsClient'
+import type { KnownItemsClient } from '../api/knownItemsClient'
 import { createInMemoryShoppingListClient } from '../api/inMemoryShoppingListClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
+import { suggestNames, type KnownItem } from '../domain/knownItem'
 import type { ShoppingItem } from '../domain/shoppingItem'
 import { ShoppingArea } from './ShoppingArea'
+import { useKnownItems } from './useKnownItems'
 import { useShoppingList } from './useShoppingList'
 
 function openItem(
@@ -18,21 +22,29 @@ function openItem(
   return { id, name, quantity, createdAt, checkedOffAt: null }
 }
 
+function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
+  return { name, timesUsed, lastUsedAt }
+}
+
 type ShoppingAreaUnderTestProps = {
   client: ShoppingListClient
+  knownItemsClient: KnownItemsClient
   announce: (text: string) => void
 }
 
 function ShoppingAreaUnderTest({
   client,
+  knownItemsClient,
   announce,
 }: ShoppingAreaUnderTestProps) {
-  const shoppingList = useShoppingList(client)
+  const knownItems = useKnownItems(knownItemsClient)
+  const shoppingList = useShoppingList(client, knownItemsClient)
   return (
     <ShoppingArea
       shoppingList={shoppingList}
       announce={announce}
       navigation={null}
+      suggestNames={(typed) => suggestNames(knownItems, typed)}
     />
   )
 }
@@ -62,18 +74,23 @@ function createLaggingShoppingListClient(): LaggingShoppingListClient {
   }
 }
 
-function renderShoppingArea(initialItems: readonly ShoppingItem[] = []) {
+function renderShoppingArea(
+  initialItems: readonly ShoppingItem[] = [],
+  initialKnownItems: readonly KnownItem[] = [],
+) {
   const client = createInMemoryShoppingListClient(initialItems)
+  const knownItemsClient = createInMemoryKnownItemsClient(initialKnownItems)
   const announcements: string[] = []
   const rendered = render(
     <ShoppingAreaUnderTest
       client={client}
+      knownItemsClient={knownItemsClient}
       announce={(text) => {
         announcements.push(text)
       }}
     />,
   )
-  return { client, announcements, rendered }
+  return { client, knownItemsClient, announcements, rendered }
 }
 
 async function openAddItemPage() {
@@ -230,6 +247,105 @@ describe('ShoppingArea', () => {
   })
 })
 
+describe('suggestions while typing a name', () => {
+  function suggestionList() {
+    return screen.queryByRole('list', { name: 'Vorschläge' })
+  }
+
+  function suggestedNames() {
+    return within(screen.getByRole('list', { name: 'Vorschläge' }))
+      .getAllByRole('button')
+      .map((button) => button.textContent)
+  }
+
+  it('suggests the matching names in the agreed order', async () => {
+    renderShoppingArea(
+      [],
+      [
+        known('Hafermilch', 9, 1),
+        known('Milchreis', 1, 5),
+        known('Milch', 3, 1),
+        known('Brot', 7, 1),
+      ],
+    )
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'mil')
+
+    expect(suggestedNames()).toEqual(['Milch', 'Milchreis', 'Hafermilch'])
+  })
+
+  it('shows no list below two characters or without a match', async () => {
+    renderShoppingArea([], [known('Milch')])
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'm')
+    expect(suggestionList()).toBeNull()
+
+    await userEvent.type(screen.getByLabelText('Name'), 'x')
+    expect(suggestionList()).toBeNull()
+  })
+
+  it('takes a suggestion into the name field and moves the focus to the amount', async () => {
+    renderShoppingArea([], [known('Milch')])
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'mil')
+    await userEvent.click(screen.getByRole('button', { name: 'Milch' }))
+
+    expect(screen.getByLabelText('Name')).toHaveValue('Milch')
+    expect(screen.getByLabelText('Menge')).toHaveFocus()
+    expect(suggestionList()).toBeNull()
+  })
+
+  it('counts an added item in the catalog, also when it is merged into an open one', async () => {
+    const { knownItemsClient } = renderShoppingArea(
+      [openItem('milk', 'Milch', 1)],
+      [known('Milch', 1, 1)],
+    )
+
+    await openAddItemPage()
+    await addItem('milch')
+    await addItem('Brot')
+
+    expect(knownItemsClient.storedKnownItems()).toEqual([
+      expect.objectContaining({ name: 'milch', timesUsed: 2 }),
+      expect.objectContaining({ name: 'Brot', timesUsed: 1 }),
+    ])
+  })
+
+  it('keeps the suggestions as they were when the page opened', async () => {
+    const { knownItemsClient } = renderShoppingArea([], [known('Milch')])
+
+    await openAddItemPage()
+    await act(async () => {
+      knownItemsClient.knownItemsArriveFromElsewhere([known('Milchreis')])
+    })
+    await userEvent.type(screen.getByLabelText('Name'), 'mil')
+
+    expect(suggestedNames()).toEqual(['Milch'])
+  })
+
+  it('announces nothing while typing', async () => {
+    const { announcements } = renderShoppingArea([], [known('Milch')])
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'mil')
+
+    expect(announcements).toEqual([])
+  })
+
+  it('has no accessibility violations with suggestions shown', async () => {
+    const { rendered } = renderShoppingArea([], [known('Milch')])
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'mil')
+
+    expect(suggestionList()).not.toBeNull()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
 describe('adding what is already open', () => {
   it('counts a second item of the same name instead of listing it twice', async () => {
     const { announcements, client } = renderShoppingArea()
@@ -294,7 +410,13 @@ describe('adding what is already open', () => {
 describe('adding before the snapshot has caught up', () => {
   function renderWithLaggingSnapshots() {
     const client = createLaggingShoppingListClient()
-    render(<ShoppingAreaUnderTest client={client} announce={() => {}} />)
+    render(
+      <ShoppingAreaUnderTest
+        client={client}
+        knownItemsClient={createInMemoryKnownItemsClient()}
+        announce={() => {}}
+      />,
+    )
     return client
   }
 

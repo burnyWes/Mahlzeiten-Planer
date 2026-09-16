@@ -59,3 +59,5 @@ b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in
   oder wenigstens in die Freigabe-Schritte schreiben.
 - Beim Tippen von Items Vorschläge aus der Datenbank machen, damit man gleiche Einträge
   nicht ständig neu tippen muss.
+- Vorschläge verwalten: Tippfehler aus dem Artikelkatalog (knownItems) löschen können,
+  z. B. unter Einstellungen.
