@@ -5,7 +5,7 @@ branch: main
 story: MZP-004
 topic: "Icon-Knöpfe am Gericht"
 tags: [plan, meals, ui, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-004 — Icon-Knöpfe am Gericht
@@ -19,20 +19,20 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-17.
 
 ## Akzeptanzkriterien
 
-- [ ] Im Gericht-Editor steht neben jedem übernommenen Item ein quadratischer Knopf
+- [x] Im Gericht-Editor steht neben jedem übernommenen Item ein quadratischer Knopf
       (mindestens 44 px) mit Mülleimer-Icon statt des Textes "Entfernen".
-- [ ] VoiceOver liest diesen Knopf weiter als "Entfernen, <Item>", zum Beispiel
+- [x] VoiceOver liest diesen Knopf weiter als "Entfernen, <Item>", zum Beispiel
       "Entfernen, Hackfleisch, 500 g".
-- [ ] Die Gerichtsansicht zeigt unten **eine** Zeile mit drei gleich breiten Knöpfen
+- [x] Die Gerichtsansicht zeigt unten **eine** Zeile mit drei gleich breiten Knöpfen
       über die ganze Breite, in dieser Reihenfolge: Einkaufswagen, Stift, Mülleimer.
-- [ ] VoiceOver liest diese Knöpfe weiter als "Auf die Einkaufsliste", "Bearbeiten"
+- [x] VoiceOver liest diese Knöpfe weiter als "Auf die Einkaufsliste", "Bearbeiten"
       und "Löschen".
-- [ ] Keiner der Icon-Knöpfe zeigt sichtbaren Text. Die Icons sind für VoiceOver
+- [x] Keiner der Icon-Knöpfe zeigt sichtbaren Text. Die Icons sind für VoiceOver
       ausgeblendet (`aria-hidden`).
-- [ ] Alle Knöpfe bleiben grün gefüllt mit weißem Icon.
-- [ ] Die Bestätigungsseite zum Löschen bleibt unverändert: "Löschen" und "Abbrechen"
+- [x] Alle Knöpfe bleiben grün gefüllt mit weißem Icon.
+- [x] Die Bestätigungsseite zum Löschen bleibt unverändert: "Löschen" und "Abbrechen"
       als Text.
-- [ ] Die axe-Prüfungen des Formulars und der Gerichtsansicht bleiben ohne Befund.
+- [x] Die axe-Prüfungen des Formulars und der Gerichtsansicht bleiben ohne Befund.
 
 ## Wesentliche Entscheidungen und Abwägungen
 
@@ -247,14 +247,14 @@ dieselbe Knopfform teilen.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Auf der Gerichtsansicht stehen unten drei gleich breite grüne Knöpfe mit Wagen,
+- [x] Auf der Gerichtsansicht stehen unten drei gleich breite grüne Knöpfe mit Wagen,
       Stift und Mülleimer in einer Zeile. Die Symbole sind gut erkennbar.
-- [ ] Im Editor steht rechts neben jedem Item ein quadratischer Mülleimer-Knopf. Lange
+- [x] Im Editor steht rechts neben jedem Item ein quadratischer Mülleimer-Knopf. Lange
       Item-Namen brechen um, ohne den Knopf zu verdrängen.
-- [ ] Mit VoiceOver: Die drei Knöpfe werden als "Auf die Einkaufsliste, Taste",
+- [x] Mit VoiceOver: Die drei Knöpfe werden als "Auf die Einkaufsliste, Taste",
       "Bearbeiten, Taste" und "Löschen, Taste" gelesen, der Mülleimer im Editor als
       "Entfernen, Hackfleisch, 500 g, Taste".
-- [ ] Die Bestätigungsseite zum Löschen sieht aus wie bisher.
+- [x] Die Bestätigungsseite zum Löschen sieht aus wie bisher.
 
 ## Notizen zur Umsetzung
 

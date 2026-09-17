@@ -61,3 +61,4 @@ b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in
   oder wenigstens in die Freigabe-Schritte schreiben.
 - Vorschläge verwalten: Tippfehler aus dem Artikelkatalog (knownItems) löschen können,
   z. B. unter Einstellungen.
+- Klickfläche zum abhaken vergrößern
