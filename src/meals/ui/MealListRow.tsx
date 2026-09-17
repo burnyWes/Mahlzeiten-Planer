@@ -23,7 +23,7 @@ export function MealListRow({
       </button>
       <button
         type="button"
-        className="mealTransferButton"
+        className="iconButton"
         onClick={() => onAddToShoppingList(meal)}
         aria-label={`Auf die Einkaufsliste, ${meal.name}`}
       >

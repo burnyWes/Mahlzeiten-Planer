@@ -165,7 +165,7 @@ dieselbe Knopfform teilen.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: In `src/meals/ui/MealsArea.test.tsx` den Fall
+- [x] Test zuerst: In `src/meals/ui/MealsArea.test.tsx` den Fall
       `shows the removal of a taken over item as an icon only` ergänzen. Er öffnet das
       Formular, übernimmt "Hackfleisch", "500", "g" und prüft für den Knopf
       "Entfernen, Hackfleisch, 500 g", dass `textContent` leer ist.
@@ -176,21 +176,21 @@ dieselbe Knopfform teilen.
           .textContent,
       ).toBe('')
       ```
-- [ ] Test zuerst: den Fall `shows the actions of a meal as icons only in one row`
+- [x] Test zuerst: den Fall `shows the actions of a meal as icons only in one row`
       ergänzen. Er öffnet ein Gericht und prüft:
       - "Auf die Einkaufsliste", "Bearbeiten" und "Löschen" haben leeres `textContent`.
       - Alle drei liegen im selben Elternelement, in dieser Reihenfolge.
-- [ ] Test zuerst: Die axe-Prüfung des Formulars bekommt einen Fall mit übernommenem
+- [x] Test zuerst: Die axe-Prüfung des Formulars bekommt einen Fall mit übernommenem
       Item. So wird der Icon-Knopf im Editor mitgeprüft:
       `has no accessibility violations on the form with an item taken over`.
-- [ ] `src/meals/ui/TrashIcon.tsx` anlegen: Mülleimer im Stil von
+- [x] `src/meals/ui/TrashIcon.tsx` anlegen: Mülleimer im Stil von
       `AddToShoppingListIcon`, zum Beispiel Deckel `M3 6h18`, Griff
       `M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2`, Korpus
       `M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6` und zwei senkrechte Striche
       `M10 11v6` und `M14 11v6`.
-- [ ] `src/meals/ui/EditIcon.tsx` anlegen: Stift im selben Stil, zum Beispiel
+- [x] `src/meals/ui/EditIcon.tsx` anlegen: Stift im selben Stil, zum Beispiel
       `M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z` und `m15 5 4 4`.
-- [ ] `src/index.css`: `.mealTransferButton` in `.iconButton` umbenennen und
+- [x] `src/index.css`: `.mealTransferButton` in `.iconButton` umbenennen und
       `.iconActions` ergänzen:
       ```css
       .iconActions {
@@ -206,12 +206,12 @@ dieselbe Knopfform teilen.
         justify-content: center;
       }
       ```
-- [ ] `src/meals/ui/MealListRow.tsx`: `className="iconButton"` statt
+- [x] `src/meals/ui/MealListRow.tsx`: `className="iconButton"` statt
       `mealTransferButton`.
-- [ ] `src/meals/ui/MealItemsEditor.tsx`: Der Entfernen-Knopf bekommt
+- [x] `src/meals/ui/MealItemsEditor.tsx`: Der Entfernen-Knopf bekommt
       `className="iconButton"`, das `aria-label` bleibt, der Text "Entfernen" wird zu
       `<TrashIcon />`.
-- [ ] `src/meals/ui/MealPage.tsx`: Die beiden `.pageActions`-Zeilen werden zu einer
+- [x] `src/meals/ui/MealPage.tsx`: Die beiden `.pageActions`-Zeilen werden zu einer
       Zeile.
       ```tsx
       <div className="iconActions">
@@ -226,23 +226,23 @@ dieselbe Knopfform teilen.
         </button>
       </div>
       ```
-- [ ] `src/index.css`: Der Item-Text in `.mealItemRow` darf schrumpfen und umbrechen
+- [x] `src/index.css`: Der Item-Text in `.mealItemRow` darf schrumpfen und umbrechen
       (`min-width: 0; overflow-wrap: anywhere;` für `.mealItemRow span`). Sonst
       schiebt ein langer Name den Mülleimer aus der Zeile, denn `.iconButton` ist
       `flex: none`.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `MealsArea.test.tsx` schlagen vor der Umsetzung fehl und laufen
+- [x] Die neuen Fälle in `MealsArea.test.tsx` schlagen vor der Umsetzung fehl und laufen
       danach grün.
-- [ ] Die bestehenden Fälle zu Entfernen, Bearbeiten, Löschen und Übertragen laufen
+- [x] Die bestehenden Fälle zu Entfernen, Bearbeiten, Löschen und Übertragen laufen
       unverändert grün.
-- [ ] Die axe-Fälle `on a meal`, `on the form` und
+- [x] Die axe-Fälle `on a meal`, `on the form` und
       `on the form with an item taken over` sind grün.
-- [ ] `npm run test` läuft durch.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` läuft durch.
-- [ ] `npm run test:e2e` läuft durch. `e2e/meals.spec.ts` drückt
+- [x] `npm run test` läuft durch.
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` läuft durch.
+- [x] `npm run test:e2e` läuft durch. `e2e/meals.spec.ts` drückt
       "Auf die Einkaufsliste" weiterhin über den gesprochenen Namen.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
@@ -257,6 +257,11 @@ dieselbe Knopfform teilen.
 - [ ] Die Bestätigungsseite zum Löschen sieht aus wie bisher.
 
 ## Notizen zur Umsetzung
+
+- Der neue axe-Fall `on the form with an item taken over` war schon vor der Umsetzung
+  grün, weil auch der Textknopf keinen Befund hatte. Er schützt jetzt davor, dass der
+  Icon-Knopf seinen Namen verliert. Fehlgeschlagen sind vorher die beiden Fälle zur
+  reinen Icon-Darstellung.
 
 ## Verweise
 

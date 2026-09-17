@@ -13,6 +13,7 @@ import {
   type MealItem,
   type MealItemDraft,
 } from '../domain/meal'
+import { TrashIcon } from './TrashIcon'
 
 type MealItemsEditorProps = {
   items: readonly MealItem[]
@@ -78,10 +79,11 @@ export function MealItemsEditor({
               <span>{formatMealItem(item)}</span>
               <button
                 type="button"
+                className="iconButton"
                 onClick={() => removeItem(position)}
                 aria-label={`Entfernen, ${formatMealItem(item)}`}
               >
-                Entfernen
+                <TrashIcon />
               </button>
             </li>
           ))}

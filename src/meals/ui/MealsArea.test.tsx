@@ -216,6 +216,18 @@ describe('MealsArea', () => {
     expect(announcements).toContain('Hackfleisch entfernt, noch 1 Item.')
   })
 
+  it('shows the removal of a taken over item as an icon only', async () => {
+    renderMealsArea()
+
+    await openMealForm()
+    await takeOverItem('Hackfleisch', '500', 'g')
+
+    expect(
+      screen.getByRole('button', { name: 'Entfernen, Hackfleisch, 500 g' })
+        .textContent,
+    ).toBe('')
+  })
+
   it('refuses to save a meal without a name', async () => {
     const { client, announcements } = renderMealsArea()
 
@@ -459,6 +471,20 @@ describe('MealsArea', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows the actions of a meal as icons only in one row', async () => {
+    renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    const actions = ['Auf die Einkaufsliste', 'Bearbeiten', 'Löschen'].map(
+      (name) => screen.getByRole('button', { name }),
+    )
+
+    expect(actions.map((action) => action.textContent)).toEqual(['', '', ''])
+    expect(Array.from(actions[0].parentElement?.children ?? [])).toEqual(
+      actions,
+    )
+  })
+
   it('has no accessibility violations on the confirmation page', async () => {
     const { rendered } = renderMealsArea([meal('soup', 'Suppe')])
 
@@ -479,6 +505,18 @@ describe('MealsArea', () => {
 
     await openMealForm()
 
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the form with an item taken over', async () => {
+    const { rendered } = renderMealsArea()
+
+    await openMealForm()
+    await takeOverItem('Hackfleisch', '500', 'g')
+
+    expect(
+      screen.getByRole('button', { name: 'Entfernen, Hackfleisch, 500 g' }),
+    ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

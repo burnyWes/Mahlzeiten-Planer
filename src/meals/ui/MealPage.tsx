@@ -2,6 +2,9 @@ import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealItemsHeading } from '../domain/announcements'
 import { formatMealItem, type Meal } from '../domain/meal'
 import { paragraphsOf } from '../domain/text'
+import { AddToShoppingListIcon } from './AddToShoppingListIcon'
+import { EditIcon } from './EditIcon'
+import { TrashIcon } from './TrashIcon'
 
 type MealPageProps = {
   meal: Meal
@@ -59,17 +62,19 @@ export function MealPage({
       )}
       <TextSection title="Zutaten" text={meal.ingredientNotes} />
       <TextSection title="Rezept" text={meal.recipe} />
-      <div className="pageActions">
-        <button type="button" onClick={onAddToShoppingList}>
-          Auf die Einkaufsliste
+      <div className="iconActions">
+        <button
+          type="button"
+          onClick={onAddToShoppingList}
+          aria-label="Auf die Einkaufsliste"
+        >
+          <AddToShoppingListIcon />
         </button>
-      </div>
-      <div className="pageActions">
-        <button type="button" onClick={onEdit}>
-          Bearbeiten
+        <button type="button" onClick={onEdit} aria-label="Bearbeiten">
+          <EditIcon />
         </button>
-        <button type="button" onClick={onDelete}>
-          Löschen
+        <button type="button" onClick={onDelete} aria-label="Löschen">
+          <TrashIcon />
         </button>
       </div>
     </main>
