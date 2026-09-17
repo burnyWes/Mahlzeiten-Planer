@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { BottomBar } from '../../shared/ui/BottomBar'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealFailureMessage } from '../domain/announcements'
 import {
@@ -9,6 +10,7 @@ import {
   type NewMeal,
 } from '../domain/meal'
 import { MealItemsEditor } from './MealItemsEditor'
+import { SaveIcon } from './SaveIcon'
 
 type MealFormPageProps = {
   editedMeal: Meal | null
@@ -112,9 +114,12 @@ export function MealFormPage({
       <p id="mealFailure" className="failure">
         {failureMessage}
       </p>
-      <button type="button" onClick={saveMeal} aria-describedby="mealFailure">
-        Speichern
-      </button>
+      <BottomBar>
+        <button type="button" onClick={saveMeal} aria-describedby="mealFailure">
+          <SaveIcon />
+          Speichern
+        </button>
+      </BottomBar>
     </main>
   )
 }

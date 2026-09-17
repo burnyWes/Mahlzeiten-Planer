@@ -237,6 +237,13 @@ h2 {
     max(1rem, env(safe-area-inset-left));
 }
 
+.bottomBarInFlow {
+  position: static;
+  border-top: none;
+  background-color: transparent;
+  padding: 0;
+}
+
 .bottomBarContent {
   display: flex;
   gap: 1rem;

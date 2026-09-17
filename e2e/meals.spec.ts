@@ -77,4 +77,11 @@ test('keeps the actions of a long meal in view at the bottom of the screen', asy
     .getByRole('button', { name: 'Löschen', exact: true })
     .boundingBox()
   expect(status!.y + status!.height).toBeLessThanOrEqual(deleteButton!.y)
+
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused()
+  await expect(
+    page.getByRole('button', { name: 'Speichern', exact: true }),
+  ).toBeInViewport()
 })

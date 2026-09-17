@@ -485,6 +485,17 @@ describe('MealsArea', () => {
     )
   })
 
+  it('shows a save symbol next to the save text', async () => {
+    renderMealsArea()
+
+    await openMealForm()
+    const saveButton = screen.getByRole('button', { name: 'Speichern' })
+
+    expect(saveButton.textContent).toBe('Speichern')
+    expect(saveButton.firstElementChild?.tagName).toBe('svg')
+    expect(saveButton.firstElementChild).toHaveAttribute('aria-hidden', 'true')
+  })
+
   it('has no accessibility violations on the confirmation page', async () => {
     const { rendered } = renderMealsArea([meal('soup', 'Suppe')])
 

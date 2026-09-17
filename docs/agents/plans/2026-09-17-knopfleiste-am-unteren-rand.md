@@ -372,13 +372,13 @@ Gerichtsansicht kein Eingabefeld hat.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Auf der Ansicht eines kurzen Gerichts sitzt die Leiste mit Wagen, Stift und
+- [x] Auf der Ansicht eines kurzen Gerichts sitzt die Leiste mit Wagen, Stift und
       Mülleimer am unteren Bildschirmrand über dem Home-Indikator, mit Trennlinie oben.
-- [ ] Bei einem langen Rezept bleibt die Leiste beim Scrollen stehen. Ganz unten sind
+- [x] Bei einem langen Rezept bleibt die Leiste beim Scrollen stehen. Ganz unten sind
       das Rezeptende und die Statuszeile vollständig über der Leiste zu lesen.
-- [ ] Mit VoiceOver: Nach dem Rezept folgen "Auf die Einkaufsliste, Taste",
+- [x] Mit VoiceOver: Nach dem Rezept folgen "Auf die Einkaufsliste, Taste",
       "Bearbeiten, Taste" und "Löschen, Taste", wie bisher.
-- [ ] Auf der Bestätigungsseite stehen "Löschen" und "Abbrechen" mittig.
+- [x] Auf der Bestätigungsseite stehen "Löschen" und "Abbrechen" mittig.
 
 ### Phase 2: Speichern in der Leiste
 
@@ -389,7 +389,7 @@ Tastatur und verliert dann ihre Fixierung.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shared/ui/BottomBar.test.tsx` anlegen. Ein Helfer baut
+- [x] Test zuerst: `src/shared/ui/BottomBar.test.tsx` anlegen. Ein Helfer baut
       `window.visualViewport` nach: ein `EventTarget` mit veränderbarem `height` und
       `scale`, eingehängt über
       `Object.defineProperty(window, 'visualViewport', { configurable: true, value })`.
@@ -407,11 +407,11 @@ Tastatur und verliert dann ihre Fixierung.
 
       Die Leiste finden die Tests über `screen.getByRole('button').closest('.bottomBar')`
       mit einem Knopf als Kind.
-- [ ] Test zuerst: In `src/meals/ui/MealsArea.test.tsx` den Fall
+- [x] Test zuerst: In `src/meals/ui/MealsArea.test.tsx` den Fall
       `shows a save symbol next to the save text` ergänzen. Er öffnet das Formular und
       prüft für den Knopf "Speichern": `textContent` ist `'Speichern'`, und er enthält
       ein `svg` mit `aria-hidden="true"` als erstes Kind.
-- [ ] `src/shared/ui/useOnScreenKeyboard.ts` anlegen:
+- [x] `src/shared/ui/useOnScreenKeyboard.ts` anlegen:
       ```ts
       import { useEffect, useState } from 'react'
 
@@ -438,9 +438,9 @@ Tastatur und verliert dann ihre Fixierung.
         return keyboardOpen
       }
       ```
-- [ ] `src/shared/ui/BottomBar.tsx`: `useOnScreenKeyboard()` nutzen und bei offener
+- [x] `src/shared/ui/BottomBar.tsx`: `useOnScreenKeyboard()` nutzen und bei offener
       Tastatur `className="bottomBar bottomBarInFlow"` setzen.
-- [ ] `src/index.css`: `.bottomBarInFlow` ergänzen, nach `.bottomBar`:
+- [x] `src/index.css`: `.bottomBarInFlow` ergänzen, nach `.bottomBar`:
       ```css
       .bottomBarInFlow {
         position: static;
@@ -451,12 +451,12 @@ Tastatur und verliert dann ihre Fixierung.
       ```
       Einen eigenen Abstand nach oben braucht die Leiste dabei nicht: Die Fehlerzeile
       `.failure` direkt darüber hat schon `margin-bottom: 1rem`.
-- [ ] `src/meals/ui/SaveIcon.tsx` anlegen: Diskette im Stil von `TrashIcon` (24er
+- [x] `src/meals/ui/SaveIcon.tsx` anlegen: Diskette im Stil von `TrashIcon` (24er
       viewBox, `stroke="currentColor"`, Strichstärke 2, `aria-hidden="true"`,
       `focusable="false"`, `className="buttonIcon"`) mit den Pfaden
       `M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z`,
       `M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7` und `M7 3v4a1 1 0 0 0 1 1h7`.
-- [ ] `src/meals/ui/MealFormPage.tsx`: Der Speichern-Knopf zieht in die Leiste, sonst
+- [x] `src/meals/ui/MealFormPage.tsx`: Der Speichern-Knopf zieht in die Leiste, sonst
       bleibt er gleich:
       ```tsx
       <BottomBar>
@@ -466,22 +466,22 @@ Tastatur und verliert dann ihre Fixierung.
         </button>
       </BottomBar>
       ```
-- [ ] Test ergänzen: In `e2e/meals.spec.ts` prüft der Fall aus Phase 1 zusätzlich:
+- [x] Test ergänzen: In `e2e/meals.spec.ts` prüft der Fall aus Phase 1 zusätzlich:
       Nach "Bearbeiten" ist "Speichern" `toBeInViewport()`. Das Rezept ist lang, und der
       Fokus liegt im Feld "Name". Desktop-Chrome hat keine Bildschirmtastatur, die
       Leiste ist also fixiert.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `BottomBar.test.tsx` und `MealsArea.test.tsx` schlagen vor der
+- [x] Die neuen Fälle in `BottomBar.test.tsx` und `MealsArea.test.tsx` schlagen vor der
       Umsetzung fehl und laufen danach grün.
-- [ ] Die bestehenden Fälle, die "Speichern" über den Namen drücken, bleiben grün.
-- [ ] Die axe-Fälle `on the form` und `on the form with an item taken over` bleiben
+- [x] Die bestehenden Fälle, die "Speichern" über den Namen drücken, bleiben grün.
+- [x] Die axe-Fälle `on the form` und `on the form with an item taken over` bleiben
       grün.
-- [ ] `npm run test` läuft durch.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` läuft durch.
-- [ ] `npm run test:e2e` läuft durch.
+- [x] `npm run test` läuft durch.
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` läuft durch.
+- [x] `npm run test:e2e` läuft durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
