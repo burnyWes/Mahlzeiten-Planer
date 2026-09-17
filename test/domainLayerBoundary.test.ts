@@ -5,6 +5,10 @@ const domainFilePath = 'src/shopping/domain/boundaryProbe.ts'
 const uiFilePath = 'src/shopping/ui/boundaryProbe.ts'
 const mealsDomainFilePath = 'src/meals/domain/boundaryProbe.ts'
 const mealsUiFilePath = 'src/meals/ui/boundaryProbe.ts'
+const mealsApiFilePath = 'src/meals/api/boundaryProbe.ts'
+const shoppingApiFilePath = 'src/shopping/api/boundaryProbe.ts'
+const sharedDomainFilePath = 'src/shared/domain/boundaryProbe.ts'
+const sharedUiFilePath = 'src/shared/ui/boundaryProbe.ts'
 
 async function brokenRulesFor(source: string, filePath: string) {
   const [result] = await new ESLint().lintText(source, { filePath })
@@ -43,6 +47,24 @@ describe('domain layer boundary', () => {
     expect(brokenRules).toContain('no-restricted-imports')
   })
 
+  it('rejects the shared user interface inside domain', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../../shared/ui/announcement'),
+      domainFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
+  it('rejects a shared module other than the shared domain inside domain', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../../shared/auth/credentials'),
+      domainFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
   it('rejects a framework import inside the domain of meals', async () => {
     const brokenRules = await brokenRulesFor(
       `import { useState } from 'react'\nexport const probe = useState\n`,
@@ -56,6 +78,26 @@ describe('domain layer boundary', () => {
     const brokenRules = await brokenRulesFor(
       `import { useState } from 'react'\nexport const probe = useState\n`,
       uiFilePath,
+    )
+
+    expect(brokenRules).not.toContain('no-restricted-imports')
+  })
+})
+
+describe('api layer boundary', () => {
+  it('rejects the user interface inside api', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../ui/useMeals'),
+      mealsApiFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
+  it('allows the domain inside api', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../domain/meal'),
+      mealsApiFilePath,
     )
 
     expect(brokenRules).not.toContain('no-restricted-imports')
@@ -85,6 +127,33 @@ describe('bounded context boundary', () => {
     const brokenRules = await brokenRulesFor(
       importOf('../../shopping/ui/useShoppingList'),
       mealsUiFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
+  it('rejects a context inside the shared domain', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../../shopping/domain/shoppingItem'),
+      sharedDomainFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
+  it('rejects a context inside the shared user interface', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../../meals/ui/MealsArea'),
+      sharedUiFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
+  it('rejects an import of meals inside the api of shopping', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../../meals/domain/meal'),
+      shoppingApiFilePath,
     )
 
     expect(brokenRules).toContain('no-restricted-imports')

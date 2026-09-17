@@ -5,39 +5,52 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
+const contexts = ['shopping', 'meals']
+
 const forbiddenInDomain = [
   'react',
   'react-dom',
   'firebase',
   'firebase/*',
-  '../ui/*',
-  '../api/*',
-  '../../ui/*',
-  '../../api/*',
+  '**/ui/**',
+  '**/api/**',
+  '**/shared/*/**',
+  '!**/shared/domain/**',
 ]
 
-const contexts = [
-  { name: 'shopping', other: 'meals' },
-  { name: 'meals', other: 'shopping' },
+const forbiddenInApi = ['**/ui/**']
+
+const modules = [
+  ...contexts.map((name) => ({
+    folder: name,
+    foreignContexts: contexts.filter((other) => other !== name),
+  })),
+  { folder: 'shared', foreignContexts: contexts },
 ]
 
-const contextBoundaries = contexts.flatMap(({ name, other }) => [
-  {
-    files: [`src/${name}/**/*.{ts,tsx}`],
+function restrictImports(files, patterns) {
+  return {
+    files: [files],
     rules: {
-      'no-restricted-imports': ['error', { patterns: [`**/${other}/**`] }],
+      'no-restricted-imports': ['error', { patterns }],
     },
-  },
-  {
-    files: [`src/${name}/domain/**/*.ts`],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        { patterns: [...forbiddenInDomain, `**/${other}/**`] },
-      ],
-    },
-  },
-])
+  }
+}
+
+const moduleBoundaries = modules.flatMap(({ folder, foreignContexts }) => {
+  const foreign = foreignContexts.map((context) => `**/${context}/**`)
+  return [
+    restrictImports(`src/${folder}/**/*.{ts,tsx}`, foreign),
+    restrictImports(`src/${folder}/api/**/*.ts`, [
+      ...foreign,
+      ...forbiddenInApi,
+    ]),
+    restrictImports(`src/${folder}/domain/**/*.ts`, [
+      ...foreign,
+      ...forbiddenInDomain,
+    ]),
+  ]
+})
 
 export default tseslint.config(
   {
@@ -61,13 +74,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
   },
-  {
-    files: ['src/**/domain/**/*.ts'],
-    rules: {
-      'no-restricted-imports': ['error', { patterns: forbiddenInDomain }],
-    },
-  },
-  ...contextBoundaries,
+  ...moduleBoundaries,
   {
     files: ['e2e/**/*.ts', 'scripts/**/*.mjs', '*.config.ts', 'test/**/*.ts'],
     languageOptions: {
