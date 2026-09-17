@@ -1,3 +1,4 @@
+import { BottomBar } from '../../shared/ui/BottomBar'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealItemsHeading } from '../domain/announcements'
 import { formatMealItem, type Meal } from '../domain/meal'
@@ -62,7 +63,7 @@ export function MealPage({
       )}
       <TextSection title="Zutaten" text={meal.ingredientNotes} />
       <TextSection title="Rezept" text={meal.recipe} />
-      <div className="iconActions">
+      <BottomBar>
         <button
           type="button"
           onClick={onAddToShoppingList}
@@ -76,7 +77,7 @@ export function MealPage({
         <button type="button" onClick={onDelete} aria-label="Löschen">
           <TrashIcon />
         </button>
-      </div>
+      </BottomBar>
     </main>
   )
 }

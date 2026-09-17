@@ -6,6 +6,7 @@
     sans-serif;
   font-size: 18px;
   line-height: 1.5;
+  --bottomBarHeight: calc(3rem + 1rem + 1px);
 }
 
 body {
@@ -209,6 +210,7 @@ h2 {
 
 .pageActions {
   display: flex;
+  justify-content: center;
   gap: 1rem;
   margin-top: 1.5rem;
 }
@@ -222,17 +224,44 @@ h2 {
   color: #14532d;
 }
 
-.iconActions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background-color: #ffffff;
+  border-top: 1px solid #d1d5db;
+  padding: 0.5rem max(1rem, env(safe-area-inset-right))
+    calc(0.5rem + env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
 }
 
-.iconActions button {
+.bottomBarContent {
+  display: flex;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.bottomBarContent button {
   flex: 1;
+  box-sizing: border-box;
+  height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+}
+
+body:has(.bottomBar:not(.bottomBarInFlow)) {
+  padding-bottom: calc(var(--bottomBarHeight) + env(safe-area-inset-bottom));
+}
+
+html:has(.bottomBar:not(.bottomBarInFlow)) {
+  scroll-padding-bottom: calc(
+    var(--bottomBarHeight) + env(safe-area-inset-bottom)
+  );
 }
 
 .iconButton {

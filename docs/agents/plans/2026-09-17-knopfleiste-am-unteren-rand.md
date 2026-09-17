@@ -281,7 +281,7 @@ Gerichtsansicht kein Eingabefeld hat.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: In `e2e/meals.spec.ts` den Fall
+- [x] Test zuerst: In `e2e/meals.spec.ts` den Fall
       `keeps the actions of a long meal in view at the bottom of the screen` ergänzen.
       Er legt "Bolognese" mit einem Item an und füllt das Rezept mit
       `page.getByLabel('Rezept', { exact: true }).fill('Schritt\n\n'.repeat(60))`, damit
@@ -293,7 +293,7 @@ Gerichtsansicht kein Eingabefeld hat.
         (`page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))`). Dann
         liegt die Unterkante von `getByRole('status')` nicht tiefer als die Oberkante
         des Knopfs "Löschen" (Vergleich über `boundingBox()`).
-- [ ] `src/shared/ui/BottomBar.tsx` anlegen, zunächst ohne Tastatur-Erkennung:
+- [x] `src/shared/ui/BottomBar.tsx` anlegen, zunächst ohne Tastatur-Erkennung:
       ```tsx
       import type { ReactNode } from 'react'
 
@@ -305,9 +305,9 @@ Gerichtsansicht kein Eingabefeld hat.
         )
       }
       ```
-- [ ] `src/meals/ui/MealPage.tsx`: `<div className="iconActions">` durch `<BottomBar>`
+- [x] `src/meals/ui/MealPage.tsx`: `<div className="iconActions">` durch `<BottomBar>`
       ersetzen. Knöpfe, `aria-label` und Reihenfolge bleiben gleich.
-- [ ] `src/index.css`: Variable in `:root` ergänzen, `.iconActions` samt
+- [x] `src/index.css`: Variable in `:root` ergänzen, `.iconActions` samt
       `.iconActions button` entfernen und die Leiste ergänzen:
       ```css
       :root {
@@ -357,18 +357,18 @@ Gerichtsansicht kein Eingabefeld hat.
       }
       ```
       Die Variable steht im bestehenden `:root`-Block, es kommt kein zweiter hinzu.
-- [ ] `src/index.css`: `.pageActions` bekommt `justify-content: center;`.
+- [x] `src/index.css`: `.pageActions` bekommt `justify-content: center;`.
 
 **Automatisierte Verifikation**:
 
-- [ ] Der neue E2E-Fall schlägt vor der Umsetzung fehl und läuft danach grün.
-- [ ] `shows the actions of a meal as icons only in one row` in `MealsArea.test.tsx`
+- [x] Der neue E2E-Fall schlägt vor der Umsetzung fehl und läuft danach grün.
+- [x] `shows the actions of a meal as icons only in one row` in `MealsArea.test.tsx`
       bleibt grün.
-- [ ] Die axe-Fälle `on a meal` und `on the confirmation page` bleiben grün.
-- [ ] `npm run test` läuft durch.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` läuft durch.
-- [ ] `npm run test:e2e` läuft durch.
+- [x] Die axe-Fälle `on a meal` und `on the confirmation page` bleiben grün.
+- [x] `npm run test` läuft durch.
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` läuft durch.
+- [x] `npm run test:e2e` läuft durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
@@ -496,6 +496,12 @@ Tastatur und verliert dann ihre Fixierung.
       nicht vorgelesen.
 
 ## Notizen zur Umsetzung
+
+- Phase 1: Im E2E-Fall steht das Scrollen als Ausdruck in Textform,
+  `page.evaluate('window.scrollTo(0, document.body.scrollHeight)')`. Als Funktion
+  scheitert `tsc -b` im Build, weil `tsconfig.node.json` für `e2e` keine DOM-Typen
+  kennt. Gegenprobe: Ohne das `padding-bottom` am `body` schlägt der Vergleich der
+  Statuszeile fehl (Unterkante 720 px, Knopf "Löschen" ab 657 px).
 
 ## Verweise
 
