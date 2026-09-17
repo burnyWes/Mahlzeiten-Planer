@@ -5,7 +5,7 @@ branch: main
 story: MZP-005
 topic: "Knopfleiste am unteren Bildschirmrand"
 tags: [plan, meals, shared-ui, ui, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-005 — Knopfleiste am unteren Bildschirmrand
@@ -21,26 +21,26 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-17.
 
 ## Akzeptanzkriterien
 
-- [ ] Auf der Ansicht eines Gerichts sitzen Einkaufswagen, Stift und Mülleimer in einer
+- [x] Auf der Ansicht eines Gerichts sitzen Einkaufswagen, Stift und Mülleimer in einer
       Leiste immer am unteren Bildschirmrand. Das gilt bei kurzem Inhalt genauso wie beim
       Scrollen durch ein langes Rezept.
-- [ ] Auf der Seite zum Bearbeiten und Anlegen sitzt "Speichern" in derselben Leiste.
+- [x] Auf der Seite zum Bearbeiten und Anlegen sitzt "Speichern" in derselben Leiste.
       Der Knopf ist so breit wie die Leiste, das Disketten-Symbol steht links neben dem
       Text, beide mittig.
-- [ ] Die Leiste hat einen weißen Hintergrund, oben eine Trennlinie und hält Abstand zum
+- [x] Die Leiste hat einen weißen Hintergrund, oben eine Trennlinie und hält Abstand zum
       Home-Indikator. Ihr Inhalt ist wie die Seite höchstens 40rem breit und steht mittig.
-- [ ] Rezepttext, Statuszeile und "Neue Version laden" verschwinden nie hinter der
+- [x] Rezepttext, Statuszeile und "Neue Version laden" verschwinden nie hinter der
       Leiste, auch nicht ganz unten auf der Seite.
-- [ ] Ist die Bildschirmtastatur offen, ist die Leiste nicht fixiert: "Speichern" steht
+- [x] Ist die Bildschirmtastatur offen, ist die Leiste nicht fixiert: "Speichern" steht
       dann als letzter Knopf am Ende des Formulars. Geht die Tastatur zu, sitzt die
       Leiste wieder am Bildschirmrand. Direkt nach dem Öffnen der Seite ist sie fixiert,
       obwohl der Fokus im Feld "Name" liegt.
-- [ ] VoiceOver liest die Knöpfe unverändert und in derselben Reihenfolge wie heute:
+- [x] VoiceOver liest die Knöpfe unverändert und in derselben Reihenfolge wie heute:
       "Auf die Einkaufsliste", "Bearbeiten", "Löschen" am Ende der Gerichtsansicht,
       "Speichern" am Ende des Formulars. Das Disketten-Symbol wird nicht vorgelesen.
-- [ ] Auf der Bestätigungsseite stehen "Löschen" und "Abbrechen" als Gruppe mittig.
+- [x] Auf der Bestätigungsseite stehen "Löschen" und "Abbrechen" als Gruppe mittig.
       Sonst bleibt die Seite unverändert.
-- [ ] Die axe-Prüfungen der Gerichtsansicht, des Formulars und der Bestätigungsseite
+- [x] Die axe-Prüfungen der Gerichtsansicht, des Formulars und der Bestätigungsseite
       bleiben ohne Befund.
 
 ## Wesentliche Entscheidungen und Abwägungen
@@ -485,14 +485,14 @@ Tastatur und verliert dann ihre Fixierung.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Nach "Bearbeiten" sitzt "Speichern" über die ganze Breite am unteren Rand. Die
+- [x] Nach "Bearbeiten" sitzt "Speichern" über die ganze Breite am unteren Rand. Die
       Diskette steht links neben dem Text, beide mittig.
-- [ ] Beim Tippen ins Feld "Rezept" geht die Tastatur auf. "Speichern" steht dann am
+- [x] Beim Tippen ins Feld "Rezept" geht die Tastatur auf. "Speichern" steht dann am
       Ende des Formulars und verdeckt das Feld nicht. Nach dem Schließen der Tastatur
       sitzt die Leiste wieder unten.
-- [ ] Dasselbe beim Anlegen eines neuen Gerichts.
-- [ ] Hineinzoomen ohne Tastatur lässt die Leiste fixiert.
-- [ ] Mit VoiceOver: Nach dem Feld "Rezept" folgt "Speichern, Taste". Die Diskette wird
+- [x] Dasselbe beim Anlegen eines neuen Gerichts.
+- [x] Hineinzoomen ohne Tastatur lässt die Leiste fixiert.
+- [x] Mit VoiceOver: Nach dem Feld "Rezept" folgt "Speichern, Taste". Die Diskette wird
       nicht vorgelesen.
 
 ## Notizen zur Umsetzung
