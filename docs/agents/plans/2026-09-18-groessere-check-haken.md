@@ -663,15 +663,15 @@ schwarz. Die Zeile behaelt ihre Hoehe.
 
 **Manuelle Verifikation**:
 
-- [ ] In der normalen Ansicht: das Markierungsfeld zeigt nur die Linie links und unten,
+- [x] In der normalen Ansicht: das Markierungsfeld zeigt nur die Linie links und unten,
       abgehakt erscheint ein grosser pinkfarbener Haken in einem ungefuellten Kasten.
-- [ ] In der invertierten Ansicht des Nutzers: der Haken erscheint neongruen, Kasten und
+- [x] In der invertierten Ansicht des Nutzers: der Haken erscheint neongruen, Kasten und
       Text weiss.
-- [ ] Der Haken sitzt mittig im Kasten, ragt nirgends heraus und beruehrt weder die
+- [x] Der Haken sitzt mittig im Kasten, ragt nirgends heraus und beruehrt weder die
       Kastenlinien noch die Trennlinie der Zeile.
-- [ ] Der Zeilenabstand der Liste ist unveraendert gegenueber vorher.
-- [ ] Bei vergroesserter Systemschrift laufen die Zeilen nicht ineinander.
-- [ ] Mit VoiceOver: das Feld wird weiterhin als "Markierungsfeld" mit Artikelname und
+- [x] Der Zeilenabstand der Liste ist unveraendert gegenueber vorher.
+- [x] Bei vergroesserter Systemschrift laufen die Zeilen nicht ineinander.
+- [x] Mit VoiceOver: das Feld wird weiterhin als "Markierungsfeld" mit Artikelname und
       Zustand gelesen; per Tastatur ist es erreichbar, die Fokusumrandung ist sichtbar,
       und die Leertaste schaltet um.
 
