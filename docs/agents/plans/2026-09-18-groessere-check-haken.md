@@ -30,37 +30,37 @@ verzoegert erscheinenden Artikel — es ist dieselbe Ursache.
 
 ### Ein Klick genuegt
 
-- [ ] Ein Klick auf das Markierungsfeld aendert den Zustand sofort und genau einmal;
+- [x] Ein Klick auf das Markierungsfeld aendert den Zustand sofort und genau einmal;
       VoiceOver liest unmittelbar danach den neuen Zustand.
-- [ ] Beim Wiederoeffnen verschwindet die Zeile nicht kurzzeitig aus der Liste — auch
+- [x] Beim Wiederoeffnen verschwindet die Zeile nicht kurzzeitig aus der Liste — auch
       dann nicht, wenn die Momentaufnahme den Artikel voruebergehend gar nicht traegt.
-- [ ] Ein selbst hinzugefuegter Artikel steht sofort in der Liste, nicht erst nach
+- [x] Ein selbst hinzugefuegter Artikel steht sofort in der Liste, nicht erst nach
       Sekunden.
-- [ ] Zweimaliges Umschalten vor der ersten Momentaufnahme fuehrt zurueck zum
+- [x] Zweimaliges Umschalten vor der ersten Momentaufnahme fuehrt zurueck zum
       Ausgangszustand, ohne dass ein Schreibvorgang haengen bleibt.
-- [ ] Offline bleibt der eigene Schreibvorgang sichtbar, bis Firestore ihn bestaetigt.
-- [ ] Aendert das andere Geraet denselben Artikel — abgehakt oder Menge —, setzt sich
+- [x] Offline bleibt der eigene Schreibvorgang sichtbar, bis Firestore ihn bestaetigt.
+- [x] Aendert das andere Geraet denselben Artikel — abgehakt oder Menge —, setzt sich
       dessen Stand durch, sobald die Momentaufnahme ihn bringt.
-- [ ] Wird ein abgehakter Artikel aufgeraeumt, bevor sein Schreibvorgang bestaetigt ist,
+- [x] Wird ein abgehakter Artikel aufgeraeumt, bevor sein Schreibvorgang bestaetigt ist,
       und ueberholt ihn danach das andere Geraet, taucht er als neue Aenderung wieder
       auf — `Aufraeumen, N Aenderungen` zaehlt ihn mit.
-- [ ] `Einkaufsliste, N offen` und `Aufraeumen, N Aenderungen` zaehlen den eigenen
+- [x] `Einkaufsliste, N offen` und `Aufraeumen, N Aenderungen` zaehlen den eigenen
       Schreibvorgang sofort mit.
 
 ### Ein Haken, den man sieht
 
-- [ ] Das Markierungsfeld ist 40 x 40 px: Linie links und unten, 3 px, `#000000`.
+- [x] Das Markierungsfeld ist 40 x 40 px: Linie links und unten, 3 px, `#000000`.
       Oben und rechts keine Linie.
-- [ ] Abgehakt wird der Kasten nicht gefuellt, sondern ein Haken ueber die volle
+- [x] Abgehakt wird der Kasten nicht gefuellt, sondern ein Haken ueber die volle
       Kastenbreite gezeichnet, 5 px, `#ff00cc`.
-- [ ] Der Haken bleibt vollstaendig innerhalb der 40 px und beruehrt die Kastenlinien
+- [x] Der Haken bleibt vollstaendig innerhalb der 40 px und beruehrt die Kastenlinien
       nicht.
-- [ ] Kasten und Haken sind aus CSS-Linien gezeichnet, nicht als SVG oder Bild.
-- [ ] Der Zeilenabstand der Liste bleibt unveraendert (Zeilenhoehe 72 px wie heute).
-- [ ] `body` traegt `#000000`. Die Signalfarben (`#991b1b` Fehlermeldung, `#14532d`
+- [x] Kasten und Haken sind aus CSS-Linien gezeichnet, nicht als SVG oder Bild.
+- [x] Der Zeilenabstand der Liste bleibt unveraendert (Zeilenhoehe 72 px wie heute).
+- [x] `body` traegt `#000000`. Die Signalfarben (`#991b1b` Fehlermeldung, `#14532d`
       und `#ffffff` Knoepfe) und die Grautoene fuer Rahmen und Trennlinien (`#4b5563`,
       `#d1d5db`, `#6b7280`) bleiben unveraendert.
-- [ ] Das Feld bleibt ein `<input type="checkbox">`: Rolle, Zustand, Beschriftung und
+- [x] Das Feld bleibt ein `<input type="checkbox">`: Rolle, Zustand, Beschriftung und
       Tastaturbedienung unveraendert, axe ohne Befund.
 
 **Nicht im Umfang:** der Windows-Kontrastmodus (`forced-colors`). Dort blendet das
@@ -572,14 +572,14 @@ Reihenfolge die beiden Firestore-Listener feuern.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet mit VoiceOver: ein Artikel wird beim **ersten** Antippen abgehakt,
+- [x] Auf dem Geraet mit VoiceOver: ein Artikel wird beim **ersten** Antippen abgehakt,
       die Ansage nennt den neuen Zustand, und das Markierungsfeld wird als "markiert"
       gelesen.
-- [ ] Nochmals antippen: der Artikel ist beim ersten Antippen wieder offen, die Zeile
+- [x] Nochmals antippen: der Artikel ist beim ersten Antippen wieder offen, die Zeile
       bleibt dabei durchgehend an ihrem Platz.
-- [ ] Flugmodus einschalten, einen Artikel abhaken: der Haken bleibt stehen. Flugmodus
+- [x] Flugmodus einschalten, einen Artikel abhaken: der Haken bleibt stehen. Flugmodus
       aus: der Haken bleibt stehen, es springt nichts zurueck.
-- [ ] Am zweiten Geraet denselben Artikel wieder oeffnen: der Stand des zweiten Geraets
+- [x] Am zweiten Geraet denselben Artikel wieder oeffnen: der Stand des zweiten Geraets
       setzt sich auf dem ersten durch.
 
 ### Phase 2: Ein Haken, den man sieht
@@ -591,10 +591,10 @@ schwarz. Die Zeile behaelt ihre Hoehe.
 
 **Aufgaben**:
 
-- [ ] `src/index.css:15`: `body { color: #111827 }` wird `body { color: #000000 }`.
+- [x] `src/index.css:15`: `body { color: #111827 }` wird `body { color: #000000 }`.
       Die Fehlermeldung `.failure` (`#991b1b`), die Knopffarben (`#14532d`, `#ffffff`)
       und die Grautoene (`#4b5563`, `#d1d5db`, `#6b7280`) bleiben unveraendert.
-- [ ] `src/index.css:183-187`: die Regel `.itemList input[type='checkbox']` ersetzen.
+- [x] `src/index.css:183-187`: die Regel `.itemList input[type='checkbox']` ersetzen.
 
       ```css
       .itemList input[type='checkbox'] {
@@ -620,7 +620,7 @@ schwarz. Die Zeile behaelt ihre Hoehe.
       `button, input, textarea` (`index.css:65`). Beide werden von der Spezifitaet
       dieser Regel geschlagen (0,2,1 gegen 0,0,1). `flex: none` verhindert, dass das
       Feld im Label schrumpft.
-- [ ] `src/index.css`: den Haken als Pseudo-Element ergaenzen.
+- [x] `src/index.css`: den Haken als Pseudo-Element ergaenzen.
 
       ```css
       .itemList input[type='checkbox']:checked::before {
@@ -649,17 +649,17 @@ schwarz. Die Zeile behaelt ihre Hoehe.
       `input` — die ist wegen `border-left` und `border-bottom` 37 x 37 px gross. Damit
       bleiben rund 3 px Luft ringsum, ohne gerechnete Randabstaende, und die Drehung um
       den eigenen Mittelpunkt aendert daran nichts.
-- [ ] `src/index.css`: pruefen, dass `.itemCheckedOff span { text-decoration:
+- [x] `src/index.css`: pruefen, dass `.itemCheckedOff span { text-decoration:
       line-through }` (Z. 189) und die `:focus-visible`-Umrandung (Z. 72) unveraendert
       greifen.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft durch; die bestehenden Tests in `ShoppingArea.test.tsx`
+- [x] `npm run test` laeuft durch; die bestehenden Tests in `ShoppingArea.test.tsx`
       halten fest, dass das Feld weiterhin `role="checkbox"` hat, den Zustand meldet
       und per Klick umschaltet
-- [ ] Der Test *"has no accessibility violations with a checked off item"* bleibt gruen
-- [ ] `npm run lint`, `npm run build` und `npm run format:check` laufen durch
+- [x] Der Test *"has no accessibility violations with a checked off item"* bleibt gruen
+- [x] `npm run lint`, `npm run build` und `npm run format:check` laufen durch
 
 **Manuelle Verifikation**:
 
@@ -688,6 +688,13 @@ Neuladen. Behoben, indem der Test auf den Server wartet: neue Hilfe
 `expect.poll(itemNamesOnServer).toContain('Käse')` vor `page.reload()`. Die dahinter
 liegende Luecke der App — ein frisch hinzugefuegter Artikel geht bei sofortigem Neuladen
 still verloren — steht als `-`-Notiz in `docs/notes.txt`.
+
+**Phase 2, Geometrie im Browser nachgemessen.** Eine Beispielzeile mit dem echten
+`index.css` in Chrome: Markierungsfeld 40 x 40 px, Zeilenhoehe 71,8 px (also
+unveraendert), Haken vollstaendig innerhalb des Kastens ohne Beruehrung der
+Kastenlinien, Durchstreichen und die gruene Fokusumrandung greifen unveraendert. Die
+Ansicht des Nutzers (invertiert, grosse Systemschrift, VoiceOver) bleibt der manuellen
+Pruefung vorbehalten.
 
 ## Verweise
 
