@@ -109,6 +109,21 @@ export function createFirestoreKnownItemsClient(
       deleteDoc(knownItemDocument(name)).catch(ignoreFailure)
     },
 
+    renameKnownItem({ written, removedName, addedUses }) {
+      const batch = writeBatch(firestore)
+      batch.set(
+        knownItemDocument(written.name),
+        {
+          name: written.name,
+          lastUsedAt: written.lastUsedAt,
+          timesUsed: increment(addedUses),
+        },
+        { merge: true },
+      )
+      if (removedName !== null) batch.delete(knownItemDocument(removedName))
+      batch.commit().catch(ignoreFailure)
+    },
+
     takeOverHistoryIfEmpty() {
       takeOverHistory().catch(ignoreFailure)
     },

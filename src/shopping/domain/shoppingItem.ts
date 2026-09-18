@@ -36,7 +36,7 @@ export class InvalidShoppingItem extends Error {
 
 const MAXIMUM_NAME_LENGTH = 100
 
-function readName(written: string): string {
+export function createItemName(written: string): string {
   const name = written.trim()
   if (name === '') throw new InvalidShoppingItem('nameMissing')
   if (name.length > MAXIMUM_NAME_LENGTH)
@@ -49,7 +49,7 @@ export function createShoppingItem(
   createdAt: number,
 ): NewShoppingItem {
   return {
-    name: readName(draft.name),
+    name: createItemName(draft.name),
     quantity: readQuantity(draft),
     createdAt,
   }

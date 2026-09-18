@@ -42,6 +42,10 @@ x Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in
   Die Zusammenführung rechnet seit MZP-002 Phase 2 mit den eigenen Schreibvorgängen,
   die Anzeige noch nicht. Der E2E-Test "sign in, add, check off and clean up" ist
   deshalb gelegentlich rot, auch schon vor Phase 2.
+x Einstellungen
+  n Push-Benachrichtigungen
+x Vorschläge verwalten: Tippfehler aus dem Artikelkatalog (knownItems) löschen können,
+  z. B. unter Einstellungen.
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -50,8 +54,6 @@ TODO
 - Später erweitern zu
   - Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
 - Wochenplaner
-- Einstellungen
-  n Push-Benachrichtigungen
 - Alexa-Integration
 - PDF-Import
 - Firestore-Regeln werden nirgends automatisch ausgerollt: deploy.yml schiebt nur die
@@ -60,8 +62,6 @@ TODO
   "npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26"
   aufruft. Entweder in den Workflow aufnehmen (braucht ein Service-Account-Secret)
   oder wenigstens in die Freigabe-Schritte schreiben.
-- Vorschläge verwalten: Tippfehler aus dem Artikelkatalog (knownItems) löschen können,
-  z. B. unter Einstellungen.
 - Datenbank aufraeumen: abgehakte Artikel bleiben dauerhaft in Firestore (items),
   "Aufraeumen" ordnet nur die Ansicht neu. Abgehakte Artikel irgendwann wirklich
   loeschen (z. B. beim Aufraeumen oder nach einer Frist), ohne dass sie dem anderen

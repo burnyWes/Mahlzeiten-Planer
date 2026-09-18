@@ -5,7 +5,7 @@ branch: main
 story: MZP-007
 topic: "Artikelverwaltung und Einstellungen"
 tags: [plan, shopping, shared, ui, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-007 — Artikelverwaltung und Einstellungen
@@ -21,28 +21,28 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-18. Die beiden TODO-Pu
 
 ## Akzeptanzkriterien
 
-- [ ] In der Navigationsleiste steht rechts ein schmaler Knopf mit Zahnrad-Icon ohne
+- [x] In der Navigationsleiste steht rechts ein schmaler Knopf mit Zahnrad-Icon ohne
       sichtbaren Text. VoiceOver liest ihn als "Einstellungen"; ist er aktiv, trägt er
       `aria-current="page"` wie die anderen Bereiche.
-- [ ] Die Einstellungen-Seite trägt die Navigationsleiste und zeigt genau einen Eintrag
+- [x] Die Einstellungen-Seite trägt die Navigationsleiste und zeigt genau einen Eintrag
       "Artikelverwaltung".
-- [ ] Die Artikelverwaltung zeigt alle Katalogeinträge alphabetisch (`de-DE`), je Zeile
+- [x] Die Artikelverwaltung zeigt alle Katalogeinträge alphabetisch (`de-DE`), je Zeile
       einen vollbreiten Namens-Knopf und rechts einen Mülleimer-Knopf — im Design der
       Gerichte-Liste. Die Überschrift nennt die Anzahl.
-- [ ] Der Mülleimer führt auf eine Bestätigungsseite mit "Löschen" und "Abbrechen".
+- [x] Der Mülleimer führt auf eine Bestätigungsseite mit "Löschen" und "Abbrechen".
       Nach dem Löschen: zurück zur Liste, Ansage "<Name> gelöscht, noch N Vorschläge."
-- [ ] Ein Klick auf den Namen öffnet eine Seite mit Namensfeld und "Speichern" in der
+- [x] Ein Klick auf den Namen öffnet eine Seite mit Namensfeld und "Speichern" in der
       unteren Knopfleiste. Speichern führt zurück zur Liste, Ansage
       "<Name> gespeichert."
-- [ ] Ein leerer Name meldet "Bitte einen Namen eingeben.", über 100 Zeichen "Der Name
+- [x] Ein leerer Name meldet "Bitte einen Namen eingeben.", über 100 Zeichen "Der Name
       ist zu lang." — dieselben Texte wie im Artikel-Formular.
-- [ ] Wird auf einen Namen umbenannt, den es bereits gibt, entsteht **ein** Eintrag: die
+- [x] Wird auf einen Namen umbenannt, den es bereits gibt, entsteht **ein** Eintrag: die
       Verwendungen werden addiert, das jüngere `lastUsedAt` gewinnt, der alte Eintrag
       verschwindet.
-- [ ] Nach einer Korrektur der Schreibweise landet der gepflegte Name auf der
+- [x] Nach einer Korrektur der Schreibweise landet der gepflegte Name auf der
       Einkaufsliste, auch wenn abweichend getippt und kein Vorschlag angeklickt wurde.
-- [ ] Alle neuen Seiten sind ohne axe-Befund.
-- [ ] Die bestehenden Abläufe für Einkaufsliste und Gerichte bleiben unverändert; die
+- [x] Alle neuen Seiten sind ohne axe-Befund.
+- [x] Die bestehenden Abläufe für Einkaufsliste und Gerichte bleiben unverändert; die
       E2E-Tests laufen ohne Anpassung grün.
 
 ### Bewusste Grenzen
@@ -486,9 +486,9 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Das Zahnrad steht rechts in der Leiste, ist gut zu treffen und schiebt
+- [x] Das Zahnrad steht rechts in der Leiste, ist gut zu treffen und schiebt
       "Einkaufsliste" und "Gerichte" nicht zusammen.
-- [ ] Mit VoiceOver: Der Knopf wird als "Einstellungen, Taste" gelesen, im aktiven
+- [x] Mit VoiceOver: Der Knopf wird als "Einstellungen, Taste" gelesen, im aktiven
       Zustand zusätzlich als aktuelle Seite.
 
 ### Phase 2: Vorschlag löschen
@@ -543,7 +543,7 @@ mehr im Katalog und wird nicht mehr vorgeschlagen.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Ein gelöschter Vorschlag verschwindet auf beiden Geräten aus der Liste und wird
+- [x] Ein gelöschter Vorschlag verschwindet auf beiden Geräten aus der Liste und wird
       beim Tippen nicht mehr vorgeschlagen.
 
 ### Phase 3: Vorschlag umbenennen
@@ -555,7 +555,7 @@ trifft er einen vorhandenen Eintrag, werden beide zu einem zusammengeführt.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shopping/domain/knownItem.test.ts` um `planKnownItemRename`
+- [x] Test zuerst: `src/shopping/domain/knownItem.test.ts` um `planKnownItemRename`
       ergänzen:
       - Nur die Schreibweise geändert: `written.name` ist der neue Name, `timesUsed` und
         `lastUsedAt` bleiben, `removedName` ist `null`, `addedUses` ist `0`.
@@ -567,15 +567,15 @@ trifft er einen vorhandenen Eintrag, werden beide zu einem zusammengeführt.
       - Unveränderter Name: `written` entspricht dem Eintrag, `removedName` ist `null`.
       - Der alte Name steht nicht mehr im Katalog: liefert `null`, damit die Oberfläche
         zur Liste zurückkehren kann, statt einen Eintrag aus dem Nichts zu schreiben.
-- [ ] Test zuerst: `applyRename` prüfen — führt einen `KnownItemRename` auf einer Liste
+- [x] Test zuerst: `applyRename` prüfen — führt einen `KnownItemRename` auf einer Liste
       aus, sodass genau ein Eintrag mit dem neuen Namen übrig bleibt.
-- [ ] Test zuerst: `src/shopping/domain/announcements.test.ts` um
+- [x] Test zuerst: `src/shopping/domain/announcements.test.ts` um
       `knownItemSavedAnnouncement` ergänzen — "<Name> gespeichert.".
-- [ ] `src/shopping/domain/shoppingItem.ts`: `readName` als `createItemName`
+- [x] `src/shopping/domain/shoppingItem.ts`: `readName` als `createItemName`
       exportieren; der Aufruf in `createShoppingItem` (Zeile 46-52) nutzt den neuen
       Namen. Die bestehenden Fälle in `shoppingItem.test.ts` bleiben unverändert
       gültig, weil sie über `createShoppingItem` prüfen.
-- [ ] `src/shopping/domain/knownItem.ts`: `planKnownItemRename` und `applyRename`
+- [x] `src/shopping/domain/knownItem.ts`: `planKnownItemRename` und `applyRename`
       ergänzen. Der Name wird mit `createItemName` validiert.
       ```ts
       export type KnownItemRename = {
@@ -586,12 +586,12 @@ trifft er einen vorhandenen Eintrag, werden beide zu einem zusammengeführt.
       ```
       `removedName` ist `null`, wenn `knownItemIdOf(from) === knownItemIdOf(newName)`;
       `addedUses` ist dann `0`.
-- [ ] `src/shopping/domain/announcements.ts`: `knownItemSavedAnnouncement` ergänzen.
-- [ ] `src/shopping/api/knownItemsClient.ts`: `renameKnownItem(rename: KnownItemRename):
+- [x] `src/shopping/domain/announcements.ts`: `knownItemSavedAnnouncement` ergänzen.
+- [x] `src/shopping/api/knownItemsClient.ts`: `renameKnownItem(rename: KnownItemRename):
       void` ergänzen.
-- [ ] `src/shopping/api/inMemoryKnownItemsClient.ts`: `renameKnownItem` setzt
+- [x] `src/shopping/api/inMemoryKnownItemsClient.ts`: `renameKnownItem` setzt
       `knownItems = applyRename(knownItems, rename)` und veröffentlicht.
-- [ ] `src/shopping/api/firestoreKnownItemsClient.ts`: `renameKnownItem` schreibt in
+- [x] `src/shopping/api/firestoreKnownItemsClient.ts`: `renameKnownItem` schreibt in
       einem `writeBatch` und zählt additiv.
       ```ts
       renameKnownItem({ written, removedName, addedUses }) {
@@ -610,24 +610,24 @@ trifft er einen vorhandenen Eintrag, werden beide zu einem zusammengeführt.
         batch.commit().catch(ignoreFailure)
       }
       ```
-- [ ] `src/shopping/ui/useKnownItems.ts`: `renameKnownItem` als `useCallback` in
+- [x] `src/shopping/ui/useKnownItems.ts`: `renameKnownItem` als `useCallback` in
       `KnownItems` aufnehmen.
-- [ ] `src/shopping/ui/KnownItemFormPage.tsx` anlegen: Muster von `MealFormPage` —
+- [x] `src/shopping/ui/KnownItemFormPage.tsx` anlegen: Muster von `MealFormPage` —
       Zurück-Knopf "Zurück zur Artikelverwaltung", `h1` "Vorschlag bearbeiten",
       Namensfeld mit Anfangsfokus und dem bisherigen Namen, `p.failure` mit fester `id`,
       `BottomBar` mit `SaveIcon` und "Speichern", `aria-describedby` auf dem Knopf. Im
       Fehlerfall wird die Meldung über `additionFailureMessage` gesetzt **und**
       `announce` gerufen, wie in `MealFormPage.tsx:58-68`.
-- [ ] `src/shopping/ui/KnownItemsArea.tsx`: Seite `{ kind: 'form' }` bedienen, beim
+- [x] `src/shopping/ui/KnownItemsArea.tsx`: Seite `{ kind: 'form' }` bedienen, beim
       Speichern `planKnownItemRename` rechnen, `renameKnownItem` aufrufen, zurück zur
       Liste und `knownItemSavedAnnouncement` ansagen.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle zu `planKnownItemRename`, `applyRename` und
+- [x] Die neuen Fälle zu `planKnownItemRename`, `applyRename` und
       `knownItemSavedAnnouncement` schlagen vor der Umsetzung fehl und laufen danach
       grün.
-- [ ] Neue Fälle in `src/shopping/ui/KnownItemsArea.test.tsx`:
+- [x] Neue Fälle in `src/shopping/ui/KnownItemsArea.test.tsx`:
       - `corrects the spelling of a known item` — "hackfleisch" öffnen, zu
         "Hackfleisch" ändern, speichern; `storedKnownItems()` enthält genau einen
         Eintrag mit dem neuen Namen und unverändertem `timesUsed`, die Ansage stimmt.
@@ -643,7 +643,7 @@ trifft er einen vorhandenen Eintrag, werden beide zu einem zusammengeführt.
       - `refuses a name that is too long` — über 100 Zeichen ergibt "Der Name ist zu
         lang.".
       - `has no accessibility violations on the form`.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
@@ -661,11 +661,11 @@ Einkaufsliste durch.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shopping/domain/knownItem.test.ts` um `canonicalName` ergänzen —
+- [x] Test zuerst: `src/shopping/domain/knownItem.test.ts` um `canonicalName` ergänzen —
       bekannter Name in anderer Schreibweise liefert den gepflegten Namen, unbekannter
       Name liefert den getippten unverändert, ein leerer Katalog liefert den getippten
       Namen.
-- [ ] `src/shopping/domain/knownItem.ts`: `canonicalName` ergänzen.
+- [x] `src/shopping/domain/knownItem.ts`: `canonicalName` ergänzen.
       ```ts
       export function canonicalName(
         knownItems: readonly KnownItem[],
@@ -676,16 +676,16 @@ Einkaufsliste durch.
         )
       }
       ```
-- [ ] `src/shopping/ui/useShoppingList.ts`: Parameter `knownItems: readonly KnownItem[]`
+- [x] `src/shopping/ui/useShoppingList.ts`: Parameter `knownItems: readonly KnownItem[]`
       ergänzen und in `addItem` und `addItems` den Namen vor `planAddition`
       kanonisieren. Damit greift es für das Artikel-Formular und für Gerichte, die auf
       die Liste wandern.
-- [ ] `src/SignedInApp.tsx:54`: `knownItems.knownItems` an `useShoppingList`
+- [x] `src/SignedInApp.tsx:54`: `knownItems.knownItems` an `useShoppingList`
       durchreichen. Die Reihenfolge der Hooks bleibt: `useKnownItems` steht bereits
       davor (Zeile 53).
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx:51`: zweite Aufrufstelle anpassen; die
+- [x] `src/shopping/ui/ShoppingArea.test.tsx:51`: zweite Aufrufstelle anpassen; die
       Testhilfe hat `knownItems` in Zeile 50 bereits zur Hand.
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx:331-344`: Der bestehende Fall `counts an
+- [x] `src/shopping/ui/ShoppingArea.test.tsx:331-344`: Der bestehende Fall `counts an
       added item in the catalog, also when it is merged into an open one` erwartet
       heute `{ name: 'milch', timesUsed: 2 }`, obwohl der Katalog "Milch" führt. Genau
       das dreht diese Phase um: erwartet wird künftig `{ name: 'Milch', timesUsed: 2 }`.
@@ -693,20 +693,20 @@ Einkaufsliste durch.
 
 **Automatisierte Verifikation**:
 
-- [ ] Der neue Fall zu `canonicalName` schlägt vor der Umsetzung fehl und läuft danach
+- [x] Der neue Fall zu `canonicalName` schlägt vor der Umsetzung fehl und läuft danach
       grün.
-- [ ] Neu in `src/shopping/ui/ShoppingArea.test.tsx`: `adds a typed item under its
+- [x] Neu in `src/shopping/ui/ShoppingArea.test.tsx`: `adds a typed item under its
       groomed name` — Katalog enthält "Hackfleisch", "hackfleisch" wird hinzugefügt; die
       Zeile auf der Einkaufsliste heißt "Hackfleisch".
-- [ ] Neu in `src/SignedInApp.test.tsx`: `keeps the groomed name when a meal is
+- [x] Neu in `src/SignedInApp.test.tsx`: `keeps the groomed name when a meal is
       transferred` — ein Gericht mit Item "hackfleisch" wandert auf die Liste und
       erscheint dort als "Hackfleisch".
-- [ ] Der angepasste Fall `counts an added item in the catalog, also when it is merged
+- [x] Der angepasste Fall `counts an added item in the catalog, also when it is merged
       into an open one` läuft grün.
-- [ ] Die übrigen bestehenden Fälle zum Hinzufügen, Zusammenfassen und Abhaken laufen
+- [x] Die übrigen bestehenden Fälle zum Hinzufügen, Zusammenfassen und Abhaken laufen
       unverändert grün.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft durch; `e2e/shoppingList.spec.ts` und `e2e/meals.spec.ts`
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft durch; `e2e/shoppingList.spec.ts` und `e2e/meals.spec.ts`
       bleiben unverändert. `e2e/keyboard.ts:15` greift auf `main` zu und ist von der
       erweiterten Navigationsleiste nicht betroffen.
 
@@ -720,7 +720,7 @@ Einkaufsliste durch.
 
 Abhängigkeiten: Phase 4
 
-- [ ] `docs/notes.txt`: Die TODO-Punkte "Einstellungen" und "Vorschläge verwalten:
+- [x] `docs/notes.txt`: Die TODO-Punkte "Einstellungen" und "Vorschläge verwalten:
       Tippfehler aus dem Artikelkatalog (knownItems) löschen können, z. B. unter
       Einstellungen." auf `x` setzen und nach DONE verschieben. Der Punkt
       "Später erweitern zu … Wochenplaner …" bleibt offen, ebenso die übrigen Punkte.
@@ -736,6 +736,10 @@ Abhängigkeiten: Phase 4
 - Der neue Grenzfall `rejects an import of meals inside the user interface of shopping`
   war von Anfang an grün: die ESLint-Regel `src/shopping/**` → `**/meals/**` bestand
   schon, nur ungeprüft. Er belegt den Umzug der Icons, statt ihn zu erzwingen.
+- Phase 3: `planKnownItemRename` prüft den Namen mit `createItemName`, bevor es den
+  Eintrag sucht — ein leerer Name meldet sich also auch dann, wenn der Eintrag
+  inzwischen weg ist. Die Oberfläche bekommt `null` nur bei gültigem Namen und kehrt
+  dann zur Liste zurück.
 - `returns to the list when the known item disappears` verwendet
   `client.removeKnownItem` statt `knownItemsArriveFromElsewhere`: letzteres hängt
   Einträge an und kann keinen entfernen.

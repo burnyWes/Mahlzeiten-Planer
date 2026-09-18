@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { knownItemDeletedAnnouncement } from '../domain/announcements'
-import type { KnownItem } from '../domain/knownItem'
+import {
+  knownItemDeletedAnnouncement,
+  knownItemSavedAnnouncement,
+} from '../domain/announcements'
+import { planKnownItemRename, type KnownItem } from '../domain/knownItem'
 import { normalizeItemName } from '../domain/shoppingItem'
 import { DeleteKnownItemPage } from './DeleteKnownItemPage'
+import { KnownItemFormPage } from './KnownItemFormPage'
 import { KnownItemListPage } from './KnownItemListPage'
 import type { KnownItems } from './useKnownItems'
 
@@ -46,6 +50,31 @@ export function KnownItemsArea({
       ),
     )
   }
+
+  function renameKnownItem(knownItem: KnownItem, newName: string) {
+    const rename = planKnownItemRename(
+      knownItems.knownItems,
+      knownItem.name,
+      newName,
+    )
+    if (rename === null) {
+      showList()
+      return
+    }
+    knownItems.renameKnownItem(rename)
+    showList()
+    announce(knownItemSavedAnnouncement(rename.written.name))
+  }
+
+  if (page.kind === 'form' && addressedKnownItem !== null)
+    return (
+      <KnownItemFormPage
+        knownItem={addressedKnownItem}
+        onSave={(newName) => renameKnownItem(addressedKnownItem, newName)}
+        onBack={showList}
+        announce={announce}
+      />
+    )
 
   if (page.kind === 'delete' && addressedKnownItem !== null)
     return (

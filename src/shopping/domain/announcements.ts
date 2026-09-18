@@ -61,6 +61,10 @@ export function knownItemsHeading(knownItemCount: number): string {
     : `Artikelverwaltung, ${knownItemCount}`
 }
 
+export function knownItemSavedAnnouncement(name: string): string {
+  return `${name} gespeichert.`
+}
+
 function remainingKnownItemPhrase(remainingKnownItems: number): string {
   if (remainingKnownItems === 0) return 'keine Vorschläge mehr'
   return remainingKnownItems === 1

@@ -229,6 +229,26 @@ describe('SignedInApp', () => {
     ])
   })
 
+  it('keeps the groomed name when a meal is transferred', async () => {
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'hackfleisch', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient([
+        { name: 'Hackfleisch', lastUsedAt: 1, timesUsed: 1 },
+      ]),
+    )
+
+    await goToArea('Gerichte')
+    await transferToShoppingList('Bolognese')
+    await goToArea('Einkaufsliste')
+
+    expect(shownItemNames()).toEqual(['Hackfleisch'])
+  })
+
   it('takes over the history into an empty catalog and suggests it', async () => {
     renderSignedInApp(
       [],

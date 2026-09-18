@@ -1,6 +1,16 @@
-import { normalizeItemName, type ShoppingItem } from './shoppingItem'
+import {
+  createItemName,
+  normalizeItemName,
+  type ShoppingItem,
+} from './shoppingItem'
 
 export type KnownItem = { name: string; lastUsedAt: number; timesUsed: number }
+
+export type KnownItemRename = {
+  written: KnownItem
+  removedName: string | null
+  addedUses: number
+}
 
 const MINIMUM_TYPED_LENGTH = 2
 const MAXIMUM_SUGGESTIONS = 5
@@ -66,6 +76,55 @@ export function withNamesInUse(
     gathered.push({ name, lastUsedAt: 0, timesUsed: 0 })
   }
   return gathered
+}
+
+export function canonicalName(
+  knownItems: readonly KnownItem[],
+  typed: string,
+): string {
+  return (
+    knownItems.find((knownItem) => hasName(knownItem, typed))?.name ?? typed
+  )
+}
+
+export function planKnownItemRename(
+  knownItems: readonly KnownItem[],
+  from: string,
+  newName: string,
+): KnownItemRename | null {
+  const name = createItemName(newName)
+  const renamed = knownItems.find((knownItem) => hasName(knownItem, from))
+  if (renamed === undefined) return null
+
+  if (knownItemIdOf(renamed.name) === knownItemIdOf(name))
+    return {
+      written: { ...renamed, name },
+      removedName: null,
+      addedUses: 0,
+    }
+
+  const merged = knownItems.find((knownItem) => hasName(knownItem, name))
+  return {
+    written: {
+      name,
+      timesUsed: (merged?.timesUsed ?? 0) + renamed.timesUsed,
+      lastUsedAt: Math.max(merged?.lastUsedAt ?? 0, renamed.lastUsedAt),
+    },
+    removedName: renamed.name,
+    addedUses: renamed.timesUsed,
+  }
+}
+
+export function applyRename(
+  knownItems: readonly KnownItem[],
+  { written, removedName }: KnownItemRename,
+): readonly KnownItem[] {
+  const kept = knownItems.filter(
+    (knownItem) =>
+      !hasName(knownItem, written.name) &&
+      (removedName === null || !hasName(knownItem, removedName)),
+  )
+  return [...kept, written]
 }
 
 export function knownItemsByName(

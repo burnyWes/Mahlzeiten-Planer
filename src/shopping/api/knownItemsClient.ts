@@ -1,4 +1,4 @@
-import type { KnownItem } from '../domain/knownItem'
+import type { KnownItem, KnownItemRename } from '../domain/knownItem'
 
 export interface KnownItemsClient {
   observeKnownItems(
@@ -6,5 +6,6 @@ export interface KnownItemsClient {
   ): () => void
   recordUse(name: string, usedAt: number): void
   removeKnownItem(name: string): void
+  renameKnownItem(rename: KnownItemRename): void
   takeOverHistoryIfEmpty(): void
 }

@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyRename,
+  canonicalName,
   knownItemIdOf,
   knownItemsByName,
   knownItemsFromHistory,
+  planKnownItemRename,
   recordUse,
   suggestNames,
   withNamesInUse,
   type KnownItem,
 } from './knownItem'
-import type { ShoppingItem } from './shoppingItem'
+import { InvalidShoppingItem, type ShoppingItem } from './shoppingItem'
 
 function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
   return { name, timesUsed, lastUsedAt }
@@ -178,6 +181,111 @@ describe('knownItemsByName', () => {
     knownItemsByName(knownItems)
 
     expect(knownItems).toEqual([known('Zucker'), known('Äpfel')])
+  })
+})
+
+describe('canonicalName', () => {
+  it('answers with the groomed spelling of a known name', () => {
+    expect(canonicalName([known('Hackfleisch')], ' hackfleisch ')).toBe(
+      'Hackfleisch',
+    )
+  })
+
+  it('keeps a name that the catalog does not know', () => {
+    expect(canonicalName([known('Hackfleisch')], 'Brot')).toBe('Brot')
+  })
+
+  it('keeps every name while the catalog is empty', () => {
+    expect(canonicalName([], 'hackfleisch')).toBe('hackfleisch')
+  })
+})
+
+describe('planKnownItemRename', () => {
+  it('only corrects the spelling of an entry', () => {
+    const rename = planKnownItemRename(
+      [known('hackfleisch', 3, 7)],
+      'hackfleisch',
+      'Hackfleisch',
+    )
+
+    expect(rename).toEqual({
+      written: known('Hackfleisch', 3, 7),
+      removedName: null,
+      addedUses: 0,
+    })
+  })
+
+  it('carries the counters over to a name that is free', () => {
+    const rename = planKnownItemRename(
+      [known('Hackfleish', 3, 7), known('Brot', 1, 2)],
+      'Hackfleish',
+      'Hackfleisch',
+    )
+
+    expect(rename).toEqual({
+      written: known('Hackfleisch', 3, 7),
+      removedName: 'Hackfleish',
+      addedUses: 3,
+    })
+  })
+
+  it('merges the entry into the one that holds the name already', () => {
+    const rename = planKnownItemRename(
+      [known('Hackfleish', 3, 7), known('Hackfleisch', 12, 9)],
+      'Hackfleish',
+      'Hackfleisch',
+    )
+
+    expect(rename).toEqual({
+      written: known('Hackfleisch', 15, 9),
+      removedName: 'Hackfleish',
+      addedUses: 3,
+    })
+  })
+
+  it('takes a name that did not change at all', () => {
+    const rename = planKnownItemRename([known('Brot', 2, 5)], 'Brot', ' Brot ')
+
+    expect(rename).toEqual({
+      written: known('Brot', 2, 5),
+      removedName: null,
+      addedUses: 0,
+    })
+  })
+
+  it('knows nothing to rename when the entry is gone', () => {
+    expect(planKnownItemRename([known('Brot')], 'Milch', 'Milch ')).toBeNull()
+  })
+
+  it('refuses a name the shopping list would refuse as well', () => {
+    expect(() =>
+      planKnownItemRename([known('Brot')], 'Brot', '   '),
+    ).toThrowError(InvalidShoppingItem)
+  })
+})
+
+describe('applyRename', () => {
+  it('leaves one entry under the new name', () => {
+    const knownItems = [known('Hackfleish', 3, 7), known('Hackfleisch', 12, 9)]
+    const rename = planKnownItemRename(knownItems, 'Hackfleish', 'Hackfleisch')!
+
+    expect(applyRename(knownItems, rename)).toEqual([
+      known('Hackfleisch', 15, 9),
+    ])
+  })
+
+  it('keeps the entries that are not touched', () => {
+    const knownItems = [known('Brot', 1, 2), known('hackfleisch', 3, 7)]
+    const rename = planKnownItemRename(
+      knownItems,
+      'hackfleisch',
+      'Hackfleisch',
+    )!
+
+    expect(applyRename(knownItems, rename)).toEqual([
+      known('Brot', 1, 2),
+      known('Hackfleisch', 3, 7),
+    ])
   })
 })
 

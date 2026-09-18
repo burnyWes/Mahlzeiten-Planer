@@ -8,6 +8,7 @@ import {
   type AdditionOutcome,
   type AdditionsSummary,
 } from '../domain/addition'
+import { canonicalName, type KnownItem } from '../domain/knownItem'
 import {
   additionAnnouncement,
   checkOffAnnouncement,
@@ -53,6 +54,7 @@ export type ShoppingList = {
 export function useShoppingList(
   client: ShoppingListClient,
   knownItemsClient: KnownItemsClient,
+  knownItems: readonly KnownItem[],
 ): ShoppingList {
   const [liveItems, setLiveItems] = useState<readonly ShoppingItem[]>([])
   const [frozenOrder, setFrozenOrder] = useState<FrozenOrder>([])
@@ -121,25 +123,36 @@ export function useShoppingList(
     [carryOut, knownItemsClient],
   )
 
+  const underGroomedName = useCallback(
+    (item: NewShoppingItem): NewShoppingItem => ({
+      ...item,
+      name: canonicalName(knownItems, item.name),
+    }),
+    [knownItems],
+  )
+
   const addItem = useCallback(
     (draft: ShoppingItemDraft) => {
       const outcome = planAddition(
-        createShoppingItem(draft, Date.now()),
+        underGroomedName(createShoppingItem(draft, Date.now())),
         settledItems,
       )
       carryOutAll([outcome])
       return additionAnnouncement(outcome)
     },
-    [carryOutAll, settledItems],
+    [carryOutAll, settledItems, underGroomedName],
   )
 
   const addItems = useCallback(
     (newItems: readonly NewShoppingItem[]) => {
-      const outcomes = planAdditions(newItems, settledItems)
+      const outcomes = planAdditions(
+        newItems.map(underGroomedName),
+        settledItems,
+      )
       carryOutAll(outcomes)
       return summarizeAdditions(outcomes)
     },
-    [carryOutAll, settledItems],
+    [carryOutAll, settledItems, underGroomedName],
   )
 
   const toggleItem = useCallback(

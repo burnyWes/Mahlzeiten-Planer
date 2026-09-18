@@ -1,7 +1,9 @@
 import {
+  applyRename,
   knownItemsFromHistory,
   recordUse,
   type KnownItem,
+  type KnownItemRename,
 } from '../domain/knownItem'
 import { normalizeItemName, type ShoppingItem } from '../domain/shoppingItem'
 import type { KnownItemsClient } from './knownItemsClient'
@@ -37,6 +39,10 @@ export function createInMemoryKnownItemsClient(
       knownItems = knownItems.filter(
         (knownItem) => normalizeItemName(knownItem.name) !== removedName,
       )
+      publish()
+    },
+    renameKnownItem(rename: KnownItemRename) {
+      knownItems = applyRename(knownItems, rename)
       publish()
     },
     takeOverHistoryIfEmpty() {

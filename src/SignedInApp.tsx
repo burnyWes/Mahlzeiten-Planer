@@ -61,7 +61,11 @@ export function SignedInApp({
   const [mealsClient] = useState(() => createMealsClient(announce))
   const [knownItemsClient] = useState(createKnownItemsClient)
   const knownItems = useKnownItems(knownItemsClient)
-  const shoppingList = useShoppingList(shoppingListClient, knownItemsClient)
+  const shoppingList = useShoppingList(
+    shoppingListClient,
+    knownItemsClient,
+    knownItems.knownItems,
+  )
   const meals = useMeals(mealsClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)

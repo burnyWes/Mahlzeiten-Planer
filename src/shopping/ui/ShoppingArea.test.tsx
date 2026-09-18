@@ -48,7 +48,11 @@ function ShoppingAreaUnderTest({
   announce,
 }: ShoppingAreaUnderTestProps) {
   const knownItems = useKnownItems(knownItemsClient)
-  const shoppingList = useShoppingList(client, knownItemsClient)
+  const shoppingList = useShoppingList(
+    client,
+    knownItemsClient,
+    knownItems.knownItems,
+  )
   return (
     <ShoppingArea
       shoppingList={shoppingList}
@@ -189,6 +193,17 @@ describe('ShoppingArea', () => {
     expect(stored.quantity).toEqual({ amount: 2, unit: 'l' })
     expect(stored.checkedOffAt).toBeNull()
     expect(stored.createdAt).toBeGreaterThan(0)
+  })
+
+  it('adds a typed item under its groomed name', async () => {
+    const { client } = renderShoppingArea([], [known('Hackfleisch')])
+
+    await openAddItemPage()
+    await addItem('hackfleisch')
+    await backToList()
+
+    expect(shownItems()).toEqual(['Hackfleisch'])
+    expect(client.storedItems()[0].name).toBe('Hackfleisch')
   })
 
   it('clears the name field and keeps the focus there', async () => {
@@ -339,7 +354,7 @@ describe('suggestions while typing a name', () => {
     await addItem('Brot')
 
     expect(knownItemsClient.storedKnownItems()).toEqual([
-      expect.objectContaining({ name: 'milch', timesUsed: 2 }),
+      expect.objectContaining({ name: 'Milch', timesUsed: 2 }),
       expect.objectContaining({ name: 'Brot', timesUsed: 1 }),
     ])
   })

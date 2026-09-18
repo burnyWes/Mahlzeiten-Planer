@@ -10,6 +10,7 @@ import {
   cleanUpLabel,
   invalidShoppingItemMessage,
   knownItemDeletedAnnouncement,
+  knownItemSavedAnnouncement,
   knownItemsHeading,
   listHeading,
   reopenAnnouncement,
@@ -137,6 +138,14 @@ describe('knownItemDeletedAnnouncement', () => {
   it('says when no suggestion is left', () => {
     expect(knownItemDeletedAnnouncement('Brot', 0)).toBe(
       'Brot gelöscht, keine Vorschläge mehr.',
+    )
+  })
+})
+
+describe('knownItemSavedAnnouncement', () => {
+  it('confirms the saved name', () => {
+    expect(knownItemSavedAnnouncement('Hackfleisch')).toBe(
+      'Hackfleisch gespeichert.',
     )
   })
 })

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KnownItemsClient } from '../api/knownItemsClient'
-import type { KnownItem } from '../domain/knownItem'
+import type { KnownItem, KnownItemRename } from '../domain/knownItem'
 
 export type KnownItems = {
   knownItems: readonly KnownItem[]
   removeKnownItem: (name: string) => void
+  renameKnownItem: (rename: KnownItemRename) => void
 }
 
 export function useKnownItems(client: KnownItemsClient): KnownItems {
@@ -24,5 +25,10 @@ export function useKnownItems(client: KnownItemsClient): KnownItems {
     [client],
   )
 
-  return { knownItems, removeKnownItem }
+  const renameKnownItem = useCallback(
+    (rename: KnownItemRename) => client.renameKnownItem(rename),
+    [client],
+  )
+
+  return { knownItems, removeKnownItem, renameKnownItem }
 }
