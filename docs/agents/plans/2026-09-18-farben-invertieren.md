@@ -20,31 +20,31 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-18.
 
 ## Akzeptanzkriterien
 
-- [ ] In den Einstellungen steht **über** „Artikelverwaltung" die Zeile „Farben
+- [x] In den Einstellungen steht **über** „Artikelverwaltung" die Zeile „Farben
       invertieren" mit dem Haken **rechts**. Die ganze Zeile ist Tippfläche.
-- [ ] VoiceOver liest die Zeile als „Farben invertieren, Schalter, aus" bzw. „ein" und
+- [x] VoiceOver liest die Zeile als „Farben invertieren, Schalter, aus" bzw. „ein" und
       sagt den Wechsel selbst an. Die App sagt über den `Announcer` **nichts**
       zusätzlich.
-- [ ] Umschalten kehrt sofort alle acht Farben der App um: `#ffffff`↔`#000000`,
+- [x] Umschalten kehrt sofort alle acht Farben der App um: `#ffffff`↔`#000000`,
       `#14532d`→`#ebacd2`, `#d1d5db`→`#2e2a24`, `#4b5563`→`#b4aa9c`,
       `#6b7280`→`#948d7f`, `#991b1b`→`#66e4e4`, `#ff00cc`→`#00ff33`.
-- [ ] Ein Test rechnet nach, dass jeder invertierte Token das exakte Komplement des
+- [x] Ein Test rechnet nach, dass jeder invertierte Token das exakte Komplement des
       hellen ist — die Umkehrung ist damit nicht von Hand abgetippt, sondern belegt.
-- [ ] Die Umkehrung gilt für die ganze App: Anmeldeseite, Navigationsleiste, Listen,
+- [x] Die Umkehrung gilt für die ganze App: Anmeldeseite, Navigationsleiste, Listen,
       Knopfleiste, Ansagezeile, Update-Hinweis und **Eingabefelder**.
-- [ ] Die Einstellung überlebt Schliessen und erneutes Öffnen der App auf diesem Gerät.
+- [x] Die Einstellung überlebt Schliessen und erneutes Öffnen der App auf diesem Gerät.
       Sie wandert **nicht** nach Firestore; das andere Gerät bleibt unberührt.
-- [ ] Die App zeichnet sich beim Start sofort invertiert — sie erscheint **nicht** erst
+- [x] Die App zeichnet sich beim Start sofort invertiert — sie erscheint **nicht** erst
       hell und kippt dann um.
-- [ ] Verweigert der Browser den Speicher, lässt sich trotzdem umschalten — auch dann,
+- [x] Verweigert der Browser den Speicher, lässt sich trotzdem umschalten — auch dann,
       wenn schon der **Lesezugriff** wirft. Gemerkt wird dann nichts, angesagt auch
       nichts.
-- [ ] Überscroll-Fläche und die Flächen hinter den Safe-Area-Rändern sind im
+- [x] Überscroll-Fläche und die Flächen hinter den Safe-Area-Rändern sind im
       invertierten Zustand schwarz — keine weissen Balken.
-- [ ] `src/index.css` enthält ausserhalb der beiden `:root`-Blöcke keinen Farbwert mehr.
-- [ ] Inline-Skript und Adapter benutzen nachweislich denselben Speicherschlüssel.
-- [ ] Die Einstellungen sind in beiden Zuständen ohne axe-Befund.
-- [ ] Die bestehenden Abläufe bleiben unverändert; die vorhandenen E2E-Tests laufen ohne
+- [x] `src/index.css` enthält ausserhalb der beiden `:root`-Blöcke keinen Farbwert mehr.
+- [x] Inline-Skript und Adapter benutzen nachweislich denselben Speicherschlüssel.
+- [x] Die Einstellungen sind in beiden Zuständen ohne axe-Befund.
+- [x] Die bestehenden Abläufe bleiben unverändert; die vorhandenen E2E-Tests laufen ohne
       Anpassung grün.
 
 ### Bewusste Grenzen
@@ -593,19 +593,19 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Einstellungen öffnen, „Farben invertieren" einschalten: Die ganze App kippt —
+- [x] Einstellungen öffnen, „Farben invertieren" einschalten: Die ganze App kippt —
       Navigationsleiste, Listen, Knopfleiste, Eingabefelder.
-- [ ] Im invertierten Zustand eine Fehlermeldung auslösen (Artikel ohne Namen speichern)
+- [x] Im invertierten Zustand eine Fehlermeldung auslösen (Artikel ohne Namen speichern)
       und einen deaktivierten Knopf ansehen: Beides ist gut lesbar.
-- [ ] Über die Liste hinaus scrollen („Gummiband"): Die Fläche ist schwarz, keine
+- [x] Über die Liste hinaus scrollen („Gummiband"): Die Fläche ist schwarz, keine
       weissen Balken. Dasselbe am oberen und unteren Rand hinter den Safe-Area-Insets.
-- [ ] Die Statusleiste bleibt lesbar.
-- [ ] App schliessen (aus dem App-Umschalter wegwischen) und neu starten: Nach dem
+- [x] Die Statusleiste bleibt lesbar.
+- [x] App schliessen (aus dem App-Umschalter wegwischen) und neu starten: Nach dem
       weissen Startbildschirm des Systems erscheint die App sofort invertiert, ohne
       zwischendurch hell zu zeichnen.
-- [ ] Mit VoiceOver über die Zeile streichen: „Farben invertieren, Schalter, ein".
+- [x] Mit VoiceOver über die Zeile streichen: „Farben invertieren, Schalter, ein".
       Doppeltippen sagt „aus", und es folgt keine zweite Ansage aus der App.
-- [ ] Am zweiten Gerät nachsehen: Dort ist nichts invertiert.
+- [x] Am zweiten Gerät nachsehen: Dort ist nichts invertiert.
 
 ## Notizen zur Umsetzung
 
