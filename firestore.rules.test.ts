@@ -4,7 +4,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore'
 import { readFileSync } from 'node:fs'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 
@@ -109,6 +109,10 @@ describe('firestore security rules', () => {
 
   it('lets the household read a known item', async () => {
     await assertSucceeds(getDoc(knownItemsOf(householdUid)('milch')))
+  })
+
+  it('lets the household delete a known item', async () => {
+    await assertSucceeds(deleteDoc(knownItemsOf(householdUid)('milch')))
   })
 
   it('refuses another account on the known items', async () => {

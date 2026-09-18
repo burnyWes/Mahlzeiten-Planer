@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KnownItemsClient } from '../api/knownItemsClient'
 import type { KnownItem } from '../domain/knownItem'
 
-export function useKnownItems(client: KnownItemsClient): readonly KnownItem[] {
+export type KnownItems = {
+  knownItems: readonly KnownItem[]
+  removeKnownItem: (name: string) => void
+}
+
+export function useKnownItems(client: KnownItemsClient): KnownItems {
   const [knownItems, setKnownItems] = useState<readonly KnownItem[]>([])
   const tookOverHistoryFor = useRef<KnownItemsClient | null>(null)
 
@@ -14,5 +19,10 @@ export function useKnownItems(client: KnownItemsClient): readonly KnownItem[] {
     client.takeOverHistoryIfEmpty()
   }, [client])
 
-  return knownItems
+  const removeKnownItem = useCallback(
+    (name: string) => client.removeKnownItem(name),
+    [client],
+  )
+
+  return { knownItems, removeKnownItem }
 }

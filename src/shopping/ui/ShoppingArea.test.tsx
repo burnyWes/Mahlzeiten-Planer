@@ -54,7 +54,7 @@ function ShoppingAreaUnderTest({
       shoppingList={shoppingList}
       announce={announce}
       navigation={null}
-      suggestNames={(typed) => suggestNames(knownItems, typed)}
+      suggestNames={(typed) => suggestNames(knownItems.knownItems, typed)}
     />
   )
 }

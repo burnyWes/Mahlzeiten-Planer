@@ -3,7 +3,7 @@ import {
   recordUse,
   type KnownItem,
 } from '../domain/knownItem'
-import type { ShoppingItem } from '../domain/shoppingItem'
+import { normalizeItemName, type ShoppingItem } from '../domain/shoppingItem'
 import type { KnownItemsClient } from './knownItemsClient'
 
 export type InMemoryKnownItemsClient = KnownItemsClient & {
@@ -30,6 +30,13 @@ export function createInMemoryKnownItemsClient(
     },
     recordUse(name, usedAt) {
       knownItems = recordUse(knownItems, name, usedAt)
+      publish()
+    },
+    removeKnownItem(name) {
+      const removedName = normalizeItemName(name)
+      knownItems = knownItems.filter(
+        (knownItem) => normalizeItemName(knownItem.name) !== removedName,
+      )
       publish()
     },
     takeOverHistoryIfEmpty() {

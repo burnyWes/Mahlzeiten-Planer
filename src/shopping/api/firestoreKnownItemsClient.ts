@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDocsFromServer,
   increment,
@@ -102,6 +103,10 @@ export function createFirestoreKnownItemsClient(
         { name, lastUsedAt: usedAt, timesUsed: increment(1) },
         { merge: true },
       ).catch(ignoreFailure)
+    },
+
+    removeKnownItem(name) {
+      deleteDoc(knownItemDocument(name)).catch(ignoreFailure)
     },
 
     takeOverHistoryIfEmpty() {

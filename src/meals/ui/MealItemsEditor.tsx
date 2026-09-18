@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { UNITS } from '../../shared/domain/quantity'
 import { NameSuggestions } from '../../shared/ui/NameSuggestions'
+import { TrashIcon } from '../../shared/ui/TrashIcon'
 import {
   mealFailureMessage,
   mealItemAddedAnnouncement,
@@ -13,7 +14,6 @@ import {
   type MealItem,
   type MealItemDraft,
 } from '../domain/meal'
-import { TrashIcon } from './TrashIcon'
 
 type MealItemsEditorProps = {
   items: readonly MealItem[]

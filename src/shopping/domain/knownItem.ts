@@ -68,6 +68,14 @@ export function withNamesInUse(
   return gathered
 }
 
+export function knownItemsByName(
+  knownItems: readonly KnownItem[],
+): readonly KnownItem[] {
+  return [...knownItems].sort((one, other) =>
+    one.name.localeCompare(other.name, 'de-DE'),
+  )
+}
+
 function startsWithTyped(knownItem: KnownItem, typed: string): boolean {
   return normalizeItemName(knownItem.name).startsWith(typed)
 }

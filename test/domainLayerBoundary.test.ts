@@ -132,6 +132,15 @@ describe('bounded context boundary', () => {
     expect(brokenRules).toContain('no-restricted-imports')
   })
 
+  it('rejects an import of meals inside the user interface of shopping', async () => {
+    const brokenRules = await brokenRulesFor(
+      importOf('../../meals/ui/TrashIcon'),
+      uiFilePath,
+    )
+
+    expect(brokenRules).toContain('no-restricted-imports')
+  })
+
   it('rejects a context inside the shared domain', async () => {
     const brokenRules = await brokenRulesFor(
       importOf('../../shopping/domain/shoppingItem'),

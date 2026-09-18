@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   knownItemIdOf,
+  knownItemsByName,
   knownItemsFromHistory,
   recordUse,
   suggestNames,
@@ -151,6 +152,32 @@ describe('withNamesInUse', () => {
     expect(withNamesInUse([], ['Zwiebel', 'zwiebel ', 'Zwiebel'])).toEqual([
       known('Zwiebel', 0, 0),
     ])
+  })
+})
+
+describe('knownItemsByName', () => {
+  it('sorts the names the German way', () => {
+    expect(
+      knownItemsByName([known('Zucker'), known('Äpfel'), known('Brot')]),
+    ).toEqual([known('Äpfel'), known('Brot'), known('Zucker')])
+  })
+
+  it('keeps the same name in different spellings side by side', () => {
+    expect(
+      knownItemsByName([
+        known('hackfleisch'),
+        known('Spaghetti'),
+        known('Hackfleisch'),
+      ]).map((knownItem) => knownItem.name),
+    ).toEqual(['hackfleisch', 'Hackfleisch', 'Spaghetti'])
+  })
+
+  it('leaves the given catalog untouched', () => {
+    const knownItems = [known('Zucker'), known('Äpfel')]
+
+    knownItemsByName(knownItems)
+
+    expect(knownItems).toEqual([known('Zucker'), known('Äpfel')])
   })
 })
 

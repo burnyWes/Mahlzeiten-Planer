@@ -5,11 +5,14 @@ import type { Meal } from './meals/domain/meal'
 import { MealsArea } from './meals/ui/MealsArea'
 import { useMeals } from './meals/ui/useMeals'
 import { NavigationBar, type Area } from './shared/ui/NavigationBar'
+import { SettingsIcon } from './shared/ui/SettingsIcon'
+import { SettingsPage, type SettingsEntry } from './shared/ui/SettingsPage'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 import { additionsAnnouncement } from './shopping/domain/announcements'
 import { suggestNames, withNamesInUse } from './shopping/domain/knownItem'
 import type { NewShoppingItem } from './shopping/domain/shoppingItem'
+import { KnownItemsArea } from './shopping/ui/KnownItemsArea'
 import { ShoppingArea } from './shopping/ui/ShoppingArea'
 import { useKnownItems } from './shopping/ui/useKnownItems'
 import { useShoppingList } from './shopping/ui/useShoppingList'
@@ -17,9 +20,16 @@ import { useShoppingList } from './shopping/ui/useShoppingList'
 const AREAS = [
   { id: 'shopping', label: 'Einkaufsliste' },
   { id: 'meals', label: 'Gerichte' },
+  { id: 'settings', label: 'Einstellungen', icon: <SettingsIcon /> },
 ] as const satisfies readonly Area<string>[]
 
 type AreaId = (typeof AREAS)[number]['id']
+
+const KNOWN_ITEMS_ENTRY = 'knownItems'
+
+const SETTINGS_ENTRIES = [
+  { id: KNOWN_ITEMS_ENTRY, label: 'Artikelverwaltung' },
+] as const satisfies readonly SettingsEntry[]
 
 function shoppingItemsOf(meal: Meal): readonly NewShoppingItem[] {
   const createdAt = Date.now()
@@ -54,6 +64,7 @@ export function SignedInApp({
   const shoppingList = useShoppingList(shoppingListClient, knownItemsClient)
   const meals = useMeals(mealsClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
+  const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
   function addMealToShoppingList(meal: Meal) {
     if (meal.items.length === 0) {
@@ -68,7 +79,10 @@ export function SignedInApp({
     const mealItemNames = meals.meals.flatMap((meal) =>
       meal.items.map((item) => item.name),
     )
-    return suggestNames(withNamesInUse(knownItems, mealItemNames), typed)
+    return suggestNames(
+      withNamesInUse(knownItems.knownItems, mealItemNames),
+      typed,
+    )
   }
 
   const navigation = (
@@ -78,6 +92,21 @@ export function SignedInApp({
       onSelectArea={setActiveArea}
     />
   )
+
+  if (activeArea === 'settings')
+    return settingsEntry === KNOWN_ITEMS_ENTRY ? (
+      <KnownItemsArea
+        knownItems={knownItems}
+        announce={announce}
+        onBack={() => setSettingsEntry(null)}
+      />
+    ) : (
+      <SettingsPage
+        navigation={navigation}
+        entries={SETTINGS_ENTRIES}
+        onOpenEntry={setSettingsEntry}
+      />
+    )
 
   if (activeArea === 'meals')
     return (

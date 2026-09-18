@@ -298,6 +298,49 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('reaches the settings through the gear button', async () => {
+    renderSignedInApp()
+
+    const settings = screen.getByRole('button', { name: 'Einstellungen' })
+    expect(settings.textContent).toBe('')
+
+    await goToArea('Einstellungen')
+
+    expect(
+      screen.getByRole('button', { name: 'Einstellungen' }),
+    ).toHaveAttribute('aria-current', 'page')
+    expect(
+      screen.getByRole('heading', { name: 'Einstellungen' }),
+    ).toBeInTheDocument()
+  })
+
+  it('opens the known items from the settings', async () => {
+    renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient([
+        { name: 'Hafermilch', lastUsedAt: 1, timesUsed: 1 },
+      ]),
+    )
+
+    await goToArea('Einstellungen')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikelverwaltung' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Artikelverwaltung, 1' }),
+    ).toBeInTheDocument()
+  })
+
+  it('has no accessibility violations on the settings', async () => {
+    const { rendered } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
   it('has no accessibility violations on the shopping list', async () => {
     const { rendered } = renderSignedInApp([openItem('bread', 'Brot', 1)])
 

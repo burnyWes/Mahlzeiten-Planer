@@ -337,12 +337,12 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shopping/domain/knownItem.test.ts` um `knownItemsByName`
+- [x] Test zuerst: `src/shopping/domain/knownItem.test.ts` um `knownItemsByName`
       ergänzen — sortiert alphabetisch nach `de-DE`, Groß- und Kleinschreibung desselben
       Namens stehen beieinander, die Eingabe wird nicht verändert.
-- [ ] Test zuerst: `src/shopping/domain/announcements.test.ts` um `knownItemsHeading`
+- [x] Test zuerst: `src/shopping/domain/announcements.test.ts` um `knownItemsHeading`
       ergänzen — `0` ergibt "Artikelverwaltung, keine", sonst "Artikelverwaltung, <n>".
-- [ ] `src/shopping/domain/knownItem.ts`: `knownItemsByName` ergänzen.
+- [x] `src/shopping/domain/knownItem.ts`: `knownItemsByName` ergänzen.
       ```ts
       export function knownItemsByName(
         knownItems: readonly KnownItem[],
@@ -352,18 +352,18 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
         )
       }
       ```
-- [ ] `src/shopping/domain/announcements.ts`: `knownItemsHeading` ergänzen.
-- [ ] `src/shared/ui/TrashIcon.tsx` und `src/shared/ui/SaveIcon.tsx` anlegen, indem die
+- [x] `src/shopping/domain/announcements.ts`: `knownItemsHeading` ergänzen.
+- [x] `src/shared/ui/TrashIcon.tsx` und `src/shared/ui/SaveIcon.tsx` anlegen, indem die
       Dateien aus `src/meals/ui` dorthin verschoben werden (Inhalt unverändert). Die
       Importe in `MealPage.tsx:8`, `MealItemsEditor.tsx:16` und `MealFormPage.tsx:13`
       auf `../../shared/ui/…` umstellen.
-- [ ] `test/domainLayerBoundary.test.ts`: Fall `rejects an import of meals inside the
+- [x] `test/domainLayerBoundary.test.ts`: Fall `rejects an import of meals inside the
       user interface of shopping` ergänzen — Muster der bestehenden Fälle in Zeile
       126-133. Diese Richtung ist bisher ungeprüft und trägt den Umzug der Icons.
-- [ ] `src/shared/ui/SettingsIcon.tsx` anlegen: Zahnrad im Stil der übrigen Icons, zum
+- [x] `src/shared/ui/SettingsIcon.tsx` anlegen: Zahnrad im Stil der übrigen Icons, zum
       Beispiel ein Kreis `M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z` und der Zahnkranz als
       `path` (Lucide `settings`).
-- [ ] `src/shared/ui/NavigationBar.tsx`: `Area` bekommt `icon?: ReactNode`. Trägt ein
+- [x] `src/shared/ui/NavigationBar.tsx`: `Area` bekommt `icon?: ReactNode`. Trägt ein
       Bereich ein Icon, zeigt der Knopf das Icon, trägt `aria-label={area.label}` und
       sein `li` die Klasse `navigationBarIcon`.
       ```tsx
@@ -378,7 +378,7 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
         </button>
       </li>
       ```
-- [ ] `src/index.css`: Regel für den Icon-Eintrag ergänzen. `.navigationBar button` setzt
+- [x] `src/index.css`: Regel für den Icon-Eintrag ergänzen. `.navigationBar button` setzt
       `width: 100%` (Zeile 54-58), das muss ausdrücklich zurückgenommen werden, sonst
       wird der Knopf nicht schmal.
       ```css
@@ -394,7 +394,7 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
         justify-content: center;
       }
       ```
-- [ ] `src/shared/ui/SettingsPage.tsx` anlegen: generische Eintragsliste, kennt nur
+- [x] `src/shared/ui/SettingsPage.tsx` anlegen: generische Eintragsliste, kennt nur
       `id` und `label`.
       ```tsx
       type SettingsEntry = { id: string; label: string }
@@ -408,25 +408,25 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
       Aufbau wie `MealListPage`: `{navigation}`, `main.page.pageBelowNavigation`,
       `h1` mit `useHeadingFocus` und Text "Einstellungen", darunter eine `ul.itemList`
       mit je einem vollbreiten Knopf (`.mealNameButton`-Aussehen) je Eintrag.
-- [ ] `src/shopping/ui/useKnownItems.ts`: Rückgabe auf den Typ `KnownItems` umstellen.
+- [x] `src/shopping/ui/useKnownItems.ts`: Rückgabe auf den Typ `KnownItems` umstellen.
       Die Operationen kommen in Phase 2 und 3 dazu.
       ```ts
       export type KnownItems = {
         knownItems: readonly KnownItem[]
       }
       ```
-- [ ] `src/SignedInApp.tsx:53` und `src/shopping/ui/ShoppingArea.test.tsx:50`: auf
+- [x] `src/SignedInApp.tsx:53` und `src/shopping/ui/ShoppingArea.test.tsx:50`: auf
       `knownItems.knownItems` umstellen. In `SignedInApp` betrifft das `suggestKnownNames`
       (Zeile 67-72).
-- [ ] `src/shopping/ui/KnownItemListRow.tsx` anlegen: Muster von `MealListRow`, Zeile
+- [x] `src/shopping/ui/KnownItemListRow.tsx` anlegen: Muster von `MealListRow`, Zeile
       `.mealRow` mit `.mealNameButton` für den Namen und `.iconButton` mit `TrashIcon`,
       `aria-label={`Löschen, ${knownItem.name}`}`. Der Namens-Knopf ruft in dieser Phase
       schon `onOpenKnownItem`, die Zielseite kommt in Phase 3.
-- [ ] `src/shopping/ui/KnownItemListPage.tsx` anlegen: Zurück-Knopf "Zurück zu den
+- [x] `src/shopping/ui/KnownItemListPage.tsx` anlegen: Zurück-Knopf "Zurück zu den
       Einstellungen", `h1` mit `knownItemsHeading` und `useHeadingFocus`, bei leerem
       Katalog "Noch keine Vorschläge.", sonst `ul.itemList` über
       `knownItemsByName(knownItems)`.
-- [ ] `src/shopping/ui/KnownItemsArea.tsx` anlegen: hält die Seitenauswahl wie
+- [x] `src/shopping/ui/KnownItemsArea.tsx` anlegen: hält die Seitenauswahl wie
       `MealsArea`, in dieser Phase nur `{ kind: 'list' }`.
       ```tsx
       type KnownItemsPage =
@@ -438,7 +438,7 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
       Wird er nicht mehr gefunden — der andere Haushalt hat ihn gelöscht, während die
       Seite offen war —, zeigt die Area die Liste. Das gilt für `form` und `delete`
       gleichermaßen, analog `MealsArea.tsx:36-39` und den dortigen Bedingungen.
-- [ ] `src/SignedInApp.tsx`: `AREAS` um
+- [x] `src/SignedInApp.tsx`: `AREAS` um
       `{ id: 'settings', label: 'Einstellungen', icon: <SettingsIcon /> }` ergänzen,
       einen Zustand für die offene Einstellungs-Unterseite halten und den Bereich
       rendern.
@@ -461,28 +461,28 @@ dahinter steht der Katalog alphabetisch als Liste. Noch ohne Löschen und Bearbe
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle zu `knownItemsByName` und `knownItemsHeading` schlagen vor der
+- [x] Die neuen Fälle zu `knownItemsByName` und `knownItemsHeading` schlagen vor der
       Umsetzung fehl und laufen danach grün.
-- [ ] Der neue Fall in `test/domainLayerBoundary.test.ts` schlägt fehl, solange
+- [x] Der neue Fall in `test/domainLayerBoundary.test.ts` schlägt fehl, solange
       `TrashIcon` noch in `src/meals/ui` liegt und aus `shopping` importiert wird.
-- [ ] Neu in `src/SignedInApp.test.tsx`: `reaches the settings through the gear button`
+- [x] Neu in `src/SignedInApp.test.tsx`: `reaches the settings through the gear button`
       — der Knopf "Einstellungen" hat leeres `textContent`, nach dem Drücken trägt er
       `aria-current="page"` und die Überschrift "Einstellungen" ist da.
-- [ ] Neu in `src/shopping/ui/KnownItemsArea.test.tsx` (mit
+- [x] Neu in `src/shopping/ui/KnownItemsArea.test.tsx` (mit
       `createInMemoryKnownItemsClient` als Fake): `lists the known items in alphabetical
       order` — prüft die Reihenfolge der Namen **und** dass jede Zeile einen Knopf
       "Löschen, <Name>" trägt (Muster `MealsArea.test.tsx:128-132`).
-- [ ] Neu in `src/shopping/ui/KnownItemsArea.test.tsx`: `shows an empty catalog` — bei
+- [x] Neu in `src/shopping/ui/KnownItemsArea.test.tsx`: `shows an empty catalog` — bei
       leerem Katalog steht "Noch keine Vorschläge." und die Überschrift lautet
       "Artikelverwaltung, keine".
-- [ ] Neu in `src/SignedInApp.test.tsx`: `has no accessibility violations on the
+- [x] Neu in `src/SignedInApp.test.tsx`: `has no accessibility violations on the
       settings`; neu in `KnownItemsArea.test.tsx`: `has no accessibility violations on
       the known items`.
-- [ ] Die bestehenden Fälle in `SignedInApp.test.tsx` zum Wechsel zwischen
+- [x] Die bestehenden Fälle in `SignedInApp.test.tsx` zum Wechsel zwischen
       Einkaufsliste und Gerichte laufen unverändert grün.
-- [ ] Die bestehenden Fälle in `ShoppingArea.test.tsx` laufen nach der Umstellung auf
+- [x] Die bestehenden Fälle in `ShoppingArea.test.tsx` laufen nach der Umstellung auf
       `knownItems.knownItems` unverändert grün.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
@@ -500,34 +500,34 @@ mehr im Katalog und wird nicht mehr vorgeschlagen.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shopping/domain/announcements.test.ts` um
+- [x] Test zuerst: `src/shopping/domain/announcements.test.ts` um
       `knownItemDeletedAnnouncement` ergänzen — "<Name> gelöscht, keine Vorschläge
       mehr." / "… noch 1 Vorschlag." / "… noch 5 Vorschläge." (Muster
       `mealDeletedAnnouncement`).
-- [ ] `src/shopping/domain/announcements.ts`: `knownItemDeletedAnnouncement` ergänzen.
-- [ ] `src/shopping/api/knownItemsClient.ts`: `removeKnownItem(name: string): void`
+- [x] `src/shopping/domain/announcements.ts`: `knownItemDeletedAnnouncement` ergänzen.
+- [x] `src/shopping/api/knownItemsClient.ts`: `removeKnownItem(name: string): void`
       ergänzen.
-- [ ] `src/shopping/api/inMemoryKnownItemsClient.ts`: `removeKnownItem` filtert über
+- [x] `src/shopping/api/inMemoryKnownItemsClient.ts`: `removeKnownItem` filtert über
       `normalizeItemName` und veröffentlicht.
-- [ ] `src/shopping/api/firestoreKnownItemsClient.ts`: `removeKnownItem` ruft
+- [x] `src/shopping/api/firestoreKnownItemsClient.ts`: `removeKnownItem` ruft
       `deleteDoc(knownItemDocument(name)).catch(ignoreFailure)` — dieselbe
       Fehlerbehandlung wie `recordUse`.
-- [ ] `src/shopping/ui/useKnownItems.ts`: `removeKnownItem` als `useCallback` in
+- [x] `src/shopping/ui/useKnownItems.ts`: `removeKnownItem` als `useCallback` in
       `KnownItems` aufnehmen (Muster `useMeals.ts:17-27`).
-- [ ] `src/shopping/ui/DeleteKnownItemPage.tsx` anlegen: Muster von `DeleteMealPage`,
+- [x] `src/shopping/ui/DeleteKnownItemPage.tsx` anlegen: Muster von `DeleteMealPage`,
       Zurück-Knopf "Zurück zur Artikelverwaltung", `h1` "<Name> löschen?", Text "Der
       Vorschlag wird für beide Geräte entfernt. Wird der Name wieder verwendet, entsteht
       er neu.", `.pageActions` mit "Löschen" und "Abbrechen".
-- [ ] `src/shopping/ui/KnownItemsArea.tsx`: Seite `{ kind: 'delete' }` bedienen, nach
+- [x] `src/shopping/ui/KnownItemsArea.tsx`: Seite `{ kind: 'delete' }` bedienen, nach
       dem Löschen zurück zur Liste und `knownItemDeletedAnnouncement` ansagen.
-- [ ] `firestore.rules.test.ts`: Fall `lets the household delete a known item` ergänzen
+- [x] `firestore.rules.test.ts`: Fall `lets the household delete a known item` ergänzen
       (Muster der Fälle in Zeile 106-122, mit `deleteDoc`).
 
 **Automatisierte Verifikation**:
 
-- [ ] Der neue Fall zu `knownItemDeletedAnnouncement` schlägt vor der Umsetzung fehl und
+- [x] Der neue Fall zu `knownItemDeletedAnnouncement` schlägt vor der Umsetzung fehl und
       läuft danach grün.
-- [ ] Neue Fälle in `src/shopping/ui/KnownItemsArea.test.tsx`:
+- [x] Neue Fälle in `src/shopping/ui/KnownItemsArea.test.tsx`:
       - `asks before deleting a known item` — der Mülleimer öffnet die Bestätigung, der
         Eintrag ist noch in `storedKnownItems()`.
       - `keeps the known item when the deletion is cancelled` — "Abbrechen" führt
@@ -538,8 +538,8 @@ mehr im Katalog und wird nicht mehr vorgeschlagen.
         `knownItemsArriveFromElsewhere` einen Katalog ohne den geöffneten Eintrag
         schicken, während die Bestätigung offen ist; die Liste erscheint.
       - `has no accessibility violations on the deletion page`.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:rules` läuft durch und enthält den neuen Lösch-Fall.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:rules` läuft durch und enthält den neuen Lösch-Fall.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
@@ -727,7 +727,18 @@ Abhängigkeiten: Phase 4
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+- **Phase 1 und 2 wurden zusammen umgesetzt.** Phase 1 allein hätte in
+  `KnownItemsArea` eine Seitenauswahl ohne Abnehmer hinterlassen: `page` und der
+  adressierte Eintrag wären unbenutzt und damit ein Lint-Fehler
+  (`@typescript-eslint/no-unused-vars`). Erst die Bestätigungsseite aus Phase 2 gibt
+  dem Zustand einen echten Zweig. Der Namens-Knopf setzt bereits
+  `{ kind: 'form' }`; bis Phase 3 fällt das auf die Liste zurück.
+- Der neue Grenzfall `rejects an import of meals inside the user interface of shopping`
+  war von Anfang an grün: die ESLint-Regel `src/shopping/**` → `**/meals/**` bestand
+  schon, nur ungeprüft. Er belegt den Umzug der Icons, statt ihn zu erzwingen.
+- `returns to the list when the known item disappears` verwendet
+  `client.removeKnownItem` statt `knownItemsArriveFromElsewhere`: letzteres hängt
+  Einträge an und kann keinen entfernen.
 
 ## Verweise
 

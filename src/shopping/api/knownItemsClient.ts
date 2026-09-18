@@ -5,5 +5,6 @@ export interface KnownItemsClient {
     onKnownItems: (knownItems: readonly KnownItem[]) => void,
   ): () => void
   recordUse(name: string, usedAt: number): void
+  removeKnownItem(name: string): void
   takeOverHistoryIfEmpty(): void
 }

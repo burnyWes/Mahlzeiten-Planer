@@ -9,6 +9,8 @@ import {
   cleanUpAnnouncement,
   cleanUpLabel,
   invalidShoppingItemMessage,
+  knownItemDeletedAnnouncement,
+  knownItemsHeading,
   listHeading,
   reopenAnnouncement,
 } from './announcements'
@@ -106,6 +108,36 @@ describe('listHeading', () => {
 
   it('says that nothing is open', () => {
     expect(listHeading(0)).toBe('Einkaufsliste, nichts offen')
+  })
+})
+
+describe('knownItemsHeading', () => {
+  it('counts the entries of the catalog', () => {
+    expect(knownItemsHeading(42)).toBe('Artikelverwaltung, 42')
+  })
+
+  it('says that the catalog is empty', () => {
+    expect(knownItemsHeading(0)).toBe('Artikelverwaltung, keine')
+  })
+})
+
+describe('knownItemDeletedAnnouncement', () => {
+  it('names the entry and how many suggestions are left', () => {
+    expect(knownItemDeletedAnnouncement('hackfleisch', 5)).toBe(
+      'hackfleisch gelöscht, noch 5 Vorschläge.',
+    )
+  })
+
+  it('speaks of a single remaining suggestion', () => {
+    expect(knownItemDeletedAnnouncement('Brot', 1)).toBe(
+      'Brot gelöscht, noch 1 Vorschlag.',
+    )
+  })
+
+  it('says when no suggestion is left', () => {
+    expect(knownItemDeletedAnnouncement('Brot', 0)).toBe(
+      'Brot gelöscht, keine Vorschläge mehr.',
+    )
   })
 })
 

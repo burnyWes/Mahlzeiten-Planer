@@ -1,11 +1,11 @@
 import { BottomBar } from '../../shared/ui/BottomBar'
+import { TrashIcon } from '../../shared/ui/TrashIcon'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealItemsHeading } from '../domain/announcements'
 import { formatMealItem, type Meal } from '../domain/meal'
 import { paragraphsOf } from '../domain/text'
 import { AddToShoppingListIcon } from './AddToShoppingListIcon'
 import { EditIcon } from './EditIcon'
-import { TrashIcon } from './TrashIcon'
 
 type MealPageProps = {
   meal: Meal

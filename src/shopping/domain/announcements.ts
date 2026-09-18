@@ -55,6 +55,26 @@ export function listHeading(openCount: number): string {
     : `Einkaufsliste, ${openCount} offen`
 }
 
+export function knownItemsHeading(knownItemCount: number): string {
+  return knownItemCount === 0
+    ? 'Artikelverwaltung, keine'
+    : `Artikelverwaltung, ${knownItemCount}`
+}
+
+function remainingKnownItemPhrase(remainingKnownItems: number): string {
+  if (remainingKnownItems === 0) return 'keine Vorschläge mehr'
+  return remainingKnownItems === 1
+    ? 'noch 1 Vorschlag'
+    : `noch ${remainingKnownItems} Vorschläge`
+}
+
+export function knownItemDeletedAnnouncement(
+  name: string,
+  remainingKnownItems: number,
+): string {
+  return `${name} gelöscht, ${remainingKnownItemPhrase(remainingKnownItems)}.`
+}
+
 function openCountPhrase(openCount: number): string {
   return openCount === 0 ? 'nichts mehr offen' : `noch ${openCount} offen`
 }

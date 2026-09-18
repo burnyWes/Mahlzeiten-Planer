@@ -57,6 +57,18 @@ body {
   color: #14532d;
 }
 
+.navigationBar li.navigationBarIcon {
+  flex: none;
+}
+
+.navigationBar li.navigationBarIcon button {
+  width: auto;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .navigationBar button[aria-current='page'] {
   background-color: #14532d;
   color: #ffffff;

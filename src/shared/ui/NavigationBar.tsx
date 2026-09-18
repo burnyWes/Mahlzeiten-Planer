@@ -1,6 +1,9 @@
+import type { ReactNode } from 'react'
+
 export type Area<Id extends string> = {
   id: Id
   label: string
+  icon?: ReactNode
 }
 
 type NavigationBarProps<Id extends string> = {
@@ -18,13 +21,17 @@ export function NavigationBar<Id extends string>({
     <nav aria-label="Bereiche" className="navigationBar">
       <ul>
         {areas.map((area) => (
-          <li key={area.id}>
+          <li
+            key={area.id}
+            className={area.icon ? 'navigationBarIcon' : undefined}
+          >
             <button
               type="button"
               aria-current={area.id === activeArea ? 'page' : undefined}
+              aria-label={area.icon ? area.label : undefined}
               onClick={() => onSelectArea(area.id)}
             >
-              {area.label}
+              {area.icon ?? area.label}
             </button>
           </li>
         ))}
