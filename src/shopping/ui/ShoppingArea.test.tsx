@@ -22,6 +22,16 @@ function openItem(
   return { id, name, quantity, createdAt, checkedOffAt: null }
 }
 
+function checkedOffItem(
+  id: string,
+  name: string,
+  createdAt: number,
+  checkedOffAt: number,
+  quantity: Quantity | null = null,
+): ShoppingItem {
+  return { ...openItem(id, name, createdAt, quantity), checkedOffAt }
+}
+
 function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
   return { name, timesUsed, lastUsedAt }
 }
@@ -51,11 +61,14 @@ function ShoppingAreaUnderTest({
 
 type LaggingShoppingListClient = ShoppingListClient & {
   deliverSnapshot: () => void
+  snapshotArrives: (items: readonly ShoppingItem[]) => void
   storedItems: () => readonly ShoppingItem[]
 }
 
-function createLaggingShoppingListClient(): LaggingShoppingListClient {
-  const client = createInMemoryShoppingListClient()
+function createLaggingShoppingListClient(
+  initialItems: readonly ShoppingItem[] = [],
+): LaggingShoppingListClient {
+  const client = createInMemoryShoppingListClient(initialItems)
   let latest: readonly ShoppingItem[] = []
   let waitingForSnapshot: ((items: readonly ShoppingItem[]) => void) | null =
     null
@@ -71,7 +84,24 @@ function createLaggingShoppingListClient(): LaggingShoppingListClient {
     deliverSnapshot() {
       waitingForSnapshot?.(latest)
     },
+    snapshotArrives(items) {
+      waitingForSnapshot?.(items)
+    },
   }
+}
+
+function renderWithLaggingSnapshots(
+  initialItems: readonly ShoppingItem[] = [],
+) {
+  const client = createLaggingShoppingListClient(initialItems)
+  render(
+    <ShoppingAreaUnderTest
+      client={client}
+      knownItemsClient={createInMemoryKnownItemsClient()}
+      announce={() => {}}
+    />,
+  )
+  return client
 }
 
 function renderShoppingArea(
@@ -408,18 +438,6 @@ describe('adding what is already open', () => {
 })
 
 describe('adding before the snapshot has caught up', () => {
-  function renderWithLaggingSnapshots() {
-    const client = createLaggingShoppingListClient()
-    render(
-      <ShoppingAreaUnderTest
-        client={client}
-        knownItemsClient={createInMemoryKnownItemsClient()}
-        announce={() => {}}
-      />,
-    )
-    return client
-  }
-
   it('counts a second item of the same name into the first', async () => {
     const client = renderWithLaggingSnapshots()
 
@@ -455,6 +473,139 @@ describe('adding before the snapshot has caught up', () => {
     })
 
     expect(shownItems()).toEqual(['Milch, 3 l'])
+  })
+})
+
+describe('toggling before the snapshot has caught up', () => {
+  function checkbox(name: string) {
+    return screen.getByRole('checkbox', { name }) as HTMLInputElement
+  }
+
+  async function withList(initialItems: readonly ShoppingItem[]) {
+    const client = renderWithLaggingSnapshots(initialItems)
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+    return client
+  }
+
+  it('checks the item off on the first click', async () => {
+    await withList([openItem('milk', 'Milch', 1)])
+
+    await userEvent.click(checkbox('Milch'))
+
+    expect(checkbox('Milch').checked).toBe(true)
+  })
+
+  it('keeps the row while the snapshot does not carry the item at all', async () => {
+    const client = await withList([openItem('milk', 'Milch', 1)])
+
+    await userEvent.click(checkbox('Milch'))
+    await userEvent.click(checkbox('Milch'))
+    await act(async () => {
+      client.snapshotArrives([])
+    })
+
+    expect(shownItems()).toEqual(['Milch'])
+    expect(checkbox('Milch').checked).toBe(false)
+  })
+
+  it('shows an added item in the list right away', async () => {
+    renderWithLaggingSnapshots()
+
+    await openAddItemPage()
+    await addItem('Milch', '2', 'l')
+    await backToList()
+
+    expect(shownItems()).toEqual(['Milch, 2 l'])
+  })
+
+  it('counts the own write in the heading and on the clean up button', async () => {
+    await withList([openItem('bread', 'Brot', 1), openItem('milk', 'Milch', 2)])
+
+    await userEvent.click(checkbox('Milch'))
+
+    expect(
+      screen.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
+    ).toBeInTheDocument()
+  })
+
+  it('returns to the starting state when toggled twice', async () => {
+    const client = await withList([openItem('milk', 'Milch', 1)])
+
+    await userEvent.click(checkbox('Milch'))
+    await userEvent.click(checkbox('Milch'))
+    expect(checkbox('Milch').checked).toBe(false)
+
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+
+    expect(checkbox('Milch').checked).toBe(false)
+    expect(screen.queryByRole('button', { name: /Aufräumen/ })).toBeNull()
+  })
+
+  it('takes over a check off from the other device', async () => {
+    const client = await withList([openItem('milk', 'Milch', 1)])
+
+    await userEvent.click(checkbox('Milch'))
+    await act(async () => {
+      client.snapshotArrives([checkedOffItem('milk', 'Milch', 1, 900)])
+    })
+    await userEvent.click(checkbox('Milch'))
+    expect(checkbox('Milch').checked).toBe(false)
+
+    await act(async () => {
+      client.snapshotArrives([checkedOffItem('milk', 'Milch', 1, 1200)])
+    })
+
+    expect(checkbox('Milch').checked).toBe(true)
+  })
+
+  it('takes over a quantity from the other device', async () => {
+    const client = await withList([
+      openItem('milk', 'Milch', 1, { amount: 2, unit: 'l' }),
+    ])
+
+    await openAddItemPage()
+    await addItem('Milch', '1', 'l')
+    await backToList()
+    expect(shownItems()).toEqual(['Milch, 3 l'])
+
+    await act(async () => {
+      client.snapshotArrives([
+        openItem('milk', 'Milch', 1, { amount: 5, unit: 'l' }),
+      ])
+    })
+
+    expect(shownItems()).toEqual(['Milch, 5 l'])
+  })
+
+  it('counts a cleaned up item again when the other device overtakes it', async () => {
+    const client = await withList([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2, { amount: 2, unit: 'l' }),
+    ])
+
+    await userEvent.click(checkbox('Milch, 2 l'))
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
+    )
+    expect(shownItems()).toEqual(['Brot'])
+
+    await act(async () => {
+      client.snapshotArrives([
+        openItem('bread', 'Brot', 1),
+        openItem('milk', 'Milch', 2, { amount: 5, unit: 'l' }),
+      ])
+    })
+
+    expect(
+      screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
+    ).toBeInTheDocument()
   })
 })
 

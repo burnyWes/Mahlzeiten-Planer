@@ -354,7 +354,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
 
 **Aufgaben**:
 
-- [ ] `src/shopping/domain/unconfirmedWrites.test.ts`: die Tests fuer den neuen
+- [x] `src/shopping/domain/unconfirmedWrites.test.ts`: die Tests fuer den neuen
       Vertrag schreiben, bevor der Code steht. Der bestehende Test
       *"leaves the check off state to the snapshot"* (Z. 58) wird durch sein Gegenteil
       ersetzt.
@@ -374,7 +374,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
     Momentaufnahme etwas anderes zeigt als das Geschriebene
   - `dropConfirmedWrites` verwirft einen Schreibvorgang, dessen Geschriebenes dem
     Vorzustand entspricht, sobald die Momentaufnahme ihn traegt (zweimal umgeschaltet)
-- [ ] `src/shopping/domain/unconfirmedWrites.ts`: den Typ und die drei Funktionen
+- [x] `src/shopping/domain/unconfirmedWrites.ts`: den Typ und die drei Funktionen
       umstellen. Der Import von `withQuantity` faellt dabei weg und muss entfernt
       werden, sonst bricht `npm run lint`.
 
@@ -439,7 +439,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
       bestaetigten Serverstand beschreibt. Wuerde ein zweiter Klick den Vorzustand
       ueberschreiben, traege er den optimistischen Stand und der Schreibvorgang wuerde
       als "ueberholt" sofort wieder verworfen.
-- [ ] `src/shopping/ui/useShoppingList.ts`: `settledItems` einfuehren und alle
+- [x] `src/shopping/ui/useShoppingList.ts`: `settledItems` einfuehren und alle
       Ableitungen darauf umstellen.
 
       ```ts
@@ -450,7 +450,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
 
       `pendingChanges` und `cleanUp` bekommen ebenfalls `settledItems`; `knownItems`
       entfaellt als eigene Berechnung und wird zu `settledItems`.
-- [ ] `src/shopping/ui/useShoppingList.ts`: `carryOut` liefert einen
+- [x] `src/shopping/ui/useShoppingList.ts`: `carryOut` liefert einen
       `UnconfirmedWrite` statt eines `ShoppingItem`. Beim Zusammenfassen ist `before`
       der Artikel aus `liveItems`, beim neuen Artikel `null`.
 
@@ -479,7 +479,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
 
       `outcome.into` stammt aus `settledItems` und kann selbst optimistisch sein — der
       Vorzustand muss deshalb aus `liveItems` kommen, nicht aus `outcome.into`.
-- [ ] `src/shopping/ui/useShoppingList.ts`: `carryOutAll` (heute Z. 93-108) auf den
+- [x] `src/shopping/ui/useShoppingList.ts`: `carryOutAll` (heute Z. 93-108) auf den
       neuen Typ heben. Beide `reduce`-Aufrufe brechen sonst die Typpruefung:
       `written.reduce(rememberWrite, writes)` wuerde als dritten Parameter den Index
       durchreichen, und `item.id` gibt es auf `UnconfirmedWrite` nicht.
@@ -501,7 +501,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
 
       `outcomes.forEach(... recordUse ...)` bleibt unveraendert, es arbeitet auf
       `outcomes`, nicht auf `written`.
-- [ ] `src/shopping/ui/useShoppingList.ts`: `toggleItem` merkt sich den
+- [x] `src/shopping/ui/useShoppingList.ts`: `toggleItem` merkt sich den
       Schreibvorgang. `checkOff` und `reopen` muessen dafuer neu aus
       `../domain/shoppingItem` importiert werden.
 
@@ -523,7 +523,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
         [client, liveItems, openCount],
       )
       ```
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx`: `createLaggingShoppingListClient`
+- [x] `src/shopping/ui/ShoppingArea.test.tsx`: `createLaggingShoppingListClient`
       (Z. 51-71) um eine frei waehlbare Momentaufnahme erweitern. `deliverSnapshot()`
       stellt bisher nur den echten Stand zu und kann damit keine **widerspruechliche**
       Momentaufnahme nachstellen — genau die erzeugt aber der Bug.
@@ -533,7 +533,7 @@ Reihenfolge die beiden Firestore-Listener feuern.
         waitingForSnapshot?.(items)
       }
       ```
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx`: die Faelle ergaenzen, die den Bug
+- [x] `src/shopping/ui/ShoppingArea.test.tsx`: die Faelle ergaenzen, die den Bug
       festhalten:
   - hakt den Artikel beim ersten Klick ab, bevor die Momentaufnahme eintrifft
   - oeffnet den Artikel beim ersten Klick wieder und behaelt die Zeile, auch wenn die
@@ -546,10 +546,10 @@ Reihenfolge die beiden Firestore-Listener feuern.
     Ausgangszustand
   - laesst einen zu frueh aufgeraeumten Artikel wieder als Aenderung auftauchen, wenn
     das andere Geraet ihn offen zurueckmeldet
-- [ ] `docs/notes.txt`: den Bug *"Ein selbst hinzugefuegter Artikel erscheint
+- [x] `docs/notes.txt`: den Bug *"Ein selbst hinzugefuegter Artikel erscheint
       gelegentlich erst nach Sekunden..."* (Z. 52-56) auf `x` setzen und nach DONE
       verschieben. Sonst nichts an der Datei umsortieren oder umformulieren.
-- [ ] `docs/notes.txt`: unter TODO anhaengen:
+- [x] `docs/notes.txt`: unter TODO anhaengen:
 
       ```
       - Firestore-Adapter: die zwei Snapshot-Listener (offen / diese Sitzung abgehakt)
@@ -562,12 +562,12 @@ Reihenfolge die beiden Firestore-Listener feuern.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft durch, insbesondere `unconfirmedWrites.test.ts` und
+- [x] `npm run test` laeuft durch, insbesondere `unconfirmedWrites.test.ts` und
       `ShoppingArea.test.tsx`
-- [ ] `npm run lint` laeuft durch (faengt den ungenutzten `withQuantity`-Import)
-- [ ] `npm run build` laeuft durch (Typpruefung `tsc -b`, faengt die beiden `reduce`)
-- [ ] `npm run format:check` laeuft durch
-- [ ] `npm run test:e2e` laeuft durch; der bisher gelegentlich rote Test
+- [x] `npm run lint` laeuft durch (faengt den ungenutzten `withQuantity`-Import)
+- [x] `npm run build` laeuft durch (Typpruefung `tsc -b`, faengt die beiden `reduce`)
+- [x] `npm run format:check` laeuft durch
+- [x] `npm run test:e2e` laeuft durch; der bisher gelegentlich rote Test
       *"sign in, add, check off and clean up using the keyboard only"* ist stabil
 
 **Manuelle Verifikation**:
@@ -677,7 +677,17 @@ schwarz. Die Zeile behaelt ihre Hoehe.
 
 ## Notizen zur Umsetzung
 
-Hier waehrend der Umsetzung Rueckmeldungen, Probleme und Entscheidungen festhalten.
+**Phase 1, E2E-Test "keeps the added item after a reload".** Der Test wurde durch die
+optimistische Anzeige reproduzierbar rot (vorher 3/3 gruen, nachher 3/3 rot; mit 2 s
+Wartezeit vor dem Neuladen wieder 3/3 gruen). Er hat bisher unausgesprochen auf die
+Bestaetigung durch Firestore gewartet, weil die Zeile erst danach erschien. Jetzt steht
+sie sofort, und das Neuladen kommt, bevor der Schreibvorgang den Emulator erreicht —
+Firestore verwirft ohne `persistentLocalCache` ausstehende Schreibvorgaenge beim
+Neuladen. Behoben, indem der Test auf den Server wartet: neue Hilfe
+`itemNamesOnServer()` in `e2e/emulatorHousehold.ts` und
+`expect.poll(itemNamesOnServer).toContain('Käse')` vor `page.reload()`. Die dahinter
+liegende Luecke der App — ein frisch hinzugefuegter Artikel geht bei sofortigem Neuladen
+still verloren — steht als `-`-Notiz in `docs/notes.txt`.
 
 ## Verweise
 

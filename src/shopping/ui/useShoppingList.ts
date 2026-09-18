@@ -15,8 +15,10 @@ import {
   reopenAnnouncement,
 } from '../domain/announcements'
 import {
+  checkOff,
   createShoppingItem,
   isOpen,
+  reopen,
   withQuantity,
   type NewShoppingItem,
   type ShoppingItem,
@@ -34,6 +36,7 @@ import {
   dropConfirmedWrites,
   rememberWrite,
   withUnconfirmedWrites,
+  type UnconfirmedWrite,
   type UnconfirmedWrites,
 } from '../domain/unconfirmedWrites'
 
@@ -71,23 +74,29 @@ export function useShoppingList(
     [client],
   )
 
-  const knownItems = withUnconfirmedWrites(liveItems, unconfirmedWrites)
-  const shownItems = projectStableList(frozenOrder, liveItems)
+  const settledItems = withUnconfirmedWrites(liveItems, unconfirmedWrites)
+  const shownItems = projectStableList(frozenOrder, settledItems)
   const openCount = shownItems.filter(isOpen).length
 
   const carryOut = useCallback(
-    (outcome: AdditionOutcome): ShoppingItem => {
+    (outcome: AdditionOutcome): UnconfirmedWrite => {
       if (outcome.kind === 'mergedInto') {
         client.changeQuantity(outcome.into.id, outcome.quantity)
-        return withQuantity(outcome.into, outcome.quantity)
+        return {
+          written: withQuantity(outcome.into, outcome.quantity),
+          before: liveItems.find((live) => live.id === outcome.into.id) ?? null,
+        }
       }
       return {
-        ...outcome.item,
-        id: client.addItem(outcome.item),
-        checkedOffAt: null,
+        written: {
+          ...outcome.item,
+          id: client.addItem(outcome.item),
+          checkedOffAt: null,
+        },
+        before: null,
       }
     },
-    [client],
+    [client, liveItems],
   )
 
   const carryOutAll = useCallback(
@@ -96,10 +105,15 @@ export function useShoppingList(
       outcomes.forEach((outcome) =>
         knownItemsClient.recordUse(outcome.item.name, outcome.item.createdAt),
       )
-      setUnconfirmedWrites((writes) => written.reduce(rememberWrite, writes))
+      setUnconfirmedWrites((writes) =>
+        written.reduce(
+          (sofar, write) => rememberWrite(sofar, write.written, write.before),
+          writes,
+        ),
+      )
       setFrozenOrder((order) =>
         written.reduce(
-          (sofar, item) => appendToFrozenOrder(sofar, item.id),
+          (sofar, write) => appendToFrozenOrder(sofar, write.written.id),
           order,
         ),
       )
@@ -111,45 +125,52 @@ export function useShoppingList(
     (draft: ShoppingItemDraft) => {
       const outcome = planAddition(
         createShoppingItem(draft, Date.now()),
-        knownItems,
+        settledItems,
       )
       carryOutAll([outcome])
       return additionAnnouncement(outcome)
     },
-    [carryOutAll, knownItems],
+    [carryOutAll, settledItems],
   )
 
   const addItems = useCallback(
     (newItems: readonly NewShoppingItem[]) => {
-      const outcomes = planAdditions(newItems, knownItems)
+      const outcomes = planAdditions(newItems, settledItems)
       carryOutAll(outcomes)
       return summarizeAdditions(outcomes)
     },
-    [carryOutAll, knownItems],
+    [carryOutAll, settledItems],
   )
 
   const toggleItem = useCallback(
     (item: ShoppingItem) => {
+      const before = liveItems.find((live) => live.id === item.id) ?? null
       if (isOpen(item)) {
         client.checkOffItem(item.id)
+        setUnconfirmedWrites((writes) =>
+          rememberWrite(writes, checkOff(item, Date.now()), before),
+        )
         return checkOffAnnouncement(item, openCount - 1)
       }
       client.reopenItem(item.id)
+      setUnconfirmedWrites((writes) =>
+        rememberWrite(writes, reopen(item), before),
+      )
       return reopenAnnouncement(item, openCount + 1)
     },
-    [client, openCount],
+    [client, liveItems, openCount],
   )
 
   const cleanUp = useCallback(() => {
-    const order = nextFrozenOrder(liveItems)
+    const order = nextFrozenOrder(settledItems)
     setFrozenOrder(order)
     return cleanUpAnnouncement(order.length)
-  }, [liveItems])
+  }, [settledItems])
 
   return {
     items: shownItems,
     openCount,
-    pendingChanges: pendingChangeCount(frozenOrder, liveItems),
+    pendingChanges: pendingChangeCount(frozenOrder, settledItems),
     addItem,
     addItems,
     toggleItem,

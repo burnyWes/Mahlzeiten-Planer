@@ -37,6 +37,11 @@ x Gerichte-Seite
 x Design Gerichte-Seite anpassen (Gericht-Butten NICHT füllen, Buttons immer gleiche Breite)
 x Beim Tippen von Items Vorschläge aus der Datenbank machen, damit man gleiche Einträge
   nicht ständig neu tippen muss.
+x Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in der
+  Liste: die Anzeige zeigt nur, was die Firestore-Momentaufnahme schon gebracht hat.
+  Die Zusammenführung rechnet seit MZP-002 Phase 2 mit den eigenen Schreibvorgängen,
+  die Anzeige noch nicht. Der E2E-Test "sign in, add, check off and clean up" ist
+  deshalb gelegentlich rot, auch schon vor Phase 2.
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -49,11 +54,6 @@ TODO
   n Push-Benachrichtigungen
 - Alexa-Integration
 - PDF-Import
-b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in der
-  Liste: die Anzeige zeigt nur, was die Firestore-Momentaufnahme schon gebracht hat.
-  Die Zusammenführung rechnet seit MZP-002 Phase 2 mit den eigenen Schreibvorgängen,
-  die Anzeige noch nicht. Der E2E-Test "sign in, add, check off and clean up" ist
-  deshalb gelegentlich rot, auch schon vor Phase 2.
 - Firestore-Regeln werden nirgends automatisch ausgerollt: deploy.yml schiebt nur die
   App nach GitHub Pages. Eine neue Sammlung ist deshalb in der Produktion so lange
   gesperrt, bis jemand von Hand
@@ -66,3 +66,15 @@ b Ein selbst hinzugefügter Artikel erscheint gelegentlich erst nach Sekunden in
   "Aufraeumen" ordnet nur die Ansicht neu. Abgehakte Artikel irgendwann wirklich
   loeschen (z. B. beim Aufraeumen oder nach einer Frist), ohne dass sie dem anderen
   Geraet unter dem Finger verschwinden.
+- Firestore-Adapter: die zwei Snapshot-Listener (offen / diese Sitzung abgehakt)
+  zu einer or()-Abfrage zusammenfassen. Dann gibt es keinen Zwischenstand mehr,
+  in dem die veraltete "offen"-Abfrage die abgehakte ueberschreibt oder der
+  Artikel kurz aus beiden Abfragen faellt. Seit MZP-006 faengt die optimistische
+  Anzeige das ab, die Momentaufnahme bleibt aber kurzzeitig in sich
+  widerspruechlich.
+- Firestore mit persistentLocalCache (IndexedDB) einrichten: ausstehende
+  Schreibvorgaenge ueberleben heute kein Neuladen. Wer einen Artikel hinzufuegt und
+  die App sofort neu laedt oder schliesst, verliert ihn stillschweigend - seit
+  MZP-006 sichtbar, weil die Zeile sofort erscheint und nicht erst nach der
+  Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
+  auf den Server, bevor er neu laedt.

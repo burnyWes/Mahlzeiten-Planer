@@ -52,6 +52,24 @@ export async function prepareEmulators(): Promise<void> {
   )
 }
 
+type ListedItems = {
+  documents?: readonly { fields: { name: { stringValue: string } } }[]
+}
+
+export async function itemNamesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/items`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedItems
+  return (listed.documents ?? []).map(
+    (document) => document.fields.name.stringValue,
+  )
+}
+
 export async function storeItemOnServer(
   name: string,
   createdAt: number,

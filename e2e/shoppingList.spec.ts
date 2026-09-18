@@ -1,5 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
-import { prepareEmulators, storeItemOnServer } from './emulatorHousehold.ts'
+import {
+  itemNamesOnServer,
+  prepareEmulators,
+  storeItemOnServer,
+} from './emulatorHousehold.ts'
 import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
 
 test.beforeEach(async () => {
@@ -96,6 +100,7 @@ test('keeps the added item after a reload', async ({ page }) => {
   await signIn(page)
   await addItem(page, 'Käse')
   await expect(shownItems(page)).toHaveText(['Käse'])
+  await expect.poll(itemNamesOnServer).toContain('Käse')
 
   await page.reload()
 
