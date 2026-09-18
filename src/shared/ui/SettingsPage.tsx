@@ -1,10 +1,15 @@
 import type { ReactNode } from 'react'
 import { useHeadingFocus } from './useHeadingFocus'
 
-export type SettingsEntry = {
-  id: string
-  label: string
-}
+export type SettingsEntry =
+  | { kind: 'page'; id: string; label: string }
+  | {
+      kind: 'toggle'
+      id: string
+      label: string
+      enabled: boolean
+      onToggle: () => void
+    }
 
 type SettingsPageProps = {
   navigation: ReactNode
@@ -31,13 +36,25 @@ export function SettingsPage({
         <ul className="itemList">
           {entries.map((entry) => (
             <li key={entry.id} className="mealRow">
-              <button
-                type="button"
-                className="mealNameButton"
-                onClick={() => onOpenEntry(entry.id)}
-              >
-                {entry.label}
-              </button>
+              {entry.kind === 'toggle' ? (
+                <label className="settingsToggle">
+                  <span>{entry.label}</span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    checked={entry.enabled}
+                    onChange={entry.onToggle}
+                  />
+                </label>
+              ) : (
+                <button
+                  type="button"
+                  className="mealNameButton"
+                  onClick={() => onOpenEntry(entry.id)}
+                >
+                  {entry.label}
+                </button>
+              )}
             </li>
           ))}
         </ul>

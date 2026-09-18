@@ -293,7 +293,7 @@ genau eine Stelle, an der Farbe definiert wird.
 
 **Aufgaben**:
 
-- [ ] In `src/index.css` die acht Token in `:root` anlegen, neben dem bestehenden
+- [x] In `src/index.css` die acht Token in `:root` anlegen, neben dem bestehenden
       `--bottomBarHeight`:
 
       ```css
@@ -311,7 +311,7 @@ genau eine Stelle, an der Farbe definiert wird.
       }
       ```
 
-- [ ] Alle 30 Farbwerte in diesen 18 Regeln auf die Token umstellen: `body`,
+- [x] Alle 30 Farbwerte in diesen 18 Regeln auf die Token umstellen: `body`,
       `.navigationBar`, `.navigationBar button`,
       `.navigationBar button[aria-current='page']`, `:focus-visible`,
       `input, textarea`, `button`, `button:disabled`, `.failure`, `.announcer`,
@@ -319,9 +319,9 @@ genau eine Stelle, an der Farbe definiert wird.
       `.itemList input[type='checkbox']:checked::before`, `.mealNameButton`,
       `.bottomBar`, `h1:focus-visible`, `.appUpdate`.
       `.bottomBarInFlow { background-color: transparent }` bleibt, wie es ist.
-- [ ] Neue Regel `html { background-color: var(--surface) }` ergänzen, damit die
+- [x] Neue Regel `html { background-color: var(--surface) }` ergänzen, damit die
       Überscroll-Fläche nicht weiss bleibt.
-- [ ] `input, textarea` um eigene Farben ergänzen, damit sie nicht am Browser hängen:
+- [x] `input, textarea` um eigene Farben ergänzen, damit sie nicht am Browser hängen:
 
       ```css
       input,
@@ -332,7 +332,7 @@ genau eine Stelle, an der Farbe definiert wird.
       }
       ```
 
-- [ ] `test/palette.test.ts` anlegen: liest `src/index.css`, entfernt die
+- [x] `test/palette.test.ts` anlegen: liest `src/index.css`, entfernt die
       `:root`-Blöcke und besteht darauf, dass im Rest kein Farbwert steht.
 
       ```ts
@@ -361,10 +361,10 @@ genau eine Stelle, an der Farbe definiert wird.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — der neue Test `defines every colour in the palette` ist grün,
+- [x] `npm run test` — der neue Test `defines every colour in the palette` ist grün,
       alle bestehenden Tests bleiben grün.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` läuft durch — das belegt zugleich, dass `test/palette.test.ts` am
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` läuft durch — das belegt zugleich, dass `test/palette.test.ts` am
       richtigen Ort liegt (unter `src/` würde `tsc -b` den `node:fs`-Import abweisen).
 
 ### Phase 2: Schalter, Speicherung und Umkehrung
@@ -375,7 +375,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
 
 **Aufgaben**:
 
-- [ ] `src/shared/appearance/appearanceClient.ts` anlegen:
+- [x] `src/shared/appearance/appearanceClient.ts` anlegen:
 
       ```ts
       export type DeviceStorage = Pick<Storage, 'getItem' | 'setItem'>
@@ -386,7 +386,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       }
       ```
 
-- [ ] `src/shared/appearance/localStorageAppearanceClient.ts` anlegen. Der Speicher wird
+- [x] `src/shared/appearance/localStorageAppearanceClient.ts` anlegen. Der Speicher wird
       hereingereicht, damit der Test ohne jsdom läuft. **Beide** Richtungen sind
       abgesichert — auch der Zugriff auf `localStorage` selbst, der in Safari bei
       gesperrtem Speicher wirft:
@@ -431,13 +431,13 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       }
       ```
 
-- [ ] `src/shared/appearance/localStorageAppearanceClient.test.ts` test-getrieben
+- [x] `src/shared/appearance/localStorageAppearanceClient.test.ts` test-getrieben
       schreiben, gegen einen handgeschriebenen `DeviceStorage`-Fake. Fälle: liest
       `'true'` als eingeschaltet; liest `'false'`, einen fremden Wert und `null` als
       ausgeschaltet; schreibt `'true'` und `'false'` unter
       `INVERTED_COLORS_KEY`; übersteht `storage === null`; übersteht einen Speicher,
       dessen `getItem` wirft; übersteht einen, dessen `setItem` wirft.
-- [ ] `src/shared/appearance/inMemoryAppearanceClient.ts` anlegen:
+- [x] `src/shared/appearance/inMemoryAppearanceClient.ts` anlegen:
 
       ```ts
       export type StoringAppearanceClient = AppearanceClient & {
@@ -449,7 +449,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       ): StoringAppearanceClient
       ```
 
-- [ ] `src/shared/appearance/useAppearance.ts` anlegen:
+- [x] `src/shared/appearance/useAppearance.ts` anlegen:
 
       ```ts
       export type Appearance = {
@@ -461,7 +461,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       Der Hook startet mit `appearanceClient.readInvertedColors()`, hält per `useEffect`
       `document.documentElement.dataset.invertedColors` auf `String(invertedColors)` und
       schreibt beim Umschalten erst in den Client, dann in den Zustand.
-- [ ] In `src/index.css` den invertierten Block ergänzen:
+- [x] In `src/index.css` den invertierten Block ergänzen:
 
       ```css
       :root[data-inverted-colors='true'] {
@@ -477,7 +477,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       }
       ```
 
-- [ ] `.settingsToggle` ergänzen — Zeilenhöhe und Abstand kommen bereits von
+- [x] `.settingsToggle` ergänzen — Zeilenhöhe und Abstand kommen bereits von
       `.itemList label`:
 
       ```css
@@ -487,7 +487,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       }
       ```
 
-- [ ] In `index.html` das Inline-Skript ans Ende des `<head>` setzen:
+- [x] In `index.html` das Inline-Skript ans Ende des `<head>` setzen:
 
       ```html
       <script>
@@ -500,7 +500,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
       </script>
       ```
 
-- [ ] `test/palette.test.ts` um zwei Tests erweitern:
+- [x] `test/palette.test.ts` um zwei Tests erweitern:
       - `inverts every colour of the palette exactly` — liest beide `:root`-Blöcke,
         sammelt je Block die Farbtoken und rechnet nach, dass der invertierte Wert das
         Komplement des hellen ist. Damit steht die Kernforderung im Test, nicht nur im
@@ -527,7 +527,7 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
         (`new URL('../index.html', import.meta.url)`) und verlangt, dass dort
         `INVERTED_COLORS_KEY` und das Datenattribut `invertedColors` vorkommen, damit
         Skript und Adapter denselben Schlüssel benutzen.
-- [ ] `src/shared/ui/SettingsPage.tsx`: `SettingsEntry` zur Union machen und beide
+- [x] `src/shared/ui/SettingsPage.tsx`: `SettingsEntry` zur Union machen und beide
       Sorten rendern:
 
       ```ts
@@ -558,23 +558,23 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
 
       Kein `aria-checked`: axe erlaubt `switch` auf `input[type=checkbox]` und leitet
       den Zustand aus dem Element ab.
-- [ ] `src/SignedInApp.tsx`: `appearance: Appearance` als neue Eigenschaft annehmen,
+- [x] `src/SignedInApp.tsx`: `appearance: Appearance` als neue Eigenschaft annehmen,
       `SETTINGS_ENTRIES` durch eine im Rumpf gebaute Liste ersetzen — Schalter zuerst,
       Artikelverwaltung danach.
-- [ ] `src/App.tsx`: `appearanceClient: AppearanceClient` als neue Eigenschaft annehmen,
+- [x] `src/App.tsx`: `appearanceClient: AppearanceClient` als neue Eigenschaft annehmen,
       `useAppearance` aufrufen und das Ergebnis an `SignedInApp` durchreichen.
-- [ ] `src/main.tsx`: `createLocalStorageAppearanceClient()` verdrahten, Import mit
+- [x] `src/main.tsx`: `createLocalStorageAppearanceClient()` verdrahten, Import mit
       `.ts`-Endung wie die Nachbarzeilen.
-- [ ] `src/SignedInApp.test.tsx` erweitern — `renderSignedInApp` reicht den
+- [x] `src/SignedInApp.test.tsx` erweitern — `renderSignedInApp` reicht den
       In-Memory-Client durch: der Schalter steht **vor** der Artikelverwaltung;
       Umschalten setzt `toBeChecked()` und schreibt in den Client; ein zweiter axe-Test
       prüft die eingeschaltete Stellung.
-- [ ] `src/App.test.tsx` erweitern — `renderApp` übergibt den In-Memory-Client; ein Test
+- [x] `src/App.test.tsx` erweitern — `renderApp` übergibt den In-Memory-Client; ein Test
       belegt, dass ein gemerktes „eingeschaltet" `data-inverted-colors="true"` am
       Wurzelelement setzt. Jeder Test dieser Datei setzt seinen Ausgangszustand selbst,
       da `document.documentElement` innerhalb der Datei zwischen den Tests bestehen
       bleibt.
-- [ ] `e2e/appearance.spec.ts` anlegen, mit `test.beforeEach(prepareEmulators)` wie die
+- [x] `e2e/appearance.spec.ts` anlegen, mit `test.beforeEach(prepareEmulators)` wie die
       bestehenden Specs: anmelden, `pressButton(page, 'Einstellungen')`, dann den
       Schalter über `page.getByRole('switch', { name: 'Farben invertieren' })`
       fokussieren und mit `page.keyboard.press('Space')` umlegen (`pressButton` drückt
@@ -584,11 +584,11 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` — die neuen Tests des Adapters, der Palette, der Einstellungen und
+- [x] `npm run test` — die neuen Tests des Adapters, der Palette, der Einstellungen und
       des Wurzelattributs sind grün, alle bestehenden bleiben grün.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` läuft durch.
-- [ ] `npm run test:e2e` — `remembers the inverted colours after a reload` ist grün,
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` läuft durch.
+- [x] `npm run test:e2e` — `remembers the inverted colours after a reload` ist grün,
       die bestehenden Abläufe bleiben grün.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
@@ -609,7 +609,13 @@ Der Schalter erscheint, merkt sich seinen Zustand auf dem Gerät und kehrt die F
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+Der Test `applies the stored preference before the first paint` importiert
+`INVERTED_COLORS_KEY` **nicht** aus dem Adapter, sondern liest ihn per Regex aus dessen
+Quelltext. Grund: Ein Import aus `test/` nach `src/` zieht die Adapterdatei in
+`tsconfig.node.json` (`moduleResolution: nodenext`), das Dateiendungen in relativen
+Importen verlangt — `tsc -b` und damit `npm run build` scheiterten daran. Der Test liest
+ohnehin Projektdateien; das Muster steht bereits in `e2e/emulatorHousehold.ts`
+(`householdUid()` liest die UID aus `firestore.rules`).
 
 ## Verweise
 

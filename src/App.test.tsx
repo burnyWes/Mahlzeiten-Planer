@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { App } from './App'
+import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
 import { createInMemoryAppUpdateClient } from './shared/appUpdate/inMemoryAppUpdateClient'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
@@ -14,7 +15,10 @@ const household = {
   userId: 'household',
 }
 
-function renderApp(storageWarning?: string) {
+function renderApp(
+  storageWarning?: string,
+  appearanceClient = createInMemoryAppearanceClient(),
+) {
   const appUpdateClient = createInMemoryAppUpdateClient()
   render(
     <App
@@ -23,10 +27,15 @@ function renderApp(storageWarning?: string) {
       createMealsClient={() => createInMemoryMealsClient()}
       createKnownItemsClient={() => createInMemoryKnownItemsClient()}
       appUpdateClient={appUpdateClient}
+      appearanceClient={appearanceClient}
       storageWarning={storageWarning}
     />,
   )
   return appUpdateClient
+}
+
+function invertedColorsOnTheDocument() {
+  return document.documentElement.dataset.invertedColors
 }
 
 async function signIn() {
@@ -79,6 +88,18 @@ describe('App', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'Neue Version verfügbar.',
     )
+  })
+
+  it('inverts the colours of the document for a device that asked for it', () => {
+    renderApp(undefined, createInMemoryAppearanceClient(true))
+
+    expect(invertedColorsOnTheDocument()).toBe('true')
+  })
+
+  it('leaves the colours of the document alone without that wish', () => {
+    renderApp(undefined, createInMemoryAppearanceClient(false))
+
+    expect(invertedColorsOnTheDocument()).toBe('false')
   })
 
   it('loads the new version only once the household asks for it', async () => {

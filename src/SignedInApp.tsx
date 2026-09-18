@@ -4,6 +4,7 @@ import { mealWithoutItemsAnnouncement } from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
 import { MealsArea } from './meals/ui/MealsArea'
 import { useMeals } from './meals/ui/useMeals'
+import type { Appearance } from './shared/appearance/useAppearance'
 import { NavigationBar, type Area } from './shared/ui/NavigationBar'
 import { SettingsIcon } from './shared/ui/SettingsIcon'
 import { SettingsPage, type SettingsEntry } from './shared/ui/SettingsPage'
@@ -27,10 +28,6 @@ type AreaId = (typeof AREAS)[number]['id']
 
 const KNOWN_ITEMS_ENTRY = 'knownItems'
 
-const SETTINGS_ENTRIES = [
-  { id: KNOWN_ITEMS_ENTRY, label: 'Artikelverwaltung' },
-] as const satisfies readonly SettingsEntry[]
-
 function shoppingItemsOf(meal: Meal): readonly NewShoppingItem[] {
   const createdAt = Date.now()
   return meal.items.map((item) => ({
@@ -46,6 +43,7 @@ type SignedInAppProps = {
   ) => ShoppingListClient
   createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
   createKnownItemsClient: () => KnownItemsClient
+  appearance: Appearance
   announce: (text: string) => void
 }
 
@@ -53,6 +51,7 @@ export function SignedInApp({
   createShoppingListClient,
   createMealsClient,
   createKnownItemsClient,
+  appearance,
   announce,
 }: SignedInAppProps) {
   const [shoppingListClient] = useState(() =>
@@ -89,6 +88,17 @@ export function SignedInApp({
     )
   }
 
+  const settingsEntries: readonly SettingsEntry[] = [
+    {
+      kind: 'toggle',
+      id: 'invertedColors',
+      label: 'Farben invertieren',
+      enabled: appearance.invertedColors,
+      onToggle: appearance.toggleInvertedColors,
+    },
+    { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikelverwaltung' },
+  ]
+
   const navigation = (
     <NavigationBar
       areas={AREAS}
@@ -107,7 +117,7 @@ export function SignedInApp({
     ) : (
       <SettingsPage
         navigation={navigation}
-        entries={SETTINGS_ENTRIES}
+        entries={settingsEntries}
         onOpenEntry={setSettingsEntry}
       />
     )

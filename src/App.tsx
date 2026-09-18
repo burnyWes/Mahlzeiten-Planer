@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import type { MealsClient } from './meals/api/mealsClient'
 import { SignedInApp } from './SignedInApp'
+import type { AppearanceClient } from './shared/appearance/appearanceClient'
+import { useAppearance } from './shared/appearance/useAppearance'
 import { AppUpdateOffer } from './shared/appUpdate/AppUpdateOffer'
 import type { AppUpdateClient } from './shared/appUpdate/appUpdateClient'
 import { useAppUpdate } from './shared/appUpdate/useAppUpdate'
@@ -21,6 +23,7 @@ type AppProps = {
   createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
   createKnownItemsClient: () => KnownItemsClient
   appUpdateClient: AppUpdateClient
+  appearanceClient: AppearanceClient
   storageWarning?: string
 }
 
@@ -30,11 +33,13 @@ export function App({
   createMealsClient,
   createKnownItemsClient,
   appUpdateClient,
+  appearanceClient,
   storageWarning = '',
 }: AppProps) {
   const { spokenText, announce } = useAnnouncer()
   const session = useSession(authClient)
   const installUpdate = useAppUpdate(appUpdateClient, announce)
+  const appearance = useAppearance(appearanceClient)
 
   useConnectionAnnouncements(announce)
 
@@ -53,6 +58,7 @@ export function App({
           createShoppingListClient={createShoppingListClient}
           createMealsClient={createMealsClient}
           createKnownItemsClient={createKnownItemsClient}
+          appearance={appearance}
           announce={announce}
         />
       )}

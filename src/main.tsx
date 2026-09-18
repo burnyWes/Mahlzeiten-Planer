@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App.tsx'
 import { createFirestoreMealsClient } from './meals/api/firestoreMealsClient.ts'
+import { createLocalStorageAppearanceClient } from './shared/appearance/localStorageAppearanceClient.ts'
 import { createServiceWorkerAppUpdateClient } from './shared/appUpdate/serviceWorkerAppUpdateClient.ts'
 import { auth, firestore, storageWarning } from './shared/auth/firebase.ts'
 import { createFirebaseAuthClient } from './shared/auth/firebaseAuthClient.ts'
@@ -21,6 +22,8 @@ const openKnownItems = () => createFirestoreKnownItemsClient(firestore)
 
 const appUpdateClient = createServiceWorkerAppUpdateClient()
 
+const appearanceClient = createLocalStorageAppearanceClient()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App
@@ -29,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
       createMealsClient={openMeals}
       createKnownItemsClient={openKnownItems}
       appUpdateClient={appUpdateClient}
+      appearanceClient={appearanceClient}
       storageWarning={storageWarning}
     />
   </StrictMode>,

@@ -1,8 +1,12 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import type { Meal } from './meals/domain/meal'
+import type { AppearanceClient } from './shared/appearance/appearanceClient'
+import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
+import { useAppearance } from './shared/appearance/useAppearance'
 import { SignedInApp } from './SignedInApp'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
@@ -13,24 +17,38 @@ function openItem(id: string, name: string, createdAt: number): ShoppingItem {
   return { id, name, quantity: null, createdAt, checkedOffAt: null }
 }
 
+type SignedInAppWithAppearanceProps = Omit<
+  ComponentProps<typeof SignedInApp>,
+  'appearance'
+> & { appearanceClient: AppearanceClient }
+
+function SignedInAppWithAppearance({
+  appearanceClient,
+  ...props
+}: SignedInAppWithAppearanceProps) {
+  return <SignedInApp {...props} appearance={useAppearance(appearanceClient)} />
+}
+
 function renderSignedInApp(
   initialItems: readonly ShoppingItem[] = [],
   initialMeals: readonly Meal[] = [],
   knownItemsClient = createInMemoryKnownItemsClient(),
+  appearanceClient = createInMemoryAppearanceClient(),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
   const rendered = render(
-    <SignedInApp
+    <SignedInAppWithAppearance
       createShoppingListClient={() => client}
       createMealsClient={() => createInMemoryMealsClient(initialMeals)}
       createKnownItemsClient={() => knownItemsClient}
+      appearanceClient={appearanceClient}
       announce={(text) => {
         announcements.push(text)
       }}
     />,
   )
-  return { client, announcements, rendered }
+  return { client, announcements, rendered, appearanceClient }
 }
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
@@ -353,8 +371,60 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('offers to invert the colours above the known items', async () => {
+    renderSignedInApp()
+
+    await goToArea('Einstellungen')
+
+    expect(shownItemNames()).toEqual([
+      'Farben invertieren',
+      'Artikelverwaltung',
+    ])
+    expect(
+      screen.getByRole('switch', { name: 'Farben invertieren' }),
+    ).not.toBeChecked()
+  })
+
+  it('remembers the inverted colours on this device', async () => {
+    const { appearanceClient } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+    await userEvent.click(
+      screen.getByRole('switch', { name: 'Farben invertieren' }),
+    )
+
+    expect(
+      screen.getByRole('switch', { name: 'Farben invertieren' }),
+    ).toBeChecked()
+    expect(appearanceClient.storedInvertedColors()).toBe(true)
+  })
+
+  it('says nothing of its own when the colours are inverted', async () => {
+    const { announcements } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+    await userEvent.click(
+      screen.getByRole('switch', { name: 'Farben invertieren' }),
+    )
+
+    expect(announcements).toEqual([])
+  })
+
   it('has no accessibility violations on the settings', async () => {
     const { rendered } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the inverted settings', async () => {
+    const { rendered } = renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(true),
+    )
 
     await goToArea('Einstellungen')
 
