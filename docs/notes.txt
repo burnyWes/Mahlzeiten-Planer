@@ -78,3 +78,9 @@ TODO
   MZP-006 sichtbar, weil die Zeile sofort erscheint und nicht erst nach der
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
+- Eisfach-Memory
+b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
+  vitest, wenn alle 21 Testdateien parallel laufen - der Test startet ESLint
+  programmatisch. Allein braucht er 2,9 s. Einmal gesehen am 2026-09-18; der
+  Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
+  oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
