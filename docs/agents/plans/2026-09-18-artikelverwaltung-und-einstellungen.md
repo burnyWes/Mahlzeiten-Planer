@@ -647,9 +647,9 @@ trifft er einen vorhandenen Eintrag, werden beide zu einem zusammengeführt.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Eine Korrektur auf einem Gerät steht kurz darauf auch auf dem anderen in der
+- [x] Eine Korrektur auf einem Gerät steht kurz darauf auch auf dem anderen in der
       Liste.
-- [ ] Mit VoiceOver: Der Speichern-Knopf wird als "Speichern, Taste" gelesen, die
+- [x] Mit VoiceOver: Der Speichern-Knopf wird als "Speichern, Taste" gelesen, die
       Rückkehr zur Liste ist durch die Ansage nachvollziehbar.
 
 ### Phase 4: Der gepflegte Name gewinnt
@@ -712,7 +712,7 @@ Einkaufsliste durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Nach einer Korrektur in der Artikelverwaltung landet der Artikel auch dann mit der
+- [x] Nach einer Korrektur in der Artikelverwaltung landet der Artikel auch dann mit der
       gepflegten Schreibweise auf der Liste, wenn man den Namen anders tippt und keinen
       Vorschlag anklickt.
 
