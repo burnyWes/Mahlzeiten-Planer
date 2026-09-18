@@ -1,5 +1,9 @@
 import { ESLint } from 'eslint'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+const ESLINT_CONFIGURATION_COLD_START = 30_000
+
+vi.setConfig({ testTimeout: ESLINT_CONFIGURATION_COLD_START })
 
 const domainFilePath = 'src/shopping/domain/boundaryProbe.ts'
 const uiFilePath = 'src/shopping/ui/boundaryProbe.ts'
