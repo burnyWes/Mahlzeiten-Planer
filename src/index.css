@@ -100,6 +100,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
   min-height: 44px;
@@ -118,6 +119,7 @@ textarea {
 }
 
 input,
+select,
 textarea {
   border: 1px solid var(--fieldBorder);
   border-radius: 6px;
@@ -336,6 +338,22 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   scroll-padding-bottom: calc(
     var(--bottomBarHeight) + env(safe-area-inset-bottom)
   );
+}
+
+.weekPlanRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.weekday {
+  flex: none;
+  min-width: 2.5rem;
+}
+
+.weekPlanRow select {
+  flex: 1;
+  min-width: 0;
 }
 
 .iconButton {

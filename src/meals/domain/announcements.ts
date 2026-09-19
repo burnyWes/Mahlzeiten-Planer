@@ -9,6 +9,7 @@ import {
   type MealItem,
   type NewMeal,
 } from './meal'
+import { WEEKDAYS, type Weekday } from './weekPlan'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
   nameMissing: 'Bitte einen Namen eingeben.',
@@ -73,4 +74,28 @@ export function mealDeletedAnnouncement(
 
 export function mealWithoutItemsAnnouncement(meal: NewMeal): string {
   return `${meal.name} hat keine Einkaufs-Items.`
+}
+
+const weekdayNames: Record<Weekday, string> = {
+  monday: 'Montag',
+  tuesday: 'Dienstag',
+  wednesday: 'Mittwoch',
+  thursday: 'Donnerstag',
+  friday: 'Freitag',
+  saturday: 'Samstag',
+  sunday: 'Sonntag',
+}
+
+export function weekdayName(day: Weekday): string {
+  return weekdayNames[day]
+}
+
+export function weekdayAbbreviation(day: Weekday): string {
+  return `${weekdayName(day).slice(0, 2)}.`
+}
+
+export function weekPlanHeading(plannedDays: number): string {
+  return plannedDays === 0
+    ? `Wochenplan, keine von ${WEEKDAYS.length}`
+    : `Wochenplan, ${plannedDays} von ${WEEKDAYS.length}`
 }

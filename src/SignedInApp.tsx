@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import type { MealsClient } from './meals/api/mealsClient'
+import type { WeekPlanClient } from './meals/api/weekPlanClient'
 import { mealWithoutItemsAnnouncement } from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
 import { MealsArea } from './meals/ui/MealsArea'
 import { useMeals } from './meals/ui/useMeals'
+import { useWeekPlan } from './meals/ui/useWeekPlan'
+import { WeekPlanArea } from './meals/ui/WeekPlanArea'
 import type { Appearance } from './shared/appearance/useAppearance'
 import { NavigationBar, type Area } from './shared/ui/NavigationBar'
 import { SettingsIcon } from './shared/ui/SettingsIcon'
@@ -19,7 +22,8 @@ import { useKnownItems } from './shopping/ui/useKnownItems'
 import { useShoppingList } from './shopping/ui/useShoppingList'
 
 const AREAS = [
-  { id: 'shopping', label: 'Einkaufsliste' },
+  { id: 'shopping', label: 'Einkaufsliste', text: 'Einkauf' },
+  { id: 'weekPlan', label: 'Wochenplan', text: 'Woche' },
   { id: 'meals', label: 'Gerichte' },
   { id: 'settings', label: 'Einstellungen', icon: <SettingsIcon /> },
 ] as const satisfies readonly Area<string>[]
@@ -42,6 +46,9 @@ type SignedInAppProps = {
     onWriteFailure: (message: string) => void,
   ) => ShoppingListClient
   createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
+  createWeekPlanClient: (
+    onWriteFailure: (message: string) => void,
+  ) => WeekPlanClient
   createKnownItemsClient: () => KnownItemsClient
   appearance: Appearance
   announce: (text: string) => void
@@ -50,6 +57,7 @@ type SignedInAppProps = {
 export function SignedInApp({
   createShoppingListClient,
   createMealsClient,
+  createWeekPlanClient,
   createKnownItemsClient,
   appearance,
   announce,
@@ -58,6 +66,7 @@ export function SignedInApp({
     createShoppingListClient(announce),
   )
   const [mealsClient] = useState(() => createMealsClient(announce))
+  const [weekPlanClient] = useState(() => createWeekPlanClient(announce))
   const [knownItemsClient] = useState(createKnownItemsClient)
   const knownItems = useKnownItems(knownItemsClient)
   const shoppingList = useShoppingList(
@@ -66,6 +75,7 @@ export function SignedInApp({
     knownItems.knownItems,
   )
   const meals = useMeals(mealsClient)
+  const weekPlanning = useWeekPlan(weekPlanClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
@@ -119,6 +129,15 @@ export function SignedInApp({
         navigation={navigation}
         entries={settingsEntries}
         onOpenEntry={setSettingsEntry}
+      />
+    )
+
+  if (activeArea === 'weekPlan')
+    return (
+      <WeekPlanArea
+        meals={meals.meals}
+        weekPlanning={weekPlanning}
+        navigation={navigation}
       />
     )
 

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
+import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
 import type { Meal } from './meals/domain/meal'
 import type { AppearanceClient } from './shared/appearance/appearanceClient'
 import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
@@ -34,6 +35,7 @@ function renderSignedInApp(
   initialMeals: readonly Meal[] = [],
   knownItemsClient = createInMemoryKnownItemsClient(),
   appearanceClient = createInMemoryAppearanceClient(),
+  weekPlanClient = createInMemoryWeekPlanClient(),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -41,6 +43,7 @@ function renderSignedInApp(
     <SignedInAppWithAppearance
       createShoppingListClient={() => client}
       createMealsClient={() => createInMemoryMealsClient(initialMeals)}
+      createWeekPlanClient={() => weekPlanClient}
       createKnownItemsClient={() => knownItemsClient}
       appearanceClient={appearanceClient}
       announce={(text) => {
@@ -48,7 +51,7 @@ function renderSignedInApp(
       }}
     />,
   )
-  return { client, announcements, rendered, appearanceClient }
+  return { client, announcements, rendered, appearanceClient, weekPlanClient }
 }
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
@@ -71,7 +74,81 @@ function shownItemNames() {
     .map((row) => row.textContent)
 }
 
+function tabNames() {
+  return within(screen.getByRole('navigation'))
+    .getAllByRole('button')
+    .map((tab) => tab.getAttribute('aria-label') ?? tab.textContent)
+}
+
 describe('SignedInApp', () => {
+  it('names the four areas in the order of their use', () => {
+    renderSignedInApp()
+
+    expect(tabNames()).toEqual([
+      'Einkaufsliste',
+      'Wochenplan',
+      'Gerichte',
+      'Einstellungen',
+    ])
+    expect(
+      within(screen.getByRole('navigation'))
+        .getAllByRole('button')
+        .map((tab) => tab.textContent),
+    ).toEqual(['Einkauf', 'Woche', 'Gerichte', ''])
+  })
+
+  it('switches to the week plan and marks it as the current area', async () => {
+    renderSignedInApp()
+
+    await goToArea('Wochenplan')
+
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, keine von 7' }),
+    ).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Wochenplan' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
+  it('keeps a planned day for the whole household', async () => {
+    const { weekPlanClient } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+    )
+
+    await goToArea('Wochenplan')
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Montag' }),
+      'bolognese',
+    )
+
+    expect(weekPlanClient.storedWeekPlan().monday).toBe('bolognese')
+  })
+
+  it('says nothing of its own about a day that was planned by hand', async () => {
+    const { announcements } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+    )
+
+    await goToArea('Wochenplan')
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Montag' }),
+      'bolognese',
+    )
+
+    expect(announcements).toEqual([])
+  })
+
+  it('has no accessibility violations on the week plan', async () => {
+    const { rendered } = renderSignedInApp([], [meal('bolognese', 'Bolognese')])
+
+    await goToArea('Wochenplan')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
   it('starts on the shopping list and marks it as the current area', () => {
     renderSignedInApp()
 

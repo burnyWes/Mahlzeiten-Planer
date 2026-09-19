@@ -50,8 +50,19 @@ function collectionOf(collectionName: string) {
 const itemsOf = collectionOf('items')
 const mealsOf = collectionOf('meals')
 const knownItemsOf = collectionOf('knownItems')
+const weekPlanOf = collectionOf('weekPlan')
 
 const milk = { name: 'Milch', lastUsedAt: 1, timesUsed: 1 }
+
+const weekPlan = {
+  monday: 'bolognese',
+  tuesday: null,
+  wednesday: null,
+  thursday: null,
+  friday: null,
+  saturday: null,
+  sunday: null,
+}
 
 const bolognese = {
   name: 'Spaghetti Bolognese',
@@ -101,6 +112,24 @@ describe('firestore security rules', () => {
   it('refuses an unauthenticated visitor on the meals', async () => {
     await assertFails(getDoc(mealsOf(null)('bolognese')))
     await assertFails(setDoc(mealsOf(null)('bolognese'), bolognese))
+  })
+
+  it('lets the household write the week plan', async () => {
+    await assertSucceeds(setDoc(weekPlanOf(householdUid)('current'), weekPlan))
+  })
+
+  it('lets the household read the week plan', async () => {
+    await assertSucceeds(getDoc(weekPlanOf(householdUid)('current')))
+  })
+
+  it('refuses another account on the week plan', async () => {
+    await assertFails(getDoc(weekPlanOf(strangerUid)('current')))
+    await assertFails(setDoc(weekPlanOf(strangerUid)('current'), weekPlan))
+  })
+
+  it('refuses an unauthenticated visitor on the week plan', async () => {
+    await assertFails(getDoc(weekPlanOf(null)('current')))
+    await assertFails(setDoc(weekPlanOf(null)('current'), weekPlan))
   })
 
   it('lets the household write a known item', async () => {

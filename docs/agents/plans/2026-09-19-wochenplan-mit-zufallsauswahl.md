@@ -349,13 +349,13 @@ Hand benutzbar.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/weekPlan.test.ts` schreiben — erst die fehlschlagenden Tests:
+- [x] `src/meals/domain/weekPlan.test.ts` schreiben — erst die fehlschlagenden Tests:
       `withMealOnDay` ersetzt genau einen Tag, `null` leert ihn; `plannedMeals` gibt die
       Gerichte in Wochentagsreihenfolge und überspringt leere **und** verwaiste Ids;
       `plannedDayCount` zählt nur Tage mit vorhandenem Gericht; `shownMealOn` gibt bei
       verwaister Id `null`; `mealsWithoutItems` liefert jedes Gericht ohne Items genau
       einmal, auch wenn es an zwei Tagen steht.
-- [ ] `src/meals/domain/weekPlan.ts` anlegen
+- [x] `src/meals/domain/weekPlan.ts` anlegen
 
       ```ts
       export const WEEKDAYS = [
@@ -388,7 +388,7 @@ Hand benutzbar.
       }
       ```
 
-- [ ] `src/meals/domain/announcements.ts` um `weekdayName`, `weekdayAbbreviation` und
+- [x] `src/meals/domain/announcements.ts` um `weekdayName`, `weekdayAbbreviation` und
       `weekPlanHeading` erweitern, Tests in `announcements.test.ts` voran
 
       ```ts
@@ -399,7 +399,7 @@ Hand benutzbar.
       }
       ```
 
-- [ ] `src/meals/api/weekPlanClient.ts` anlegen
+- [x] `src/meals/api/weekPlanClient.ts` anlegen
 
       ```ts
       export interface WeekPlanClient {
@@ -408,10 +408,10 @@ Hand benutzbar.
       }
       ```
 
-- [ ] `src/meals/api/inMemoryWeekPlanClient.ts` anlegen, nach dem Muster von
+- [x] `src/meals/api/inMemoryWeekPlanClient.ts` anlegen, nach dem Muster von
       `inMemoryMealsClient.ts`: `createInMemoryWeekPlanClient(initialPlan = EMPTY_WEEK_PLAN)`
       mit `weekPlanArrivesFromElsewhere` und `storedWeekPlan`.
-- [ ] `src/meals/api/firestoreWeekPlanClient.ts` anlegen — ein Dokument, ganz
+- [x] `src/meals/api/firestoreWeekPlanClient.ts` anlegen — ein Dokument, ganz
       geschrieben, Fehler über `onWriteFailure` wie in `firestoreMealsClient.ts:67-69`
 
       ```ts
@@ -429,7 +429,7 @@ Hand benutzbar.
       }
       ```
 
-- [ ] `src/meals/ui/useWeekPlan.ts` anlegen — beobachtet und schreibt optimistisch,
+- [x] `src/meals/ui/useWeekPlan.ts` anlegen — beobachtet und schreibt optimistisch,
       damit das Auswahlfeld auch offline sofort sitzt
 
       ```ts
@@ -440,10 +440,10 @@ Hand benutzbar.
       }
       ```
 
-- [ ] `src/shared/ui/NavigationBar.tsx`: `Area` um `text?: string` erweitern; sichtbar
+- [x] `src/shared/ui/NavigationBar.tsx`: `Area` um `text?: string` erweitern; sichtbar
       ist `area.icon ?? area.text ?? area.label`, `aria-label` wird gesetzt, sobald
       `icon` **oder** `text` da ist.
-- [ ] `src/meals/ui/WeekPlanRow.tsx` anlegen
+- [x] `src/meals/ui/WeekPlanRow.tsx` anlegen
 
       ```tsx
       <li className="weekPlanRow">
@@ -466,13 +466,13 @@ Hand benutzbar.
       ```
 
       Der Zufallsknopf der Zeile kommt in Phase 2 dazu.
-- [ ] `src/meals/ui/WeekPlanPage.tsx` anlegen: `navigation`, `<main className="page
+- [x] `src/meals/ui/WeekPlanPage.tsx` anlegen: `navigation`, `<main className="page
       pageBelowNavigation">`, `useHeadingFocus`, `weekPlanHeading(plannedDayCount(...))`,
       bei `meals.length === 0` ein `<p>Noch keine Gerichte gespeichert.</p>`, darunter
       `<ul className="itemList">` mit den sieben `WeekPlanRow`.
-- [ ] `src/meals/ui/WeekPlanArea.tsx` anlegen: nimmt `meals`, `weekPlanning`,
+- [x] `src/meals/ui/WeekPlanArea.tsx` anlegen: nimmt `meals`, `weekPlanning`,
       `navigation` und gibt `onChooseMeal` an die Seite weiter. Sagt **nichts** an.
-- [ ] `src/SignedInApp.tsx`: `AREAS` auf vier Einträge, `createWeekPlanClient` als Prop,
+- [x] `src/SignedInApp.tsx`: `AREAS` auf vier Einträge, `createWeekPlanClient` als Prop,
       `useWeekPlan`, Zweig für `activeArea === 'weekPlan'`
 
       ```tsx
@@ -484,9 +484,9 @@ Hand benutzbar.
       ] as const satisfies readonly Area<string>[]
       ```
 
-- [ ] `src/App.tsx` und `src/main.tsx`: `createWeekPlanClient` durchreichen und aus
+- [x] `src/App.tsx` und `src/main.tsx`: `createWeekPlanClient` durchreichen und aus
       `createFirestoreWeekPlanClient(firestore, onWriteFailure)` bauen.
-- [ ] `src/index.css`: `select` in die Regeln `button, input, textarea` (`:101-106`) und
+- [x] `src/index.css`: `select` in die Regeln `button, input, textarea` (`:101-106`) und
       `input, textarea` (`:120-127`) aufnehmen, dazu
 
       ```css
@@ -507,27 +507,27 @@ Hand benutzbar.
       }
       ```
 
-- [ ] `firestore.rules`: `match /weekPlan/{document} { allow read, write: if isHousehold(); }`
-- [ ] `firestore.rules.test.ts`: vier Fälle für `weekPlan` — Haushalt schreibt,
+- [x] `firestore.rules`: `match /weekPlan/{document} { allow read, write: if isHousehold(); }`
+- [x] `firestore.rules.test.ts`: vier Fälle für `weekPlan` — Haushalt schreibt,
       Haushalt liest, fremdes Konto abgewiesen, nicht angemeldet abgewiesen.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx` anlegen: sieben Zeilen „Mo." bis „So.", jedes
+- [x] `src/meals/ui/WeekPlanArea.test.tsx` anlegen: sieben Zeilen „Mo." bis „So.", jedes
       Auswahlfeld heißt nach dem vollen Wochentag, die Auswahl listet „Kein Gericht" und
       die Gerichte alphabetisch, eine Auswahl landet im Fake-Client und sagt nichts an,
       ein von außen eintreffender Plan zeigt sich, ein gelöschtes Gericht zeigt „Kein
       Gericht", ohne Gerichte steht der Hinweis, axe ohne Befund.
-- [ ] `src/SignedInApp.test.tsx` und `src/App.test.tsx`: neuen Client in die
+- [x] `src/SignedInApp.test.tsx` und `src/App.test.tsx`: neuen Client in die
       Testaufbauten, Reihenfolge und Namen der vier Tabs prüfen, Wechsel auf „Wochenplan"
       setzt `aria-current` und den Fokus auf die Überschrift.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft grün, darunter `weekPlan.test.ts`, `announcements.test.ts`,
+- [x] `npm run test` läuft grün, darunter `weekPlan.test.ts`, `announcements.test.ts`,
       `WeekPlanArea.test.tsx`, `SignedInApp.test.tsx`
-- [ ] `test/palette.test.ts` bleibt grün (keine Farbe außerhalb der Palette)
-- [ ] `test/domainLayerBoundary.test.ts` bleibt grün
-- [ ] `npm run test:rules` läuft grün, darunter die vier neuen `weekPlan`-Fälle
-- [ ] `npm run lint` und `npm run build` laufen durch
-- [ ] `npm run format:check` läuft durch
+- [x] `test/palette.test.ts` bleibt grün (keine Farbe außerhalb der Palette)
+- [x] `test/domainLayerBoundary.test.ts` bleibt grün
+- [x] `npm run test:rules` läuft grün, darunter die vier neuen `weekPlan`-Fälle
+- [x] `npm run lint` und `npm run build` laufen durch
+- [x] `npm run format:check` läuft durch
 
 **Manuelle Verifikation**:
 
@@ -537,7 +537,7 @@ Hand benutzbar.
       Auswahlfeld öffnet die Systemauswahl und lässt sich damit bedienen.
 - [ ] Eine Auswahl erscheint auf dem zweiten Gerät und übersteht das Schließen und
       erneute Öffnen der App.
-- [ ] Vor dieser Prüfung in der Produktion:
+- [x] Vor dieser Prüfung in der Produktion:
       `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`
 
 ### Phase 2: Zufallsauswahl je Zeile und für die ganze Woche
@@ -764,7 +764,11 @@ zwischen den Kontexten bleibt in `SignedInApp`.
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+- Phase 1: Der Nachweis „eine Auswahl von Hand sagt nichts Eigenes" steht in
+  `src/SignedInApp.test.tsx`, nicht in `WeekPlanArea.test.tsx`. `WeekPlanArea` bekommt
+  `announce` erst in Phase 2; in der Schale liegt die Ansage ohnehin, und die
+  Schwesterprüfung von MZP-008 („says nothing of its own when the colours are
+  inverted") steht an derselben Stelle.
 
 ## Verweise
 

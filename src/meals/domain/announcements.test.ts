@@ -10,8 +10,12 @@ import {
   mealSavedAnnouncement,
   mealsHeading,
   mealWithoutItemsAnnouncement,
+  weekdayAbbreviation,
+  weekdayName,
+  weekPlanHeading,
 } from './announcements'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
+import { WEEKDAYS } from './weekPlan'
 
 const mincedMeat: MealItem = {
   name: 'Hackfleisch',
@@ -140,5 +144,43 @@ describe('mealWithoutItemsAnnouncement', () => {
     expect(mealWithoutItemsAnnouncement(bolognese)).toBe(
       'Spaghetti Bolognese hat keine Einkaufs-Items.',
     )
+  })
+})
+
+describe('weekdayName', () => {
+  it('names every weekday in full', () => {
+    expect(WEEKDAYS.map(weekdayName)).toEqual([
+      'Montag',
+      'Dienstag',
+      'Mittwoch',
+      'Donnerstag',
+      'Freitag',
+      'Samstag',
+      'Sonntag',
+    ])
+  })
+})
+
+describe('weekdayAbbreviation', () => {
+  it('shortens every weekday to two letters and a dot', () => {
+    expect(WEEKDAYS.map(weekdayAbbreviation)).toEqual([
+      'Mo.',
+      'Di.',
+      'Mi.',
+      'Do.',
+      'Fr.',
+      'Sa.',
+      'So.',
+    ])
+  })
+})
+
+describe('weekPlanHeading', () => {
+  it('says that no day is planned yet', () => {
+    expect(weekPlanHeading(0)).toBe('Wochenplan, keine von 7')
+  })
+
+  it('counts the days that carry a meal', () => {
+    expect(weekPlanHeading(5)).toBe('Wochenplan, 5 von 7')
   })
 })
