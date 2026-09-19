@@ -111,3 +111,12 @@ export function dayPlannedAnnouncement(day: Weekday, meal: NewMeal): string {
 export function weekPlanShuffledAnnouncement(): string {
   return `Wochenplan neu gewürfelt, ${WEEKDAYS.length} Gerichte.`
 }
+
+export function weekPlanTransferAnnouncement(
+  additions: string,
+  mealsWithoutItems: readonly NewMeal[],
+): string {
+  const hints = mealsWithoutItems.map(mealWithoutItemsAnnouncement)
+  if (additions === '') return hints.join(' ')
+  return [`Wochenplan, ${additions}`, ...hints].join(' ')
+}

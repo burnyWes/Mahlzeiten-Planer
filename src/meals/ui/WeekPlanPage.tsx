@@ -9,6 +9,7 @@ import {
   type WeekPlan,
   type Weekday,
 } from '../domain/weekPlan'
+import { AddToShoppingListIcon } from './AddToShoppingListIcon'
 import { ShuffleIcon } from './ShuffleIcon'
 import { WeekPlanRow } from './WeekPlanRow'
 
@@ -19,6 +20,7 @@ type WeekPlanPageProps = {
   onChooseMeal: (day: Weekday, id: MealId | null) => void
   onShuffleDay: (day: Weekday) => void
   onShuffleWeek: () => void
+  onAddToShoppingList: () => void
 }
 
 export function WeekPlanPage({
@@ -28,8 +30,10 @@ export function WeekPlanPage({
   onChooseMeal,
   onShuffleDay,
   onShuffleWeek,
+  onAddToShoppingList,
 }: WeekPlanPageProps) {
   const heading = useHeadingFocus()
+  const plannedDays = plannedDayCount(plan, meals)
 
   return (
     <>
@@ -37,7 +41,7 @@ export function WeekPlanPage({
       <main className="page pageBelowNavigation">
         <div className="pageHeader">
           <h1 ref={heading} tabIndex={-1}>
-            {weekPlanHeading(plannedDayCount(plan, meals))}
+            {weekPlanHeading(plannedDays)}
           </h1>
         </div>
         {meals.length === 0 && <p>Noch keine Gerichte gespeichert.</p>}
@@ -61,6 +65,14 @@ export function WeekPlanPage({
             onClick={onShuffleWeek}
           >
             <ShuffleIcon />
+          </button>
+          <button
+            type="button"
+            aria-label="Auf die Einkaufsliste"
+            disabled={plannedDays === 0}
+            onClick={onAddToShoppingList}
+          >
+            <AddToShoppingListIcon />
           </button>
         </BottomBar>
       </main>

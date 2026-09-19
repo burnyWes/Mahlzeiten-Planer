@@ -4,6 +4,12 @@ import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
+import {
+  EMPTY_WEEK_PLAN,
+  WEEKDAYS,
+  withMealOnDay,
+  type WeekPlan,
+} from './meals/domain/weekPlan'
 import type { Meal } from './meals/domain/meal'
 import type { AppearanceClient } from './shared/appearance/appearanceClient'
 import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
@@ -74,6 +80,19 @@ function shownItemNames() {
     .map((row) => row.textContent)
 }
 
+function planOf(...ids: readonly string[]): WeekPlan {
+  return ids.reduce<WeekPlan>(
+    (plan, id, position) => withMealOnDay(plan, WEEKDAYS[position], id),
+    EMPTY_WEEK_PLAN,
+  )
+}
+
+function transferTheWeekPlan() {
+  return userEvent.click(
+    screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
+  )
+}
+
 function tabNames() {
   return within(screen.getByRole('navigation'))
     .getAllByRole('button')
@@ -139,6 +158,107 @@ describe('SignedInApp', () => {
     )
 
     expect(announcements).toEqual([])
+  })
+
+  it('gathers the items of the planned meals on the shopping list', async () => {
+    const { announcements } = renderSignedInApp(
+      [openItem('bread', 'Brot', 1)],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+          { name: 'Brot', quantity: null },
+        ]),
+        meal('chili', 'Chili', [
+          { name: 'Bohnen', quantity: null },
+          { name: 'Brot', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'chili')),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, 3 Artikel hinzugefügt. 1 zusammengefasst.',
+    )
+
+    await goToArea('Einkaufsliste')
+
+    expect(shownItemNames()).toEqual([
+      'Brot, 3',
+      'Hackfleisch, 500 g',
+      'Bohnen',
+    ])
+  })
+
+  it('names a planned meal without items once, however often it is planned', async () => {
+    const { announcements } = renderSignedInApp(
+      [],
+      [
+        meal('soup', 'Suppe'),
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('soup', 'bolognese', 'soup')),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, 1 Artikel hinzugefügt. Suppe hat keine Einkaufs-Items.',
+    )
+  })
+
+  it('leaves the week plan standing after the transfer', async () => {
+    const weekPlanClient = createInMemoryWeekPlanClient(planOf('bolognese'))
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      weekPlanClient,
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(weekPlanClient.storedWeekPlan()).toEqual(planOf('bolognese'))
+    expect(screen.getByRole('combobox', { name: 'Montag' })).toHaveValue(
+      'bolognese',
+    )
+  })
+
+  it('counts an item of the week plan once per transfer', async () => {
+    const knownItemsClient = createInMemoryKnownItemsClient()
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+      knownItemsClient,
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'bolognese')),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(knownItemsClient.storedKnownItems()).toEqual([
+      expect.objectContaining({ name: 'Hackfleisch', timesUsed: 1 }),
+    ])
   })
 
   it('has no accessibility violations on the week plan', async () => {

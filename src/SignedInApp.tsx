@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import type { MealsClient } from './meals/api/mealsClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
-import { mealWithoutItemsAnnouncement } from './meals/domain/announcements'
+import {
+  mealWithoutItemsAnnouncement,
+  weekPlanTransferAnnouncement,
+} from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
 import type { RandomSource } from './meals/domain/randomPlanning'
+import { mealsWithoutItems } from './meals/domain/weekPlan'
 import { MealsArea } from './meals/ui/MealsArea'
 import { useMeals } from './meals/ui/useMeals'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
@@ -33,13 +37,15 @@ type AreaId = (typeof AREAS)[number]['id']
 
 const KNOWN_ITEMS_ENTRY = 'knownItems'
 
-function shoppingItemsOf(meal: Meal): readonly NewShoppingItem[] {
+function shoppingItemsOf(meals: readonly Meal[]): readonly NewShoppingItem[] {
   const createdAt = Date.now()
-  return meal.items.map((item) => ({
-    name: item.name,
-    quantity: item.quantity,
-    createdAt,
-  }))
+  return meals.flatMap((meal) =>
+    meal.items.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      createdAt,
+    })),
+  )
 }
 
 type SignedInAppProps = {
@@ -87,8 +93,19 @@ export function SignedInApp({
       announce(mealWithoutItemsAnnouncement(meal))
       return
     }
-    const summary = shoppingList.addItems(shoppingItemsOf(meal))
+    const summary = shoppingList.addItems(shoppingItemsOf([meal]))
     announce(`${meal.name}, ${additionsAnnouncement(summary)}`)
+  }
+
+  function addWeekPlanToShoppingList(planned: readonly Meal[]) {
+    const items = shoppingItemsOf(planned)
+    const additions =
+      items.length === 0
+        ? ''
+        : additionsAnnouncement(shoppingList.addItems(items))
+    announce(
+      weekPlanTransferAnnouncement(additions, mealsWithoutItems(planned)),
+    )
   }
 
   function suggestKnownNames(typed: string) {
@@ -143,6 +160,7 @@ export function SignedInApp({
         navigation={navigation}
         announce={announce}
         random={random}
+        onAddToShoppingList={addWeekPlanToShoppingList}
       />
     )
 

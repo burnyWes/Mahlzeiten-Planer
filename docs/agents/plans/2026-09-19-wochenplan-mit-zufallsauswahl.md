@@ -681,9 +681,9 @@ linke der beiden unten.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: der Knopf in der Zeile wird als „Zufallsgericht für
+- [x] Auf dem iPhone mit VoiceOver: der Knopf in der Zeile wird als „Zufallsgericht für
       Montag" gelesen, und nach dem Druck ist zu hören, was gewürfelt wurde.
-- [ ] Die Leiste unten bleibt beim Scrollen am Bildschirmrand, und der Knopf darin wird
+- [x] Die Leiste unten bleibt beim Scrollen am Bildschirmrand, und der Knopf darin wird
       als „Zufallsauswahl generieren" gelesen.
 
 ### Phase 3: Der Wochenplan auf die Einkaufsliste
@@ -695,7 +695,7 @@ zwischen den Kontexten bleibt in `SignedInApp`.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/announcements.ts` um `weekPlanTransferAnnouncement` erweitern,
+- [x] `src/meals/domain/announcements.ts` um `weekPlanTransferAnnouncement` erweitern,
       Test voran
 
       ```ts
@@ -709,7 +709,7 @@ zwischen den Kontexten bleibt in `SignedInApp`.
       }
       ```
 
-- [ ] `src/SignedInApp.tsx`: `shoppingItemsOf` nimmt eine Liste von Gerichten und
+- [x] `src/SignedInApp.tsx`: `shoppingItemsOf` nimmt eine Liste von Gerichten und
       vergibt ein gemeinsames `createdAt`; `addMealToShoppingList` ruft es mit `[meal]`
 
       ```tsx
@@ -732,34 +732,34 @@ zwischen den Kontexten bleibt in `SignedInApp`.
       }
       ```
 
-- [ ] `WeekPlanPage.tsx`: den Einkaufswagen in die `BottomBar` neben den Zufallsknopf,
+- [x] `WeekPlanPage.tsx`: den Einkaufswagen in die `BottomBar` neben den Zufallsknopf,
       `aria-label="Auf die Einkaufsliste"`, deaktiviert solange kein Tag ein Gericht hat.
-- [ ] `WeekPlanArea.tsx`: `onAddToShoppingList` mit
+- [x] `WeekPlanArea.tsx`: `onAddToShoppingList` mit
       `plannedMeals(weekPlanning.plan, meals)` aufrufen; die Ansage macht `SignedInApp`.
-- [ ] `WeekPlanArea.test.tsx` erweitern: der Wagen ist bei leerem Plan deaktiviert und
+- [x] `WeekPlanArea.test.tsx` erweitern: der Wagen ist bei leerem Plan deaktiviert und
       übergibt sonst die geplanten Gerichte in Wochentagsreihenfolge; ein verwaistes
       Gericht ist nicht dabei.
-- [ ] `src/SignedInApp.test.tsx` erweitern: ein Wochenplan aus zwei Gerichten mit
+- [x] `src/SignedInApp.test.tsx` erweitern: ein Wochenplan aus zwei Gerichten mit
       gemeinsamer Zutat landet zusammengefasst auf der Einkaufsliste und sagt
       „Wochenplan, 3 Artikel hinzugefügt. 1 zusammengefasst."; ein geplantes Gericht ohne
       Items wird genannt, auch wenn es an zwei Tagen steht nur einmal; der Wochenplan
       bleibt nach der Übergabe unverändert; die Einkaufsliste behält ihre Reihenfolge und
       der Artikelkatalog zählt jede Zutat mit.
-- [ ] `e2e/weekPlan.spec.ts` anlegen: anmelden, ein Gericht mit zwei Zutaten anlegen, auf
+- [x] `e2e/weekPlan.spec.ts` anlegen: anmelden, ein Gericht mit zwei Zutaten anlegen, auf
       „Wochenplan" wechseln, für Montag das Gericht wählen, „Zufallsauswahl generieren"
       drücken, „Auf die Einkaufsliste" drücken, die Statuszeile prüfen, auf
       „Einkaufsliste" wechseln und die Artikel prüfen; neu laden und prüfen, dass der
       Plan noch steht.
-- [ ] `docs/notes.txt`: `- Wochenplaner` und `- Später erweitern zu … Einkaufsliste |
+- [x] `docs/notes.txt`: `- Wochenplaner` und `- Später erweitern zu … Einkaufsliste |
       Wochenplaner | Gerichte | Einstellungen` auf `x` setzen und nach DONE verschieben.
       Nichts umsortieren, nichts umformulieren.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft grün, darunter die neuen Fälle in `SignedInApp.test.tsx`
-- [ ] `npm run test:e2e` läuft grün, darunter `e2e/weekPlan.spec.ts`
-- [ ] `npm run test:rules` läuft grün
-- [ ] `npm run lint`, `npm run build`, `npm run format:check` laufen durch
+- [x] `npm run test` läuft grün, darunter die neuen Fälle in `SignedInApp.test.tsx`
+- [x] `npm run test:e2e` läuft grün, darunter `e2e/weekPlan.spec.ts`
+- [x] `npm run test:rules` läuft grün
+- [x] `npm run lint`, `npm run build`, `npm run format:check` laufen durch
 
 **Manuelle Verifikation**:
 
@@ -816,6 +816,15 @@ funktioniert, und hält die Zeile in sich geschlossen.
   übersprungen wird — mit `rarestInThePlan` als einziger Regel in `PLANNING_RULES` kann
   dieser Fall sonst gar nicht auftreten. `pickMealForDay` ruft `narrowedBy` mit
   `PLANNING_RULES` auf, die Kette bleibt also eine.
+- Phase 3: `takeOverItem` ist von `e2e/meals.spec.ts` nach `e2e/keyboard.ts` gewandert,
+  dazu kamen `chooseInField` und `chosenInField` für das Auswahlfeld. Neu ist ausserdem
+  `weekPlanOnServer()` in `e2e/emulatorHousehold.ts`: der Test wartet damit auf den
+  Server, bevor er neu lädt — dieselbe Vorsichtsmassnahme wie in
+  „keeps the added item after a reload", solange ausstehende Schreibvorgänge kein
+  Neuladen überleben (`docs/notes.txt`).
+- Phase 3: Der Artikelkatalog zählt eine Zutat **einmal je Übergabe**, auch wenn das
+  Gericht an zwei Tagen steht — `planAdditions` fasst gleiche Namen vorher zusammen und
+  `recordUse` läuft je Ergebnis. Der Test hält das so fest.
 
 ## Verweise
 

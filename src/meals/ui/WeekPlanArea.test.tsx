@@ -33,6 +33,7 @@ type WeekPlanAreaUnderTestProps = {
   weekPlanClient: InMemoryWeekPlanClient
   announce: (text: string) => void
   random: RandomSource
+  onAddToShoppingList: (planned: readonly Meal[]) => void
 }
 
 function WeekPlanAreaUnderTest({
@@ -40,6 +41,7 @@ function WeekPlanAreaUnderTest({
   weekPlanClient,
   announce,
   random,
+  onAddToShoppingList,
 }: WeekPlanAreaUnderTestProps) {
   return (
     <WeekPlanArea
@@ -48,6 +50,7 @@ function WeekPlanAreaUnderTest({
       navigation={<div data-testid="navigation" />}
       announce={announce}
       random={random}
+      onAddToShoppingList={onAddToShoppingList}
     />
   )
 }
@@ -63,6 +66,7 @@ function renderWeekPlanArea(
 ) {
   const weekPlanClient = createInMemoryWeekPlanClient(initialPlan)
   const announcements: string[] = []
+  const transferred: (readonly Meal[])[] = []
   const rendered = render(
     <WeekPlanAreaUnderTest
       mealsClient={createInMemoryMealsClient(initialMeals)}
@@ -71,9 +75,18 @@ function renderWeekPlanArea(
         announcements.push(text)
       }}
       random={random}
+      onAddToShoppingList={(planned) => {
+        transferred.push(planned)
+      }}
     />,
   )
-  return { weekPlanClient, announcements, rendered }
+  return { weekPlanClient, announcements, transferred, rendered }
+}
+
+function addToShoppingList() {
+  return userEvent.click(
+    screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
+  )
 }
 
 function shuffleDay(name: string) {
@@ -294,6 +307,55 @@ describe('WeekPlanArea', () => {
       screen.getByRole('button', { name: 'Zufallsauswahl generieren' })
         .textContent,
     ).toBe('')
+  })
+
+  it('offers no transfer while no day carries a meal', () => {
+    renderWeekPlanArea([bolognese])
+
+    expect(
+      screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
+    ).toBeDisabled()
+  })
+
+  it('hands the planned meals over in the order of the weekdays', async () => {
+    const { transferred } = renderWeekPlanArea(
+      [bolognese, pizza],
+      withMealOnDay(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'friday', 'bolognese'),
+        'tuesday',
+        'pizza',
+      ),
+    )
+
+    await addToShoppingList()
+
+    expect(transferred).toEqual([[pizza, bolognese]])
+  })
+
+  it('leaves out a day whose meal was deleted meanwhile', async () => {
+    const { transferred, weekPlanClient } = renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'gone'),
+        'sunday',
+        'bolognese',
+      ),
+    )
+
+    await addToShoppingList()
+
+    expect(transferred).toEqual([[bolognese]])
+    expect(weekPlanClient.storedWeekPlan().monday).toBe('gone')
+  })
+
+  it('leaves the plan standing after the transfer', async () => {
+    const plan = withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese')
+    const { weekPlanClient } = renderWeekPlanArea([bolognese], plan)
+
+    await addToShoppingList()
+
+    expect(weekPlanClient.storedWeekPlan()).toEqual(plan)
+    expect(dayField('Montag')).toHaveValue('bolognese')
   })
 
   it('has no accessibility violations after the week was rolled', async () => {

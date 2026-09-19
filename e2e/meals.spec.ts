@@ -1,17 +1,16 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { prepareEmulators } from './emulatorHousehold.ts'
-import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
+import {
+  pressButton,
+  shownItems,
+  signIn,
+  takeOverItem,
+  typeInto,
+} from './keyboard.ts'
 
 test.beforeEach(async () => {
   await prepareEmulators()
 })
-
-async function takeOverItem(page: Page, name: string, amount = '', unit = '') {
-  await typeInto(page, 'Item', name)
-  if (amount !== '') await typeInto(page, 'Menge', amount)
-  if (unit !== '') await typeInto(page, 'Einheit', unit)
-  await pressButton(page, 'Item hinzufügen')
-}
 
 test('writes down a meal and transfers it to the shopping list using the keyboard only', async ({
   page,

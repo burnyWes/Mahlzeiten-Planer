@@ -9,7 +9,7 @@ import {
   pickMealForDay,
   type RandomSource,
 } from '../domain/randomPlanning'
-import type { Weekday } from '../domain/weekPlan'
+import { plannedMeals, type Weekday } from '../domain/weekPlan'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
 
@@ -19,6 +19,7 @@ type WeekPlanAreaProps = {
   navigation: ReactNode
   announce: (text: string) => void
   random: RandomSource
+  onAddToShoppingList: (planned: readonly Meal[]) => void
 }
 
 export function WeekPlanArea({
@@ -27,6 +28,7 @@ export function WeekPlanArea({
   navigation,
   announce,
   random,
+  onAddToShoppingList,
 }: WeekPlanAreaProps) {
   function shuffleDay(day: Weekday) {
     const picked = pickMealForDay(meals, weekPlanning.plan, day, random)
@@ -48,6 +50,9 @@ export function WeekPlanArea({
       onChooseMeal={weekPlanning.chooseMeal}
       onShuffleDay={shuffleDay}
       onShuffleWeek={shuffleWeek}
+      onAddToShoppingList={() =>
+        onAddToShoppingList(plannedMeals(weekPlanning.plan, meals))
+      }
     />
   )
 }

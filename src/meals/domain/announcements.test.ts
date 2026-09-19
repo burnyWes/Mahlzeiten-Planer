@@ -16,6 +16,7 @@ import {
   weekdayName,
   weekPlanHeading,
   weekPlanShuffledAnnouncement,
+  weekPlanTransferAnnouncement,
 } from './announcements'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { WEEKDAYS } from './weekPlan'
@@ -206,6 +207,36 @@ describe('weekPlanShuffledAnnouncement', () => {
   it('counts the days that were rolled', () => {
     expect(weekPlanShuffledAnnouncement()).toBe(
       'Wochenplan neu gewürfelt, 7 Gerichte.',
+    )
+  })
+})
+
+describe('weekPlanTransferAnnouncement', () => {
+  const soup: NewMeal = {
+    name: 'Suppe',
+    items: [],
+    ingredientNotes: '',
+    recipe: '',
+  }
+
+  it('puts the week plan in front of what was added', () => {
+    expect(
+      weekPlanTransferAnnouncement(
+        '14 Artikel hinzugefügt. 3 zusammengefasst.',
+        [],
+      ),
+    ).toBe('Wochenplan, 14 Artikel hinzugefügt. 3 zusammengefasst.')
+  })
+
+  it('names a planned meal that carries no item', () => {
+    expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [soup])).toBe(
+      'Wochenplan, 6 Artikel hinzugefügt. Suppe hat keine Einkaufs-Items.',
+    )
+  })
+
+  it('says only what is missing when nothing was added', () => {
+    expect(weekPlanTransferAnnouncement('', [soup])).toBe(
+      'Suppe hat keine Einkaufs-Items.',
     )
   })
 })

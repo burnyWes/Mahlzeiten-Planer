@@ -70,6 +70,27 @@ export async function itemNamesOnServer(): Promise<readonly string[]> {
   )
 }
 
+type StoredWeekPlan = {
+  fields?: Record<string, { stringValue?: string }>
+}
+
+export async function weekPlanOnServer(): Promise<
+  Record<string, string | null>
+> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/current`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) return {}
+  const stored = (await response.json()) as StoredWeekPlan
+  return Object.fromEntries(
+    Object.entries(stored.fields ?? {}).map(([day, value]) => [
+      day,
+      value.stringValue ?? null,
+    ]),
+  )
+}
+
 export async function storeItemOnServer(
   name: string,
   createdAt: number,

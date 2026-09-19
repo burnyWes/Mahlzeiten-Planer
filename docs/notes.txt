@@ -46,14 +46,14 @@ x Einstellungen
   n Push-Benachrichtigungen
 x Vorschläge verwalten: Tippfehler aus dem Artikelkatalog (knownItems) löschen können,
   z. B. unter Einstellungen.
+x Später erweitern zu
+  x Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
+x Wochenplaner
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
 ----------------------------------------------------------------------------------------------------------------------------------
 
-- Später erweitern zu
-  - Einkaufsliste | Wochenplaner | Gerichte | Einstellungen
-- Wochenplaner
 - Alexa-Integration
 - PDF-Import
 - Firestore-Regeln werden nirgends automatisch ausgerollt: deploy.yml schiebt nur die
