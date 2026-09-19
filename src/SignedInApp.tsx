@@ -3,6 +3,7 @@ import type { MealsClient } from './meals/api/mealsClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
 import { mealWithoutItemsAnnouncement } from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
+import type { RandomSource } from './meals/domain/randomPlanning'
 import { MealsArea } from './meals/ui/MealsArea'
 import { useMeals } from './meals/ui/useMeals'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
@@ -52,6 +53,7 @@ type SignedInAppProps = {
   createKnownItemsClient: () => KnownItemsClient
   appearance: Appearance
   announce: (text: string) => void
+  random?: RandomSource
 }
 
 export function SignedInApp({
@@ -61,6 +63,7 @@ export function SignedInApp({
   createKnownItemsClient,
   appearance,
   announce,
+  random = Math.random,
 }: SignedInAppProps) {
   const [shoppingListClient] = useState(() =>
     createShoppingListClient(announce),
@@ -138,6 +141,8 @@ export function SignedInApp({
         meals={meals.meals}
         weekPlanning={weekPlanning}
         navigation={navigation}
+        announce={announce}
+        random={random}
       />
     )
 

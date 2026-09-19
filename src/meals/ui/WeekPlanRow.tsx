@@ -1,12 +1,18 @@
-import { weekdayAbbreviation, weekdayName } from '../domain/announcements'
+import {
+  randomMealLabel,
+  weekdayAbbreviation,
+  weekdayName,
+} from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import { shownMealOn, type WeekPlan, type Weekday } from '../domain/weekPlan'
+import { ShuffleIcon } from './ShuffleIcon'
 
 type WeekPlanRowProps = {
   day: Weekday
   plan: WeekPlan
   meals: readonly Meal[]
   onChooseMeal: (day: Weekday, id: MealId | null) => void
+  onShuffleDay: (day: Weekday) => void
 }
 
 export function WeekPlanRow({
@@ -14,6 +20,7 @@ export function WeekPlanRow({
   plan,
   meals,
   onChooseMeal,
+  onShuffleDay,
 }: WeekPlanRowProps) {
   return (
     <li className="weekPlanRow">
@@ -37,6 +44,15 @@ export function WeekPlanRow({
           </option>
         ))}
       </select>
+      <button
+        type="button"
+        className="iconButton"
+        aria-label={randomMealLabel(day)}
+        disabled={meals.length === 0}
+        onClick={() => onShuffleDay(day)}
+      >
+        <ShuffleIcon />
+      </button>
     </li>
   )
 }

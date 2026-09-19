@@ -99,3 +99,15 @@ export function weekPlanHeading(plannedDays: number): string {
     ? `Wochenplan, keine von ${WEEKDAYS.length}`
     : `Wochenplan, ${plannedDays} von ${WEEKDAYS.length}`
 }
+
+export function randomMealLabel(day: Weekday): string {
+  return `Zufallsgericht für ${weekdayName(day)}`
+}
+
+export function dayPlannedAnnouncement(day: Weekday, meal: NewMeal): string {
+  return `${weekdayName(day)}, ${meal.name}.`
+}
+
+export function weekPlanShuffledAnnouncement(): string {
+  return `Wochenplan neu gewürfelt, ${WEEKDAYS.length} Gerichte.`
+}

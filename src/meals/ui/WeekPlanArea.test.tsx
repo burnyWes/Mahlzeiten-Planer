@@ -9,8 +9,10 @@ import {
 } from '../api/inMemoryWeekPlanClient'
 import type { MealsClient } from '../api/mealsClient'
 import type { Meal } from '../domain/meal'
+import type { RandomSource } from '../domain/randomPlanning'
 import {
   EMPTY_WEEK_PLAN,
+  WEEKDAYS,
   withMealOnDay,
   type WeekPlan,
 } from '../domain/weekPlan'
@@ -29,33 +31,61 @@ const soup = meal('soup', 'Ährensuppe')
 type WeekPlanAreaUnderTestProps = {
   mealsClient: MealsClient
   weekPlanClient: InMemoryWeekPlanClient
+  announce: (text: string) => void
+  random: RandomSource
 }
 
 function WeekPlanAreaUnderTest({
   mealsClient,
   weekPlanClient,
+  announce,
+  random,
 }: WeekPlanAreaUnderTestProps) {
   return (
     <WeekPlanArea
       meals={useMeals(mealsClient).meals}
       weekPlanning={useWeekPlan(weekPlanClient)}
       navigation={<div data-testid="navigation" />}
+      announce={announce}
+      random={random}
     />
   )
+}
+
+function alwaysFirst(): number {
+  return 0
 }
 
 function renderWeekPlanArea(
   initialMeals: readonly Meal[] = [],
   initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  random: RandomSource = alwaysFirst,
 ) {
   const weekPlanClient = createInMemoryWeekPlanClient(initialPlan)
+  const announcements: string[] = []
   const rendered = render(
     <WeekPlanAreaUnderTest
       mealsClient={createInMemoryMealsClient(initialMeals)}
       weekPlanClient={weekPlanClient}
+      announce={(text) => {
+        announcements.push(text)
+      }}
+      random={random}
     />,
   )
-  return { weekPlanClient, rendered }
+  return { weekPlanClient, announcements, rendered }
+}
+
+function shuffleDay(name: string) {
+  return userEvent.click(
+    screen.getByRole('button', { name: `Zufallsgericht für ${name}` }),
+  )
+}
+
+function shuffleWeek() {
+  return userEvent.click(
+    screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
+  )
 }
 
 function dayField(name: string) {
@@ -181,6 +211,97 @@ describe('WeekPlanArea', () => {
     renderWeekPlanArea()
 
     expect(screen.getByTestId('navigation')).toBeInTheDocument()
+  })
+
+  it('rolls a meal for one day and says which one it is', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([pizza])
+
+    await shuffleDay('Montag')
+
+    expect(weekPlanClient.storedWeekPlan().monday).toBe('pizza')
+    expect(dayField('Montag')).toHaveValue('pizza')
+    expect(announcements).toEqual(['Montag, Pizza.'])
+  })
+
+  it('leaves the other days alone while it rolls one', async () => {
+    const { weekPlanClient } = renderWeekPlanArea([pizza])
+
+    await shuffleDay('Mittwoch')
+
+    expect(
+      WEEKDAYS.filter((day) => weekPlanClient.storedWeekPlan()[day]),
+    ).toEqual(['wednesday'])
+  })
+
+  it('rolls the other meal on the second press', async () => {
+    const { weekPlanClient } = renderWeekPlanArea([bolognese, pizza])
+
+    await shuffleDay('Montag')
+    expect(weekPlanClient.storedWeekPlan().monday).toBe('bolognese')
+
+    await shuffleDay('Montag')
+    expect(weekPlanClient.storedWeekPlan().monday).toBe('pizza')
+  })
+
+  it('rolls the whole week over a day that was chosen by hand', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea(
+      [bolognese, pizza, soup],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza'),
+    )
+
+    await shuffleWeek()
+
+    const plan = weekPlanClient.storedWeekPlan()
+    expect(WEEKDAYS.map((day) => plan[day])).toEqual([
+      'soup',
+      'bolognese',
+      'pizza',
+      'soup',
+      'bolognese',
+      'pizza',
+      'soup',
+    ])
+    expect(announcements).toEqual(['Wochenplan neu gewürfelt, 7 Gerichte.'])
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, 7 von 7' }),
+    ).toBeInTheDocument()
+  })
+
+  it('offers no rolling without a stored meal', () => {
+    renderWeekPlanArea()
+
+    expect(
+      screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
+    ).toBeDisabled()
+    expect(
+      screen.getAllByRole('button', { name: /^Zufallsgericht für/ }),
+    ).toHaveLength(7)
+    screen
+      .getAllByRole('button', { name: /^Zufallsgericht für/ })
+      .forEach((button) => {
+        expect(button).toBeDisabled()
+      })
+  })
+
+  it('shows the rolling buttons as icons only', () => {
+    renderWeekPlanArea([pizza])
+
+    expect(
+      screen.getByRole('button', { name: 'Zufallsgericht für Montag' })
+        .textContent,
+    ).toBe('')
+    expect(
+      screen.getByRole('button', { name: 'Zufallsauswahl generieren' })
+        .textContent,
+    ).toBe('')
+  })
+
+  it('has no accessibility violations after the week was rolled', async () => {
+    const { rendered } = renderWeekPlanArea([bolognese, pizza, soup])
+
+    await shuffleWeek()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the plan', async () => {

@@ -9,10 +9,13 @@ import {
   mealItemRemovedAnnouncement,
   mealSavedAnnouncement,
   mealsHeading,
+  dayPlannedAnnouncement,
   mealWithoutItemsAnnouncement,
+  randomMealLabel,
   weekdayAbbreviation,
   weekdayName,
   weekPlanHeading,
+  weekPlanShuffledAnnouncement,
 } from './announcements'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { WEEKDAYS } from './weekPlan'
@@ -182,5 +185,27 @@ describe('weekPlanHeading', () => {
 
   it('counts the days that carry a meal', () => {
     expect(weekPlanHeading(5)).toBe('Wochenplan, 5 von 7')
+  })
+})
+
+describe('randomMealLabel', () => {
+  it('names the day the button rolls for', () => {
+    expect(randomMealLabel('monday')).toBe('Zufallsgericht für Montag')
+  })
+})
+
+describe('dayPlannedAnnouncement', () => {
+  it('says which meal landed on which day', () => {
+    expect(dayPlannedAnnouncement('monday', bolognese)).toBe(
+      'Montag, Spaghetti Bolognese.',
+    )
+  })
+})
+
+describe('weekPlanShuffledAnnouncement', () => {
+  it('counts the days that were rolled', () => {
+    expect(weekPlanShuffledAnnouncement()).toBe(
+      'Wochenplan neu gewürfelt, 7 Gerichte.',
+    )
   })
 })

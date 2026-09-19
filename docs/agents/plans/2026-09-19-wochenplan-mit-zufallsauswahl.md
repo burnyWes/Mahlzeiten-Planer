@@ -134,7 +134,13 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-19.
      `MealsArea`/`MealListPage`. Würfeln und Ansagen gehören nicht in die Darstellung.
    - Auswirkung: Drei Komponenten — `WeekPlanArea`, `WeekPlanPage`, `WeekPlanRow`.
      `SignedInApp` bleibt so dünn wie heute.
-10. **`ShuffleIcon` liegt in `src/meals/ui`, nicht in `src/shared/ui`.**
+10. **Das Auswahlfeld wird in Phase 4 durchsuchbar (nachgetragen am 2026-09-19).**
+    - Warum: Bei hundert Gerichten ist Scrollen der langsamere Weg, wenn der Name schon
+      feststeht.
+    - Auswirkung: Entscheidung 7 gilt nur bis Phase 4. Welcher Weg es wird — Textfeld
+      mit Vorschlagsliste oder gemeinsames Suchfeld —, steht dort offen und wird vor
+      Beginn der Phase entschieden.
+11. **`ShuffleIcon` liegt in `src/meals/ui`, nicht in `src/shared/ui`.**
     - Warum: Beide Verwendungen liegen im Kontext `meals` — wie `EditIcon` und
       `AddToShoppingListIcon`. `shared/ui` ist kein Ablageort für Übriggebliebenes.
     - Auswirkung: Wandert erst nach `shared/ui`, wenn ein zweiter Kontext das Symbol
@@ -531,11 +537,11 @@ Hand benutzbar.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: die vier Tabs werden als „Einkaufsliste",
+- [x] Auf dem iPhone mit VoiceOver: die vier Tabs werden als „Einkaufsliste",
       „Wochenplan", „Gerichte", „Einstellungen" gelesen und nichts bricht um.
-- [ ] Eine Zeile wird als „Montag, Popup-Schaltfläche, Bolognese" gelesen; das
+- [x] Eine Zeile wird als „Montag, Popup-Schaltfläche, Bolognese" gelesen; das
       Auswahlfeld öffnet die Systemauswahl und lässt sich damit bedienen.
-- [ ] Eine Auswahl erscheint auf dem zweiten Gerät und übersteht das Schließen und
+- [x] Eine Auswahl erscheint auf dem zweiten Gerät und übersteht das Schließen und
       erneute Öffnen der App.
 - [x] Vor dieser Prüfung in der Produktion:
       `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`
@@ -549,7 +555,7 @@ linke der beiden unten.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/randomPlanning.test.ts` schreiben — mit fester Zufallsfolge
+- [x] `src/meals/domain/randomPlanning.test.ts` schreiben — mit fester Zufallsfolge
       (`sequence([0, 0.9, …])`), erst fehlschlagend:
       `rarestInThePlan` behält nur die Gerichte mit der kleinsten Anzahl im Plan; eine
       Regel, die nichts übrig ließe, wird übersprungen; `pickMealForDay` gibt bei leerer
@@ -559,7 +565,7 @@ linke der beiden unten.
       und die Anzahl unterscheidet sich um höchstens eins — am Rundenwechsel darf
       dasselbe Gericht auch zweimal hintereinander stehen; `random()` am Rand (0 und
       knapp unter 1) läuft nicht aus dem Feld.
-- [ ] `src/meals/domain/randomPlanning.ts` anlegen
+- [x] `src/meals/domain/randomPlanning.ts` anlegen
 
       ```ts
       export type RandomSource = () => number
@@ -615,13 +621,13 @@ linke der beiden unten.
       }
       ```
 
-- [ ] `src/meals/domain/announcements.ts` um `randomMealLabel(day)`,
+- [x] `src/meals/domain/announcements.ts` um `randomMealLabel(day)`,
       `dayPlannedAnnouncement(day, meal)` und `weekPlanShuffledAnnouncement()`
       erweitern, Tests voran.
-- [ ] `src/meals/ui/ShuffleIcon.tsx` anlegen — kreuzende Pfeile, `viewBox="0 0 24 24"`,
+- [x] `src/meals/ui/ShuffleIcon.tsx` anlegen — kreuzende Pfeile, `viewBox="0 0 24 24"`,
       `stroke="currentColor"`, `strokeWidth="2"`, `aria-hidden="true"`,
       `focusable="false"`, Klasse `buttonIcon`, genau wie `EditIcon.tsx`.
-- [ ] `WeekPlanRow.tsx`: Zufallsknopf ergänzen
+- [x] `WeekPlanRow.tsx`: Zufallsknopf ergänzen
 
       ```tsx
       <button
@@ -635,10 +641,10 @@ linke der beiden unten.
       </button>
       ```
 
-- [ ] `WeekPlanPage.tsx`: `BottomBar` mit dem linken Knopf ergänzen — nur Symbol,
+- [x] `WeekPlanPage.tsx`: `BottomBar` mit dem linken Knopf ergänzen — nur Symbol,
       `aria-label="Zufallsauswahl generieren"`, deaktiviert ohne gespeicherte Gerichte.
       Der Einkaufswagen kommt in Phase 3 daneben.
-- [ ] `WeekPlanArea.tsx`: Würfeln und Ansagen
+- [x] `WeekPlanArea.tsx`: Würfeln und Ansagen
 
       ```tsx
       function shuffleDay(day: Weekday) {
@@ -654,9 +660,9 @@ linke der beiden unten.
       }
       ```
 
-- [ ] `src/SignedInApp.tsx`: Parameter `random: RandomSource = Math.random` aufnehmen
+- [x] `src/SignedInApp.tsx`: Parameter `random: RandomSource = Math.random` aufnehmen
       und an `WeekPlanArea` weitergeben.
-- [ ] `WeekPlanArea.test.tsx` erweitern: der Zufallsknopf einer Zeile heißt
+- [x] `WeekPlanArea.test.tsx` erweitern: der Zufallsknopf einer Zeile heißt
       „Zufallsgericht für Montag", füllt genau diese Zeile und sagt „Montag, Pizza.";
       ein zweiter Druck liefert bei zwei Gerichten das andere; der Knopf unten
       überschreibt alle sieben Zeilen, auch eine von Hand gewählte, und sagt „Wochenplan
@@ -665,13 +671,13 @@ linke der beiden unten.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft grün, darunter `randomPlanning.test.ts` mit der festen
+- [x] `npm run test` läuft grün, darunter `randomPlanning.test.ts` mit der festen
       Zufallsfolge
-- [ ] Ein Test belegt: sieben Gerichte, ein Druck auf „Zufallsauswahl generieren" ergibt
+- [x] Ein Test belegt: sieben Gerichte, ein Druck auf „Zufallsauswahl generieren" ergibt
       sieben **verschiedene** Gerichte
-- [ ] Ein Test belegt: drei Gerichte über sieben Tage kommen dreimal, zweimal,
+- [x] Ein Test belegt: drei Gerichte über sieben Tage kommen dreimal, zweimal,
       zweimal vor — die Anzahl unterscheidet sich um höchstens eins
-- [ ] `npm run lint`, `npm run build`, `npm run format:check` laufen durch
+- [x] `npm run lint`, `npm run build`, `npm run format:check` laufen durch
 
 **Manuelle Verifikation**:
 
@@ -762,6 +768,42 @@ zwischen den Kontexten bleibt in `SignedInApp`.
       wirklich auf der Liste.
 - [ ] Mit invertierten Farben ist die Seite samt Auswahlfeldern und Leiste lesbar.
 
+### Phase 4: Im Auswahlfeld tippen und die Gerichte filtern
+
+Abhängigkeiten: Phase 3
+
+Nachgetragen am 2026-09-19 auf Wunsch des Nutzers, nach der Abnahme von Phase 1: Wer
+schon weiß, welches Gericht auf den Montag soll, will den Namen tippen, statt bei
+hundert Gerichten durch die ganze Liste zu scrollen.
+
+**Noch zu entscheiden, bevor diese Phase beginnt**: Ein natives `<select>` lässt sich
+nicht durchsuchen — iOS springt beim Tippen nur an den ersten Treffer eines
+Anfangsbuchstabens. Die Phase kippt damit Entscheidung 7. Zwei Wege stehen zur Wahl:
+
+1. **Textfeld mit Vorschlagsliste**, wie beim Anlegen eines Einkaufs-Items
+   (`src/shared/ui/NameSuggestions.tsx`, `suggestNames` in
+   `src/shopping/domain/knownItem.ts`). Bewährtes Muster im Haus, mit VoiceOver schon
+   erprobt, filtert nach beliebiger Stelle im Namen. Preis: die Zeile verliert die
+   vertraute Systemauswahl, und jede Zeile braucht ihren eigenen Aufklapp-Zustand.
+2. **Suchfeld über den sieben Zeilen**, das die Auswahlfelder gemeinsam eindampft. Die
+   `<select>` bleiben, was sie sind. Preis: ein Feld für sieben Zeilen ist erklärungs-
+   bedürftig, und der gewählte Eintrag einer Zeile darf beim Filtern nicht verschwinden.
+
+Empfehlung: Weg 1 — er benutzt ein Muster, das in dieser App mit VoiceOver bereits
+funktioniert, und hält die Zeile in sich geschlossen.
+
+**Skizze für Weg 1** (erst nach der Entscheidung ausarbeiten):
+
+- [ ] `src/meals/domain/mealSuggestions.ts` — reine Funktion `suggestMeals(meals, typed)`
+      nach dem Vorbild von `suggestNames`, test-getrieben.
+- [ ] `WeekPlanRow.tsx` — `<select>` weicht einem Textfeld mit
+      `role="combobox"`-Verhalten plus `NameSuggestions`; der Name des gewählten
+      Gerichts steht im Feld, ein leeres Feld bedeutet „Kein Gericht".
+- [ ] `WeekPlanArea.test.tsx` — Tippen filtert, ein Vorschlag landet im Plan, axe ohne
+      Befund.
+- [ ] Manuell auf dem iPhone mit VoiceOver: Tippen, Filtern und Auswählen sind mit
+      Sprachausgabe bedienbar; die Tastatur verdeckt die Vorschläge nicht.
+
 ## Notizen zur Umsetzung
 
 - Phase 1: Der Nachweis „eine Auswahl von Hand sagt nichts Eigenes" steht in
@@ -769,6 +811,11 @@ zwischen den Kontexten bleibt in `SignedInApp`.
   `announce` erst in Phase 2; in der Schale liegt die Ansage ohnehin, und die
   Schwesterprüfung von MZP-008 („says nothing of its own when the colours are
   inverted") steht an derselben Stelle.
+- Phase 2: Die Regelkette heisst `narrowedBy(rules, …)` und ist ausgeführt statt privat.
+  Der Plan verlangt einen Test dafür, dass eine Regel, die nichts übrig liesse,
+  übersprungen wird — mit `rarestInThePlan` als einziger Regel in `PLANNING_RULES` kann
+  dieser Fall sonst gar nicht auftreten. `pickMealForDay` ruft `narrowedBy` mit
+  `PLANNING_RULES` auf, die Kette bleibt also eine.
 
 ## Verweise
 
