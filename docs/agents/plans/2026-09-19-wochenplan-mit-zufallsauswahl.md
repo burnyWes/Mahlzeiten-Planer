@@ -5,7 +5,7 @@ branch: main
 story: MZP-009
 topic: "Wochenplan mit Zufallsauswahl"
 tags: [plan, meals, shopping, navigation, ui, firestore]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-009 — Wochenplan mit Zufallsauswahl
@@ -21,50 +21,55 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-19.
 
 ## Akzeptanzkriterien
 
-- [ ] Die Navigationsleiste zeigt vier Einträge in dieser Reihenfolge: „Einkauf",
+- [x] Die Navigationsleiste zeigt vier Einträge in dieser Reihenfolge: „Einkauf",
       „Woche", „Gerichte", Zahnrad. VoiceOver liest sie als „Einkaufsliste",
       „Wochenplan", „Gerichte", „Einstellungen". Nichts bricht um, die Schriftgröße
       bleibt unverändert.
-- [ ] „Woche" öffnet eine Seite mit der Überschrift „Wochenplan, 5 von 7" (ohne
+- [x] „Woche" öffnet eine Seite mit der Überschrift „Wochenplan, 5 von 7" (ohne
       geplanten Tag: „Wochenplan, keine von 7"). Die Überschrift bekommt beim Öffnen
       den Fokus.
-- [ ] Darunter stehen sieben Zeilen „Mo." bis „So.", je mit einem Auswahlfeld und einem
+- [x] Darunter stehen sieben Zeilen „Mo." bis „So.", je mit einem Auswahlfeld und einem
       Zufallsknopf. Das Auswahlfeld listet „Kein Gericht" und darunter alle
       gespeicherten Gerichte alphabetisch.
-- [ ] VoiceOver liest eine Zeile als „Montag, Popup-Schaltfläche, Bolognese" und den
+      **Phase 4 hat das abgelöst**: aus dem Auswahlfeld wurde ein Textfeld, die Treffer
+      stehen nach dem Tippen darunter, und ein leeres Feld ist „kein Gericht".
+- [x] VoiceOver liest eine Zeile als „Montag, Popup-Schaltfläche, Bolognese" und den
       Knopf daneben als „Zufallsgericht für Montag". Der sichtbare Text „Mo." wird
       nicht zusätzlich vorgelesen.
-- [ ] Eine Auswahl von Hand wird sofort gespeichert. Die App sagt dazu **nichts**
+      **Phase 4 hat das abgelöst**: die Zeile liest sich seither als „Montag, Textfeld,
+      Bolognese".
+- [x] Eine Auswahl von Hand wird sofort gespeichert. Die App sagt dazu **nichts**
       Eigenes — VoiceOver meldet die Auswahl selbst.
-- [ ] Der Plan liegt im Firestore-Dokument `weekPlan/current` und ist auf beiden
+- [x] Der Plan liegt im Firestore-Dokument `weekPlan/current` und ist auf beiden
       Geräten derselbe. Er übersteht Neuladen und das Schließen der App.
-- [ ] Ein Gericht, das es nicht mehr gibt, zeigt in seiner Zeile „Kein Gericht" und
+- [x] Ein Gericht, das es nicht mehr gibt, zeigt in seiner Zeile „Kein Gericht" und
       wird bei der Übergabe an die Einkaufsliste übersprungen.
-- [ ] Am unteren Rand sitzt eine fixierte Leiste mit zwei Symbolknöpfen: Shuffle-Pfeile
+      **Seit Phase 4**: die Zeile bleibt leer, statt „Kein Gericht" zu zeigen.
+- [x] Am unteren Rand sitzt eine fixierte Leiste mit zwei Symbolknöpfen: Shuffle-Pfeile
       („Zufallsauswahl generieren") und Einkaufswagen („Auf die Einkaufsliste"). Beide
       teilen sich die Breite, wie auf der Gerichtsansicht.
-- [ ] Der Zufallsknopf einer Zeile würfelt für diesen Tag ein Gericht und sagt
+- [x] Der Zufallsknopf einer Zeile würfelt für diesen Tag ein Gericht und sagt
       „Montag, Pizza."
-- [ ] Der Zufallsknopf unten überschreibt **alle sieben** Zeilen, auch von Hand
+- [x] Der Zufallsknopf unten überschreibt **alle sieben** Zeilen, auch von Hand
       gewählte, und sagt „Wochenplan neu gewürfelt, 7 Gerichte."
-- [ ] Gewürfelt wird aus den Gerichten, die im Plan am seltensten vorkommen. Bei
+- [x] Gewürfelt wird aus den Gerichten, die im Plan am seltensten vorkommen. Bei
       mindestens sieben Gerichten wiederholt sich keines; bei weniger verteilen sich die
       Wiederholungen reihum. Ein Test belegt das mit fester Zufallsfolge.
-- [ ] Der Zufallsknopf einer Zeile liefert ein anderes Gericht als das, das dort steht,
+- [x] Der Zufallsknopf einer Zeile liefert ein anderes Gericht als das, das dort steht,
       solange ein Gericht im Plan seltener vorkommt. Stehen alle Gerichte gleich oft im
       Plan, kann derselbe Name wieder herauskommen.
-- [ ] Der Einkaufswagen legt die Zutaten aller geplanten Gerichte auf die
+- [x] Der Einkaufswagen legt die Zutaten aller geplanten Gerichte auf die
       Einkaufsliste, gleiche Artikel zählen zusammen. Ansage: „Wochenplan, 14 Artikel
       hinzugefügt. 3 zusammengefasst." Ein geplantes Gericht ohne Zutaten wird genannt,
       auch wenn es an zwei Tagen steht nur einmal. Der Plan bleibt danach unverändert
       stehen.
-- [ ] Ohne gespeicherte Gerichte steht „Noch keine Gerichte gespeichert." über den
+- [x] Ohne gespeicherte Gerichte steht „Noch keine Gerichte gespeichert." über den
       Zeilen, und alle Zufallsknöpfe sind deaktiviert. Der Einkaufswagen ist
       deaktiviert, solange keine Zeile ein Gericht hat.
-- [ ] Die axe-Prüfung der neuen Seite bleibt ohne Befund, auch mit invertierten Farben.
-- [ ] `test/palette.test.ts` bleibt grün: das neue Auswahlfeld benutzt ausschließlich
+- [x] Die axe-Prüfung der neuen Seite bleibt ohne Befund, auch mit invertierten Farben.
+- [x] `test/palette.test.ts` bleibt grün: das neue Auswahlfeld benutzt ausschließlich
       Farbtoken.
-- [ ] `firestore.rules` gibt `weekPlan` dem Haushalt frei und sperrt es für fremde und
+- [x] `firestore.rules` gibt `weekPlan` dem Haushalt frei und sperrt es für fremde und
       nicht angemeldete Zugriffe; `npm run test:rules` belegt beides.
 
 ## Wesentliche Entscheidungen und Abwägungen
@@ -854,11 +859,11 @@ Was dadurch anders wird:
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: „Montag, Textfeld, Bolognese"; tippen filtert, ein
+- [x] Auf dem iPhone mit VoiceOver: „Montag, Textfeld, Bolognese"; tippen filtert, ein
       Vorschlag lässt sich drücken, und danach steht der Name im Feld.
-- [ ] Die Tastatur verdeckt die Vorschläge nicht, und die untere Leiste rutscht wie
+- [x] Die Tastatur verdeckt die Vorschläge nicht, und die untere Leiste rutscht wie
       gewohnt in den Fluss.
-- [ ] Ein geleertes Feld leert den Tag, die Überschrift zählt herunter.
+- [x] Ein geleertes Feld leert den Tag, die Überschrift zählt herunter.
 
 ## Notizen zur Umsetzung
 
