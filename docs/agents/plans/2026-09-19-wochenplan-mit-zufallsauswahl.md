@@ -763,10 +763,10 @@ zwischen den Kontexten bleibt in `SignedInApp`.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: „Auf die Einkaufsliste" wird gelesen, und nach dem
+- [x] Auf dem iPhone mit VoiceOver: „Auf die Einkaufsliste" wird gelesen, und nach dem
       Druck ist „Wochenplan, N Artikel hinzugefügt." zu hören; die Artikel stehen
       wirklich auf der Liste.
-- [ ] Mit invertierten Farben ist die Seite samt Auswahlfeldern und Leiste lesbar.
+- [x] Mit invertierten Farben ist die Seite samt Auswahlfeldern und Leiste lesbar.
 
 ### Phase 4: Im Auswahlfeld tippen und die Gerichte filtern
 

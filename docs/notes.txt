@@ -85,3 +85,4 @@ b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
   Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
   oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
 - Gericht im Wochenplan ausblenden können
+- Menge auf Einkaufsliste anpassbar machen
