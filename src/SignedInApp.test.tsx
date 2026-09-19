@@ -87,6 +87,15 @@ function planOf(...ids: readonly string[]): WeekPlan {
   )
 }
 
+async function planBologneseOnMonday() {
+  await userEvent.type(screen.getByRole('textbox', { name: 'Montag' }), 'bolo')
+  await userEvent.click(
+    within(
+      screen.getByRole('list', { name: 'Vorschläge für Montag' }),
+    ).getByRole('button', { name: 'Bolognese' }),
+  )
+}
+
 function transferTheWeekPlan() {
   return userEvent.click(
     screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
@@ -137,10 +146,7 @@ describe('SignedInApp', () => {
     )
 
     await goToArea('Wochenplan')
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'Montag' }),
-      'bolognese',
-    )
+    await planBologneseOnMonday()
 
     expect(weekPlanClient.storedWeekPlan().monday).toBe('bolognese')
   })
@@ -152,10 +158,7 @@ describe('SignedInApp', () => {
     )
 
     await goToArea('Wochenplan')
-    await userEvent.selectOptions(
-      screen.getByRole('combobox', { name: 'Montag' }),
-      'bolognese',
-    )
+    await planBologneseOnMonday()
 
     expect(announcements).toEqual([])
   })
@@ -234,8 +237,8 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(weekPlanClient.storedWeekPlan()).toEqual(planOf('bolognese'))
-    expect(screen.getByRole('combobox', { name: 'Montag' })).toHaveValue(
-      'bolognese',
+    expect(screen.getByRole('textbox', { name: 'Montag' })).toHaveValue(
+      'Bolognese',
     )
   })
 

@@ -23,12 +23,14 @@ export async function takeOverItem(
   await pressButton(page, 'Item hinzufügen')
 }
 
-export async function chooseInField(page: Page, label: string, option: string) {
-  await page.getByLabel(label, { exact: true }).selectOption({ label: option })
-}
-
-export function chosenInField(page: Page, label: string) {
-  return page.getByLabel(label, { exact: true }).locator('option:checked')
+export async function chooseSuggestion(
+  page: Page,
+  label: string,
+  typed: string,
+  suggestion: string,
+) {
+  await typeInto(page, label, typed)
+  await pressButton(page, suggestion)
 }
 
 export function shownItems(page: Page) {

@@ -120,3 +120,7 @@ export function weekPlanTransferAnnouncement(
   if (additions === '') return hints.join(' ')
   return [`Wochenplan, ${additions}`, ...hints].join(' ')
 }
+
+export function mealSuggestionsLabel(day: Weekday): string {
+  return `Vorschläge für ${weekdayName(day)}`
+}

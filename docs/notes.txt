@@ -86,3 +86,11 @@ b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
   oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
 - Gericht im Wochenplan ausblenden können
 - Menge auf Einkaufsliste anpassbar machen
+b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zustand, ohne
+  Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - anders als die Einkaufsliste,
+  die das seit MZP-006 ueber unconfirmedWrites abfaengt. Einmal gesehen am 2026-09-19 im
+  E2E-Lauf: nach "Zufallsauswahl generieren" stand die Ueberschrift auf "7 von 7",
+  uebergeben wurde an die Einkaufsliste aber nur ein Tag. Der Wiederholungslauf war
+  gruen, und im selben Lauf war auch der bekannt wackelige Test "sign in, add, check off
+  and clean up" rot. Der Test wartet jetzt vor der Uebergabe auf den Server; die Ursache
+  ist damit nicht behoben, nur aus dem Test herausgehalten.

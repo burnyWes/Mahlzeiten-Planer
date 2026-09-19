@@ -10,6 +10,7 @@ import {
   mealSavedAnnouncement,
   mealsHeading,
   dayPlannedAnnouncement,
+  mealSuggestionsLabel,
   mealWithoutItemsAnnouncement,
   randomMealLabel,
   weekdayAbbreviation,
@@ -238,5 +239,11 @@ describe('weekPlanTransferAnnouncement', () => {
     expect(weekPlanTransferAnnouncement('', [soup])).toBe(
       'Suppe hat keine Einkaufs-Items.',
     )
+  })
+})
+
+describe('mealSuggestionsLabel', () => {
+  it('names the day the suggestions belong to', () => {
+    expect(mealSuggestionsLabel('monday')).toBe('Vorschläge für Montag')
   })
 })

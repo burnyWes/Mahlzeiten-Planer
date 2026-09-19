@@ -137,9 +137,9 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-19.
 10. **Das Auswahlfeld wird in Phase 4 durchsuchbar (nachgetragen am 2026-09-19).**
     - Warum: Bei hundert Gerichten ist Scrollen der langsamere Weg, wenn der Name schon
       feststeht.
-    - Auswirkung: Entscheidung 7 gilt nur bis Phase 4. Welcher Weg es wird — Textfeld
-      mit Vorschlagsliste oder gemeinsames Suchfeld —, steht dort offen und wird vor
-      Beginn der Phase entschieden.
+    - Auswirkung: Entscheidung 7 gilt nur bis Phase 4. Dort wird aus dem `<select>` ein
+      Textfeld mit Vorschlagsliste darunter — dasselbe Verhalten wie beim Item-Feld, das
+      der Haushalt schon kennt.
 11. **`ShuffleIcon` liegt in `src/meals/ui`, nicht in `src/shared/ui`.**
     - Warum: Beide Verwendungen liegen im Kontext `meals` — wie `EditIcon` und
       `AddToShoppingListIcon`. `shared/ui` ist kein Ablageort für Übriggebliebenes.
@@ -772,37 +772,93 @@ zwischen den Kontexten bleibt in `SignedInApp`.
 
 Abhängigkeiten: Phase 3
 
-Nachgetragen am 2026-09-19 auf Wunsch des Nutzers, nach der Abnahme von Phase 1: Wer
+Nachgetragen am 2026-09-19 auf Wunsch des Nutzers, nach der Abnahme von Phase 3: Wer
 schon weiß, welches Gericht auf den Montag soll, will den Namen tippen, statt bei
 hundert Gerichten durch die ganze Liste zu scrollen.
 
-**Noch zu entscheiden, bevor diese Phase beginnt**: Ein natives `<select>` lässt sich
-nicht durchsuchen — iOS springt beim Tippen nur an den ersten Treffer eines
-Anfangsbuchstabens. Die Phase kippt damit Entscheidung 7. Zwei Wege stehen zur Wahl:
+**Entschieden am 2026-09-19**: genau das Verhalten des Item-Feldes von heute — tippen,
+darunter erscheinen die Treffer, einer davon wird gedrückt. Das Feld sitzt **in der
+Zeile**, nicht auf einer eigenen Seite. Damit kippt Entscheidung 7: aus dem nativen
+`<select>` wird ein `<input>`.
 
-1. **Textfeld mit Vorschlagsliste**, wie beim Anlegen eines Einkaufs-Items
-   (`src/shared/ui/NameSuggestions.tsx`, `suggestNames` in
-   `src/shopping/domain/knownItem.ts`). Bewährtes Muster im Haus, mit VoiceOver schon
-   erprobt, filtert nach beliebiger Stelle im Namen. Preis: die Zeile verliert die
-   vertraute Systemauswahl, und jede Zeile braucht ihren eigenen Aufklapp-Zustand.
-2. **Suchfeld über den sieben Zeilen**, das die Auswahlfelder gemeinsam eindampft. Die
-   `<select>` bleiben, was sie sind. Preis: ein Feld für sieben Zeilen ist erklärungs-
-   bedürftig, und der gewählte Eintrag einer Zeile darf beim Filtern nicht verschwinden.
+Was dadurch anders wird:
 
-Empfehlung: Weg 1 — er benutzt ein Muster, das in dieser App mit VoiceOver bereits
-funktioniert, und hält die Zeile in sich geschlossen.
+- Der Eintrag „Kein Gericht" verschwindet als Listeneintrag. Ein leeres Feld **ist**
+  „kein Gericht": wer den Text löscht, leert den Tag.
+- Das Feld zeigt den geplanten Namen, solange niemand darin tippt. Der Zufallsknopf und
+  das zweite Gerät schreiben also weiterhin sichtbar hinein.
+- Verlässt der Fokus die Zeile, während getippter Text zu keinem Gericht passt, springt
+  das Feld auf den geplanten Namen zurück. Sonst zeigte die Zeile etwas anderes an, als
+  der Plan speichert.
 
-**Skizze für Weg 1** (erst nach der Entscheidung ausarbeiten):
+**Aufgaben**:
 
-- [ ] `src/meals/domain/mealSuggestions.ts` — reine Funktion `suggestMeals(meals, typed)`
-      nach dem Vorbild von `suggestNames`, test-getrieben.
-- [ ] `WeekPlanRow.tsx` — `<select>` weicht einem Textfeld mit
-      `role="combobox"`-Verhalten plus `NameSuggestions`; der Name des gewählten
-      Gerichts steht im Feld, ein leeres Feld bedeutet „Kein Gericht".
-- [ ] `WeekPlanArea.test.tsx` — Tippen filtert, ein Vorschlag landet im Plan, axe ohne
-      Befund.
-- [ ] Manuell auf dem iPhone mit VoiceOver: Tippen, Filtern und Auswählen sind mit
-      Sprachausgabe bedienbar; die Tastatur verdeckt die Vorschläge nicht.
+- [x] `src/meals/domain/mealSuggestions.test.ts` schreiben — erst die fehlschlagenden
+      Tests, dieselben Regeln wie `suggestNames` (`src/shopping/domain/knownItem.ts`):
+      unter zwei Zeichen kommt nichts; gesucht wird an beliebiger Stelle im Namen,
+      Gross- und Kleinschreibung egal; ein Name, der genau dem Getippten entspricht,
+      fällt heraus; Treffer am Wortanfang stehen vorn, danach alphabetisch nach `de-DE`;
+      höchstens fünf.
+- [x] `src/meals/domain/mealSuggestions.ts` anlegen: `suggestMeals(meals, typed)` gibt
+      `readonly Meal[]` zurück — Gerichte, keine Namen, weil zwei Gerichte denselben
+      Namen tragen dürfen. `normalizeItemName` liegt in `shopping` und ist für `meals`
+      gesperrt; die Normalisierung entsteht hier als eigene kleine Funktion.
+- [x] `src/meals/ui/MealSuggestions.tsx` anlegen — Vorbild
+      `src/shared/ui/NameSuggestions.tsx`, gleiche Klasse `suggestionList`, aber mit
+      `Meal` statt `string` und mit einem Namen je Tag (`Vorschläge für Montag`), damit
+      sieben Listen auf einer Seite unterscheidbar bleiben.
+- [x] `WeekPlanRow.tsx` umbauen: `<select>` wird zu `<input aria-label={weekdayName(day)}>`,
+      darunter `MealSuggestions`. Zustand `typed: string | null` — `null` heisst „zeig
+      den Plan".
+
+      ```tsx
+      const shownMeal = shownMealOn(plan, day, meals)
+      const shownText = typed ?? shownMeal?.name ?? ''
+
+      function chooseSuggestion(meal: Meal) {
+        onChooseMeal(day, meal.id)
+        setTyped(null)
+      }
+
+      function change(written: string) {
+        setTyped(written)
+        if (written === '') onChooseMeal(day, null)
+      }
+
+      function forgetTypingWhenLeaving(event: FocusEvent<HTMLLIElement>) {
+        if (!event.currentTarget.contains(event.relatedTarget)) setTyped(null)
+      }
+      ```
+
+- [x] `src/index.css`: die Zeile bekommt innen einen Kasten, damit die Vorschläge
+      darunter passen — `.weekPlanChoice` trägt das Flex-Layout, `.weekPlanRow` wird
+      wieder ein gewöhnlicher Listeneintrag; `.weekPlanRow .suggestionList` rückt
+      enger. Die Regeln für `select` bleiben stehen, bis kein `select` mehr im Projekt
+      ist — dann fallen sie weg.
+- [x] `WeekPlanArea.test.tsx` anpassen: statt `combobox` und `selectOptions` wird
+      getippt und ein Vorschlag gedrückt. Neue Fälle: Tippen zeigt die Treffer, ein
+      gedrückter Vorschlag landet im Plan und im Feld, ein geleertes Feld leert den Tag,
+      der Zufallsknopf schreibt sichtbar ins Feld, getippter Text ohne Treffer springt
+      beim Verlassen der Zeile zurück, axe ohne Befund mit offenen Vorschlägen.
+- [x] `src/SignedInApp.test.tsx`: die Zugriffe über `combobox` auf das Textfeld
+      umstellen.
+- [x] `e2e/keyboard.ts` und `e2e/weekPlan.spec.ts`: `chooseInField`/`chosenInField`
+      weichen dem Tippen und dem Druck auf den Vorschlag.
+
+**Automatisierte Verifikation**:
+
+- [x] `npm run test` läuft grün, darunter `mealSuggestions.test.ts`
+- [x] `npm run test:e2e` läuft grün
+- [x] `npm run lint`, `npm run build`, `npm run format:check` laufen durch
+- [x] `test/palette.test.ts` bleibt grün
+
+**Manuelle Verifikation**:
+
+- [ ] Auf dem iPhone mit VoiceOver: „Montag, Textfeld, Bolognese"; tippen filtert, ein
+      Vorschlag lässt sich drücken, und danach steht der Name im Feld.
+- [ ] Die Tastatur verdeckt die Vorschläge nicht, und die untere Leiste rutscht wie
+      gewohnt in den Fluss.
+- [ ] Ein geleertes Feld leert den Tag, die Überschrift zählt herunter.
 
 ## Notizen zur Umsetzung
 
@@ -822,6 +878,16 @@ funktioniert, und hält die Zeile in sich geschlossen.
   Server, bevor er neu lädt — dieselbe Vorsichtsmassnahme wie in
   „keeps the added item after a reload", solange ausstehende Schreibvorgänge kein
   Neuladen überleben (`docs/notes.txt`).
+- Phase 4: Das Zurückspringen des Feldes hängt am `onBlur` des Textfeldes und prüft über
+  eine Referenz auf den Zeilenkasten, ob der Fokus die Zeile überhaupt verlassen hat.
+  Am `<li>` oder am `<div>` wollte `jsx-a11y` den Zuhörer nicht sehen. Ob das Drücken
+  eines Vorschlags auf dem iPhone sicher ankommt, entscheidet die Prüfung am Gerät —
+  Safari muss dabei den gedrückten Knopf als `relatedTarget` melden.
+- Phase 4: Die Regeln für `select` sind aus `src/index.css` verschwunden, weil kein
+  `<select>` mehr im Projekt steht.
+- Phase 4: Ein einmaliger roter E2E-Lauf ist als `b` in `docs/notes.txt` vermerkt
+  (Momentaufnahme überschreibt womöglich einen unbestätigten Schreibvorgang). Der Test
+  wartet jetzt vor der Übergabe auf den Server.
 - Phase 3: Der Artikelkatalog zählt eine Zutat **einmal je Übergabe**, auch wenn das
   Gericht an zwei Tagen steht — `planAdditions` fasst gleiche Namen vorher zusammen und
   `recordUse` läuft je Ergebnis. Der Test hält das so fest.

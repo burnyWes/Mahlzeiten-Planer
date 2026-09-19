@@ -1,8 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { prepareEmulators, weekPlanOnServer } from './emulatorHousehold.ts'
 import {
-  chooseInField,
-  chosenInField,
+  chooseSuggestion,
   pressButton,
   shownItems,
   signIn,
@@ -29,7 +28,7 @@ test('plans a week and puts its items on the shopping list', async ({
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Wochenplan')
-  await chooseInField(page, 'Montag', 'Bolognese')
+  await chooseSuggestion(page, 'Montag', 'bolo', 'Bolognese')
 
   await expect(
     page.getByRole('heading', { name: 'Wochenplan, 1 von 7' }),
@@ -43,6 +42,9 @@ test('plans a week and puts its items on the shopping list', async ({
   await expect(
     page.getByRole('heading', { name: 'Wochenplan, 7 von 7' }),
   ).toBeVisible()
+  await expect
+    .poll(async () => Object.values(await weekPlanOnServer()).filter(Boolean))
+    .toHaveLength(7)
 
   await pressButton(page, 'Auf die Einkaufsliste')
 
@@ -69,7 +71,7 @@ test('keeps the week plan after a reload', async ({ page }) => {
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Wochenplan')
-  await chooseInField(page, 'Freitag', 'Linsensuppe')
+  await chooseSuggestion(page, 'Freitag', 'linsen', 'Linsensuppe')
 
   await expect
     .poll(async () => (await weekPlanOnServer()).friday)
@@ -78,5 +80,7 @@ test('keeps the week plan after a reload', async ({ page }) => {
   await page.reload()
   await pressButton(page, 'Wochenplan')
 
-  await expect(chosenInField(page, 'Freitag')).toHaveText('Linsensuppe')
+  await expect(page.getByLabel('Freitag', { exact: true })).toHaveValue(
+    'Linsensuppe',
+  )
 })

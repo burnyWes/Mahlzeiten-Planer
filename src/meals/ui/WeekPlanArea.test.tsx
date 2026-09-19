@@ -27,6 +27,7 @@ function meal(id: string, name: string, items: Meal['items'] = []): Meal {
 const bolognese = meal('bolognese', 'Bolognese')
 const pizza = meal('pizza', 'Pizza')
 const soup = meal('soup', 'Ährensuppe')
+const mushrooms = meal('mushrooms', 'Crispy Pilz')
 
 type WeekPlanAreaUnderTestProps = {
   mealsClient: MealsClient
@@ -102,13 +103,28 @@ function shuffleWeek() {
 }
 
 function dayField(name: string) {
-  return screen.getByRole('combobox', { name })
+  return screen.getByRole('textbox', { name })
+}
+
+async function typeIntoDay(name: string, text: string) {
+  await userEvent.clear(dayField(name))
+  await userEvent.type(dayField(name), text)
+}
+
+function suggestionsFor(name: string) {
+  return within(
+    screen.getByRole('list', { name: `Vorschläge für ${name}` }),
+  ).getAllByRole('button')
+}
+
+function noSuggestionsFor(name: string) {
+  return screen.queryByRole('list', { name: `Vorschläge für ${name}` })
 }
 
 function shownWeekdays() {
   return within(screen.getByRole('main'))
     .getAllByRole('listitem')
-    .map((row) => row.firstElementChild?.textContent)
+    .map((row) => row.querySelector('.weekday')?.textContent)
 }
 
 describe('WeekPlanArea', () => {
@@ -143,44 +159,66 @@ describe('WeekPlanArea', () => {
     ]
 
     expect(weekdays.map((name) => dayField(name).tagName)).toEqual(
-      weekdays.map(() => 'SELECT'),
+      weekdays.map(() => 'INPUT'),
     )
   })
 
-  it('offers no meal and the known meals in German alphabetical order', () => {
-    renderWeekPlanArea([pizza, soup, bolognese])
+  it('suggests the meals that match what was typed', async () => {
+    renderWeekPlanArea([bolognese, pizza, mushrooms])
 
-    expect(
-      within(dayField('Montag'))
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['Kein Gericht', 'Ährensuppe', 'Bolognese', 'Pizza'])
+    await typeIntoDay('Montag', 'p')
+    expect(noSuggestionsFor('Montag')).toBeNull()
+
+    await typeIntoDay('Montag', 'pi')
+
+    expect(suggestionsFor('Montag').map((one) => one.textContent)).toEqual([
+      'Pizza',
+      'Crispy Pilz',
+    ])
+    expect(noSuggestionsFor('Dienstag')).toBeNull()
   })
 
-  it('keeps a meal that was chosen by hand', async () => {
+  it('keeps the meal of a suggestion that was pressed', async () => {
     const { weekPlanClient } = renderWeekPlanArea([bolognese, pizza])
 
-    await userEvent.selectOptions(dayField('Mittwoch'), 'pizza')
+    await typeIntoDay('Mittwoch', 'pi')
+    await userEvent.click(suggestionsFor('Mittwoch')[0])
 
     expect(weekPlanClient.storedWeekPlan().wednesday).toBe('pizza')
-    expect(dayField('Mittwoch')).toHaveValue('pizza')
+    expect(dayField('Mittwoch')).toHaveValue('Pizza')
+    expect(noSuggestionsFor('Mittwoch')).toBeNull()
     expect(
       screen.getByRole('heading', { name: 'Wochenplan, 1 von 7' }),
     ).toBeInTheDocument()
   })
 
-  it('empties a day again', async () => {
+  it('empties a day when the field is cleared', async () => {
     const { weekPlanClient } = renderWeekPlanArea(
       [bolognese],
       withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
     )
 
-    await userEvent.selectOptions(dayField('Montag'), '')
+    await userEvent.clear(dayField('Montag'))
 
     expect(weekPlanClient.storedWeekPlan().monday).toBeNull()
+    expect(dayField('Montag')).toHaveValue('')
     expect(
       screen.getByRole('heading', { name: 'Wochenplan, keine von 7' }),
     ).toBeInTheDocument()
+  })
+
+  it('returns to the planned meal when typing led nowhere', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+    )
+
+    await userEvent.type(dayField('Montag'), 'quark')
+    expect(dayField('Montag')).toHaveValue('Bolognesequark')
+
+    await userEvent.click(dayField('Dienstag'))
+
+    expect(dayField('Montag')).toHaveValue('Bolognese')
   })
 
   it('shows the plan that the other device wrote', async () => {
@@ -192,7 +230,7 @@ describe('WeekPlanArea', () => {
       )
     })
 
-    expect(dayField('Sonntag')).toHaveValue('bolognese')
+    expect(dayField('Sonntag')).toHaveValue('Bolognese')
   })
 
   it('shows no meal on a day whose meal was deleted meanwhile', () => {
@@ -207,17 +245,16 @@ describe('WeekPlanArea', () => {
     ).toBeInTheDocument()
   })
 
-  it('reports that no meal is stored yet', () => {
+  it('reports that no meal is stored yet', async () => {
     renderWeekPlanArea()
 
     expect(
       screen.getByText('Noch keine Gerichte gespeichert.'),
     ).toBeInTheDocument()
-    expect(
-      within(dayField('Montag'))
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['Kein Gericht'])
+
+    await typeIntoDay('Montag', 'bo')
+
+    expect(noSuggestionsFor('Montag')).toBeNull()
   })
 
   it('shows the navigation above the plan', () => {
@@ -232,7 +269,7 @@ describe('WeekPlanArea', () => {
     await shuffleDay('Montag')
 
     expect(weekPlanClient.storedWeekPlan().monday).toBe('pizza')
-    expect(dayField('Montag')).toHaveValue('pizza')
+    expect(dayField('Montag')).toHaveValue('Pizza')
     expect(announcements).toEqual(['Montag, Pizza.'])
   })
 
@@ -355,7 +392,7 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(weekPlanClient.storedWeekPlan()).toEqual(plan)
-    expect(dayField('Montag')).toHaveValue('bolognese')
+    expect(dayField('Montag')).toHaveValue('Bolognese')
   })
 
   it('has no accessibility violations after the week was rolled', async () => {
@@ -363,6 +400,17 @@ describe('WeekPlanArea', () => {
 
     await shuffleWeek()
 
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations with suggestions shown', async () => {
+    const { rendered } = renderWeekPlanArea([bolognese, pizza, soup])
+
+    await typeIntoDay('Montag', 'en')
+
+    expect(
+      screen.getByRole('list', { name: 'Vorschläge für Montag' }),
+    ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

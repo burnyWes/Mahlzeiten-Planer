@@ -1,10 +1,14 @@
+import { useRef, useState, type FocusEvent } from 'react'
 import {
+  mealSuggestionsLabel,
   randomMealLabel,
   weekdayAbbreviation,
   weekdayName,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
+import { suggestMeals } from '../domain/mealSuggestions'
 import { shownMealOn, type WeekPlan, type Weekday } from '../domain/weekPlan'
+import { MealSuggestions } from './MealSuggestions'
 import { ShuffleIcon } from './ShuffleIcon'
 
 type WeekPlanRowProps = {
@@ -22,37 +26,52 @@ export function WeekPlanRow({
   onChooseMeal,
   onShuffleDay,
 }: WeekPlanRowProps) {
+  const [typed, setTyped] = useState<string | null>(null)
+  const choice = useRef<HTMLDivElement>(null)
+  const plannedName = shownMealOn(plan, day, meals)?.name ?? ''
+
+  function change(written: string) {
+    setTyped(written)
+    if (written === '') onChooseMeal(day, null)
+  }
+
+  function chooseSuggestion(meal: Meal) {
+    onChooseMeal(day, meal.id)
+    setTyped(null)
+  }
+
+  function forgetTypingWhenLeaving(event: FocusEvent<HTMLInputElement>) {
+    if (choice.current?.contains(event.relatedTarget)) return
+    setTyped(null)
+  }
+
   return (
     <li className="weekPlanRow">
-      <span className="weekday" aria-hidden="true">
-        {weekdayAbbreviation(day)}
-      </span>
-      <select
-        aria-label={weekdayName(day)}
-        value={shownMealOn(plan, day, meals)?.id ?? ''}
-        onChange={(event) =>
-          onChooseMeal(
-            day,
-            event.target.value === '' ? null : event.target.value,
-          )
-        }
-      >
-        <option value="">Kein Gericht</option>
-        {meals.map((meal) => (
-          <option key={meal.id} value={meal.id}>
-            {meal.name}
-          </option>
-        ))}
-      </select>
-      <button
-        type="button"
-        className="iconButton"
-        aria-label={randomMealLabel(day)}
-        disabled={meals.length === 0}
-        onClick={() => onShuffleDay(day)}
-      >
-        <ShuffleIcon />
-      </button>
+      <div className="weekPlanChoice" ref={choice}>
+        <span className="weekday" aria-hidden="true">
+          {weekdayAbbreviation(day)}
+        </span>
+        <input
+          aria-label={weekdayName(day)}
+          value={typed ?? plannedName}
+          onChange={(event) => change(event.target.value)}
+          onBlur={forgetTypingWhenLeaving}
+        />
+        <button
+          type="button"
+          className="iconButton"
+          aria-label={randomMealLabel(day)}
+          disabled={meals.length === 0}
+          onClick={() => onShuffleDay(day)}
+        >
+          <ShuffleIcon />
+        </button>
+        <MealSuggestions
+          label={mealSuggestionsLabel(day)}
+          meals={suggestMeals(meals, typed ?? '')}
+          onChoose={chooseSuggestion}
+        />
+      </div>
     </li>
   )
 }

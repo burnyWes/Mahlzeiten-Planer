@@ -100,7 +100,6 @@ body {
 
 button,
 input,
-select,
 textarea {
   font: inherit;
   min-height: 44px;
@@ -119,7 +118,6 @@ textarea {
 }
 
 input,
-select,
 textarea {
   border: 1px solid var(--fieldBorder);
   border-radius: 6px;
@@ -340,8 +338,9 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   );
 }
 
-.weekPlanRow {
+.weekPlanChoice {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
 }
@@ -351,9 +350,14 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   min-width: 2.5rem;
 }
 
-.weekPlanRow select {
+.weekPlanChoice input {
   flex: 1;
   min-width: 0;
+}
+
+.weekPlanChoice .suggestionList {
+  flex-basis: 100%;
+  margin: 0;
 }
 
 .iconButton {
