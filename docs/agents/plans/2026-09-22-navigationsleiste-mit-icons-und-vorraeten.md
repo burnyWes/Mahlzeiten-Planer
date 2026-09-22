@@ -176,7 +176,7 @@ und `Area` verliert die Textvariante.
 
 **Aufgaben**:
 
-- [ ] `src/shared/ui/ChecklistIcon.tsx` anlegen — Checkliste mit zwei Haken, abgeleitet
+- [x] `src/shared/ui/ChecklistIcon.tsx` anlegen — Checkliste mit zwei Haken, abgeleitet
       von lucide `list-checks` (ISC, https://lucide.dev/icons/list-checks). Muster der
       bestehenden Icons uebernehmen.
 
@@ -189,7 +189,7 @@ und `Area` verliert die Textvariante.
       <path d="M11 18h10" />
       ```
 
-- [ ] `src/shared/ui/CalendarIcon.tsx` anlegen — lucide `calendar` (ISC,
+- [x] `src/shared/ui/CalendarIcon.tsx` anlegen — lucide `calendar` (ISC,
       https://lucide.dev/icons/calendar).
 
       ```tsx
@@ -199,7 +199,7 @@ und `Area` verliert die Textvariante.
       <path d="M3 10h18" />
       ```
 
-- [ ] `src/shared/ui/PlateIcon.tsx` anlegen — flacher Teller im Profil mit drei
+- [x] `src/shared/ui/PlateIcon.tsx` anlegen — flacher Teller im Profil mit drei
       Dampfschwaden, eigene Zeichnung.
 
       ```tsx
@@ -210,12 +210,12 @@ und `Area` verliert die Textvariante.
       <path d="M5 13.5a9 9 0 0 0 14 0" />
       ```
 
-- [ ] `src/shared/ui/NavigationBar.tsx`: `Area<Id>` auf `{ id, label, icon }`
+- [x] `src/shared/ui/NavigationBar.tsx`: `Area<Id>` auf `{ id, label, icon }`
       reduzieren, `icon` verpflichtend als `ReactNode`. `spokenNameOf` loeschen,
       `aria-label={area.label}` direkt setzen, den Knopfinhalt auf `{area.icon}`
       reduzieren und das `className` am `<li>` entfernen.
 
-- [ ] `src/SignedInApp.tsx`: `AREAS` auf Icons umstellen.
+- [x] `src/SignedInApp.tsx`: `AREAS` auf Icons umstellen.
 
       ```tsx
       const AREAS = [
@@ -226,7 +226,7 @@ und `Area` verliert die Textvariante.
       ] as const satisfies readonly Area<string>[]
       ```
 
-- [ ] `src/index.css`: die beiden Bloecke `.navigationBar li.navigationBarIcon` und
+- [x] `src/index.css`: die beiden Bloecke `.navigationBar li.navigationBarIcon` und
       `.navigationBar li.navigationBarIcon button` (im Ausgangszustand Zeilen 84-94)
       loeschen; `navigationBarIcon` kommt danach nirgends mehr vor. Die
       Zentrierung nach `.navigationBar button` ziehen und den `gap` in
@@ -247,7 +247,7 @@ und `Area` verliert die Textvariante.
       }
       ```
 
-- [ ] `src/SignedInApp.test.tsx`: den Test "names the four areas in the order of their
+- [x] `src/SignedInApp.test.tsx`: den Test "names the four areas in the order of their
       use" umstellen — die `aria-label`-Reihe bleibt, die Erwartung an die Textinhalte
       wird zu "kein Knopf traegt sichtbaren Text".
 
@@ -261,17 +261,17 @@ und `Area` verliert die Textvariante.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft gruen, insbesondere `SignedInApp.test.tsx`
+- [x] `npm run test` laeuft gruen, insbesondere `SignedInApp.test.tsx`
       "names the four areas in the order of their use", "switches to the week plan and
       marks it as the current area", "switches to the meals area and marks it as the
       current area" und "reaches the settings through the gear button".
-- [ ] Die axe-Tests "has no accessibility violations on the shopping list", "... on the
+- [x] Die axe-Tests "has no accessibility violations on the shopping list", "... on the
       meals area", "... on the week plan", "... on the settings" und "... on the
       inverted settings" bleiben ohne Befund.
-- [ ] `test/palette.test.ts` bleibt gruen — die neuen Icons setzen keine eigene Farbe,
+- [x] `test/palette.test.ts` bleibt gruen — die neuen Icons setzen keine eigene Farbe,
       sie erben ueber `stroke="currentColor"`.
-- [ ] `npm run lint` laeuft ohne Befund, `jsx-a11y` eingeschlossen.
-- [ ] `npm run build` uebersetzt fehlerfrei — der Typfehler zeigt an, falls ein Bereich
+- [x] `npm run lint` laeuft ohne Befund, `jsx-a11y` eingeschlossen.
+- [x] `npm run build` uebersetzt fehlerfrei — der Typfehler zeigt an, falls ein Bereich
       ohne `icon` uebrig geblieben ist.
 
 **Manuelle Verifikation**:

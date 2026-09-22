@@ -122,7 +122,7 @@ describe('SignedInApp', () => {
       within(screen.getByRole('navigation'))
         .getAllByRole('button')
         .map((tab) => tab.textContent),
-    ).toEqual(['Einkauf', 'Woche', 'Gerichte', ''])
+    ).toEqual(['', '', '', ''])
   })
 
   it('switches to the week plan and marks it as the current area', async () => {

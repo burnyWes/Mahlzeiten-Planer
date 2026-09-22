@@ -13,7 +13,10 @@ import { useMeals } from './meals/ui/useMeals'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
 import { WeekPlanArea } from './meals/ui/WeekPlanArea'
 import type { Appearance } from './shared/appearance/useAppearance'
+import { CalendarIcon } from './shared/ui/CalendarIcon'
+import { ChecklistIcon } from './shared/ui/ChecklistIcon'
 import { NavigationBar, type Area } from './shared/ui/NavigationBar'
+import { PlateIcon } from './shared/ui/PlateIcon'
 import { SettingsIcon } from './shared/ui/SettingsIcon'
 import { SettingsPage, type SettingsEntry } from './shared/ui/SettingsPage'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
@@ -27,9 +30,9 @@ import { useKnownItems } from './shopping/ui/useKnownItems'
 import { useShoppingList } from './shopping/ui/useShoppingList'
 
 const AREAS = [
-  { id: 'shopping', label: 'Einkaufsliste', text: 'Einkauf' },
-  { id: 'weekPlan', label: 'Wochenplan', text: 'Woche' },
-  { id: 'meals', label: 'Gerichte' },
+  { id: 'shopping', label: 'Einkaufsliste', icon: <ChecklistIcon /> },
+  { id: 'weekPlan', label: 'Wochenplan', icon: <CalendarIcon /> },
+  { id: 'meals', label: 'Gerichte', icon: <PlateIcon /> },
   { id: 'settings', label: 'Einstellungen', icon: <SettingsIcon /> },
 ] as const satisfies readonly Area<string>[]
 

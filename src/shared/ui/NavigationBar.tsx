@@ -3,20 +3,13 @@ import type { ReactNode } from 'react'
 export type Area<Id extends string> = {
   id: Id
   label: string
-  text?: string
-  icon?: ReactNode
+  icon: ReactNode
 }
 
 type NavigationBarProps<Id extends string> = {
   areas: readonly Area<Id>[]
   activeArea: Id
   onSelectArea: (area: Id) => void
-}
-
-function spokenNameOf<Id extends string>(area: Area<Id>): string | undefined {
-  return area.icon === undefined && area.text === undefined
-    ? undefined
-    : area.label
 }
 
 export function NavigationBar<Id extends string>({
@@ -28,17 +21,14 @@ export function NavigationBar<Id extends string>({
     <nav aria-label="Bereiche" className="navigationBar">
       <ul>
         {areas.map((area) => (
-          <li
-            key={area.id}
-            className={area.icon ? 'navigationBarIcon' : undefined}
-          >
+          <li key={area.id}>
             <button
               type="button"
               aria-current={area.id === activeArea ? 'page' : undefined}
-              aria-label={spokenNameOf(area)}
+              aria-label={area.label}
               onClick={() => onSelectArea(area.id)}
             >
-              {area.icon ?? area.text ?? area.label}
+              {area.icon}
             </button>
           </li>
         ))}
