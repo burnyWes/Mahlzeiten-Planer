@@ -592,12 +592,12 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet mit VoiceOver: "Vorrat hinzufügen" antippen, "bolo" tippen,
+- [x] Auf dem Geraet mit VoiceOver: "Vorrat hinzufügen" antippen, "bolo" tippen,
       den Vorschlag "Bolognese" antippen — der Fokus steht danach im Mengenfeld und
       der volle Name im Gericht-Feld.
-- [ ] Speichern sagt "Bolognese, 3." und die Zeile steht in der Liste; ein zweites
+- [x] Speichern sagt "Bolognese, 3." und die Zeile steht in der Liste; ein zweites
       Anlegen mit 2 sagt "Bolognese, 2 dazu, jetzt 5.".
-- [ ] Der Vorrat ist nach einem Neuladen und auf dem zweiten Geraet da — Beleg, dass
+- [x] Der Vorrat ist nach einem Neuladen und auf dem zweiten Geraet da — Beleg, dass
       die ausgerollten Regeln greifen.
 
 ### Phase 2: Vorrat oeffnen, bearbeiten und loeschen
