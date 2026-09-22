@@ -12,6 +12,8 @@ import {
   dayPlannedAnnouncement,
   mealSuggestionsLabel,
   mealWithoutItemsAnnouncement,
+  lessSupplyLabel,
+  moreSupplyLabel,
   randomMealLabel,
   suppliesHeading,
   supplyAddedAnnouncement,
@@ -329,6 +331,18 @@ describe('supplyRemovedAnnouncement', () => {
     expect(supplyRemovedAnnouncement(bolognese, 0)).toBe(
       'Spaghetti Bolognese entfernt, keine Vorräte mehr.',
     )
+  })
+})
+
+describe('lessSupplyLabel', () => {
+  it('names the meal the button counts down', () => {
+    expect(lessSupplyLabel(bolognese)).toBe('Weniger, Spaghetti Bolognese')
+  })
+})
+
+describe('moreSupplyLabel', () => {
+  it('names the meal the button counts up', () => {
+    expect(moreSupplyLabel(bolognese)).toBe('Mehr, Spaghetti Bolognese')
   })
 })
 

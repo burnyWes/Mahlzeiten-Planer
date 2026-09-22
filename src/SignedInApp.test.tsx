@@ -219,6 +219,24 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('has no accessibility violations on the inverted supplies', async () => {
+    const { rendered } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(true),
+      createInMemoryWeekPlanClient(),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 3 }]),
+    )
+
+    await goToArea('Vorräte')
+
+    expect(
+      screen.getByRole('button', { name: 'Mehr, Bolognese' }),
+    ).toBeInTheDocument()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
   it('switches to the week plan and marks it as the current area', async () => {
     renderSignedInApp()
 

@@ -671,10 +671,10 @@ Loeschen eines Gerichts seinen Vorrat mit weg.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet mit VoiceOver: der Gerichtname wird als Knopf gelesen, Antippen
+- [x] Auf dem Geraet mit VoiceOver: der Gerichtname wird als Knopf gelesen, Antippen
       oeffnet den Vorrat, die Ueberschrift bekommt den Fokus.
-- [ ] Menge 5 eintragen, speichern: Ansage "Bolognese, 5.", die Liste zeigt 5.
-- [ ] "Löschen", dann "Abbrechen" fuehrt zurueck zum Vorrat; "Löschen", dann
+- [x] Menge 5 eintragen, speichern: Ansage "Bolognese, 5.", die Liste zeigt 5.
+- [x] "Löschen", dann "Abbrechen" fuehrt zurueck zum Vorrat; "Löschen", dann
       "Löschen" entfernt ihn mit der Ansage.
 
 ### Phase 3: Menge an der Zeile aendern
@@ -686,16 +686,16 @@ Fall, dass die Zeile beim Vermindern verschwindet.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/supply.ts`: `withOneMore`, `withOneLess` und `isFull`
+- [x] `src/meals/domain/supply.ts`: `withOneMore`, `withOneLess` und `isFull`
       ergaenzen. Test zuerst: `withOneMore` zaehlt hoch und bleibt bei
       `MAXIMUM_COUNT` stehen, `withOneLess` zaehlt herunter und liefert bei 1 `null`,
       `isFull` ist erst bei `MAXIMUM_COUNT` wahr.
 
-- [ ] `src/meals/domain/announcements.ts`: `lessSupplyLabel(meal)` und
+- [x] `src/meals/domain/announcements.ts`: `lessSupplyLabel(meal)` und
       `moreSupplyLabel(meal)` ergaenzen ("Weniger, <Name>", "Mehr, <Name>"). Test
       zuerst.
 
-- [ ] `src/shared/ui/useFocusAfterRemoval.ts` anlegen — meldet eine Zeile an und setzt
+- [x] `src/shared/ui/useFocusAfterRemoval.ts` anlegen — meldet eine Zeile an und setzt
       nach dem Entfernen den Fokus auf die Zeile, die nun an derselben Stelle steht;
       gibt es keine mehr, auf das Ausweichziel.
 
@@ -722,7 +722,7 @@ Fall, dass die Zeile beim Vermindern verschwindet.
       `keepRow(key)` liefert die `ref`-Funktion fuer den Namensknopf und traegt das
       Element ein beziehungsweise aus.
 
-- [ ] `src/meals/ui/SupplyListRow.tsx`: den Stepper ergaenzen — `button` "Weniger",
+- [x] `src/meals/ui/SupplyListRow.tsx`: den Stepper ergaenzen — `button` "Weniger",
       `span.supplyCount` mit der Anzahl, `button` "Mehr", bei `isFull` inaktiv. Die
       Zeichen `−` und `+` stehen im Knopf; gelesen wird das `aria-label`.
 
@@ -759,41 +759,41 @@ Fall, dass die Zeile beim Vermindern verschwindet.
       </li>
       ```
 
-- [ ] `src/meals/ui/SupplyListPage.tsx`: `useFocusAfterRemoval` einsetzen, mit den
+- [x] `src/meals/ui/SupplyListPage.tsx`: `useFocusAfterRemoval` einsetzen, mit den
       Gerichte-Ids als Schluessel und dem Ueberschrift-Ref als Ausweichziel. Beim
       Vermindern auf null meldet die Seite die Position der entfernten Zeile.
 
-- [ ] `src/meals/ui/SuppliesArea.tsx`: `changeCount` ergaenzen — `withOneMore` bzw.
+- [x] `src/meals/ui/SuppliesArea.tsx`: `changeCount` ergaenzen — `withOneMore` bzw.
       `withOneLess`; liefert `withOneLess` `null`, wird der Vorrat entfernt und
       `supplyRemovedAnnouncement` gesprochen, sonst `supplyChangedAnnouncement`.
 
-- [ ] `src/index.css`: `.supplyStepper` (Flex, `flex: none`, `gap: 0.25rem`) und
+- [x] `src/index.css`: `.supplyStepper` (Flex, `flex: none`, `gap: 0.25rem`) und
       `.stepperButton` (`min-width: 44px`, `font-size: 1.5rem`, `line-height: 1`)
       ergaenzen. Bei 280 px Geraetebreite bleiben dem Namen damit rund 140 px; er
       bricht wie `.mealNameButton` ueber `overflow-wrap: anywhere` um.
 
-- [ ] `src/meals/ui/SuppliesArea.test.tsx`: Faelle ergaenzen — "Mehr" erhoeht, schreibt
+- [x] `src/meals/ui/SuppliesArea.test.tsx`: Faelle ergaenzen — "Mehr" erhoeht, schreibt
       und sagt an; "Weniger" vermindert; "Weniger" bei 1 entfernt den Vorrat samt
       Ansage; der Fokus landet auf dem Namensknopf der folgenden Zeile, bei der
       letzten Zeile auf dem der vorhergehenden und beim einzigen Vorrat auf der
       Ueberschrift; "Mehr" ist bei 99 inaktiv; axe ohne Befund.
 
-- [ ] `e2e/supplies.spec.ts`: Ablauf ergaenzen — zweimal "Mehr", einmal "Weniger", der
+- [x] `e2e/supplies.spec.ts`: Ablauf ergaenzen — zweimal "Mehr", einmal "Weniger", der
       Server traegt den erwarteten Stand; dann bis auf null vermindern und die Liste
       ist leer.
 
-- [ ] `docs/notes.txt`: "Eisfach-Memory" unter TODO auf `x` setzen und nach DONE
+- [x] `docs/notes.txt`: "Eisfach-Memory" unter TODO auf `x` setzen und nach DONE
       verschieben. Nichts umsortieren, nichts umformulieren.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft gruen, einschliesslich der neuen Faelle in
+- [x] `npm run test` laeuft gruen, einschliesslich der neuen Faelle in
       `supply.test.ts`, `announcements.test.ts` und `SuppliesArea.test.tsx` — darunter
       die drei Fokusfaelle.
-- [ ] Die axe-Tests bleiben ohne Befund, auch mit invertierten Farben.
-- [ ] `test/palette.test.ts` bleibt gruen — der Stepper setzt keine eigenen Farben.
-- [ ] `npm run lint` laeuft ohne Befund, `npm run build` uebersetzt fehlerfrei.
-- [ ] `npm run test:e2e` laeuft durch.
+- [x] Die axe-Tests bleiben ohne Befund, auch mit invertierten Farben.
+- [x] `test/palette.test.ts` bleibt gruen — der Stepper setzt keine eigenen Farben.
+- [x] `npm run lint` laeuft ohne Befund, `npm run build` uebersetzt fehlerfrei.
+- [x] `npm run test:e2e` laeuft durch.
 
 **Manuelle Verifikation**:
 
@@ -807,7 +807,25 @@ Fall, dass die Zeile beim Vermindern verschwindet.
 
 ## Notizen zur Umsetzung
 
-Hier waehrend der Umsetzung Rueckmeldungen, Probleme und Entscheidungen festhalten.
+- **Phase 3, Stepper auf frischem Stand statt auf dem gerenderten:** der geplante
+  `changeCount` rechnete auf `one.count` aus dem letzten Render. Kamen zwei Tipps
+  schneller als der Neuaufbau der Zeile, rechneten beide auf demselben alten Stand —
+  "Mehr, Mehr, Weniger" bei Anzahl 1 entfernte den Vorrat. Im vollen E2E-Lauf
+  reproduzierbar (2 von 2), isoliert nicht (5 von 5 gruen). `useSupplies` hat deshalb
+  `changeSupply(mealId, change)` bekommen: es liest den Stand aus einem Ref neben dem
+  Zustand, wendet die Aenderung darauf an, schreibt und liefert das Ergebnis fuer die
+  Ansage. Belegt in `useSupplies.test.tsx` mit zwei Aenderungen in einem `act`.
+  Entscheidung 9 gilt unveraendert weiter: eine Momentaufnahme vom Server kann den
+  optimistischen Stand noch ueberschreiben.
+
+- **`useFocusAfterRemoval` haelt die Position in einem Ref**, nicht im Zustand wie in
+  der Planskizze: `setRemovedPosition(null)` im Effekt verstoesst gegen
+  `react-hooks/set-state-in-effect` (Lint des Projekts). Der Effekt laeuft ohne
+  Abhaengigkeitsliste nach jedem Render und verarbeitet das Ref, wenn es gesetzt ist.
+
+- **`isLastPortion(count)` in `supply.ts` ergaenzt** (im Plan nicht vorgesehen): die
+  Liste muss wissen, wann eine Zeile beim Vermindern verschwindet, um die Position zu
+  melden. Symmetrisch zu `isFull`, und `withOneLess` nutzt es selbst.
 
 ## Verweise
 

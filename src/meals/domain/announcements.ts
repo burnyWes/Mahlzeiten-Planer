@@ -153,6 +153,14 @@ export function supplyAddedAnnouncement(
     : `${meal.name}, ${added} dazu, jetzt ${total}.`
 }
 
+export function lessSupplyLabel(meal: NewMeal): string {
+  return `Weniger, ${meal.name}`
+}
+
+export function moreSupplyLabel(meal: NewMeal): string {
+  return `Mehr, ${meal.name}`
+}
+
 export function supplyChangedAnnouncement(
   meal: NewMeal,
   count: number,

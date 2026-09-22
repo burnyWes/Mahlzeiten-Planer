@@ -273,6 +273,19 @@ h2 {
   gap: 0.5rem;
 }
 
+.supplyStepper {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.25rem;
+}
+
+.stepperButton {
+  min-width: 44px;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 .supplyCount {
   min-width: 2rem;
   text-align: center;

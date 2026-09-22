@@ -65,6 +65,24 @@ export function combinedSupply(kept: Supply | null, added: Supply): Supply {
   return { mealId: added.mealId, count }
 }
 
+export function isFull(count: number): boolean {
+  return count >= MAXIMUM_COUNT
+}
+
+export function withOneMore(supply: Supply): Supply {
+  if (isFull(supply.count)) return supply
+  return { ...supply, count: supply.count + 1 }
+}
+
+export function isLastPortion(count: number): boolean {
+  return count <= 1
+}
+
+export function withOneLess(supply: Supply): Supply | null {
+  if (isLastPortion(supply.count)) return null
+  return { ...supply, count: supply.count - 1 }
+}
+
 export function supplyOf(
   supplies: readonly Supply[],
   mealId: MealId,

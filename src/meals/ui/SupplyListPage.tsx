@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
+import { useFocusAfterRemoval } from '../../shared/ui/useFocusAfterRemoval'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { suppliesHeading } from '../domain/announcements'
-import type { SuppliedMeal } from '../domain/supply'
+import type { MealId } from '../domain/meal'
+import { isLastPortion, type SuppliedMeal } from '../domain/supply'
 import { SupplyListRow } from './SupplyListRow'
 
 type SupplyListPageProps = {
@@ -9,6 +11,8 @@ type SupplyListPageProps = {
   supplied: readonly SuppliedMeal[]
   onAddSupply: () => void
   onOpenSupply: (supplied: SuppliedMeal) => void
+  onLessSupply: (supplied: SuppliedMeal) => void
+  onMoreSupply: (supplied: SuppliedMeal) => void
 }
 
 export function SupplyListPage({
@@ -16,8 +20,22 @@ export function SupplyListPage({
   supplied,
   onAddSupply,
   onOpenSupply,
+  onLessSupply,
+  onMoreSupply,
 }: SupplyListPageProps) {
   const heading = useHeadingFocus()
+  const suppliedMealIds: readonly MealId[] = supplied.map(
+    (suppliedMeal) => suppliedMeal.meal.id,
+  )
+  const { keepRow, rowRemovedAt } = useFocusAfterRemoval(
+    suppliedMealIds,
+    heading,
+  )
+
+  function takeOneLess(suppliedMeal: SuppliedMeal, position: number) {
+    if (isLastPortion(suppliedMeal.count)) rowRemovedAt(position)
+    onLessSupply(suppliedMeal)
+  }
 
   return (
     <>
@@ -40,11 +58,14 @@ export function SupplyListPage({
           <p>Noch keine Vorräte.</p>
         ) : (
           <ul className="itemList">
-            {supplied.map((suppliedMeal) => (
+            {supplied.map((suppliedMeal, position) => (
               <SupplyListRow
                 key={suppliedMeal.meal.id}
                 supplied={suppliedMeal}
+                nameButton={keepRow(suppliedMeal.meal.id)}
                 onOpenSupply={onOpenSupply}
+                onLess={() => takeOneLess(suppliedMeal, position)}
+                onMore={() => onMoreSupply(suppliedMeal)}
               />
             ))}
           </ul>

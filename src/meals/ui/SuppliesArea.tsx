@@ -9,6 +9,8 @@ import {
   combinedSupply,
   suppliedMeals,
   supplyOf,
+  withOneLess,
+  withOneMore,
   type SuppliedMeal,
   type Supply,
 } from '../domain/supply'
@@ -71,6 +73,18 @@ export function SuppliesArea({
     announce(supplyChangedAnnouncement(one.meal, recounted.count))
   }
 
+  function changeCount(
+    one: SuppliedMeal,
+    change: (supply: Supply) => Supply | null,
+  ) {
+    const changed = supplies.changeSupply(one.meal.id, change)
+    if (changed === null) {
+      announce(supplyRemovedAnnouncement(one.meal, supplied.length - 1))
+      return
+    }
+    announce(supplyChangedAnnouncement(one.meal, changed.count))
+  }
+
   function deleteSupply(one: SuppliedMeal) {
     supplies.removeSupply(one.meal.id)
     showList()
@@ -115,6 +129,8 @@ export function SuppliesArea({
       supplied={supplied}
       onAddSupply={() => setPage({ kind: 'add' })}
       onOpenSupply={(one) => showSupply(one.meal.id)}
+      onLessSupply={(one) => changeCount(one, withOneLess)}
+      onMoreSupply={(one) => changeCount(one, withOneMore)}
     />
   )
 }

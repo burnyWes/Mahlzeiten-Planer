@@ -4,9 +4,13 @@ import {
   combinedSupply,
   createSupply,
   InvalidSupply,
+  isFull,
+  isLastPortion,
   recountedSupply,
   suppliedMeals,
   supplyOf,
+  withOneLess,
+  withOneMore,
   withoutSupply,
   withSupply,
   type Supply,
@@ -128,6 +132,48 @@ describe('recountedSupply', () => {
     expect(() => recountedSupply('bolognese', '100')).toThrow(
       new InvalidSupply('countTooLarge'),
     )
+  })
+})
+
+describe('withOneMore', () => {
+  it('counts the supply up by one', () => {
+    expect(withOneMore(supply('bolognese', 3))).toEqual(supply('bolognese', 4))
+  })
+
+  it('stops at ninety-nine', () => {
+    expect(withOneMore(supply('bolognese', 99))).toEqual(
+      supply('bolognese', 99),
+    )
+  })
+})
+
+describe('withOneLess', () => {
+  it('counts the supply down by one', () => {
+    expect(withOneLess(supply('bolognese', 3))).toEqual(supply('bolognese', 2))
+  })
+
+  it('leaves no supply behind at the last portion', () => {
+    expect(withOneLess(supply('bolognese', 1))).toBeNull()
+  })
+})
+
+describe('isFull', () => {
+  it('reports a supply of ninety-nine as full', () => {
+    expect(isFull(99)).toBe(true)
+  })
+
+  it('reports anything below ninety-nine as not full', () => {
+    expect(isFull(98)).toBe(false)
+  })
+})
+
+describe('isLastPortion', () => {
+  it('reports a single portion as the last one', () => {
+    expect(isLastPortion(1)).toBe(true)
+  })
+
+  it('reports more than one portion as not the last one', () => {
+    expect(isLastPortion(2)).toBe(false)
   })
 })
 

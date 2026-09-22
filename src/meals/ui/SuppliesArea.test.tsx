@@ -91,16 +91,34 @@ function cancelDeletion() {
   return userEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
 }
 
-function shownRows() {
+function shownSupplies() {
   return within(screen.getByRole('main'))
     .getAllByRole('listitem')
-    .map((row) => row.textContent)
+    .map((row) => {
+      const name = within(row).getAllByRole('button')[0].textContent
+      const count = within(row).getByText(/^\d+$/).textContent
+      return `${name}, ${count}`
+    })
+}
+
+function takeOneLess(name: string) {
+  return userEvent.click(
+    screen.getByRole('button', { name: `Weniger, ${name}` }),
+  )
+}
+
+function takeOneMore(name: string) {
+  return userEvent.click(screen.getByRole('button', { name: `Mehr, ${name}` }))
+}
+
+function nameButtonOf(name: string) {
+  return screen.getByRole('button', { name })
 }
 
 function shownSupplyNames() {
   return within(screen.getByRole('main'))
     .getAllByRole('listitem')
-    .map((row) => within(row).getByRole('button').textContent)
+    .map((row) => within(row).getAllByRole('button')[0].textContent)
 }
 
 async function addSupply(mealName: string, count: string) {
@@ -143,7 +161,7 @@ describe('SuppliesArea', () => {
 
     expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 3)])
     expect(announcements).toContain('Bolognese, 3.')
-    expect(shownRows()).toEqual(['Bolognese3'])
+    expect(shownSupplies()).toEqual(['Bolognese, 3'])
   })
 
   it('keeps a supply for a meal whose name was written out', async () => {
@@ -186,7 +204,7 @@ describe('SuppliesArea', () => {
 
     expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 5)])
     expect(announcements).toContain('Bolognese, 2 dazu, jetzt 5.')
-    expect(shownRows()).toEqual(['Bolognese5'])
+    expect(shownSupplies()).toEqual(['Bolognese, 5'])
   })
 
   it('refuses a total above ninety-nine and stays on the form', async () => {
@@ -218,10 +236,10 @@ describe('SuppliesArea', () => {
       [supply('soup', 1), supply('bolognese', 3), supply('apples', 2)],
     )
 
-    expect(shownRows()).toEqual([
-      'Äpfel im Schlafrock2',
-      'Bolognese3',
-      'Linsensuppe1',
+    expect(shownSupplies()).toEqual([
+      'Äpfel im Schlafrock, 2',
+      'Bolognese, 3',
+      'Linsensuppe, 1',
     ])
     expect(
       screen.getByRole('heading', { name: 'Vorräte, 3' }),
@@ -231,7 +249,7 @@ describe('SuppliesArea', () => {
   it('leaves out a supply whose meal is gone', () => {
     renderSuppliesArea([bolognese], [supply('bolognese', 3), supply('gone', 2)])
 
-    expect(shownRows()).toEqual(['Bolognese3'])
+    expect(shownSupplies()).toEqual(['Bolognese, 3'])
     expect(
       screen.getByRole('heading', { name: 'Vorräte, 1' }),
     ).toBeInTheDocument()
@@ -285,7 +303,7 @@ describe('SuppliesArea', () => {
 
     expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 5)])
     expect(announcements).toContain('Bolognese, 5.')
-    expect(shownRows()).toEqual(['Bolognese5'])
+    expect(shownSupplies()).toEqual(['Bolognese, 5'])
   })
 
   it('stays on the supply when the count cannot be read', async () => {
@@ -398,6 +416,86 @@ describe('SuppliesArea', () => {
     await askToDeleteSupply()
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('counts a supply up at its row', async () => {
+    const { suppliesClient, announcements } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await takeOneMore('Bolognese')
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 4)])
+    expect(announcements).toContain('Bolognese, 4.')
+    expect(shownSupplies()).toEqual(['Bolognese, 4'])
+  })
+
+  it('counts a supply down at its row', async () => {
+    const { suppliesClient, announcements } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await takeOneLess('Bolognese')
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 2)])
+    expect(announcements).toContain('Bolognese, 2.')
+  })
+
+  it('removes the supply when its last portion is taken', async () => {
+    const { suppliesClient, announcements } = renderSuppliesArea(
+      [bolognese, soup],
+      [supply('bolognese', 1), supply('soup', 2)],
+    )
+
+    await takeOneLess('Bolognese')
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('soup', 2)])
+    expect(announcements).toContain('Bolognese entfernt, noch 1 Vorrat.')
+  })
+
+  it('leaves the focus on the meal that follows the removed row', async () => {
+    renderSuppliesArea(
+      [bolognese, soup],
+      [supply('bolognese', 1), supply('soup', 2)],
+    )
+
+    await takeOneLess('Bolognese')
+
+    expect(nameButtonOf('Linsensuppe')).toHaveFocus()
+  })
+
+  it('leaves the focus on the meal before the removed last row', async () => {
+    renderSuppliesArea(
+      [bolognese, soup],
+      [supply('bolognese', 3), supply('soup', 1)],
+    )
+
+    await takeOneLess('Linsensuppe')
+
+    expect(nameButtonOf('Bolognese')).toHaveFocus()
+  })
+
+  it('leaves the focus on the heading when the only supply is removed', async () => {
+    renderSuppliesArea([bolognese], [supply('bolognese', 1)])
+
+    await takeOneLess('Bolognese')
+
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, keine' }),
+    ).toHaveFocus()
+  })
+
+  it('offers no more portions at ninety-nine', () => {
+    renderSuppliesArea([bolognese], [supply('bolognese', 99)])
+
+    expect(
+      screen.getByRole('button', { name: 'Mehr, Bolognese' }),
+    ).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Weniger, Bolognese' }),
+    ).toBeEnabled()
   })
 
   it('has no accessibility violations on the list', async () => {
