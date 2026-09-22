@@ -266,6 +266,18 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.supplyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.supplyCount {
+  min-width: 2rem;
+  text-align: center;
+}
+
 .pageActions {
   display: flex;
   justify-content: center;

@@ -14,6 +14,10 @@ service cloud.firestore {
       allow read, write: if isHousehold();
     }
 
+    match /supplies/{mealId} {
+      allow read, write: if isHousehold();
+    }
+
     match /weekPlan/{document} {
       allow read, write: if isHousehold();
     }

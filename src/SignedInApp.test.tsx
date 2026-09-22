@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
+import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
 import {
   EMPTY_WEEK_PLAN,
@@ -42,6 +43,7 @@ function renderSignedInApp(
   knownItemsClient = createInMemoryKnownItemsClient(),
   appearanceClient = createInMemoryAppearanceClient(),
   weekPlanClient = createInMemoryWeekPlanClient(),
+  suppliesClient = createInMemorySuppliesClient(),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -50,6 +52,7 @@ function renderSignedInApp(
       createShoppingListClient={() => client}
       createMealsClient={() => createInMemoryMealsClient(initialMeals)}
       createWeekPlanClient={() => weekPlanClient}
+      createSuppliesClient={() => suppliesClient}
       createKnownItemsClient={() => knownItemsClient}
       appearanceClient={appearanceClient}
       announce={(text) => {
@@ -57,7 +60,14 @@ function renderSignedInApp(
       }}
     />,
   )
-  return { client, announcements, rendered, appearanceClient, weekPlanClient }
+  return {
+    client,
+    announcements,
+    rendered,
+    appearanceClient,
+    weekPlanClient,
+    suppliesClient,
+  }
 }
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
@@ -131,21 +141,47 @@ describe('SignedInApp', () => {
 
     await goToArea('Vorräte')
 
-    expect(screen.getByRole('heading', { name: 'Vorräte' })).toHaveFocus()
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, keine' }),
+    ).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Vorräte' })).toHaveAttribute(
       'aria-current',
       'page',
     )
   })
 
-  it('leaves the supplies empty for now', async () => {
+  it('opens the supplies with nothing kept in store', async () => {
     renderSignedInApp()
 
     await goToArea('Vorräte')
 
-    const page = within(screen.getByRole('main'))
-    expect(page.queryAllByRole('listitem')).toEqual([])
-    expect(page.queryAllByRole('button')).toEqual([])
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, keine' }),
+    ).toHaveFocus()
+    expect(
+      screen.getByRole('button', { name: 'Vorrat hinzufügen' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps a supply for a meal of the household', async () => {
+    const { suppliesClient, announcements } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+    )
+
+    await goToArea('Vorräte')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Vorrat hinzufügen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Gericht'), 'Bolognese')
+    await userEvent.clear(screen.getByLabelText('Menge'))
+    await userEvent.type(screen.getByLabelText('Menge'), '3')
+    await userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(suppliesClient.storedSupplies()).toEqual([
+      { mealId: 'bolognese', count: 3 },
+    ])
+    expect(announcements).toContain('Bolognese, 3.')
   })
 
   it('has no accessibility violations on the supplies', async () => {

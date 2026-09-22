@@ -108,3 +108,21 @@ export async function storeItemOnServer(
     },
   )
 }
+
+type ListedSupplies = {
+  documents?: readonly { fields: { count: { integerValue: string } } }[]
+}
+
+export async function supplyCountsOnServer(): Promise<readonly number[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/supplies`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedSupplies
+  return (listed.documents ?? []).map((document) =>
+    Number(document.fields.count.integerValue),
+  )
+}

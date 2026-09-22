@@ -13,6 +13,8 @@ import {
   mealSuggestionsLabel,
   mealWithoutItemsAnnouncement,
   randomMealLabel,
+  suppliesHeading,
+  supplyAddedAnnouncement,
   weekdayAbbreviation,
   weekdayName,
   weekPlanHeading,
@@ -20,6 +22,7 @@ import {
   weekPlanTransferAnnouncement,
 } from './announcements'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
+import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS } from './weekPlan'
 
 const mincedMeat: MealItem = {
@@ -83,8 +86,65 @@ describe('mealFailureMessage', () => {
     )
   })
 
+  it('resolves every way a supply can be invalid', () => {
+    const reasons: readonly InvalidSupplyReason[] = [
+      'mealUnknown',
+      'countNotANumber',
+      'countNotWhole',
+      'countNotPositive',
+      'countTooLarge',
+    ]
+
+    reasons.forEach((reason) => {
+      expect(mealFailureMessage(new InvalidSupply(reason))).not.toBe('')
+      expect(mealFailureMessage(new InvalidSupply(reason))).not.toBeNull()
+    })
+  })
+
+  it('names the meal that is unknown to the supplies', () => {
+    expect(mealFailureMessage(new InvalidSupply('mealUnknown'))).toBe(
+      'Dieses Gericht gibt es nicht.',
+    )
+  })
+
+  it('reports a count between two whole numbers', () => {
+    expect(mealFailureMessage(new InvalidSupply('countNotWhole'))).toBe(
+      'Die Anzahl muss eine ganze Zahl sein.',
+    )
+  })
+
+  it('reports a count that is too large', () => {
+    expect(mealFailureMessage(new InvalidSupply('countTooLarge'))).toBe(
+      'Die Anzahl ist zu groß.',
+    )
+  })
+
   it('leaves anything else to the caller', () => {
     expect(mealFailureMessage(new Error('etwas anderes'))).toBeNull()
+  })
+})
+
+describe('suppliesHeading', () => {
+  it('says that nothing is kept in store yet', () => {
+    expect(suppliesHeading(0)).toBe('Vorräte, keine')
+  })
+
+  it('counts the supplies', () => {
+    expect(suppliesHeading(3)).toBe('Vorräte, 3')
+  })
+})
+
+describe('supplyAddedAnnouncement', () => {
+  it('names the count of a supply that was not kept before', () => {
+    expect(supplyAddedAnnouncement(bolognese, 2, 2)).toBe(
+      'Spaghetti Bolognese, 2.',
+    )
+  })
+
+  it('names the growth and the new total of a supply that was kept', () => {
+    expect(supplyAddedAnnouncement(bolognese, 2, 5)).toBe(
+      'Spaghetti Bolognese, 2 dazu, jetzt 5.',
+    )
   })
 })
 

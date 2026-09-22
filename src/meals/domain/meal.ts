@@ -76,6 +76,19 @@ export function createMeal(
   }
 }
 
+export function normalizeMealName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ').toLocaleLowerCase('de-DE')
+}
+
+export function mealNamed(
+  meals: readonly Meal[],
+  written: string,
+): Meal | null {
+  const wanted = normalizeMealName(written)
+  if (wanted === '') return null
+  return meals.find((meal) => normalizeMealName(meal.name) === wanted) ?? null
+}
+
 export function byName(meals: readonly Meal[]): readonly Meal[] {
   return [...meals].sort((one, other) =>
     one.name.localeCompare(other.name, 'de-DE'),

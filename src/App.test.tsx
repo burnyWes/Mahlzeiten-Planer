@@ -5,6 +5,7 @@ import { App } from './App'
 import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
 import { createInMemoryAppUpdateClient } from './shared/appUpdate/inMemoryAppUpdateClient'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
+import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
@@ -27,6 +28,7 @@ function renderApp(
       createShoppingListClient={() => createInMemoryShoppingListClient()}
       createMealsClient={() => createInMemoryMealsClient()}
       createWeekPlanClient={() => createInMemoryWeekPlanClient()}
+      createSuppliesClient={() => createInMemorySuppliesClient()}
       createKnownItemsClient={() => createInMemoryKnownItemsClient()}
       appUpdateClient={appUpdateClient}
       appearanceClient={appearanceClient}

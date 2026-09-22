@@ -50,6 +50,7 @@ function collectionOf(collectionName: string) {
 const itemsOf = collectionOf('items')
 const mealsOf = collectionOf('meals')
 const knownItemsOf = collectionOf('knownItems')
+const suppliesOf = collectionOf('supplies')
 const weekPlanOf = collectionOf('weekPlan')
 
 const milk = { name: 'Milch', lastUsedAt: 1, timesUsed: 1 }
@@ -70,6 +71,8 @@ const bolognese = {
   ingredientNotes: '',
   recipe: '',
 }
+
+const supply = { count: 3 }
 
 describe('firestore security rules', () => {
   it('lets the household write an item', async () => {
@@ -152,6 +155,28 @@ describe('firestore security rules', () => {
   it('refuses an unauthenticated visitor on the known items', async () => {
     await assertFails(getDoc(knownItemsOf(null)('milch')))
     await assertFails(setDoc(knownItemsOf(null)('milch'), milk))
+  })
+
+  it('lets the household write a supply', async () => {
+    await assertSucceeds(setDoc(suppliesOf(householdUid)('bolognese'), supply))
+  })
+
+  it('lets the household read a supply', async () => {
+    await assertSucceeds(getDoc(suppliesOf(householdUid)('bolognese')))
+  })
+
+  it('lets the household delete a supply', async () => {
+    await assertSucceeds(deleteDoc(suppliesOf(householdUid)('bolognese')))
+  })
+
+  it('refuses another account on the supplies', async () => {
+    await assertFails(getDoc(suppliesOf(strangerUid)('bolognese')))
+    await assertFails(setDoc(suppliesOf(strangerUid)('bolognese'), supply))
+  })
+
+  it('refuses an unauthenticated visitor on the supplies', async () => {
+    await assertFails(getDoc(suppliesOf(null)('bolognese')))
+    await assertFails(setDoc(suppliesOf(null)('bolognese'), supply))
   })
 
   it('refuses the household outside the released collections', async () => {

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { MealsClient } from './meals/api/mealsClient'
+import type { SuppliesClient } from './meals/api/suppliesClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
 import { SignedInApp } from './SignedInApp'
 import type { AppearanceClient } from './shared/appearance/appearanceClient'
@@ -25,6 +26,9 @@ type AppProps = {
   createWeekPlanClient: (
     onWriteFailure: (message: string) => void,
   ) => WeekPlanClient
+  createSuppliesClient: (
+    onWriteFailure: (message: string) => void,
+  ) => SuppliesClient
   createKnownItemsClient: () => KnownItemsClient
   appUpdateClient: AppUpdateClient
   appearanceClient: AppearanceClient
@@ -36,6 +40,7 @@ export function App({
   createShoppingListClient,
   createMealsClient,
   createWeekPlanClient,
+  createSuppliesClient,
   createKnownItemsClient,
   appUpdateClient,
   appearanceClient,
@@ -63,6 +68,7 @@ export function App({
           createShoppingListClient={createShoppingListClient}
           createMealsClient={createMealsClient}
           createWeekPlanClient={createWeekPlanClient}
+          createSuppliesClient={createSuppliesClient}
           createKnownItemsClient={createKnownItemsClient}
           appearance={appearance}
           announce={announce}

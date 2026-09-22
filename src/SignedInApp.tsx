@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { MealsClient } from './meals/api/mealsClient'
+import type { SuppliesClient } from './meals/api/suppliesClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
 import {
   mealWithoutItemsAnnouncement,
@@ -11,6 +12,7 @@ import { mealsWithoutItems } from './meals/domain/weekPlan'
 import { MealsArea } from './meals/ui/MealsArea'
 import { SuppliesArea } from './meals/ui/SuppliesArea'
 import { useMeals } from './meals/ui/useMeals'
+import { useSupplies } from './meals/ui/useSupplies'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
 import { WeekPlanArea } from './meals/ui/WeekPlanArea'
 import type { Appearance } from './shared/appearance/useAppearance'
@@ -62,6 +64,9 @@ type SignedInAppProps = {
   createWeekPlanClient: (
     onWriteFailure: (message: string) => void,
   ) => WeekPlanClient
+  createSuppliesClient: (
+    onWriteFailure: (message: string) => void,
+  ) => SuppliesClient
   createKnownItemsClient: () => KnownItemsClient
   appearance: Appearance
   announce: (text: string) => void
@@ -72,6 +77,7 @@ export function SignedInApp({
   createShoppingListClient,
   createMealsClient,
   createWeekPlanClient,
+  createSuppliesClient,
   createKnownItemsClient,
   appearance,
   announce,
@@ -82,6 +88,7 @@ export function SignedInApp({
   )
   const [mealsClient] = useState(() => createMealsClient(announce))
   const [weekPlanClient] = useState(() => createWeekPlanClient(announce))
+  const [suppliesClient] = useState(() => createSuppliesClient(announce))
   const [knownItemsClient] = useState(createKnownItemsClient)
   const knownItems = useKnownItems(knownItemsClient)
   const shoppingList = useShoppingList(
@@ -91,6 +98,7 @@ export function SignedInApp({
   )
   const meals = useMeals(mealsClient)
   const weekPlanning = useWeekPlan(weekPlanClient)
+  const supplies = useSupplies(suppliesClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
@@ -170,7 +178,15 @@ export function SignedInApp({
       />
     )
 
-  if (activeArea === 'supplies') return <SuppliesArea navigation={navigation} />
+  if (activeArea === 'supplies')
+    return (
+      <SuppliesArea
+        meals={meals.meals}
+        supplies={supplies}
+        announce={announce}
+        navigation={navigation}
+      />
+    )
 
   if (activeArea === 'meals')
     return (

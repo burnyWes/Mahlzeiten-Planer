@@ -1,11 +1,7 @@
-import type { Meal } from './meal'
+import { normalizeMealName, type Meal } from './meal'
 
 const MINIMUM_TYPED_LENGTH = 2
 const MAXIMUM_SUGGESTIONS = 5
-
-function normalizeMealName(name: string): string {
-  return name.trim().replace(/\s+/g, ' ').toLocaleLowerCase('de-DE')
-}
 
 function startsWithTyped(meal: Meal, typed: string): boolean {
   return normalizeMealName(meal.name).startsWith(typed)

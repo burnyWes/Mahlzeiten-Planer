@@ -335,7 +335,7 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/meal.ts`: `normalizeMealName` aus `mealSuggestions.ts`
+- [x] `src/meals/domain/meal.ts`: `normalizeMealName` aus `mealSuggestions.ts`
       hierher ziehen und exportieren, `mealNamed` ergaenzen. Test zuerst in
       `meal.test.ts`: findet bei abweichender Gross-/Kleinschreibung und
       Randleerzeichen, findet nicht bei leerem Text.
@@ -357,18 +357,18 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `src/meals/domain/mealSuggestions.ts`: die private Kopie loeschen und
+- [x] `src/meals/domain/mealSuggestions.ts`: die private Kopie loeschen und
       `normalizeMealName` aus `./meal` importieren. `mealSuggestions.test.ts` bleibt
       unveraendert gruen.
 
-- [ ] `src/meals/domain/supply.test.ts` anlegen und die Regeln zuerst als Tests
+- [x] `src/meals/domain/supply.test.ts` anlegen und die Regeln zuerst als Tests
       schreiben: `createSupply` weist unbekanntes Gericht, leere, nicht numerische,
       gebrochene, nicht positive und zu grosse Anzahl zurueck; nimmt einen Namen mit
       abweichender Schreibweise an; `combinedSupply` addiert auf einen vorhandenen
       Vorrat, nimmt `null` als "noch keiner" und wirft ueber 99;
       `suppliedMeals` sortiert alphabetisch und blendet Vorraete ohne Gericht aus.
 
-- [ ] `src/meals/domain/supply.ts` anlegen.
+- [x] `src/meals/domain/supply.ts` anlegen.
 
       ```ts
       export type Supply = { mealId: MealId; count: number }
@@ -415,7 +415,7 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       `withSupply` und `withoutSupply` arbeiten auf der Liste; `withSupply` ersetzt
       einen vorhandenen Eintrag desselben Gerichts, statt ihn zu doppeln.
 
-- [ ] `src/meals/domain/announcements.ts`: `mealFailureMessage` um `InvalidSupply`
+- [x] `src/meals/domain/announcements.ts`: `mealFailureMessage` um `InvalidSupply`
       erweitern und die neuen Texte ergaenzen.
 
       ```ts
@@ -446,7 +446,7 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       Vorraeten, beide Faelle von `supplyAddedAnnouncement`, `mealFailureMessage`
       liefert fuer jeden `InvalidSupplyReason` einen Text.
 
-- [ ] `src/meals/api/suppliesClient.ts` anlegen.
+- [x] `src/meals/api/suppliesClient.ts` anlegen.
 
       ```ts
       export interface SuppliesClient {
@@ -456,11 +456,11 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `src/meals/api/inMemorySuppliesClient.ts` anlegen — nach dem Vorbild von
+- [x] `src/meals/api/inMemorySuppliesClient.ts` anlegen — nach dem Vorbild von
       `inMemoryMealsClient.ts` mit `suppliesArriveFromElsewhere` und
       `storedSupplies`.
 
-- [ ] `src/meals/api/firestoreSuppliesClient.ts` anlegen — Sammlung `supplies`,
+- [x] `src/meals/api/firestoreSuppliesClient.ts` anlegen — Sammlung `supplies`,
       Dokument-Id ist die `mealId`, ein Feld `count`. Fehlerbehandlung wie in
       `firestoreMealsClient.ts:67-69`.
 
@@ -472,7 +472,7 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `firestore.rules`: Block fuer `supplies` neben `meals` ergaenzen.
+- [x] `firestore.rules`: Block fuer `supplies` neben `meals` ergaenzen.
 
       ```
       match /supplies/{mealId} {
@@ -480,11 +480,11 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `firestore.rules.test.ts`: `suppliesOf` ergaenzen und die vier Faelle nach dem
+- [x] `firestore.rules.test.ts`: `suppliesOf` ergaenzen und die vier Faelle nach dem
       Vorbild der `knownItems` schreiben — Haushalt schreibt, liest und loescht,
       fremdes Konto scheitert, nicht angemeldeter Besucher scheitert.
 
-- [ ] `src/meals/ui/useSupplies.ts` anlegen — beobachtet den Port und schreibt
+- [x] `src/meals/ui/useSupplies.ts` anlegen — beobachtet den Port und schreibt
       optimistisch, damit die Zeile nicht auf die Bestaetigung wartet.
 
       ```ts
@@ -495,7 +495,7 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `src/meals/ui/AddSupplyPage.tsx` anlegen — Aufbau wie `MealFormPage`, Felder
+- [x] `src/meals/ui/AddSupplyPage.tsx` anlegen — Aufbau wie `MealFormPage`, Felder
       "Gericht" und "Menge", Vorschlaege ueber `suggestMeals` und `MealSuggestions`
       mit dem Label "Vorschläge". Der Fokus steht beim Oeffnen im Gericht-Feld;
       ein angetippter Vorschlag schreibt den vollen Namen und springt auf das
@@ -521,12 +521,12 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `src/meals/ui/SupplyListPage.tsx` anlegen — Kopfzeile mit `suppliesHeading` und
+- [x] `src/meals/ui/SupplyListPage.tsx` anlegen — Kopfzeile mit `suppliesHeading` und
       `+`-Knopf (`aria-label` "Vorrat hinzufügen"), darunter die Liste oder
       "Noch keine Vorräte.". In dieser Phase je Zeile zwei `span` in einer
       `li.supplyRow`: Name und Anzahl.
 
-- [ ] `src/meals/ui/SuppliesArea.tsx` umbauen — Seitenschalter `list | add` nach dem
+- [x] `src/meals/ui/SuppliesArea.tsx` umbauen — Seitenschalter `list | add` nach dem
       Vorbild von `MealsArea.tsx`, mit `suppliedMeals` als Ansicht.
 
       `addSupply` darf werfen — `AddSupplyPage` ruft es innerhalb ihres `try` auf, und
@@ -544,15 +544,15 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       }
       ```
 
-- [ ] `src/index.css`: `.supplyRow` ergaenzen (Flex, `space-between`, `gap: 0.5rem`)
+- [x] `src/index.css`: `.supplyRow` ergaenzen (Flex, `space-between`, `gap: 0.5rem`)
       und `.supplyCount` (`min-width: 2rem`, zentriert). Keine eigenen Farben — sonst
       schlaegt `test/palette.test.ts` an.
 
-- [ ] `src/App.tsx`, `src/main.tsx`, `src/SignedInApp.tsx`: `createSuppliesClient`
+- [x] `src/App.tsx`, `src/main.tsx`, `src/SignedInApp.tsx`: `createSuppliesClient`
       durchreichen, `useSupplies` aufrufen und `SuppliesArea` mit `meals.meals`,
       `supplies` und `announce` versorgen.
 
-- [ ] `src/meals/ui/SuppliesArea.test.tsx` anlegen — mit `createInMemoryMealsClient`
+- [x] `src/meals/ui/SuppliesArea.test.tsx` anlegen — mit `createInMemoryMealsClient`
       und `createInMemorySuppliesClient`, Aufbau wie `MealsArea.test.tsx`. Faelle:
       leere Seite, Vorrat ueber einen Vorschlag anlegen, Vorrat ueber den
       ausgeschriebenen Namen anlegen, unbekanntes Gericht wird abgewiesen, Addieren
@@ -560,35 +560,35 @@ Liste zeigt Name und Anzahl als Text; geaendert wird noch nichts.
       gebrochene Anzahl wird abgewiesen, alphabetische Reihenfolge, ein Vorrat ohne
       Gericht erscheint nicht, axe ohne Befund auf Liste und Formular.
 
-- [ ] `src/App.test.tsx` und `src/SignedInApp.test.tsx`: den neuen Prop ergaenzen; den
+- [x] `src/App.test.tsx` und `src/SignedInApp.test.tsx`: den neuen Prop ergaenzen; den
       Test "leaves the supplies empty for now" durch einen ersetzen, der die
       Kopfzeile "Vorräte, keine" und den Knopf "Vorrat hinzufügen" prueft.
 
-- [ ] `e2e/emulatorHousehold.ts`: `supplyCountsOnServer()` ergaenzen, das die Sammlung
+- [x] `e2e/emulatorHousehold.ts`: `supplyCountsOnServer()` ergaenzen, das die Sammlung
       `supplies` liest und die `count`-Werte zurueckgibt.
 
-- [ ] `e2e/supplies.spec.ts` anlegen — Gericht anlegen, Vorrat mit Menge 3 ueber einen
+- [x] `e2e/supplies.spec.ts` anlegen — Gericht anlegen, Vorrat mit Menge 3 ueber einen
       Vorschlag anlegen, Zeile pruefen, auf den Server warten, neu laden und die Zeile
       erneut pruefen. Das Mengenfeld ist vorbelegt, deshalb `fill('3')` statt
       `typeInto`.
 
-- [ ] `firestore.rules` ausrollen, damit die Sammlung auf dem Geraet nicht gesperrt
+- [x] `firestore.rules` ausrollen, damit die Sammlung auf dem Geraet nicht gesperrt
       ist: `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft gruen, einschliesslich `supply.test.ts`, der neuen Faelle
+- [x] `npm run test` laeuft gruen, einschliesslich `supply.test.ts`, der neuen Faelle
       in `meal.test.ts` und `announcements.test.ts` sowie `SuppliesArea.test.tsx`.
-- [ ] `mealSuggestions.test.ts` bleibt unveraendert gruen — Beleg, dass das Verschieben
+- [x] `mealSuggestions.test.ts` bleibt unveraendert gruen — Beleg, dass das Verschieben
       von `normalizeMealName` nichts am Verhalten geaendert hat.
-- [ ] Die axe-Tests der neuen Seiten und die bestehenden in `SignedInApp.test.tsx`
+- [x] Die axe-Tests der neuen Seiten und die bestehenden in `SignedInApp.test.tsx`
       bleiben ohne Befund.
-- [ ] `test/domainLayerBoundary.test.ts` bleibt gruen — `supply.ts` importiert nur aus
+- [x] `test/domainLayerBoundary.test.ts` bleibt gruen — `supply.ts` importiert nur aus
       `./meal`, `suppliesClient.ts` nur aus `../domain`.
-- [ ] `test/palette.test.ts` bleibt gruen.
-- [ ] `npm run test:rules` laeuft gruen, einschliesslich der neuen `supplies`-Faelle.
-- [ ] `npm run lint` laeuft ohne Befund, `npm run build` uebersetzt fehlerfrei.
-- [ ] `npm run test:e2e` laeuft durch, einschliesslich `e2e/supplies.spec.ts`.
+- [x] `test/palette.test.ts` bleibt gruen.
+- [x] `npm run test:rules` laeuft gruen, einschliesslich der neuen `supplies`-Faelle.
+- [x] `npm run lint` laeuft ohne Befund, `npm run build` uebersetzt fehlerfrei.
+- [x] `npm run test:e2e` laeuft durch, einschliesslich `e2e/supplies.spec.ts`.
 
 **Manuelle Verifikation**:
 

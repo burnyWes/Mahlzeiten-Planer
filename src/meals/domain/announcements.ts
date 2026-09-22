@@ -9,6 +9,7 @@ import {
   type MealItem,
   type NewMeal,
 } from './meal'
+import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS, type Weekday } from './weekPlan'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
@@ -17,12 +18,25 @@ const messagesByReason: Record<InvalidMealReason, string> = {
   textTooLong: 'Der Text ist zu lang.',
 }
 
+const messagesBySupplyReason: Record<InvalidSupplyReason, string> = {
+  mealUnknown: 'Dieses Gericht gibt es nicht.',
+  countNotANumber: 'Die Anzahl muss eine Zahl sein.',
+  countNotWhole: 'Die Anzahl muss eine ganze Zahl sein.',
+  countNotPositive: 'Die Anzahl muss größer als null sein.',
+  countTooLarge: 'Die Anzahl ist zu groß.',
+}
+
 export function invalidMealMessage(reason: InvalidMealReason): string {
   return messagesByReason[reason]
 }
 
+export function invalidSupplyMessage(reason: InvalidSupplyReason): string {
+  return messagesBySupplyReason[reason]
+}
+
 export function mealFailureMessage(error: unknown): string | null {
   if (error instanceof InvalidMeal) return invalidMealMessage(error.reason)
+  if (error instanceof InvalidSupply) return invalidSupplyMessage(error.reason)
   if (error instanceof InvalidQuantity)
     return invalidQuantityMessage(error.reason)
   return null
@@ -123,4 +137,18 @@ export function weekPlanTransferAnnouncement(
 
 export function mealSuggestionsLabel(day: Weekday): string {
   return `Vorschläge für ${weekdayName(day)}`
+}
+
+export function suppliesHeading(supplyCount: number): string {
+  return supplyCount === 0 ? 'Vorräte, keine' : `Vorräte, ${supplyCount}`
+}
+
+export function supplyAddedAnnouncement(
+  meal: NewMeal,
+  added: number,
+  total: number,
+): string {
+  return added === total
+    ? `${meal.name}, ${total}.`
+    : `${meal.name}, ${added} dazu, jetzt ${total}.`
 }

@@ -6,6 +6,8 @@ import {
   createMealItem,
   formatMealItem,
   InvalidMeal,
+  mealNamed,
+  normalizeMealName,
   type Meal,
   type MealItem,
 } from './meal'
@@ -160,5 +162,33 @@ describe('formatMealItem', () => {
 
   it('names only the item when no quantity was written down', () => {
     expect(formatMealItem(item('Salz'))).toBe('Salz')
+  })
+})
+
+describe('normalizeMealName', () => {
+  it('lowers the case and gathers the whitespace', () => {
+    expect(normalizeMealName('  Spaghetti   Bolognese ')).toBe(
+      'spaghetti bolognese',
+    )
+  })
+})
+
+describe('mealNamed', () => {
+  const meals = [meal('Bolognese'), meal('Linsensuppe')]
+
+  it('finds the meal that was written out', () => {
+    expect(mealNamed(meals, 'Bolognese')).toBe(meals[0])
+  })
+
+  it('finds the meal however it was capitalized and spaced', () => {
+    expect(mealNamed(meals, '  bOLOGNESE ')).toBe(meals[0])
+  })
+
+  it('finds no meal for an empty text', () => {
+    expect(mealNamed(meals, '   ')).toBeNull()
+  })
+
+  it('finds no meal for a name nobody wrote down', () => {
+    expect(mealNamed(meals, 'Pizza')).toBeNull()
   })
 })

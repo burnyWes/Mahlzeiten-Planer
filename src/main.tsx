@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App.tsx'
 import { createFirestoreMealsClient } from './meals/api/firestoreMealsClient.ts'
+import { createFirestoreSuppliesClient } from './meals/api/firestoreSuppliesClient.ts'
 import { createFirestoreWeekPlanClient } from './meals/api/firestoreWeekPlanClient.ts'
 import { createLocalStorageAppearanceClient } from './shared/appearance/localStorageAppearanceClient.ts'
 import { createServiceWorkerAppUpdateClient } from './shared/appUpdate/serviceWorkerAppUpdateClient.ts'
@@ -22,6 +23,9 @@ const openMeals = (onWriteFailure: (message: string) => void) =>
 const openWeekPlan = (onWriteFailure: (message: string) => void) =>
   createFirestoreWeekPlanClient(firestore, onWriteFailure)
 
+const openSupplies = (onWriteFailure: (message: string) => void) =>
+  createFirestoreSuppliesClient(firestore, onWriteFailure)
+
 const openKnownItems = () => createFirestoreKnownItemsClient(firestore)
 
 const appUpdateClient = createServiceWorkerAppUpdateClient()
@@ -35,6 +39,7 @@ createRoot(document.getElementById('root')!).render(
       createShoppingListClient={openShoppingList}
       createMealsClient={openMeals}
       createWeekPlanClient={openWeekPlan}
+      createSuppliesClient={openSupplies}
       createKnownItemsClient={openKnownItems}
       appUpdateClient={appUpdateClient}
       appearanceClient={appearanceClient}
