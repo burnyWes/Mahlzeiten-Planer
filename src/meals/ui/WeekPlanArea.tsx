@@ -9,8 +9,13 @@ import {
   pickMealForDay,
   type RandomSource,
 } from '../domain/randomPlanning'
-import { isInSupply, type Supply } from '../domain/supply'
-import { plannedMeals, type Weekday } from '../domain/weekPlan'
+import type { Supply } from '../domain/supply'
+import {
+  isSuppliedOn,
+  plannedMeals,
+  withMealOnDay,
+  type Weekday,
+} from '../domain/weekPlan'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
 
@@ -37,8 +42,13 @@ export function WeekPlanArea({
     weekPlanning.chooseMeal(day, id)
     const chosen = meals.find((meal) => meal.id === id)
     if (chosen === undefined) return
+    const planned = withMealOnDay(weekPlanning.plan, day, id)
     announce(
-      dayPlannedAnnouncement(day, chosen, isInSupply(supplies, chosen.id)),
+      dayPlannedAnnouncement(
+        day,
+        chosen,
+        isSuppliedOn(planned, day, meals, supplies),
+      ),
     )
   }
 

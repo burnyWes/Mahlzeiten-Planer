@@ -237,6 +237,44 @@ describe('WeekPlanArea', () => {
     expect(dayField('Montag')).toHaveValue('Pizza')
   })
 
+  it('spends a single portion on the earlier of two days', () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+        'wednesday',
+        'bolognese',
+      ),
+      [supply('bolognese', 1)],
+    )
+
+    expect(markedWeekdays()).toEqual(['Mo.'])
+    expect(dayField('Montag, im Vorrat')).toHaveValue('Bolognese')
+    expect(dayField('Mittwoch')).toHaveValue('Bolognese')
+  })
+
+  it('lets the mark move on when the covered day is emptied', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(
+        withMealOnDay(
+          withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+          'wednesday',
+          'bolognese',
+        ),
+        'friday',
+        'bolognese',
+      ),
+      [supply('bolognese', 1)],
+    )
+
+    await userEvent.clear(dayField('Montag, im Vorrat'))
+
+    expect(markedWeekdays()).toEqual(['Mi.'])
+    expect(dayField('Mittwoch, im Vorrat')).toHaveValue('Bolognese')
+    expect(dayField('Freitag')).toHaveValue('Bolognese')
+  })
+
   it('suggests the meals that match what was typed', async () => {
     renderWeekPlanArea([bolognese, pizza, mushrooms])
 
@@ -355,6 +393,19 @@ describe('WeekPlanArea', () => {
     await shuffleDay('Montag')
 
     expect(announcements).toEqual(['Montag, Pizza, im Vorrat.'])
+    expect(markedWeekdays()).toEqual(['Mo.'])
+  })
+
+  it('says nothing of a supply that the earlier day already spent', async () => {
+    const { announcements } = renderWeekPlanArea(
+      [pizza],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza'),
+      [supply('pizza', 1)],
+    )
+
+    await shuffleDay('Mittwoch')
+
+    expect(announcements).toEqual(['Mittwoch, Pizza.'])
     expect(markedWeekdays()).toEqual(['Mo.'])
   })
 

@@ -343,9 +343,9 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
 - [x] `src/meals/ui/WeekPlanRow.tsx`: den dann unbenutzten Import `weekdayName`
       entfernen, sonst wird `npm run lint` rot. `weekdayAbbreviation`,
       `randomMealLabel` und `mealSuggestionsLabel` bleiben.
-- [-] `src/SignedInApp.tsx`: `supplies={supplies.supplies}` an `WeekPlanArea`
+- [x] `src/SignedInApp.tsx`: `supplies={supplies.supplies}` an `WeekPlanArea`
       übergeben.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: `renderWeekPlanArea` um einen Parameter
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`: `renderWeekPlanArea` um einen Parameter
       für die Vorräte erweitern; Tests für die Schneeflocke am gedeckten Tag, für
       das Feld-Label `Montag, im Vorrat`, für das Verschwinden der Marke beim
       Wechsel auf ein Gericht ohne Vorrat, für beide Ansage-Formen beim
@@ -394,12 +394,12 @@ und ist irgendwann aufgebraucht.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für `isSuppliedOn`
+- [x] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für `isSuppliedOn`
       — ein Vorrat von 1 deckt bei zwei geplanten Tagen nur den früheren; ein
       Vorrat von 2 deckt bei drei Tagen die ersten zwei; ein Vorrat, der größer
       ist als die Zahl der Tage, deckt alle. Die drei Tests aus Phase 1 bleiben
       gültig, weil sie mit einem einzigen geplanten Tag arbeiten.
-- [ ] `src/meals/domain/weekPlan.ts`: `isSuppliedOn` auf die Portionen umstellen,
+- [x] `src/meals/domain/weekPlan.ts`: `isSuppliedOn` auf die Portionen umstellen,
       `supplyOf` statt `isInSupply` importieren.
       ```ts
       function timesPlannedBefore(
@@ -429,7 +429,7 @@ und ist irgendwann aufgebraucht.
       ```
       `isInSupply` bleibt in `supply.ts`, wo es steht — es beantwortet weiter die
       Frage der Vorräte-Seite. Nur der Wochenplan fragt jetzt genauer.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: die Ansage beim Wählen auf den Plan **nach**
+- [x] `src/meals/ui/WeekPlanArea.tsx`: die Ansage beim Wählen auf den Plan **nach**
       der Wahl stützen und `isInSupply` gegen `isSuppliedOn` tauschen.
       `weekPlanning.plan` ist im selben Durchlauf noch der alte Plan, deshalb
       bildet `chooseMeal` den neuen selbst.
@@ -451,21 +451,21 @@ und ist irgendwann aufgebraucht.
       Danach importiert `WeekPlanArea` `isSuppliedOn` und `withMealOnDay` aus
       `../domain/weekPlan` und `isInSupply` nicht mehr — sonst wird `npm run lint`
       rot.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: Tests — bei Vorrat 1 und zwei geplanten
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`: Tests — bei Vorrat 1 und zwei geplanten
       Tagen trägt nur der frühere die Marke; das Würfeln eines zweiten Tages auf
       dasselbe Gericht sagt `Mittwoch, Bolognese.` ohne Vorrat-Zusatz; das Leeren
       des gedeckten Tages lässt die Marke an den späteren Tag wandern. Achtung:
       nach dem Wandern heißt das späte Feld `Mittwoch, im Vorrat`.
-- [ ] `src/SignedInApp.test.tsx`: Test, dass das zweite Vorkommen eines Gerichts
+- [x] `src/SignedInApp.test.tsx`: Test, dass das zweite Vorkommen eines Gerichts
       mit Vorrat 1 ohne `im Vorrat` angesagt wird.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/weekPlan.test.ts` — Portionszuteilung grün
-- [ ] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` — wandernde Marke und
+- [x] `npx vitest run src/meals/domain/weekPlan.test.ts` — Portionszuteilung grün
+- [x] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` — wandernde Marke und
       Ansagen grün
-- [ ] `npx vitest run src/SignedInApp.test.tsx` — grün
-- [ ] `npm run lint` und `npm run test` laufen durch
+- [x] `npx vitest run src/SignedInApp.test.tsx` — grün
+- [x] `npm run lint` und `npm run test` laufen durch
 
 **Manuelle Verifikation**:
 
@@ -645,6 +645,10 @@ abgedeckt hat.
   Phase 2 zieht Phase 1 nach, und die Übertragung ist zu Phase 3 geworden.
   Angenommen dabei: »der erste« Tag ist der frühere Wochentag, gezählt von Montag
   bis Sonntag.
+- Phase 2: Der Test »lets the mark move on« brauchte drei geplante Tage statt
+  zwei — mit zwei Tagen wäre er auch unter der abgelösten Regel grün gewesen und
+  hätte nichts geprüft. Ein Gegenlauf mit zurückgedrehter Regel bestätigt, dass
+  die vier neuen Oberflächen-Tests rot werden.
 
 ## Verweise
 

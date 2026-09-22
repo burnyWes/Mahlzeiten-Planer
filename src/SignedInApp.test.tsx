@@ -294,6 +294,33 @@ describe('SignedInApp', () => {
     ).toHaveValue('Bolognese')
   })
 
+  it('says nothing of a supply that a further day has used up', async () => {
+    const { announcements } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 1 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Mittwoch' }),
+      'bolo',
+    )
+    await userEvent.click(
+      within(
+        screen.getByRole('list', { name: 'Vorschläge für Mittwoch' }),
+      ).getByRole('button', { name: 'Bolognese' }),
+    )
+
+    expect(announcements).toEqual(['Mittwoch, Bolognese.'])
+    expect(
+      screen.getByRole('textbox', { name: 'Montag, im Vorrat' }),
+    ).toHaveValue('Bolognese')
+  })
+
   it('gathers the items of the planned meals on the shopping list', async () => {
     const { announcements } = renderSignedInApp(
       [openItem('bread', 'Brot', 1)],

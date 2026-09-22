@@ -163,6 +163,60 @@ describe('isSuppliedOn', () => {
       isSuppliedOn(EMPTY_WEEK_PLAN, 'monday', knownMeals, [supply('pizza', 1)]),
     ).toBe(false)
   })
+
+  it('spends a single portion on the earlier of two days', () => {
+    const plan = withMealOnDay(
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza'),
+      'wednesday',
+      'pizza',
+    )
+    const supplies = [supply('pizza', 1)]
+
+    expect(isSuppliedOn(plan, 'monday', knownMeals, supplies)).toBe(true)
+    expect(isSuppliedOn(plan, 'wednesday', knownMeals, supplies)).toBe(false)
+  })
+
+  it('spends two portions on the first two of three days', () => {
+    const plan = withMealOnDay(
+      withMealOnDay(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza'),
+        'wednesday',
+        'pizza',
+      ),
+      'friday',
+      'pizza',
+    )
+    const supplies = [supply('pizza', 2)]
+
+    expect(
+      WEEKDAYS.filter((day) => isSuppliedOn(plan, day, knownMeals, supplies)),
+    ).toEqual(['monday', 'wednesday'])
+  })
+
+  it('counts only the days of the same meal against the supply', () => {
+    const plan = withMealOnDay(
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'soup'),
+      'wednesday',
+      'pizza',
+    )
+
+    expect(
+      isSuppliedOn(plan, 'wednesday', knownMeals, [supply('pizza', 1)]),
+    ).toBe(true)
+  })
+
+  it('covers every day when the supply outlasts the week', () => {
+    const plan = withMealOnDay(
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza'),
+      'sunday',
+      'pizza',
+    )
+    const supplies = [supply('pizza', 5)]
+
+    expect(
+      WEEKDAYS.filter((day) => isSuppliedOn(plan, day, knownMeals, supplies)),
+    ).toEqual(['monday', 'sunday'])
+  })
 })
 
 describe('mealsWithoutItems', () => {

@@ -1,5 +1,5 @@
 import type { Meal, MealId } from './meal'
-import { isInSupply, type Supply } from './supply'
+import { supplyOf, type Supply } from './supply'
 
 export const WEEKDAYS = [
   'monday',
@@ -35,6 +35,16 @@ export function shownMealOn(
   return meals.find((meal) => meal.id === plan[day]) ?? null
 }
 
+function timesPlannedBefore(
+  plan: WeekPlan,
+  day: Weekday,
+  mealId: MealId,
+): number {
+  return WEEKDAYS.slice(0, WEEKDAYS.indexOf(day)).filter(
+    (earlier) => plan[earlier] === mealId,
+  ).length
+}
+
 export function isSuppliedOn(
   plan: WeekPlan,
   day: Weekday,
@@ -42,7 +52,11 @@ export function isSuppliedOn(
   supplies: readonly Supply[],
 ): boolean {
   const planned = shownMealOn(plan, day, meals)
-  return planned !== null && isInSupply(supplies, planned.id)
+  if (planned === null) return false
+  const supply = supplyOf(supplies, planned.id)
+  return (
+    supply !== null && timesPlannedBefore(plan, day, planned.id) < supply.count
+  )
 }
 
 export function plannedMeals(
