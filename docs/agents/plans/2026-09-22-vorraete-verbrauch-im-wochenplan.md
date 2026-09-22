@@ -5,7 +5,7 @@ branch: main
 story: MZP-013
 topic: "Vorräte-Verbrauch im Wochenplan"
 tags: [plan, meals, weekPlan, supplies, shoppingList]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-013 — Vorräte-Verbrauch im Wochenplan
@@ -524,7 +524,7 @@ abgedeckt hat.
       ```
       `plannedMeals` wird dabei zu `plannedDays(plan, meals).map(({ meal }) => meal)`
       — dieselbe Reihenfolge, eine Quelle für beide Wege.
-- [-] `src/meals/domain/announcements.test.ts`: die drei bestehenden Aufrufe von
+- [x] `src/meals/domain/announcements.test.ts`: die drei bestehenden Aufrufe von
       `weekPlanTransferAnnouncement` (Zeile 287-306) um `suppliedDays` von `0`
       erweitern — ihr Ergebnis bleibt unverändert. Fehlschlagende Tests ergänzen
       für mehrere gedeckte Tage, für genau einen Tag, für den Alles-gedeckt-Fall
@@ -623,11 +623,11 @@ abgedeckt hat.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver: Woche mit einem gedeckten und einem offenen
+- [x] Auf dem Gerät mit VoiceOver: Woche mit einem gedeckten und einem offenen
       Gericht planen, `Auf die Einkaufsliste` drücken und hören, dass die Ansage
       die Artikel **und** die gedeckten Tage nennt; anschließend auf der
       Vorräte-Seite prüfen, dass die Anzahl unverändert ist.
-- [ ] Dasselbe mit einem Gericht, das bei Vorrat 1 an zwei Tagen steht: seine
+- [x] Dasselbe mit einem Gericht, das bei Vorrat 1 an zwei Tagen steht: seine
       Zutaten stehen einmal auf der Einkaufsliste.
 
 ## Notizen zur Umsetzung
