@@ -5,7 +5,7 @@ branch: main
 story: MZP-014
 topic: "Breitere Button-Rahmen"
 tags: [plan, shared, ui, css, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-014 — Breitere Button-Rahmen
@@ -20,20 +20,20 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-22.
 
 ## Akzeptanzkriterien
 
-- [ ] Jeder Button traegt einen 3px-Rahmen: gefuellte in `--ink`, leise in
+- [x] Jeder Button traegt einen 3px-Rahmen: gefuellte in `--ink`, leise in
       `--accentLine`, die aktive Navigationsschaltflaeche in `--ink`, deaktivierte in
       `--disabled`.
-- [ ] Eingabefelder behalten ihren 1px-Rahmen in `--fieldBorder` und bleiben dadurch von
+- [x] Eingabefelder behalten ihren 1px-Rahmen in `--fieldBorder` und bleiben dadurch von
       den leisen Buttons unterscheidbar.
-- [ ] Der Haken-Winkel der Checkbox bleibt unveraendert bei 3px Kante und 5px Haken.
-- [ ] Der Fokusring ist 4px `--ink` an jedem fokussierbaren Element — Buttons, Felder,
+- [x] Der Haken-Winkel der Checkbox bleibt unveraendert bei 3px Kante und 5px Haken.
+- [x] Der Fokusring ist 4px `--ink` an jedem fokussierbaren Element — Buttons, Felder,
       Checkbox und Seitenueberschrift. Die Abstaende bleiben, wie sie sind: 2px
       allgemein, 4px an der Ueberschrift.
 - [x] In der Wochenplan-Zeile sind Eingabefeld und Zufalls-Knopf gleich hoch und ihre
       Kanten schliessen buendig ab.
-- [ ] Die untere Knopfleiste behaelt ihre Hoehe von `3rem`; `--bottomBarHeight` und das
+- [x] Die untere Knopfleiste behaelt ihre Hoehe von `3rem`; `--bottomBarHeight` und das
       Seiten-Polster bleiben richtig, der Inhalt der Knoepfe laeuft nicht ueber.
-- [ ] Die Aenderung gilt in beiden Farbmodi; `test/palette.test.ts` bleibt gruen, es
+- [x] Die Aenderung gilt in beiden Farbmodi; `test/palette.test.ts` bleibt gruen, es
       steht also weiterhin kein Farbwert ausserhalb der Palette.
 
 ## Wesentliche Entscheidungen und Abwaegungen
@@ -300,19 +300,19 @@ Wochenplan-Zeile 4px niedriger ist als der Knopf daneben.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet im hellen Modus: die Kante ist an allen Buttons deutlich staerker —
+- [x] Auf dem Geraet im hellen Modus: die Kante ist an allen Buttons deutlich staerker —
       untere Knopfleiste, "Zurueck", "Speichern", das `+` im Seitenkopf, die Icon-Knoepfe
       am Gericht, der Mengen-Stepper am Vorrat.
-- [ ] Die leisen Buttons — Navigationsleiste, Vorschlaege, Gericht- und Vorratsnamen —
+- [x] Die leisen Buttons — Navigationsleiste, Vorschlaege, Gericht- und Vorratsnamen —
       tragen dieselbe Staerke in Rose und sind weiterhin klar von den Eingabefeldern mit
       ihrer duennen grauen Kante zu unterscheiden.
-- [ ] Im Wochenplan stehen Feld und Zufalls-Knopf jeder Zeile buendig; der Text im Feld
+- [x] Im Wochenplan stehen Feld und Zufalls-Knopf jeder Zeile buendig; der Text im Feld
       bleibt mittig.
-- [ ] Die untere Knopfleiste ist unveraendert hoch, ihre Beschriftung und die Icons
+- [x] Die untere Knopfleiste ist unveraendert hoch, ihre Beschriftung und die Icons
       sitzen mittig und werden nicht angeschnitten.
-- [ ] Mit der Tastatur durch eine Seite wandern: der Fokusring ist auf gefuellten wie auf
+- [x] Mit der Tastatur durch eine Seite wandern: der Fokusring ist auf gefuellten wie auf
       leisen Buttons als eigener, staerkerer Strich vom Rahmen zu unterscheiden.
-- [ ] Denselben Durchgang mit eingeschalteter Farbumkehr.
+- [x] Denselben Durchgang mit eingeschalteter Farbumkehr.
 
 ## Notizen zur Umsetzung
 
@@ -324,6 +324,9 @@ lief also andersherum und bestand schon vor dieser Aenderung (64 gegen 44). Folg
 `align-self: stretch` am Feld allein haette nichts bewirkt, weil das Feld bereits das
 hoechste Element der Zeile ist. Jetzt dehnen sich beide Elemente. Ausgangslage, Zielbild
 und Entscheidung 4 sind entsprechend berichtigt.
+
+**2026-09-22 — am Geraet geprueft.** Der Durchgang im hellen Modus und mit Farbumkehr
+war in Ordnung; die manuelle Verifikation ist abgehakt, der Plan ist abgeschlossen.
 
 **Die E2E-Suite ist im Vorratsbereich instabil.** In zwei vollen Laeufen fielen wechselnde
 Vorrats-Tests mit einem zu kleinen Zaehler aus ("Linsensuppe, 1." statt "4."); gezielte
