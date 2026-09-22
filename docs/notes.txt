@@ -98,3 +98,4 @@ b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zusta
 - Kategorie-Verwaltung in Einstellungen als dritte Option
 - 3 Zeilen pro Tag im Wochenplan
 - Button-Farben anpassen
+- Mengenpicker auf Einkaufsliste
