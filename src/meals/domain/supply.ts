@@ -90,6 +90,13 @@ export function supplyOf(
   return supplies.find((supply) => supply.mealId === mealId) ?? null
 }
 
+export function isInSupply(
+  supplies: readonly Supply[],
+  mealId: MealId,
+): boolean {
+  return supplyOf(supplies, mealId) !== null
+}
+
 export function withSupply(
   supplies: readonly Supply[],
   written: Supply,

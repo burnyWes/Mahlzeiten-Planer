@@ -171,6 +171,7 @@ export function SignedInApp({
       <WeekPlanArea
         meals={meals.meals}
         weekPlanning={weekPlanning}
+        supplies={supplies.supplies}
         navigation={navigation}
         announce={announce}
         random={random}

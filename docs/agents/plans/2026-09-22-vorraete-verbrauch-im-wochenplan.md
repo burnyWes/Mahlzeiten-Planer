@@ -235,9 +235,9 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/supply.test.ts`: fehlschlagende Tests für `isInSupply` —
+- [x] `src/meals/domain/supply.test.ts`: fehlschlagende Tests für `isInSupply` —
       wahr bei vorhandenem Vorrat, falsch bei unbekanntem Gericht.
-- [ ] `src/meals/domain/supply.ts`: `isInSupply` ergänzen.
+- [x] `src/meals/domain/supply.ts`: `isInSupply` ergänzen.
       ```ts
       export function isInSupply(
         supplies: readonly Supply[],
@@ -246,9 +246,9 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
         return supplyOf(supplies, mealId) !== null
       }
       ```
-- [ ] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für `isSuppliedOn` —
+- [x] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für `isSuppliedOn` —
       gedeckter Tag, geplanter Tag ohne Vorrat, leerer Tag.
-- [ ] `src/meals/domain/weekPlan.ts`: `isSuppliedOn` ergänzen; `Supply` und
+- [x] `src/meals/domain/weekPlan.ts`: `isSuppliedOn` ergänzen; `Supply` und
       `isInSupply` aus `./supply` importieren (gleicher Kontext, gleiche Schicht).
       ```ts
       export function isSuppliedOn(
@@ -261,12 +261,12 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
         return planned !== null && isInSupply(supplies, planned.id)
       }
       ```
-- [ ] `src/meals/domain/announcements.test.ts`: fehlschlagende Tests für
+- [x] `src/meals/domain/announcements.test.ts`: fehlschlagende Tests für
       `weekdayFieldLabel` (`Montag` / `Montag, im Vorrat`) und für
       `dayPlannedAnnouncement` in beiden Formen. Der bestehende Test in Zeile 263-269
       ruft `dayPlannedAnnouncement('monday', bolognese)` mit zwei Argumenten und
       bekommt das dritte.
-- [ ] `src/meals/domain/announcements.ts`: `weekdayFieldLabel` ergänzen und
+- [x] `src/meals/domain/announcements.ts`: `weekdayFieldLabel` ergänzen und
       `dayPlannedAnnouncement` um `inSupply` erweitern.
       ```ts
       export function weekdayFieldLabel(day: Weekday, inSupply: boolean): string {
@@ -282,7 +282,7 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
         return inSupply ? `${planned}, im Vorrat.` : `${planned}.`
       }
       ```
-- [ ] `src/meals/ui/WeekPlanRow.tsx`: `supplies` als Prop entgegennehmen, das
+- [x] `src/meals/ui/WeekPlanRow.tsx`: `supplies` als Prop entgegennehmen, das
       geplante Gericht einmal bestimmen, Icon-Spalte vor dem Feld setzen und das
       Feld-Label aus `weekdayFieldLabel` ziehen.
       ```tsx
@@ -296,12 +296,12 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
       </span>
       <input aria-label={weekdayFieldLabel(day, inSupply)} … />
       ```
-- [ ] `src/index.css`: `.supplyMark` als feste Spalte neben `.weekday`, Breite wie
+- [x] `src/index.css`: `.supplyMark` als feste Spalte neben `.weekday`, Breite wie
       `.buttonIcon` (24 px), `flex: none`, mittig — der Platz bleibt auch ohne Icon
       stehen.
-- [ ] `src/meals/ui/WeekPlanPage.tsx`: `supplies` als Prop entgegennehmen und an
+- [x] `src/meals/ui/WeekPlanPage.tsx`: `supplies` als Prop entgegennehmen und an
       jede `WeekPlanRow` durchreichen.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `supplies: readonly Supply[]` als Prop
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `supplies: readonly Supply[]` als Prop
       entgegennehmen und das Wählen eines Gerichts über eine eigene Funktion
       führen, die ansagt; `shuffleDay` nutzt sie mit.
       ```tsx
@@ -320,13 +320,13 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
       ```
       Das Leeren eines Feldes ruft `chooseMeal(day, null)` — `find` liefert dann
       `undefined` und es wird nichts angesagt.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `onChooseMeal={weekPlanning.chooseMeal}` auf
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `onChooseMeal={weekPlanning.chooseMeal}` auf
       `onChooseMeal={chooseMeal}` umstellen — ohne das bleibt die Vorschlagsauswahl
       still.
-- [ ] `src/meals/ui/WeekPlanRow.tsx`: den dann unbenutzten Import `weekdayName`
+- [x] `src/meals/ui/WeekPlanRow.tsx`: den dann unbenutzten Import `weekdayName`
       entfernen, sonst wird `npm run lint` rot. `weekdayAbbreviation`,
       `randomMealLabel` und `mealSuggestionsLabel` bleiben.
-- [ ] `src/SignedInApp.tsx`: `supplies={supplies.supplies}` an `WeekPlanArea`
+- [-] `src/SignedInApp.tsx`: `supplies={supplies.supplies}` an `WeekPlanArea`
       übergeben.
 - [ ] `src/meals/ui/WeekPlanArea.test.tsx`: `renderWeekPlanArea` um einen Parameter
       für die Vorräte erweitern; Tests für die Schneeflocke am gedeckten Tag, für
@@ -339,7 +339,7 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
       Auswahl gedeckt — vorher und direkt nach `userEvent.clear` heisst das Feld
       weiterhin `Montag`. Die neuen Tests greifen den gedeckten Tag deshalb nur in
       den Prüfungen mit `Montag, im Vorrat`, nicht beim Tippen.
-- [ ] `src/SignedInApp.test.tsx`: den Test
+- [x] `src/SignedInApp.test.tsx`: den Test
       `says nothing of its own about a day that was planned by hand` durch einen
       ersetzen, der die neue Ansage `Montag, Bolognese.` erwartet; einen Test
       ergänzen, der bei einem Vorrat für Bolognese `Montag, Bolognese, im Vorrat.`
@@ -347,15 +347,15 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/supply.test.ts` — `isInSupply` grün
-- [ ] `npx vitest run src/meals/domain/weekPlan.test.ts` — `isSuppliedOn` grün
-- [ ] `npx vitest run src/meals/domain/announcements.test.ts` — Label und
+- [x] `npx vitest run src/meals/domain/supply.test.ts` — `isInSupply` grün
+- [x] `npx vitest run src/meals/domain/weekPlan.test.ts` — `isSuppliedOn` grün
+- [x] `npx vitest run src/meals/domain/announcements.test.ts` — Label und
       Tages-Ansage grün
-- [ ] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` — Schneeflocke, Label
+- [x] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` — Schneeflocke, Label
       und Ansagen grün
-- [ ] `npx vitest run src/SignedInApp.test.tsx` — angepasste Wochenplan-Tests grün,
+- [x] `npx vitest run src/SignedInApp.test.tsx` — angepasste Wochenplan-Tests grün,
       insbesondere `has no accessibility violations on the week plan`
-- [ ] `npm run lint` und `npm run test` laufen durch (Architekturtest
+- [x] `npm run lint` und `npm run test` laufen durch (Architekturtest
       `test/domainLayerBoundary.test.ts` eingeschlossen)
 
 **Manuelle Verifikation**:
@@ -503,7 +503,13 @@ abgedeckt hat.
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+- Phase 1: In `WeekPlanRow` bleibt es bei `plannedName` aus `shownMealOn`; die im
+  Plan skizzierte Zwischenvariable `planned` entfällt, weil `isSuppliedOn` das
+  geplante Gericht selbst bestimmt und ein nur zum Namen genutztes Objekt nichts
+  aussagt.
+- Phase 1: `renderWeekPlanArea` bekommt die Vorräte als dritten Parameter vor
+  `random` — `random` wurde von keinem Test gesetzt, so bleiben alle Aufrufe
+  unverändert.
 
 ## Verweise
 

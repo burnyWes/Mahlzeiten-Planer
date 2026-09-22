@@ -20,6 +20,7 @@ import {
   supplyChangedAnnouncement,
   supplyRemovedAnnouncement,
   weekdayAbbreviation,
+  weekdayFieldLabel,
   weekdayName,
   weekPlanHeading,
   weekPlanShuffledAnnouncement,
@@ -260,10 +261,26 @@ describe('randomMealLabel', () => {
   })
 })
 
+describe('weekdayFieldLabel', () => {
+  it('names the weekday of a day without a supply', () => {
+    expect(weekdayFieldLabel('monday', false)).toBe('Montag')
+  })
+
+  it('adds the supply to the weekday of a covered day', () => {
+    expect(weekdayFieldLabel('monday', true)).toBe('Montag, im Vorrat')
+  })
+})
+
 describe('dayPlannedAnnouncement', () => {
   it('says which meal landed on which day', () => {
-    expect(dayPlannedAnnouncement('monday', bolognese)).toBe(
+    expect(dayPlannedAnnouncement('monday', bolognese, false)).toBe(
       'Montag, Spaghetti Bolognese.',
+    )
+  })
+
+  it('says that the meal of the day is kept in store', () => {
+    expect(dayPlannedAnnouncement('monday', bolognese, true)).toBe(
+      'Montag, Spaghetti Bolognese, im Vorrat.',
     )
   })
 })

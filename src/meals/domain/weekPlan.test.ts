@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Meal } from './meal'
+import type { Supply } from './supply'
 import {
   EMPTY_WEEK_PLAN,
+  isSuppliedOn,
   mealsWithoutItems,
   plannedDayCount,
   plannedMeals,
@@ -21,6 +23,10 @@ const soup = meal('soup', 'Suppe')
 const pizza = meal('pizza', 'Pizza', [{ name: 'Mehl', quantity: null }])
 
 const knownMeals = [bolognese, soup, pizza]
+
+function supply(mealId: string, count: number): Supply {
+  return { mealId, count }
+}
 
 describe('WEEKDAYS', () => {
   it('runs from Monday to Sunday', () => {
@@ -132,6 +138,30 @@ describe('plannedDayCount', () => {
     )
 
     expect(plannedDayCount(plan, knownMeals)).toBe(1)
+  })
+})
+
+describe('isSuppliedOn', () => {
+  it('reports a day whose meal is kept in store', () => {
+    const plan = withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza')
+
+    expect(isSuppliedOn(plan, 'monday', knownMeals, [supply('pizza', 1)])).toBe(
+      true,
+    )
+  })
+
+  it('reports a planned day without a supply as not covered', () => {
+    const plan = withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza')
+
+    expect(isSuppliedOn(plan, 'monday', knownMeals, [supply('soup', 1)])).toBe(
+      false,
+    )
+  })
+
+  it('reports an empty day as not covered', () => {
+    expect(
+      isSuppliedOn(EMPTY_WEEK_PLAN, 'monday', knownMeals, [supply('pizza', 1)]),
+    ).toBe(false)
   })
 })
 

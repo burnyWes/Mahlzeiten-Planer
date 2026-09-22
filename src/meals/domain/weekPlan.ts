@@ -1,4 +1,5 @@
 import type { Meal, MealId } from './meal'
+import { isInSupply, type Supply } from './supply'
 
 export const WEEKDAYS = [
   'monday',
@@ -32,6 +33,16 @@ export function shownMealOn(
   meals: readonly Meal[],
 ): Meal | null {
   return meals.find((meal) => meal.id === plan[day]) ?? null
+}
+
+export function isSuppliedOn(
+  plan: WeekPlan,
+  day: Weekday,
+  meals: readonly Meal[],
+  supplies: readonly Supply[],
+): boolean {
+  const planned = shownMealOn(plan, day, meals)
+  return planned !== null && isInSupply(supplies, planned.id)
 }
 
 export function plannedMeals(

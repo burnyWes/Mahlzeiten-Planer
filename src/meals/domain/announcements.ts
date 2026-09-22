@@ -118,8 +118,17 @@ export function randomMealLabel(day: Weekday): string {
   return `Zufallsgericht für ${weekdayName(day)}`
 }
 
-export function dayPlannedAnnouncement(day: Weekday, meal: NewMeal): string {
-  return `${weekdayName(day)}, ${meal.name}.`
+export function weekdayFieldLabel(day: Weekday, inSupply: boolean): string {
+  return inSupply ? `${weekdayName(day)}, im Vorrat` : weekdayName(day)
+}
+
+export function dayPlannedAnnouncement(
+  day: Weekday,
+  meal: NewMeal,
+  inSupply: boolean,
+): string {
+  const planned = `${weekdayName(day)}, ${meal.name}`
+  return inSupply ? `${planned}, im Vorrat.` : `${planned}.`
 }
 
 export function weekPlanShuffledAnnouncement(): string {

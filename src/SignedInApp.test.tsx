@@ -263,7 +263,7 @@ describe('SignedInApp', () => {
     expect(weekPlanClient.storedWeekPlan().monday).toBe('bolognese')
   })
 
-  it('says nothing of its own about a day that was planned by hand', async () => {
+  it('says which meal was planned by hand on which day', async () => {
     const { announcements } = renderSignedInApp(
       [],
       [meal('bolognese', 'Bolognese')],
@@ -272,7 +272,26 @@ describe('SignedInApp', () => {
     await goToArea('Wochenplan')
     await planBologneseOnMonday()
 
-    expect(announcements).toEqual([])
+    expect(announcements).toEqual(['Montag, Bolognese.'])
+  })
+
+  it('says that the meal planned by hand is kept in store', async () => {
+    const { announcements } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 2 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await planBologneseOnMonday()
+
+    expect(announcements).toEqual(['Montag, Bolognese, im Vorrat.'])
+    expect(
+      screen.getByRole('textbox', { name: 'Montag, im Vorrat' }),
+    ).toHaveValue('Bolognese')
   })
 
   it('gathers the items of the planned meals on the shopping list', async () => {

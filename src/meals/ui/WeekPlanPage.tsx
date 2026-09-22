@@ -3,6 +3,7 @@ import { BottomBar } from '../../shared/ui/BottomBar'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { weekPlanHeading } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
+import type { Supply } from '../domain/supply'
 import {
   plannedDayCount,
   WEEKDAYS,
@@ -17,6 +18,7 @@ type WeekPlanPageProps = {
   navigation: ReactNode
   meals: readonly Meal[]
   plan: WeekPlan
+  supplies: readonly Supply[]
   onChooseMeal: (day: Weekday, id: MealId | null) => void
   onShuffleDay: (day: Weekday) => void
   onShuffleWeek: () => void
@@ -27,6 +29,7 @@ export function WeekPlanPage({
   navigation,
   meals,
   plan,
+  supplies,
   onChooseMeal,
   onShuffleDay,
   onShuffleWeek,
@@ -52,6 +55,7 @@ export function WeekPlanPage({
               day={day}
               plan={plan}
               meals={meals}
+              supplies={supplies}
               onChooseMeal={onChooseMeal}
               onShuffleDay={onShuffleDay}
             />

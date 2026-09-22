@@ -10,6 +10,7 @@ import {
 import type { MealsClient } from '../api/mealsClient'
 import type { Meal } from '../domain/meal'
 import type { RandomSource } from '../domain/randomPlanning'
+import type { Supply } from '../domain/supply'
 import {
   EMPTY_WEEK_PLAN,
   WEEKDAYS,
@@ -29,9 +30,14 @@ const pizza = meal('pizza', 'Pizza')
 const soup = meal('soup', 'Ährensuppe')
 const mushrooms = meal('mushrooms', 'Crispy Pilz')
 
+function supply(mealId: string, count: number): Supply {
+  return { mealId, count }
+}
+
 type WeekPlanAreaUnderTestProps = {
   mealsClient: MealsClient
   weekPlanClient: InMemoryWeekPlanClient
+  supplies: readonly Supply[]
   announce: (text: string) => void
   random: RandomSource
   onAddToShoppingList: (planned: readonly Meal[]) => void
@@ -40,6 +46,7 @@ type WeekPlanAreaUnderTestProps = {
 function WeekPlanAreaUnderTest({
   mealsClient,
   weekPlanClient,
+  supplies,
   announce,
   random,
   onAddToShoppingList,
@@ -48,6 +55,7 @@ function WeekPlanAreaUnderTest({
     <WeekPlanArea
       meals={useMeals(mealsClient).meals}
       weekPlanning={useWeekPlan(weekPlanClient)}
+      supplies={supplies}
       navigation={<div data-testid="navigation" />}
       announce={announce}
       random={random}
@@ -63,6 +71,7 @@ function alwaysFirst(): number {
 function renderWeekPlanArea(
   initialMeals: readonly Meal[] = [],
   initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  supplies: readonly Supply[] = [],
   random: RandomSource = alwaysFirst,
 ) {
   const weekPlanClient = createInMemoryWeekPlanClient(initialPlan)
@@ -72,6 +81,7 @@ function renderWeekPlanArea(
     <WeekPlanAreaUnderTest
       mealsClient={createInMemoryMealsClient(initialMeals)}
       weekPlanClient={weekPlanClient}
+      supplies={supplies}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -121,9 +131,17 @@ function noSuggestionsFor(name: string) {
   return screen.queryByRole('list', { name: `Vorschläge für ${name}` })
 }
 
+function weekdayRows() {
+  return within(screen.getByRole('main')).getAllByRole('listitem')
+}
+
 function shownWeekdays() {
-  return within(screen.getByRole('main'))
-    .getAllByRole('listitem')
+  return weekdayRows().map((row) => row.querySelector('.weekday')?.textContent)
+}
+
+function markedWeekdays() {
+  return weekdayRows()
+    .filter((row) => row.querySelector('.supplyMark svg') !== null)
     .map((row) => row.querySelector('.weekday')?.textContent)
 }
 
@@ -161,6 +179,62 @@ describe('WeekPlanArea', () => {
     expect(weekdays.map((name) => dayField(name).tagName)).toEqual(
       weekdays.map(() => 'INPUT'),
     )
+  })
+
+  it('marks every day whose meal is kept in store', () => {
+    renderWeekPlanArea(
+      [bolognese, pizza],
+      withMealOnDay(
+        withMealOnDay(
+          withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+          'tuesday',
+          'pizza',
+        ),
+        'wednesday',
+        'bolognese',
+      ),
+      [supply('bolognese', 2)],
+    )
+
+    expect(markedWeekdays()).toEqual(['Mo.', 'Mi.'])
+  })
+
+  it('names the field of a covered day after the supply', () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    expect(dayField('Montag, im Vorrat')).toHaveValue('Bolognese')
+    expect(dayField('Dienstag')).toHaveValue('')
+  })
+
+  it('keeps the room for the mark in every row', () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    expect(
+      weekdayRows().map((row) => row.querySelector('.supplyMark') !== null),
+    ).toEqual(WEEKDAYS.map(() => true))
+  })
+
+  it('drops the mark when the day turns to a meal without a supply', async () => {
+    renderWeekPlanArea(
+      [bolognese, pizza],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    await userEvent.clear(dayField('Montag, im Vorrat'))
+    await userEvent.type(dayField('Montag'), 'pi')
+    await userEvent.click(suggestionsFor('Montag')[0])
+
+    expect(markedWeekdays()).toEqual([])
+    expect(dayField('Montag')).toHaveValue('Pizza')
   })
 
   it('suggests the meals that match what was typed', async () => {
@@ -271,6 +345,52 @@ describe('WeekPlanArea', () => {
     expect(weekPlanClient.storedWeekPlan().monday).toBe('pizza')
     expect(dayField('Montag')).toHaveValue('Pizza')
     expect(announcements).toEqual(['Montag, Pizza.'])
+  })
+
+  it('says that the rolled meal of the day is kept in store', async () => {
+    const { announcements } = renderWeekPlanArea([pizza], EMPTY_WEEK_PLAN, [
+      supply('pizza', 1),
+    ])
+
+    await shuffleDay('Montag')
+
+    expect(announcements).toEqual(['Montag, Pizza, im Vorrat.'])
+    expect(markedWeekdays()).toEqual(['Mo.'])
+  })
+
+  it('says which meal a suggestion put on the day', async () => {
+    const { announcements } = renderWeekPlanArea([bolognese, pizza])
+
+    await typeIntoDay('Mittwoch', 'pi')
+    await userEvent.click(suggestionsFor('Mittwoch')[0])
+
+    expect(announcements).toEqual(['Mittwoch, Pizza.'])
+  })
+
+  it('says that the meal of a suggestion is kept in store', async () => {
+    const { announcements } = renderWeekPlanArea(
+      [bolognese, pizza],
+      EMPTY_WEEK_PLAN,
+      [supply('pizza', 3)],
+    )
+
+    await typeIntoDay('Mittwoch', 'pi')
+    await userEvent.click(suggestionsFor('Mittwoch')[0])
+
+    expect(announcements).toEqual(['Mittwoch, Pizza, im Vorrat.'])
+  })
+
+  it('says nothing when a field is emptied', async () => {
+    const { announcements } = renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    await userEvent.clear(dayField('Montag, im Vorrat'))
+
+    expect(announcements).toEqual([])
+    expect(dayField('Montag')).toHaveValue('')
   })
 
   it('leaves the other days alone while it rolls one', async () => {
@@ -420,6 +540,17 @@ describe('WeekPlanArea', () => {
       withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
     )
 
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on a plan with a supply', async () => {
+    const { rendered } = renderWeekPlanArea(
+      [bolognese, pizza],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    expect(dayField('Montag, im Vorrat')).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

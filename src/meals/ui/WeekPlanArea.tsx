@@ -3,12 +3,13 @@ import {
   dayPlannedAnnouncement,
   weekPlanShuffledAnnouncement,
 } from '../domain/announcements'
-import type { Meal } from '../domain/meal'
+import type { Meal, MealId } from '../domain/meal'
 import {
   filledWeekPlan,
   pickMealForDay,
   type RandomSource,
 } from '../domain/randomPlanning'
+import { isInSupply, type Supply } from '../domain/supply'
 import { plannedMeals, type Weekday } from '../domain/weekPlan'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
@@ -16,6 +17,7 @@ import type { WeekPlanning } from './useWeekPlan'
 type WeekPlanAreaProps = {
   meals: readonly Meal[]
   weekPlanning: WeekPlanning
+  supplies: readonly Supply[]
   navigation: ReactNode
   announce: (text: string) => void
   random: RandomSource
@@ -25,16 +27,25 @@ type WeekPlanAreaProps = {
 export function WeekPlanArea({
   meals,
   weekPlanning,
+  supplies,
   navigation,
   announce,
   random,
   onAddToShoppingList,
 }: WeekPlanAreaProps) {
+  function chooseMeal(day: Weekday, id: MealId | null) {
+    weekPlanning.chooseMeal(day, id)
+    const chosen = meals.find((meal) => meal.id === id)
+    if (chosen === undefined) return
+    announce(
+      dayPlannedAnnouncement(day, chosen, isInSupply(supplies, chosen.id)),
+    )
+  }
+
   function shuffleDay(day: Weekday) {
     const picked = pickMealForDay(meals, weekPlanning.plan, day, random)
     if (picked === null) return
-    weekPlanning.chooseMeal(day, picked.id)
-    announce(dayPlannedAnnouncement(day, picked))
+    chooseMeal(day, picked.id)
   }
 
   function shuffleWeek() {
@@ -47,7 +58,8 @@ export function WeekPlanArea({
       navigation={navigation}
       meals={meals}
       plan={weekPlanning.plan}
-      onChooseMeal={weekPlanning.chooseMeal}
+      supplies={supplies}
+      onChooseMeal={chooseMeal}
       onShuffleDay={shuffleDay}
       onShuffleWeek={shuffleWeek}
       onAddToShoppingList={() =>

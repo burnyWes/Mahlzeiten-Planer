@@ -370,6 +370,14 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   min-width: 2.5rem;
 }
 
+.supplyMark {
+  flex: none;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .weekPlanChoice input {
   flex: 1;
   min-width: 0;

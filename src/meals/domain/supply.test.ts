@@ -5,6 +5,7 @@ import {
   createSupply,
   InvalidSupply,
   isFull,
+  isInSupply,
   isLastPortion,
   recountedSupply,
   suppliedMeals,
@@ -186,6 +187,16 @@ describe('supplyOf', () => {
 
   it('finds nothing for a meal without a supply', () => {
     expect(supplyOf([supply('bolognese', 3)], 'soup')).toBeNull()
+  })
+})
+
+describe('isInSupply', () => {
+  it('reports a meal that is kept in store', () => {
+    expect(isInSupply([supply('bolognese', 1)], 'bolognese')).toBe(true)
+  })
+
+  it('reports a meal without a supply as not kept in store', () => {
+    expect(isInSupply([supply('bolognese', 1)], 'soup')).toBe(false)
   })
 })
 
