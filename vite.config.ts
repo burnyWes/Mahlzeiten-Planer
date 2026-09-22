@@ -22,7 +22,7 @@ export default defineConfig({
         scope: applicationBasePath,
         display: 'standalone',
         orientation: 'portrait',
-        theme_color: '#14532d',
+        theme_color: '#ebacd2',
         background_color: '#ffffff',
         icons: [
           {

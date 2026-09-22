@@ -8,7 +8,8 @@
   line-height: 1.5;
   --surface: #ffffff;
   --ink: #000000;
-  --accent: #14532d;
+  --accent: #ebacd2;
+  --accentLine: #a63f7d;
   --divider: #d1d5db;
   --fieldBorder: #4b5563;
   --disabled: #6b7280;
@@ -21,7 +22,8 @@
   color-scheme: dark;
   --surface: #000000;
   --ink: #ffffff;
-  --accent: #ebacd2;
+  --accent: #14532d;
+  --accentLine: #59c082;
   --divider: #2e2a24;
   --fieldBorder: #b4aa9c;
   --disabled: #948d7f;
@@ -77,8 +79,6 @@ body {
 
 .navigationBar button {
   width: 100%;
-  background-color: var(--surface);
-  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,7 +86,7 @@ body {
 
 .navigationBar button[aria-current='page'] {
   background-color: var(--accent);
-  color: var(--surface);
+  border-color: var(--ink);
 }
 
 button,
@@ -97,7 +97,7 @@ textarea {
 }
 
 :focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -122,16 +122,24 @@ textarea {
 }
 
 button {
-  border: 1px solid var(--accent);
+  border: 1px solid var(--ink);
   border-radius: 6px;
   padding: 0.5rem 1rem;
   background-color: var(--accent);
-  color: var(--surface);
+  color: var(--ink);
+}
+
+.navigationBar button,
+.suggestionList button,
+.mealNameButton {
+  background-color: var(--surface);
+  border-color: var(--accentLine);
 }
 
 button:disabled {
   background-color: var(--disabled);
   border-color: var(--disabled);
+  color: var(--surface);
 }
 
 .failure {
@@ -189,8 +197,6 @@ button:disabled {
   width: 100%;
   text-align: left;
   overflow-wrap: anywhere;
-  background-color: var(--surface);
-  color: var(--accent);
 }
 
 .quantityFields {
@@ -303,8 +309,6 @@ h2 {
   min-width: 0;
   text-align: left;
   overflow-wrap: anywhere;
-  background-color: var(--surface);
-  color: var(--accent);
 }
 
 .bottomBar {
@@ -392,7 +396,7 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
 }
 
 h1:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--ink);
   outline-offset: 4px;
 }
 

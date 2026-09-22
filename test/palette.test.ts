@@ -55,6 +55,68 @@ function complementOf(colour: string) {
   return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
 }
 
+const TEXT_ON_ITS_BACKGROUND = [
+  ['--ink', '--accent'],
+  ['--surface', '--disabled'],
+  ['--ink', '--surface'],
+  ['--failure', '--surface'],
+]
+
+const LINES_AGAINST_THEIR_GROUND = [
+  ['--ink', '--accent'],
+  ['--ink', '--surface'],
+  ['--accentLine', '--surface'],
+  ['--fieldBorder', '--surface'],
+  ['--disabled', '--surface'],
+  ['--checkMark', '--surface'],
+]
+
+const READABLE_TEXT = 4.5
+const VISIBLE_LINE = 3
+
+function luminanceOfChannel(channel: number) {
+  const portion = channel / 255
+  return portion <= 0.03928
+    ? portion / 12.92
+    : ((portion + 0.055) / 1.055) ** 2.4
+}
+
+function relativeLuminance(colour: string) {
+  const [red, green, blue] = [1, 3, 5].map((start) =>
+    luminanceOfChannel(parseInt(colour.slice(start, start + 2), 16)),
+  )
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+}
+
+function contrastOf(colour: string, ground: string) {
+  const [brighter, darker] = [
+    relativeLuminance(colour),
+    relativeLuminance(ground),
+  ].sort((one, other) => other - one)
+  return (brighter + 0.05) / (darker + 0.05)
+}
+
+function tooWeak(
+  palette: Map<string, string>,
+  combinations: string[][],
+  least: number,
+) {
+  return combinations
+    .filter(([colour, ground]) => {
+      const front = palette.get(colour)
+      const back = palette.get(ground)
+      return !front || !back || contrastOf(front, back) < least
+    })
+    .map(([colour, ground]) => `${colour} on ${ground}`)
+}
+
+function weakCombinations(palette: Map<string, string>) {
+  return [
+    ...tooWeak(palette, TEXT_ON_ITS_BACKGROUND, READABLE_TEXT),
+    ...tooWeak(palette, LINES_AGAINST_THEIR_GROUND, VISIBLE_LINE),
+  ]
+}
+
 describe('palette', () => {
   it('defines every colour in the palette', () => {
     expect(rulesOutsideThePalette(stylesheet)).not.toMatch(COLOUR)
@@ -70,6 +132,15 @@ describe('palette', () => {
     inverted.forEach((colour, token) => {
       expect([token, colour]).toEqual([token, complementOf(light.get(token)!)])
     })
+  })
+
+  it('keeps every combination the app draws readable', () => {
+    const [light, inverted] = paletteBlocks(stylesheet).map(([, , block]) =>
+      colourTokens(block),
+    )
+
+    expect(weakCombinations(light)).toEqual([])
+    expect(weakCombinations(inverted)).toEqual([])
   })
 
   it('applies the stored preference before the first paint', () => {
