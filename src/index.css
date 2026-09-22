@@ -77,6 +77,8 @@ body {
 
 .navigationBar button {
   width: 100%;
+  background-color: var(--surface);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,13 +125,13 @@ button {
   border: 1px solid var(--accent);
   border-radius: 6px;
   padding: 0.5rem 1rem;
-  background-color: var(--surface);
-  color: var(--accent);
+  background-color: var(--accent);
+  color: var(--surface);
 }
 
 button:disabled {
+  background-color: var(--disabled);
   border-color: var(--disabled);
-  color: var(--disabled);
 }
 
 .failure {
@@ -187,6 +189,8 @@ button:disabled {
   width: 100%;
   text-align: left;
   overflow-wrap: anywhere;
+  background-color: var(--surface);
+  color: var(--accent);
 }
 
 .quantityFields {
@@ -299,6 +303,8 @@ h2 {
   min-width: 0;
   text-align: left;
   overflow-wrap: anywhere;
+  background-color: var(--surface);
+  color: var(--accent);
 }
 
 .bottomBar {
