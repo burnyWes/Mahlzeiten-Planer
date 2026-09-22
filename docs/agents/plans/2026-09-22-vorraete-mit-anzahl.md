@@ -5,7 +5,7 @@ branch: main
 story: MZP-011
 topic: "Vorraete mit Anzahl je Gericht"
 tags: [plan, meals, supplies, firestore, ui]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-011 — Vorraete mit Anzahl je Gericht
@@ -797,13 +797,13 @@ Fall, dass die Zeile beim Vermindern verschwindet.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet: die drei Bedienelemente der Zeile lassen sich mit dem Daumen
+- [x] Auf dem Geraet: die drei Bedienelemente der Zeile lassen sich mit dem Daumen
       sicher treffen, auch bei langem Gerichtnamen; nichts bricht aus der Zeile.
-- [ ] VoiceOver liest beim Wischen "Bolognese, Taste", "Weniger, Bolognese, Taste",
+- [x] VoiceOver liest beim Wischen "Bolognese, Taste", "Weniger, Bolognese, Taste",
       "5", "Mehr, Bolognese, Taste"; jedes Antippen wird mit "Bolognese, 6." quittiert.
-- [ ] Bei Anzahl 1 auf "Weniger": die Ansage kommt und der Fokus steht auf dem
+- [x] Bei Anzahl 1 auf "Weniger": die Ansage kommt und der Fokus steht auf dem
       naechsten Gericht — VoiceOver bleibt an der Stelle der Liste.
-- [ ] Mit invertierten Farben sind `−`, Zahl und `+` gut lesbar.
+- [x] Mit invertierten Farben sind `−`, Zahl und `+` gut lesbar.
 
 ## Notizen zur Umsetzung
 
