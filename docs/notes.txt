@@ -94,3 +94,6 @@ b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zusta
   gruen, und im selben Lauf war auch der bekannt wackelige Test "sign in, add, check off
   and clean up" rot. Der Test wartet jetzt vor der Uebergabe auf den Server; die Ursache
   ist damit nicht behoben, nur aus dem Test herausgehalten.
+- Kategorien in Gerichten
+- Kategorie-Verwaltung in Einstellungen als dritte Option
+- 3 Zeilen pro Tag im Wochenplan
