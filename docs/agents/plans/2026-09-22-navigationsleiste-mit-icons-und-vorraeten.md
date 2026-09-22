@@ -276,11 +276,11 @@ und `Area` verliert die Textvariante.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet: Checkliste, Kalender und Teller sind bei 24 px als das erkennbar,
+- [x] Auf dem Geraet: Checkliste, Kalender und Teller sind bei 24 px als das erkennbar,
       was sie darstellen — auch mit invertierten Farben.
-- [ ] VoiceOver liest die vier Knoepfe als "Einkaufsliste", "Wochenplan", "Gerichte",
+- [x] VoiceOver liest die vier Knoepfe als "Einkaufsliste", "Wochenplan", "Gerichte",
       "Einstellungen" und nennt den aktiven als aktuelle Seite.
-- [ ] Alle vier Knoepfe sind gleich breit, das Zahnrad steht ganz rechts, und jeder
+- [x] Alle vier Knoepfe sind gleich breit, das Zahnrad steht ganz rechts, und jeder
       Knopf laesst sich mit dem Daumen sicher treffen.
 
 ### Phase 2: Vorraete als fuenfter Bereich
@@ -291,7 +291,7 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
 
 **Aufgaben**:
 
-- [ ] `src/shared/ui/SnowflakeIcon.tsx` anlegen — lucide `snowflake` (ISC,
+- [x] `src/shared/ui/SnowflakeIcon.tsx` anlegen — lucide `snowflake` (ISC,
       https://lucide.dev/icons/snowflake).
 
       ```tsx
@@ -309,7 +309,7 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       <path d="m7 3 3 6h4" />
       ```
 
-- [ ] `src/meals/ui/SuppliesArea.tsx` anlegen — nimmt `navigation` entgegen und rendert
+- [x] `src/meals/ui/SuppliesArea.tsx` anlegen — nimmt `navigation` entgegen und rendert
       die Ueberschrift mit `useHeadingFocus`, wie `SettingsPage` es vormacht.
 
       ```tsx
@@ -331,7 +331,7 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       }
       ```
 
-- [ ] `src/SignedInApp.tsx`: `AREAS` um den Bereich `supplies` vor den Einstellungen
+- [x] `src/SignedInApp.tsx`: `AREAS` um den Bereich `supplies` vor den Einstellungen
       erweitern und einen Zweig ergaenzen, der `SuppliesArea` mit der Navigation
       rendert.
 
@@ -339,10 +339,10 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       { id: 'supplies', label: 'Vorräte', icon: <SnowflakeIcon /> },
       ```
 
-- [ ] `.claude/projekt.md`: den Satz zum Kontext **meals** um die Vorraete erweitern,
+- [x] `.claude/projekt.md`: den Satz zum Kontext **meals** um die Vorraete erweitern,
       damit die Landkarte den neuen Bereich kennt.
 
-- [ ] `src/SignedInApp.test.tsx`: den Leistentest auf fuenf Bereiche erweitern — Name
+- [x] `src/SignedInApp.test.tsx`: den Leistentest auf fuenf Bereiche erweitern — Name
       des Tests und `tabNames()`-Erwartung.
 
       ```ts
@@ -355,7 +355,7 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       ])
       ```
 
-- [ ] `src/SignedInApp.test.tsx`: einen Test ergaenzen, der die Vorraete oeffnet und
+- [x] `src/SignedInApp.test.tsx`: einen Test ergaenzen, der die Vorraete oeffnet und
       Ueberschrift, Fokus und `aria-current` prueft.
 
       ```ts
@@ -372,7 +372,7 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       })
       ```
 
-- [ ] `src/SignedInApp.test.tsx`: einen Test ergaenzen, der zeigt, dass die Seite ausser
+- [x] `src/SignedInApp.test.tsx`: einen Test ergaenzen, der zeigt, dass die Seite ausser
       der Ueberschrift nichts enthaelt.
 
       ```ts
@@ -387,7 +387,7 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       })
       ```
 
-- [ ] `src/SignedInApp.test.tsx`: einen axe-Test fuer den neuen Bereich ergaenzen.
+- [x] `src/SignedInApp.test.tsx`: einen axe-Test fuer den neuen Bereich ergaenzen.
 
       ```ts
       it('has no accessibility violations on the supplies', async () => {
@@ -399,22 +399,22 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
       })
       ```
 
-- [ ] `src/SignedInApp.test.tsx`: einen Test ergaenzen, der zeigt, dass ein Besuch der
+- [x] `src/SignedInApp.test.tsx`: einen Test ergaenzen, der zeigt, dass ein Besuch der
       Vorraete die Einkaufsliste unberuehrt laesst — nach dem Vorbild von "leaves the
       shopping list as it was after a visit to the meals area".
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft gruen, einschliesslich der neuen Tests "switches to the
+- [x] `npm run test` laeuft gruen, einschliesslich der neuen Tests "switches to the
       supplies and marks them as the current area", "leaves the supplies empty for now"
       und "has no accessibility violations on the supplies". Der erste belegt zugleich,
       dass die Leiste auf der Vorraete-Seite steht — ohne sie gaebe es den Knopf mit
       `aria-current` dort nicht.
-- [ ] `test/domainLayerBoundary.test.ts` bleibt gruen — `SuppliesArea` liegt in
+- [x] `test/domainLayerBoundary.test.ts` bleibt gruen — `SuppliesArea` liegt in
       `meals/ui` und importiert nur `react` und `shared/ui`.
-- [ ] `npm run lint` laeuft ohne Befund.
-- [ ] `npm run build` uebersetzt fehlerfrei.
-- [ ] `npm run test:e2e` laeuft durch — die Ablaeufe in `e2e/meals.spec.ts`,
+- [x] `npm run lint` laeuft ohne Befund.
+- [x] `npm run build` uebersetzt fehlerfrei.
+- [x] `npm run test:e2e` laeuft durch — die Ablaeufe in `e2e/meals.spec.ts`,
       `e2e/weekPlan.spec.ts`, `e2e/shoppingList.spec.ts` und `e2e/appearance.spec.ts`
       steuern ueber die gesprochenen Namen und bleiben unveraendert.
 

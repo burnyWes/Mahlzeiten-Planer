@@ -109,20 +109,51 @@ function tabNames() {
 }
 
 describe('SignedInApp', () => {
-  it('names the four areas in the order of their use', () => {
+  it('names the five areas in the order of their use', () => {
     renderSignedInApp()
 
     expect(tabNames()).toEqual([
       'Einkaufsliste',
       'Wochenplan',
       'Gerichte',
+      'Vorräte',
       'Einstellungen',
     ])
     expect(
       within(screen.getByRole('navigation'))
         .getAllByRole('button')
         .map((tab) => tab.textContent),
-    ).toEqual(['', '', '', ''])
+    ).toEqual(['', '', '', '', ''])
+  })
+
+  it('switches to the supplies and marks them as the current area', async () => {
+    renderSignedInApp()
+
+    await goToArea('Vorräte')
+
+    expect(screen.getByRole('heading', { name: 'Vorräte' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Vorräte' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
+  it('leaves the supplies empty for now', async () => {
+    renderSignedInApp()
+
+    await goToArea('Vorräte')
+
+    const page = within(screen.getByRole('main'))
+    expect(page.queryAllByRole('listitem')).toEqual([])
+    expect(page.queryAllByRole('button')).toEqual([])
+  })
+
+  it('has no accessibility violations on the supplies', async () => {
+    const { rendered } = renderSignedInApp()
+
+    await goToArea('Vorräte')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('switches to the week plan and marks it as the current area', async () => {
@@ -333,6 +364,24 @@ describe('SignedInApp', () => {
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Milch' }))
     await goToArea('Gerichte')
+    await goToArea('Einkaufsliste')
+
+    expect(shownItemNames()).toEqual(['Brot', 'Milch', 'Käse'])
+    expect(screen.getByRole('checkbox', { name: 'Milch' })).toBeChecked()
+    expect(
+      screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
+    ).toBeInTheDocument()
+  })
+
+  it('leaves the shopping list as it was after a visit to the supplies', async () => {
+    renderSignedInApp([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2),
+      openItem('cheese', 'Käse', 3),
+    ])
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Milch' }))
+    await goToArea('Vorräte')
     await goToArea('Einkaufsliste')
 
     expect(shownItemNames()).toEqual(['Brot', 'Milch', 'Käse'])

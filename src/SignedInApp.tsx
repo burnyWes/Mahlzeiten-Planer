@@ -9,6 +9,7 @@ import type { Meal } from './meals/domain/meal'
 import type { RandomSource } from './meals/domain/randomPlanning'
 import { mealsWithoutItems } from './meals/domain/weekPlan'
 import { MealsArea } from './meals/ui/MealsArea'
+import { SuppliesArea } from './meals/ui/SuppliesArea'
 import { useMeals } from './meals/ui/useMeals'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
 import { WeekPlanArea } from './meals/ui/WeekPlanArea'
@@ -19,6 +20,7 @@ import { NavigationBar, type Area } from './shared/ui/NavigationBar'
 import { PlateIcon } from './shared/ui/PlateIcon'
 import { SettingsIcon } from './shared/ui/SettingsIcon'
 import { SettingsPage, type SettingsEntry } from './shared/ui/SettingsPage'
+import { SnowflakeIcon } from './shared/ui/SnowflakeIcon'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 import { additionsAnnouncement } from './shopping/domain/announcements'
@@ -33,6 +35,7 @@ const AREAS = [
   { id: 'shopping', label: 'Einkaufsliste', icon: <ChecklistIcon /> },
   { id: 'weekPlan', label: 'Wochenplan', icon: <CalendarIcon /> },
   { id: 'meals', label: 'Gerichte', icon: <PlateIcon /> },
+  { id: 'supplies', label: 'Vorräte', icon: <SnowflakeIcon /> },
   { id: 'settings', label: 'Einstellungen', icon: <SettingsIcon /> },
 ] as const satisfies readonly Area<string>[]
 
@@ -166,6 +169,8 @@ export function SignedInApp({
         onAddToShoppingList={addWeekPlanToShoppingList}
       />
     )
+
+  if (activeArea === 'supplies') return <SuppliesArea navigation={navigation} />
 
   if (activeArea === 'meals')
     return (

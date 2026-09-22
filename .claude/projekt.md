@@ -20,8 +20,8 @@ Build:   npm run build
 
 - **shopping** — die gemeinsame Einkaufsliste des Haushalts: Artikel anlegen, abhaken
   und aufraeumen.
-- **meals** — die Gerichte des Haushalts: anlegen, nachschlagen und auf die
-  Einkaufsliste uebertragen.
+- **meals** — die Gerichte des Haushalts: anlegen, nachschlagen, auf die
+  Einkaufsliste uebertragen und als Vorrat vorhalten.
 
 ---
 
