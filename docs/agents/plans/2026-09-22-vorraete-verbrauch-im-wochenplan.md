@@ -17,11 +17,14 @@ auf die Einkaufsliste lässt die Zutaten gedeckter Gerichte weg.
 
 ## Akzeptanzkriterien
 
-- Steht ein geplantes Gericht im Vorrat (`count >= 1`), zeigt der Tag zwischen
-  Wochentag-Kürzel und Eingabefeld eine Schneeflocke — bei manueller Auswahl wie
-  bei Zufallsauswahl, und an jedem Tag, an dem das Gericht steht.
+- Ein Vorrat von `n` Portionen deckt die **ersten `n` Tage** der Woche, an denen
+  das Gericht geplant ist. Genau diese Tage zeigen zwischen Wochentag-Kürzel und
+  Eingabefeld eine Schneeflocke — bei manueller Auswahl wie bei Zufallsauswahl.
+- Bolognese mit Vorrat 1, geplant am Montag und am Mittwoch: die Schneeflocke
+  steht nur am Montag, der Mittwoch bleibt offen.
 - Die Schneeflocke verschwindet sofort, wenn der Vorrat auf der Vorräte-Seite auf
-  null geht oder am Tag ein anderes Gericht gewählt wird.
+  null geht oder am Tag ein anderes Gericht gewählt wird. Wird ein gedeckter Tag
+  geleert, wandert die Marke an den nächsten Tag desselben Gerichts.
 - VoiceOver liest das Eingabefeld eines gedeckten Tages als `Montag, im Vorrat`
   statt `Montag`. Das Icon selbst ist `aria-hidden` und erzeugt keinen
   zusätzlichen Wisch-Stopp.
@@ -31,7 +34,9 @@ auf die Einkaufsliste lässt die Zutaten gedeckter Gerichte weg.
   bzw. `Montag, Nudeln.` an. Das Wochen-Würfeln bleibt bei
   `Wochenplan neu gewürfelt, 7 Gerichte.`
 - Das Leeren eines Feldes bleibt still.
-- »Auf die Einkaufsliste« überträgt die Zutaten gedeckter Gerichte **nicht**.
+- »Auf die Einkaufsliste« lässt die Zutaten der gedeckten **Tage** weg und
+  überträgt die der ungedeckten. Bolognese mit Vorrat 1 an zwei Tagen liefert
+  seine Zutaten also einmal.
 - Die Ansage danach nennt die gedeckten Tage:
   `Wochenplan, 6 Artikel hinzugefügt. 3 Tage aus dem Vorrat.` — bei einem Tag
   `1 Tag aus dem Vorrat.`
@@ -40,19 +45,26 @@ auf die Einkaufsliste lässt die Zutaten gedeckter Gerichte weg.
 - Bleibt nach dem Vorrat nur noch ein Gericht ohne Einkaufs-Items übrig, beginnt
   die Ansage trotzdem mit dem Wochenplan und nicht mit einer nackten Zahl:
   `Wochenplan, nichts hinzugefügt. 2 Tage aus dem Vorrat. Suppe hat keine Einkaufs-Items.`
-- Ein gedecktes Gericht ohne Einkaufs-Items löst den Hinweis
-  `… hat keine Einkaufs-Items.` nicht mehr aus.
+- Ein Gericht ohne Einkaufs-Items löst den Hinweis
+  `… hat keine Einkaufs-Items.` nur noch aus, wenn mindestens einer seiner Tage
+  ungedeckt ist.
 - Der Vorrat wird durch die Übertragung nicht verändert.
 - Die Überschrift `Wochenplan, 3 von 7` zählt weiterhin alle geplanten Tage,
   gedeckte eingeschlossen.
 
 ## Wesentliche Entscheidungen und Abwägungen
 
-1. **Deckung:** `count >= 1` deckt jeden Tag, an dem das Gericht steht.
-   - Warum: der Nutzer will eine erkennbare Regel, keine Portionsrechnung. Chili mit
-     Vorrat 2, an drei Tagen geplant, ist an allen drei Tagen gedeckt.
-   - Auswirkung: die Domäne braucht nur ein `steht drin / steht nicht drin`, keine
-     Zuteilung von Portionen auf Tage.
+1. **Deckung nach Portionen:** ein Vorrat von `n` Portionen deckt die ersten `n`
+   Tage in Wochentag-Reihenfolge, an denen das Gericht geplant ist.
+   - Warum: der Vorrat ist gezählt, also zählt er auch hier. Chili mit Vorrat 2, an
+     Montag, Mittwoch und Freitag geplant, deckt Montag und Mittwoch; der Freitag
+     wird gekauft.
+   - Auswirkung: die Deckung hängt am Tag, nicht am Gericht. `isSuppliedOn` zählt
+     die früheren Tage desselben Gerichts, und die Übertragung entscheidet je Tag
+     statt je Gericht.
+   - Abgelöst: die erste Fassung deckte jeden Tag, an dem das Gericht stand
+     (`count >= 1`), ohne Portionsrechnung. Phase 1 ist noch so gebaut, Phase 2
+     zieht sie nach.
 
 2. **Kein Abbuchen:** die Übertragung lässt die Vorräte unberührt.
    - Warum: der Knopf ist mehrfach drückbar — nach einer Planänderung etwa — und
@@ -150,17 +162,19 @@ SignedInApp.tsx
         { mealsToBuy: Meal[], suppliedDays: number }
 ```
 
-Die Zeile eines gedeckten Tages:
+Die Zeile eines gedeckten Tages — Chili con Carne liegt einmal im Eisfach:
 
 ```
 vorher                                     nachher
 ┌──────────────────────────────┐           ┌──────────────────────────────┐
 │ Mo.  [ Chili con Carne ] [🎲]│           │ Mo. ❄ [ Chili con Carne ] [🎲]│
 │ Di.  [ Nudeln          ] [🎲]│           │ Di.   [ Nudeln          ] [🎲]│
-│ Mi.  [ Chili con Carne ] [🎲]│           │ Mi. ❄ [ Chili con Carne ] [🎲]│
+│ Mi.  [ Chili con Carne ] [🎲]│           │ Mi.   [ Chili con Carne ] [🎲]│
 │ Do.  [                 ] [🎲]│           │ Do.   [                 ] [🎲]│
 └──────────────────────────────┘           └──────────────────────────────┘
                                                  ^ Spalte steht in jeder Zeile
+                                             die eine Portion ist am Montag
+                                             verbraucht, der Mittwoch wird gekauft
 ```
 
 VoiceOver beim Durchwischen — die Zahl der Stopps bleibt gleich:
@@ -198,8 +212,11 @@ Ergebnistyp in `weekPlan.ts` und drei Ansage-Formen.
     - `isInSupply(supplies, mealId): boolean` — neu, gebaut auf `supplyOf`
   - `weekPlan.ts` — Aufteilung des Plans ergänzen
     - `WeekPlanTransfer` — neuer Typ `{ mealsToBuy, suppliedDays }`
-    - `weekPlanTransfer(plan, meals, supplies)` — neu
-    - `isSuppliedOn(plan, day, meals, supplies)` — neu, für die Zeile
+    - `weekPlanTransfer(plan, meals, supplies)` — neu, entscheidet je Tag
+    - `isSuppliedOn(plan, day, meals, supplies)` — neu, für die Zeile; zählt die
+      früheren Tage desselben Gerichts gegen die Portionen
+    - `timesPlannedBefore(plan, day, mealId)` — neu, privat
+    - `plannedDays(plan, meals)` — neu, privat, trägt `plannedMeals` mit
   - `announcements.ts`
     - `weekdayFieldLabel(day, inSupply)` — neu
     - `dayPlannedAnnouncement(day, meal, inSupply)` — Parameter ergänzt
@@ -360,16 +377,105 @@ Feld-Label und meldet die Deckung beim Wählen eines Gerichts an.
 
 **Manuelle Verifikation**:
 
-- [ ] Mit VoiceOver über die Wochenplan-Zeilen wischen: ein gedeckter Tag wird als
+- [x] Mit VoiceOver über die Wochenplan-Zeilen wischen: ein gedeckter Tag wird als
       `Montag, im Vorrat, <Gericht>, Textfeld` gelesen, ein offener als
       `Dienstag, <Gericht>, Textfeld`; die Zahl der Stopps ist in beiden Fällen
       gleich.
-- [ ] Bei invertierten Farben prüfen, dass die Schneeflocke sichtbar bleibt und
+- [x] Bei invertierten Farben prüfen, dass die Schneeflocke sichtbar bleibt und
       die sieben Eingabefelder bündig untereinander stehen.
 
-### Phase 2: Vorrat-Gerichte nicht auf die Einkaufsliste
+### Phase 2: Vorrat nach Portionen zuteilen
 
 Abhängigkeiten: Phase 1
+
+Phase 1 markiert jeden Tag, an dem ein Gericht mit Vorrat steht. Diese Phase
+schränkt das auf die Zahl der Portionen ein: der Vorrat wandert die Woche entlang
+und ist irgendwann aufgebraucht.
+
+**Aufgaben**:
+
+- [ ] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für `isSuppliedOn`
+      — ein Vorrat von 1 deckt bei zwei geplanten Tagen nur den früheren; ein
+      Vorrat von 2 deckt bei drei Tagen die ersten zwei; ein Vorrat, der größer
+      ist als die Zahl der Tage, deckt alle. Die drei Tests aus Phase 1 bleiben
+      gültig, weil sie mit einem einzigen geplanten Tag arbeiten.
+- [ ] `src/meals/domain/weekPlan.ts`: `isSuppliedOn` auf die Portionen umstellen,
+      `supplyOf` statt `isInSupply` importieren.
+      ```ts
+      function timesPlannedBefore(
+        plan: WeekPlan,
+        day: Weekday,
+        mealId: MealId,
+      ): number {
+        return WEEKDAYS.slice(0, WEEKDAYS.indexOf(day)).filter(
+          (earlier) => plan[earlier] === mealId,
+        ).length
+      }
+
+      export function isSuppliedOn(
+        plan: WeekPlan,
+        day: Weekday,
+        meals: readonly Meal[],
+        supplies: readonly Supply[],
+      ): boolean {
+        const planned = shownMealOn(plan, day, meals)
+        if (planned === null) return false
+        const supply = supplyOf(supplies, planned.id)
+        return (
+          supply !== null &&
+          timesPlannedBefore(plan, day, planned.id) < supply.count
+        )
+      }
+      ```
+      `isInSupply` bleibt in `supply.ts`, wo es steht — es beantwortet weiter die
+      Frage der Vorräte-Seite. Nur der Wochenplan fragt jetzt genauer.
+- [ ] `src/meals/ui/WeekPlanArea.tsx`: die Ansage beim Wählen auf den Plan **nach**
+      der Wahl stützen und `isInSupply` gegen `isSuppliedOn` tauschen.
+      `weekPlanning.plan` ist im selben Durchlauf noch der alte Plan, deshalb
+      bildet `chooseMeal` den neuen selbst.
+      ```tsx
+      function chooseMeal(day: Weekday, id: MealId | null) {
+        weekPlanning.chooseMeal(day, id)
+        const chosen = meals.find((meal) => meal.id === id)
+        if (chosen === undefined) return
+        const planned = withMealOnDay(weekPlanning.plan, day, id)
+        announce(
+          dayPlannedAnnouncement(
+            day,
+            chosen,
+            isSuppliedOn(planned, day, meals, supplies),
+          ),
+        )
+      }
+      ```
+      Danach importiert `WeekPlanArea` `isSuppliedOn` und `withMealOnDay` aus
+      `../domain/weekPlan` und `isInSupply` nicht mehr — sonst wird `npm run lint`
+      rot.
+- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: Tests — bei Vorrat 1 und zwei geplanten
+      Tagen trägt nur der frühere die Marke; das Würfeln eines zweiten Tages auf
+      dasselbe Gericht sagt `Mittwoch, Bolognese.` ohne Vorrat-Zusatz; das Leeren
+      des gedeckten Tages lässt die Marke an den späteren Tag wandern. Achtung:
+      nach dem Wandern heißt das späte Feld `Mittwoch, im Vorrat`.
+- [ ] `src/SignedInApp.test.tsx`: Test, dass das zweite Vorkommen eines Gerichts
+      mit Vorrat 1 ohne `im Vorrat` angesagt wird.
+
+**Automatisierte Verifikation**:
+
+- [ ] `npx vitest run src/meals/domain/weekPlan.test.ts` — Portionszuteilung grün
+- [ ] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` — wandernde Marke und
+      Ansagen grün
+- [ ] `npx vitest run src/SignedInApp.test.tsx` — grün
+- [ ] `npm run lint` und `npm run test` laufen durch
+
+**Manuelle Verifikation**:
+
+- [ ] Auf dem Gerät: ein Gericht mit Vorrat 1 an zwei Tagen einplanen und mit
+      VoiceOver prüfen, dass nur der frühere Tag `im Vorrat` sagt. Dann den
+      früheren Tag leeren und hören, dass der spätere die Marke übernimmt.
+
+### Phase 3: Vorrat-Gerichte nicht auf die Einkaufsliste
+
+Abhängigkeiten: Phase 2
 
 Die Übertragung lässt gedeckte Gerichte aus und meldet, wie viele Tage der Vorrat
 abgedeckt hat.
@@ -377,12 +483,25 @@ abgedeckt hat.
 **Aufgaben**:
 
 - [ ] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für
-      `weekPlanTransfer` — ohne Vorräte bleibt alles zu kaufen; ein gedecktes
-      Gericht fällt an jedem seiner Tage heraus und zählt jeden dieser Tage;
-      alles gedeckt ergibt eine leere Kaufliste.
+      `weekPlanTransfer` — ohne Vorräte bleibt alles zu kaufen; ein Vorrat von 2
+      fällt an seinen ersten zwei Tagen heraus und zählt diese zwei Tage; ein
+      Vorrat von 1 bei zwei geplanten Tagen lässt das Gericht einmal auf der
+      Kaufliste stehen; alles gedeckt ergibt eine leere Kaufliste.
 - [ ] `src/meals/domain/weekPlan.ts`: `WeekPlanTransfer` und `weekPlanTransfer`
-      ergänzen.
+      ergänzen — je Tag entschieden, mit derselben Regel wie die Schneeflocke.
       ```ts
+      type PlannedDay = { day: Weekday; meal: Meal }
+
+      function plannedDays(
+        plan: WeekPlan,
+        meals: readonly Meal[],
+      ): readonly PlannedDay[] {
+        return WEEKDAYS.flatMap((day) => {
+          const meal = shownMealOn(plan, day, meals)
+          return meal === null ? [] : [{ day, meal }]
+        })
+      }
+
       export type WeekPlanTransfer = {
         mealsToBuy: readonly Meal[]
         suppliedDays: number
@@ -393,11 +512,18 @@ abgedeckt hat.
         meals: readonly Meal[],
         supplies: readonly Supply[],
       ): WeekPlanTransfer {
-        const planned = plannedMeals(plan, meals)
-        const toBuy = planned.filter((meal) => !isInSupply(supplies, meal.id))
-        return { mealsToBuy: toBuy, suppliedDays: planned.length - toBuy.length }
+        const days = plannedDays(plan, meals)
+        const toBuy = days.filter(
+          ({ day }) => !isSuppliedOn(plan, day, meals, supplies),
+        )
+        return {
+          mealsToBuy: toBuy.map(({ meal }) => meal),
+          suppliedDays: days.length - toBuy.length,
+        }
       }
       ```
+      `plannedMeals` wird dabei zu `plannedDays(plan, meals).map(({ meal }) => meal)`
+      — dieselbe Reihenfolge, eine Quelle für beide Wege.
 - [ ] `src/meals/domain/announcements.test.ts`: die drei bestehenden Aufrufe von
       `weekPlanTransferAnnouncement` (Zeile 287-306) um `suppliedDays` von `0`
       erweitern — ihr Ergebnis bleibt unverändert. Fehlschlagende Tests ergänzen
@@ -473,9 +599,10 @@ abgedeckt hat.
       Vorräte stehen nach der Übertragung unverändert (`suppliesClient`
       abgefragt).
 - [ ] `e2e/weekPlan.spec.ts`: einen Lauf ergänzen, der zwei Gerichte anlegt, für
-      eines einen Vorrat hinterlegt, beide im Wochenplan einplant, überträgt und
-      prüft, dass auf der Einkaufsliste nur die Zutaten des ungedeckten Gerichts
-      stehen und die Ansage die gedeckten Tage nennt. `chooseSuggestion`
+      eines einen Vorrat von 1 hinterlegt, dieses an zwei Tagen und das andere an
+      einem Tag einplant, überträgt und prüft, dass auf der Einkaufsliste die
+      Zutaten des gedeckten Gerichts genau einmal und die des ungedeckten
+      vollständig stehen und die Ansage `1 Tag aus dem Vorrat.` nennt. `chooseSuggestion`
       (`e2e/keyboard.ts:28-36`) tippt in das noch leere Feld — dort heisst das
       Label weiterhin `Montag`. Erst Prüfungen **nach** der Auswahl brauchen das
       volle Label `Montag, im Vorrat`.
@@ -500,6 +627,8 @@ abgedeckt hat.
       Gericht planen, `Auf die Einkaufsliste` drücken und hören, dass die Ansage
       die Artikel **und** die gedeckten Tage nennt; anschließend auf der
       Vorräte-Seite prüfen, dass die Anzahl unverändert ist.
+- [ ] Dasselbe mit einem Gericht, das bei Vorrat 1 an zwei Tagen steht: seine
+      Zutaten stehen einmal auf der Einkaufsliste.
 
 ## Notizen zur Umsetzung
 
@@ -510,6 +639,12 @@ abgedeckt hat.
 - Phase 1: `renderWeekPlanArea` bekommt die Vorräte als dritten Parameter vor
   `random` — `random` wurde von keinem Test gesetzt, so bleiben alle Aufrufe
   unverändert.
+- Nach Phase 1 hat der Nutzer die Deckungsregel gedreht: der Vorrat wird nun nach
+  Portionen auf die Tage verteilt, statt jeden Tag des Gerichts zu decken. Die
+  Akzeptanzkriterien und Entscheidung 1 sind daraufhin umgeschrieben, die neue
+  Phase 2 zieht Phase 1 nach, und die Übertragung ist zu Phase 3 geworden.
+  Angenommen dabei: »der erste« Tag ist der frühere Wochentag, gezählt von Montag
+  bis Sonntag.
 
 ## Verweise
 
