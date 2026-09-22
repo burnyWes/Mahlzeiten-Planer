@@ -5,7 +5,7 @@ branch: main
 story: MZP-012
 topic: "Buttons invertieren"
 tags: [plan, shared, ui, css, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-012 — Buttons invertieren
@@ -19,28 +19,28 @@ Alle Entscheidungen stammen aus der Befragung vom 2026-09-22.
 
 ## Akzeptanzkriterien
 
-- [ ] Jeder heute gruen gefuellte Button hat die Flaeche `#ebacd2`, Text und Icon in
+- [x] Jeder heute gruen gefuellte Button hat die Flaeche `#ebacd2`, Text und Icon in
       Schwarz und einen 1px schwarzen Rahmen: "Zurueck", "Speichern", "Loeschen",
       "Abbrechen", "+", die Icon-Knoepfe am Gericht, der Mengen-Stepper am Vorrat, die
       untere Knopfleiste, der Update-Hinweis und die aktive Navigationsschaltflaeche.
-- [ ] Jeder leise Button hat die Flaeche der Seite, schwarzen Text und einen Rahmen in
+- [x] Jeder leise Button hat die Flaeche der Seite, schwarzen Text und einen Rahmen in
       `#a63f7d`: die inaktiven Navigationsschaltflaechen, die Vorschlagsliste sowie die
       Gericht- und Vorratsnamen in den Listen.
-- [ ] Eingabefelder behalten den grauen Rahmen `#4b5563` und sind dadurch von den leisen
+- [x] Eingabefelder behalten den grauen Rahmen `#4b5563` und sind dadurch von den leisen
       Buttons unterscheidbar.
-- [ ] Der Fokusring ist 3px schwarz und 2px abgesetzt. Er bleibt auf der rosa Flaeche
+- [x] Der Fokusring ist 3px schwarz und 2px abgesetzt. Er bleibt auf der rosa Flaeche
       wie auf der Seite sichtbar.
-- [ ] Deaktivierte Buttons bleiben grau gefuellt mit weisser Schrift.
-- [ ] Bei aktiver Farbumkehr sind alle diese Farben die exakten Komplemente: gefuellt
+- [x] Deaktivierte Buttons bleiben grau gefuellt mit weisser Schrift.
+- [x] Bei aktiver Farbumkehr sind alle diese Farben die exakten Komplemente: gefuellt
       `#14532d` mit weisser Schrift, leise Rahmen `#59c082`, Fokusring weiss.
-- [ ] `test/palette.test.ts` rechnet weiterhin nach, dass jeder invertierte Token das
+- [x] `test/palette.test.ts` rechnet weiterhin nach, dass jeder invertierte Token das
       exakte Komplement des hellen ist — auch das neue Paar `--accentLine`.
-- [ ] Ein Test rechnet die tatsaechlich benutzten Farbkombinationen nach: Text auf
+- [x] Ein Test rechnet die tatsaechlich benutzten Farbkombinationen nach: Text auf
       seiner Flaeche mindestens 4,5:1, jede Linie gegen ihren Grund mindestens 3:1 — in
       beiden Modi.
-- [ ] Systemleiste und Splash der installierten App stehen auf `#ebacd2` und folgen dem
+- [x] Systemleiste und Splash der installierten App stehen auf `#ebacd2` und folgen dem
       Schalter "Farben invertieren"; das App-Icon bleibt gruen.
-- [ ] `docs/notes.txt`: "Button-Farben anpassen" steht auf `x` unter DONE.
+- [x] `docs/notes.txt`: "Button-Farben anpassen" steht auf `x` unter DONE.
 
 ## Wesentliche Entscheidungen und Abwaegungen
 
@@ -312,18 +312,18 @@ Der Kontrast-Test entsteht zuerst und schlaegt fehl, solange `--accentLine` fehl
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet im **hellen** Modus: gefuellte Buttons sind rosa mit schwarzem Text
+- [x] Auf dem Geraet im **hellen** Modus: gefuellte Buttons sind rosa mit schwarzem Text
       und schwarzer Kante — untere Knopfleiste, "Zurueck", "Speichern", das `+` im
       Seitenkopf, die Icon-Knoepfe am Gericht.
-- [ ] Gericht- und Vorratsnamen sowie die Vorschlaege beim Tippen zeigen schwarzen Text
+- [x] Gericht- und Vorratsnamen sowie die Vorschlaege beim Tippen zeigen schwarzen Text
       mit Rose-Rahmen und sind von den Eingabefeldern (grauer Rahmen) zu unterscheiden.
-- [ ] Die Navigationsleiste: der aktive Bereich ist das einzige Farbfeld, die anderen
+- [x] Die Navigationsleiste: der aktive Bereich ist das einzige Farbfeld, die anderen
       vier tragen nur den Rose-Rahmen.
-- [ ] Der Mengen-Stepper am vollen Vorrat und "Zufallsauswahl generieren" ohne Gerichte
+- [x] Der Mengen-Stepper am vollen Vorrat und "Zufallsauswahl generieren" ohne Gerichte
       sind grau mit weisser Schrift.
-- [ ] Mit der Tastatur durch eine Seite wandern: der Fokusring ist auf der rosa Flaeche
+- [x] Mit der Tastatur durch eine Seite wandern: der Fokusring ist auf der rosa Flaeche
       und auf der Seite zu sehen.
-- [ ] Denselben Durchgang mit eingeschalteter Farbumkehr: gefuellte Buttons dunkelgruen
+- [x] Denselben Durchgang mit eingeschalteter Farbumkehr: gefuellte Buttons dunkelgruen
       mit weisser Schrift, leise mit hellgruenem Rahmen.
 
 ### Phase 2: Systemleiste und Splash
@@ -354,7 +354,7 @@ Buttonfarbe und dem Schalter "Farben invertieren".
       und beide Akzentwerte am Wurzelelement aufsetzen, den Haken umlegen und pruefen,
       dass das `<meta>` dem berechneten `--accent` folgt. Fehlt der Wert — in jsdom ist
       das Stylesheet nicht geladen —, bleibt das `<meta>` unveraendert.
-- [ ] `docs/notes.txt` — "Button-Farben anpassen" auf `x` setzen und nach DONE
+- [x] `docs/notes.txt` — "Button-Farben anpassen" auf `x` setzen und nach DONE
       verschieben.
 
 **Automatisierte Verifikation**:
@@ -367,10 +367,10 @@ Buttonfarbe und dem Schalter "Farben invertieren".
 
 **Manuelle Verifikation**:
 
-- [ ] Die App auf dem Geraet oeffnen: die Systemleiste des Browsers ist rosa.
-- [ ] Den Schalter "Farben invertieren" umlegen: die Systemleiste wird dunkelgruen, ohne
+- [x] Die App auf dem Geraet oeffnen: die Systemleiste des Browsers ist rosa.
+- [x] Den Schalter "Farben invertieren" umlegen: die Systemleiste wird dunkelgruen, ohne
       Neuladen.
-- [ ] Die installierte App vom Startbildschirm starten: das Icon ist unveraendert gruen.
+- [x] Die installierte App vom Startbildschirm starten: das Icon ist unveraendert gruen.
       Auf dem iPhone kann die Statusleiste im installierten Betrieb dem
       `apple-mobile-web-app-status-bar-style` folgen und von `theme-color` unberuehrt
       bleiben; das ist erwartet und kein Fehler dieser Phase.
