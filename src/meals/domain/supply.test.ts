@@ -4,6 +4,7 @@ import {
   combinedSupply,
   createSupply,
   InvalidSupply,
+  recountedSupply,
   suppliedMeals,
   supplyOf,
   withoutSupply,
@@ -97,6 +98,36 @@ describe('combinedSupply', () => {
     expect(() =>
       combinedSupply(supply('bolognese', 98), supply('bolognese', 2)),
     ).toThrow(new InvalidSupply('countTooLarge'))
+  })
+})
+
+describe('recountedSupply', () => {
+  it('takes the count that was written for the meal', () => {
+    expect(recountedSupply('bolognese', '5')).toEqual(supply('bolognese', 5))
+  })
+
+  it('refuses a count that is no number', () => {
+    expect(() => recountedSupply('bolognese', 'viele')).toThrow(
+      new InvalidSupply('countNotANumber'),
+    )
+  })
+
+  it('refuses a count between two whole numbers', () => {
+    expect(() => recountedSupply('bolognese', '2,5')).toThrow(
+      new InvalidSupply('countNotWhole'),
+    )
+  })
+
+  it('refuses a count that is not positive', () => {
+    expect(() => recountedSupply('bolognese', '0')).toThrow(
+      new InvalidSupply('countNotPositive'),
+    )
+  })
+
+  it('refuses a count above ninety-nine', () => {
+    expect(() => recountedSupply('bolognese', '100')).toThrow(
+      new InvalidSupply('countTooLarge'),
+    )
   })
 })
 

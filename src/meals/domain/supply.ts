@@ -54,6 +54,10 @@ export function createSupply(
   return { mealId: meal.id, count: readCount(draft.count) }
 }
 
+export function recountedSupply(mealId: MealId, written: string): Supply {
+  return { mealId, count: readCount(written) }
+}
+
 export function combinedSupply(kept: Supply | null, added: Supply): Supply {
   if (kept === null) return added
   const count = kept.count + added.count

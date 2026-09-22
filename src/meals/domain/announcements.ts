@@ -152,3 +152,24 @@ export function supplyAddedAnnouncement(
     ? `${meal.name}, ${total}.`
     : `${meal.name}, ${added} dazu, jetzt ${total}.`
 }
+
+export function supplyChangedAnnouncement(
+  meal: NewMeal,
+  count: number,
+): string {
+  return `${meal.name}, ${count}.`
+}
+
+function remainingSupplyPhrase(remainingSupplies: number): string {
+  if (remainingSupplies === 0) return 'keine Vorräte mehr'
+  return remainingSupplies === 1
+    ? 'noch 1 Vorrat'
+    : `noch ${remainingSupplies} Vorräte`
+}
+
+export function supplyRemovedAnnouncement(
+  meal: NewMeal,
+  remainingSupplies: number,
+): string {
+  return `${meal.name} entfernt, ${remainingSupplyPhrase(remainingSupplies)}.`
+}

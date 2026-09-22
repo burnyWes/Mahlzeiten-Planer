@@ -2,17 +2,20 @@ import type { ReactNode } from 'react'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { suppliesHeading } from '../domain/announcements'
 import type { SuppliedMeal } from '../domain/supply'
+import { SupplyListRow } from './SupplyListRow'
 
 type SupplyListPageProps = {
   navigation: ReactNode
   supplied: readonly SuppliedMeal[]
   onAddSupply: () => void
+  onOpenSupply: (supplied: SuppliedMeal) => void
 }
 
 export function SupplyListPage({
   navigation,
   supplied,
   onAddSupply,
+  onOpenSupply,
 }: SupplyListPageProps) {
   const heading = useHeadingFocus()
 
@@ -37,11 +40,12 @@ export function SupplyListPage({
           <p>Noch keine Vorräte.</p>
         ) : (
           <ul className="itemList">
-            {supplied.map(({ meal, count }) => (
-              <li key={meal.id} className="supplyRow">
-                <span>{meal.name}</span>
-                <span className="supplyCount">{count}</span>
-              </li>
+            {supplied.map((suppliedMeal) => (
+              <SupplyListRow
+                key={suppliedMeal.meal.id}
+                supplied={suppliedMeal}
+                onOpenSupply={onOpenSupply}
+              />
             ))}
           </ul>
         )}

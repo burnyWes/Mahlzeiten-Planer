@@ -610,64 +610,64 @@ Loeschen eines Gerichts seinen Vorrat mit weg.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/supply.ts`: `recountedSupply(mealId, written)` ergaenzen —
+- [x] `src/meals/domain/supply.ts`: `recountedSupply(mealId, written)` ergaenzen —
       dieselbe Pruefung der Anzahl wie beim Anlegen, ohne Gerichtauflösung. Test
       zuerst.
 
-- [ ] `src/meals/domain/announcements.ts`: `supplyChangedAnnouncement(meal, count)` und
+- [x] `src/meals/domain/announcements.ts`: `supplyChangedAnnouncement(meal, count)` und
       `supplyRemovedAnnouncement(meal, remainingSupplies)` ergaenzen, letztere mit den
       drei Faellen "keine Vorräte mehr", "noch 1 Vorrat", "noch N Vorräte" nach dem
       Vorbild von `remainingMealPhrase` (`announcements.ts:61-66`). Test zuerst.
 
-- [ ] `src/meals/ui/SupplyListRow.tsx` anlegen und in `SupplyListPage` einsetzen: der
+- [x] `src/meals/ui/SupplyListRow.tsx` anlegen und in `SupplyListPage` einsetzen: der
       Name wird ein `button.mealNameButton`, der `onOpenSupply` ausloest; die Anzahl
       bleibt vorerst Text.
 
-- [ ] `src/meals/ui/SupplyPage.tsx` anlegen — Aufbau wie `MealFormPage`: "Zurueck zu
+- [x] `src/meals/ui/SupplyPage.tsx` anlegen — Aufbau wie `MealFormPage`: "Zurueck zu
       den Vorräten", `h1` mit dem Gerichtnamen und Fokus, Feld "Menge" mit der
       heutigen Anzahl vorbelegt, `p.failure`, `BottomBar` mit "Speichern" und
       "Löschen".
 
-- [ ] `src/meals/ui/DeleteSupplyPage.tsx` anlegen — Abbild von `DeleteMealPage.tsx`
+- [x] `src/meals/ui/DeleteSupplyPage.tsx` anlegen — Abbild von `DeleteMealPage.tsx`
       mit der Ueberschrift "<Gericht> entfernen?" und dem Satz "Der Vorrat wird für
       beide Geräte entfernt.".
 
-- [ ] `src/meals/ui/SuppliesArea.tsx`: Seitenschalter um `supply` und `delete`
+- [x] `src/meals/ui/SuppliesArea.tsx`: Seitenschalter um `supply` und `delete`
       erweitern. Speichern ersetzt die Menge und sagt `supplyChangedAnnouncement`;
       Loeschen entfernt den Vorrat, kehrt zur Liste zurueck und sagt
       `supplyRemovedAnnouncement`. Wie in `MealsArea` wird das adressierte Gericht
       ueber die Id aus `suppliedMeals` geholt; verschwindet es, faellt die Ansicht auf
       die Liste zurueck.
 
-- [ ] `src/meals/ui/MealsArea.tsx`: Prop `onMealDeleted: (id: MealId) => void`
+- [x] `src/meals/ui/MealsArea.tsx`: Prop `onMealDeleted: (id: MealId) => void`
       ergaenzen und in `deleteMeal` nach `meals.removeMeal(meal.id)` aufrufen.
 
-- [ ] `src/SignedInApp.tsx`: `onMealDeleted={supplies.removeSupply}` verdrahten.
+- [x] `src/SignedInApp.tsx`: `onMealDeleted={supplies.removeSupply}` verdrahten.
 
-- [ ] `src/meals/ui/SuppliesArea.test.tsx`: Faelle ergaenzen — Zeile oeffnen zeigt den
+- [x] `src/meals/ui/SuppliesArea.test.tsx`: Faelle ergaenzen — Zeile oeffnen zeigt den
       Namen als Ueberschrift und die Menge im Feld, Speichern ersetzt (5 statt
       5+2=7) samt Ansage, ungueltige Anzahl bleibt im Formular stehen, "Löschen"
       fuehrt auf die Bestaetigung, "Abbrechen" kehrt zum Vorrat zurueck, "Löschen"
       entfernt den Vorrat samt Ansage, axe ohne Befund auf beiden neuen Seiten.
 
-- [ ] `src/meals/ui/MealsArea.test.tsx`: Fall ergaenzen, dass das Loeschen eines
+- [x] `src/meals/ui/MealsArea.test.tsx`: Fall ergaenzen, dass das Loeschen eines
       Gerichts `onMealDeleted` mit dessen Id meldet.
 
-- [ ] `src/SignedInApp.test.tsx`: Fall ergaenzen, dass ein geloeschtes Gericht auch
+- [x] `src/SignedInApp.test.tsx`: Fall ergaenzen, dass ein geloeschtes Gericht auch
       aus den Vorraeten verschwindet — Gericht mit Vorrat anlegen, Gericht loeschen,
       Vorraete oeffnen, Kopfzeile steht auf "Vorräte, keine".
 
-- [ ] `e2e/supplies.spec.ts`: Ablauf ergaenzen — Vorrat oeffnen, Menge ersetzen,
+- [x] `e2e/supplies.spec.ts`: Ablauf ergaenzen — Vorrat oeffnen, Menge ersetzen,
       loeschen, und die Liste ist leer.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` laeuft gruen, einschliesslich der neuen Faelle in
+- [x] `npm run test` laeuft gruen, einschliesslich der neuen Faelle in
       `supply.test.ts`, `announcements.test.ts`, `SuppliesArea.test.tsx`,
       `MealsArea.test.tsx` und `SignedInApp.test.tsx`.
-- [ ] Die axe-Tests der Vorrats- und der Bestaetigungsseite bleiben ohne Befund.
-- [ ] `npm run lint` laeuft ohne Befund, `npm run build` uebersetzt fehlerfrei.
-- [ ] `npm run test:e2e` laeuft durch.
+- [x] Die axe-Tests der Vorrats- und der Bestaetigungsseite bleiben ohne Befund.
+- [x] `npm run lint` laeuft ohne Befund, `npm run build` uebersetzt fehlerfrei.
+- [x] `npm run test:e2e` laeuft durch.
 
 **Manuelle Verifikation**:
 

@@ -15,6 +15,8 @@ import {
   randomMealLabel,
   suppliesHeading,
   supplyAddedAnnouncement,
+  supplyChangedAnnouncement,
+  supplyRemovedAnnouncement,
   weekdayAbbreviation,
   weekdayName,
   weekPlanHeading,
@@ -298,6 +300,34 @@ describe('weekPlanTransferAnnouncement', () => {
   it('says only what is missing when nothing was added', () => {
     expect(weekPlanTransferAnnouncement('', [soup])).toBe(
       'Suppe hat keine Einkaufs-Items.',
+    )
+  })
+})
+
+describe('supplyChangedAnnouncement', () => {
+  it('names the meal and its new count', () => {
+    expect(supplyChangedAnnouncement(bolognese, 5)).toBe(
+      'Spaghetti Bolognese, 5.',
+    )
+  })
+})
+
+describe('supplyRemovedAnnouncement', () => {
+  it('counts the supplies that are left', () => {
+    expect(supplyRemovedAnnouncement(bolognese, 2)).toBe(
+      'Spaghetti Bolognese entfernt, noch 2 Vorräte.',
+    )
+  })
+
+  it('speaks of a single supply in the singular', () => {
+    expect(supplyRemovedAnnouncement(bolognese, 1)).toBe(
+      'Spaghetti Bolognese entfernt, noch 1 Vorrat.',
+    )
+  })
+
+  it('says that no supply is left', () => {
+    expect(supplyRemovedAnnouncement(bolognese, 0)).toBe(
+      'Spaghetti Bolognese entfernt, keine Vorräte mehr.',
     )
   })
 })

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
@@ -75,10 +75,32 @@ function save() {
   return userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
 }
 
+function openSupply(name: string) {
+  return userEvent.click(screen.getByRole('button', { name }))
+}
+
+function askToDeleteSupply() {
+  return userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
+}
+
+function confirmDeletion() {
+  return userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
+}
+
+function cancelDeletion() {
+  return userEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
+}
+
 function shownRows() {
   return within(screen.getByRole('main'))
     .getAllByRole('listitem')
     .map((row) => row.textContent)
+}
+
+function shownSupplyNames() {
+  return within(screen.getByRole('main'))
+    .getAllByRole('listitem')
+    .map((row) => within(row).getByRole('button').textContent)
 }
 
 async function addSupply(mealName: string, count: string) {
@@ -238,6 +260,144 @@ describe('SuppliesArea', () => {
     await openSupplyForm()
 
     expect(screen.queryByTestId('navigation')).toBeNull()
+  })
+
+  it('opens a supply with its name as the heading and its count filled in', async () => {
+    renderSuppliesArea([bolognese], [supply('bolognese', 3)])
+
+    await openSupply('Bolognese')
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Bolognese' }),
+    ).toHaveFocus()
+    expect(screen.getByLabelText('Menge')).toHaveValue('3')
+  })
+
+  it('replaces the count of a supply instead of adding to it', async () => {
+    const { suppliesClient, announcements } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await openSupply('Bolognese')
+    await fillIn('Menge', '5')
+    await save()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 5)])
+    expect(announcements).toContain('Bolognese, 5.')
+    expect(shownRows()).toEqual(['Bolognese5'])
+  })
+
+  it('stays on the supply when the count cannot be read', async () => {
+    const { suppliesClient, announcements } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await openSupply('Bolognese')
+    await fillIn('Menge', 'viele')
+    await save()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 3)])
+    expect(announcements).toContain('Die Anzahl muss eine Zahl sein.')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Bolognese' }),
+    ).toBeInTheDocument()
+  })
+
+  it('returns from a supply to the list', async () => {
+    renderSuppliesArea([bolognese], [supply('bolognese', 3)])
+
+    await openSupply('Bolognese')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Vorräten' }),
+    )
+
+    expect(screen.getByRole('heading', { name: 'Vorräte, 1' })).toHaveFocus()
+  })
+
+  it('asks before it removes a supply and keeps it when asked to cancel', async () => {
+    const { suppliesClient } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await openSupply('Bolognese')
+    await askToDeleteSupply()
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Bolognese entfernen?' }),
+    ).toHaveFocus()
+
+    await cancelDeletion()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 3)])
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Bolognese' }),
+    ).toHaveFocus()
+  })
+
+  it('removes a supply once the removal is confirmed', async () => {
+    const { suppliesClient, announcements } = renderSuppliesArea(
+      [bolognese, soup],
+      [supply('bolognese', 3), supply('soup', 1)],
+    )
+
+    await openSupply('Bolognese')
+    await askToDeleteSupply()
+    await confirmDeletion()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('soup', 1)])
+    expect(announcements).toContain('Bolognese entfernt, noch 1 Vorrat.')
+    expect(screen.getByRole('heading', { name: 'Vorräte, 1' })).toHaveFocus()
+  })
+
+  it('returns to the list when the other device removes the shown supply', async () => {
+    const { suppliesClient } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await openSupply('Bolognese')
+    await act(async () => {
+      suppliesClient.suppliesArriveFromElsewhere([])
+    })
+
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, keine' }),
+    ).toBeInTheDocument()
+  })
+
+  it('names every supply of the list as a button', () => {
+    renderSuppliesArea(
+      [bolognese, soup],
+      [supply('bolognese', 3), supply('soup', 1)],
+    )
+
+    expect(shownSupplyNames()).toEqual(['Bolognese', 'Linsensuppe'])
+  })
+
+  it('has no accessibility violations on a supply', async () => {
+    const { rendered } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await openSupply('Bolognese')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the confirmation page', async () => {
+    const { rendered } = renderSuppliesArea(
+      [bolognese],
+      [supply('bolognese', 3)],
+    )
+
+    await openSupply('Bolognese')
+    await askToDeleteSupply()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the list', async () => {

@@ -195,6 +195,7 @@ export function SignedInApp({
         announce={announce}
         navigation={navigation}
         onAddToShoppingList={addMealToShoppingList}
+        onMealDeleted={supplies.removeSupply}
         suggestNames={suggestKnownNames}
       />
     )

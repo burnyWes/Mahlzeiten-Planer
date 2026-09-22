@@ -192,6 +192,33 @@ describe('SignedInApp', () => {
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
+  it('lets the supply of a deleted meal go with it', async () => {
+    const { suppliesClient } = renderSignedInApp(
+      [],
+      [meal('bolognese', 'Bolognese')],
+    )
+
+    await goToArea('Vorräte')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Vorrat hinzufügen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Gericht'), 'Bolognese')
+    await userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    expect(suppliesClient.storedSupplies()).toHaveLength(1)
+
+    await goToArea('Gerichte')
+    await userEvent.click(screen.getByRole('button', { name: 'Bolognese' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
+    await goToArea('Vorräte')
+
+    expect(suppliesClient.storedSupplies()).toEqual([])
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, keine' }),
+    ).toBeInTheDocument()
+  })
+
   it('switches to the week plan and marks it as the current area', async () => {
     renderSignedInApp()
 

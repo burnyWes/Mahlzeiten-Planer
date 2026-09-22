@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
 import { createInMemoryMealsClient } from '../api/inMemoryMealsClient'
 import type { MealsClient } from '../api/mealsClient'
-import type { Meal } from '../domain/meal'
+import type { Meal, MealId } from '../domain/meal'
 import { MealsArea } from './MealsArea'
 import { useMeals } from './useMeals'
 
@@ -16,6 +16,7 @@ type MealsAreaUnderTestProps = {
   client: MealsClient
   announce: (text: string) => void
   onAddToShoppingList: (meal: Meal) => void
+  onMealDeleted: (id: MealId) => void
   suggestNames: (typed: string) => readonly string[]
 }
 
@@ -23,6 +24,7 @@ function MealsAreaUnderTest({
   client,
   announce,
   onAddToShoppingList,
+  onMealDeleted,
   suggestNames,
 }: MealsAreaUnderTestProps) {
   return (
@@ -31,6 +33,7 @@ function MealsAreaUnderTest({
       announce={announce}
       navigation={<div data-testid="navigation" />}
       onAddToShoppingList={onAddToShoppingList}
+      onMealDeleted={onMealDeleted}
       suggestNames={suggestNames}
     />
   )
@@ -52,6 +55,7 @@ function renderMealsArea(
   const client = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
   const transferred: Meal[] = []
+  const deletedMealIds: MealId[] = []
   const rendered = render(
     <MealsAreaUnderTest
       client={client}
@@ -61,10 +65,13 @@ function renderMealsArea(
       onAddToShoppingList={(meal) => {
         transferred.push(meal)
       }}
+      onMealDeleted={(id) => {
+        deletedMealIds.push(id)
+      }}
       suggestNames={suggestingFrom(suggestableNames)}
     />,
   )
-  return { client, announcements, transferred, rendered }
+  return { client, announcements, transferred, deletedMealIds, rendered }
 }
 
 function openMealForm() {
@@ -418,6 +425,16 @@ describe('MealsArea', () => {
     expect(client.storedMeals()).toEqual([meal('stew', 'Eintopf')])
     expect(announcements).toContain('Suppe gelöscht, noch 1 Gericht.')
     expect(screen.getByRole('heading', { name: 'Gerichte, 1' })).toHaveFocus()
+  })
+
+  it('reports the meal that was deleted so its supply can go with it', async () => {
+    const { deletedMealIds } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await askToDeleteMeal()
+    await confirmDeletion()
+
+    expect(deletedMealIds).toEqual(['soup'])
   })
 
   it('returns to the list when the other device removes the shown meal', async () => {
