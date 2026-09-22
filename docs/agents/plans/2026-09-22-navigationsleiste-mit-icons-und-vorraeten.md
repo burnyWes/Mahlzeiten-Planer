@@ -5,7 +5,7 @@ branch: main
 story: MZP-010
 topic: "Navigationsleiste mit Icons und ein Bereich fuer Vorraete"
 tags: [plan, navigation, shared-ui, meals, css]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-010 — Navigationsleiste mit Icons und ein Bereich fuer Vorraete
@@ -420,11 +420,11 @@ Der neue Tab mit Schneeflocke und eine Seite, die vorerst nur ihre Ueberschrift 
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Geraet: die Schneeflocke ist bei 24 px erkennbar, auch mit invertierten
+- [x] Auf dem Geraet: die Schneeflocke ist bei 24 px erkennbar, auch mit invertierten
       Farben.
-- [ ] VoiceOver: der fuenfte Knopf heisst "Vorräte", beim Betreten liest VoiceOver
+- [x] VoiceOver: der fuenfte Knopf heisst "Vorräte", beim Betreten liest VoiceOver
       "Vorräte, Überschrift Ebene 1" und danach ist die Seite still.
-- [ ] Alle fuenf Knoepfe sind gleich breit, das Zahnrad steht ganz rechts, und jeder
+- [x] Alle fuenf Knoepfe sind gleich breit, das Zahnrad steht ganz rechts, und jeder
       Knopf laesst sich mit dem Daumen sicher treffen.
 
 ## Notizen zur Umsetzung
