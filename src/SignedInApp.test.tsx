@@ -377,6 +377,111 @@ describe('SignedInApp', () => {
     )
   })
 
+  it('leaves the items of a covered day off the shopping list', async () => {
+    const { announcements, suppliesClient } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+        ]),
+        meal('chili', 'Chili', [{ name: 'Bohnen', quantity: null }]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'chili')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 1 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat.',
+    )
+    expect(suppliesClient.storedSupplies()).toEqual([
+      { mealId: 'bolognese', count: 1 },
+    ])
+
+    await goToArea('Einkaufsliste')
+
+    expect(shownItemNames()).toEqual(['Bohnen'])
+  })
+
+  it('buys the day that the supply no longer reaches', async () => {
+    const { announcements } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'bolognese')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 1 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat.',
+    )
+
+    await goToArea('Einkaufsliste')
+
+    expect(shownItemNames()).toEqual(['Hackfleisch, 500 g'])
+  })
+
+  it('says that the whole week came out of the supply', async () => {
+    const { client, announcements } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'bolognese')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 2 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, alle Gerichte aus dem Vorrat, nichts hinzugefügt.',
+    )
+    expect(client.storedItems()).toEqual([])
+  })
+
+  it('spares the hint about a covered meal without items', async () => {
+    const { announcements } = renderSignedInApp(
+      [],
+      [
+        meal('soup', 'Suppe'),
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('soup', 'bolognese')),
+      createInMemorySuppliesClient([{ mealId: 'soup', count: 1 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat.',
+    )
+    expect(announcements).not.toContain(
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat. Suppe hat keine Einkaufs-Items.',
+    )
+  })
+
   it('leaves the week plan standing after the transfer', async () => {
     const weekPlanClient = createInMemoryWeekPlanClient(planOf('bolognese'))
     renderSignedInApp(

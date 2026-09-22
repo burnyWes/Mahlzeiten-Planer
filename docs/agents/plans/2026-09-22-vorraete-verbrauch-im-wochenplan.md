@@ -469,7 +469,7 @@ und ist irgendwann aufgebraucht.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät: ein Gericht mit Vorrat 1 an zwei Tagen einplanen und mit
+- [x] Auf dem Gerät: ein Gericht mit Vorrat 1 an zwei Tagen einplanen und mit
       VoiceOver prüfen, dass nur der frühere Tag `im Vorrat` sagt. Dann den
       früheren Tag leeren und hören, dass der spätere die Marke übernimmt.
 
@@ -482,12 +482,12 @@ abgedeckt hat.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für
+- [x] `src/meals/domain/weekPlan.test.ts`: fehlschlagende Tests für
       `weekPlanTransfer` — ohne Vorräte bleibt alles zu kaufen; ein Vorrat von 2
       fällt an seinen ersten zwei Tagen heraus und zählt diese zwei Tage; ein
       Vorrat von 1 bei zwei geplanten Tagen lässt das Gericht einmal auf der
       Kaufliste stehen; alles gedeckt ergibt eine leere Kaufliste.
-- [ ] `src/meals/domain/weekPlan.ts`: `WeekPlanTransfer` und `weekPlanTransfer`
+- [x] `src/meals/domain/weekPlan.ts`: `WeekPlanTransfer` und `weekPlanTransfer`
       ergänzen — je Tag entschieden, mit derselben Regel wie die Schneeflocke.
       ```ts
       type PlannedDay = { day: Weekday; meal: Meal }
@@ -524,12 +524,12 @@ abgedeckt hat.
       ```
       `plannedMeals` wird dabei zu `plannedDays(plan, meals).map(({ meal }) => meal)`
       — dieselbe Reihenfolge, eine Quelle für beide Wege.
-- [ ] `src/meals/domain/announcements.test.ts`: die drei bestehenden Aufrufe von
+- [-] `src/meals/domain/announcements.test.ts`: die drei bestehenden Aufrufe von
       `weekPlanTransferAnnouncement` (Zeile 287-306) um `suppliedDays` von `0`
       erweitern — ihr Ergebnis bleibt unverändert. Fehlschlagende Tests ergänzen
       für mehrere gedeckte Tage, für genau einen Tag, für den Alles-gedeckt-Fall
       und für den gemischten Fall ohne Zugänge, aber mit einem Gericht ohne Items.
-- [ ] `src/meals/domain/announcements.ts`: `weekPlanTransferAnnouncement` um
+- [x] `src/meals/domain/announcements.ts`: `weekPlanTransferAnnouncement` um
       `suppliedDays` erweitern.
       ```ts
       function suppliedDayPhrase(suppliedDays: number): string {
@@ -564,10 +564,10 @@ abgedeckt hat.
       Der Zweig für `suppliedDays === 0` hält die heutigen Ansagen Wort für Wort
       und hält zugleich `0 Tage aus dem Vorrat.` unerreichbar. Ohne gedeckten Tag
       und ohne Zugänge bleibt es wie bisher bei den blossen Hinweisen.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `onAddToShoppingList` auf
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `onAddToShoppingList` auf
       `(transfer: WeekPlanTransfer) => void` umstellen und mit
       `weekPlanTransfer(weekPlanning.plan, meals, supplies)` aufrufen.
-- [ ] `src/SignedInApp.tsx`: `addWeekPlanToShoppingList` rechnet mit dem Transfer.
+- [x] `src/SignedInApp.tsx`: `addWeekPlanToShoppingList` rechnet mit dem Transfer.
       ```tsx
       function addWeekPlanToShoppingList(transfer: WeekPlanTransfer) {
         const items = shoppingItemsOf(transfer.mealsToBuy)
@@ -584,21 +584,21 @@ abgedeckt hat.
         )
       }
       ```
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: den Typ im Test-Wrapper (Zeile 37) und
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`: den Typ im Test-Wrapper (Zeile 37) und
       die Sammelliste `transferred` (Zeile 70, 79-81) auf `WeekPlanTransfer`
       umstellen; die beiden bestehenden Erwartungen `toEqual([[pizza, bolognese]])`
       (Zeile 369) und `toEqual([[bolognese]])` (Zeile 384) auf die neue Form
       nachziehen.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: Test, dass der Knopf den Transfer mit
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`: Test, dass der Knopf den Transfer mit
       den ungedeckten Gerichten und der Zahl gedeckter Tage übergibt, und dass er
       auch dann bedienbar bleibt, wenn alle geplanten Tage gedeckt sind.
-- [ ] `src/SignedInApp.test.tsx`: Tests für die Einkaufsliste — die Zutaten eines
+- [x] `src/SignedInApp.test.tsx`: Tests für die Einkaufsliste — die Zutaten eines
       gedeckten Gerichts fehlen, die Ansage nennt die gedeckten Tage, der
       Alles-gedeckt-Fall sagt seinen eigenen Satz, ein gedecktes Gericht ohne
       Items löst keinen `hat keine Einkaufs-Items`-Hinweis mehr aus, und die
       Vorräte stehen nach der Übertragung unverändert (`suppliesClient`
       abgefragt).
-- [ ] `e2e/weekPlan.spec.ts`: einen Lauf ergänzen, der zwei Gerichte anlegt, für
+- [x] `e2e/weekPlan.spec.ts`: einen Lauf ergänzen, der zwei Gerichte anlegt, für
       eines einen Vorrat von 1 hinterlegt, dieses an zwei Tagen und das andere an
       einem Tag einplant, überträgt und prüft, dass auf der Einkaufsliste die
       Zutaten des gedeckten Gerichts genau einmal und die des ungedeckten
@@ -606,19 +606,19 @@ abgedeckt hat.
       (`e2e/keyboard.ts:28-36`) tippt in das noch leere Feld — dort heisst das
       Label weiterhin `Montag`. Erst Prüfungen **nach** der Auswahl brauchen das
       volle Label `Montag, im Vorrat`.
-- [ ] `docs/notes.txt`: unter TODO nichts Offenes — keine Änderung nötig, sofern
+- [x] `docs/notes.txt`: unter TODO nichts Offenes — keine Änderung nötig, sofern
       bei der Umsetzung kein neuer Punkt auffällt.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/weekPlan.test.ts` — `weekPlanTransfer` grün
-- [ ] `npx vitest run src/meals/domain/announcements.test.ts` — alle vier
+- [x] `npx vitest run src/meals/domain/weekPlan.test.ts` — `weekPlanTransfer` grün
+- [x] `npx vitest run src/meals/domain/announcements.test.ts` — alle vier
       Transfer-Fälle grün
-- [ ] `npx vitest run src/SignedInApp.test.tsx` — Einkaufsliste, Ansagen und
+- [x] `npx vitest run src/SignedInApp.test.tsx` — Einkaufsliste, Ansagen und
       unveränderte Vorräte grün
-- [ ] `npm run test` läuft vollständig durch
-- [ ] `npm run lint` und `npm run build` laufen durch
-- [ ] `npx playwright test e2e/weekPlan.spec.ts` — der neue Lauf und die beiden
+- [x] `npm run test` läuft vollständig durch
+- [x] `npm run lint` und `npm run build` laufen durch
+- [x] `npx playwright test e2e/weekPlan.spec.ts` — der neue Lauf und die beiden
       bestehenden grün
 
 **Manuelle Verifikation**:

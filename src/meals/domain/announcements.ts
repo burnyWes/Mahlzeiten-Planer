@@ -135,13 +135,33 @@ export function weekPlanShuffledAnnouncement(): string {
   return `Wochenplan neu gewürfelt, ${WEEKDAYS.length} Gerichte.`
 }
 
+function suppliedDayPhrase(suppliedDays: number): string {
+  return suppliedDays === 1
+    ? '1 Tag aus dem Vorrat.'
+    : `${suppliedDays} Tage aus dem Vorrat.`
+}
+
+function additionsPhrase(additions: string): string {
+  return additions === '' ? 'nichts hinzugefügt.' : additions
+}
+
 export function weekPlanTransferAnnouncement(
   additions: string,
   mealsWithoutItems: readonly NewMeal[],
+  suppliedDays: number,
 ): string {
   const hints = mealsWithoutItems.map(mealWithoutItemsAnnouncement)
-  if (additions === '') return hints.join(' ')
-  return [`Wochenplan, ${additions}`, ...hints].join(' ')
+  if (suppliedDays === 0)
+    return additions === ''
+      ? hints.join(' ')
+      : [`Wochenplan, ${additions}`, ...hints].join(' ')
+  if (additions === '' && hints.length === 0)
+    return 'Wochenplan, alle Gerichte aus dem Vorrat, nichts hinzugefügt.'
+  return [
+    `Wochenplan, ${additionsPhrase(additions)}`,
+    suppliedDayPhrase(suppliedDays),
+    ...hints,
+  ].join(' ')
 }
 
 export function mealSuggestionsLabel(day: Weekday): string {

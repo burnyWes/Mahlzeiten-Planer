@@ -8,7 +8,10 @@ import {
 } from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
 import type { RandomSource } from './meals/domain/randomPlanning'
-import { mealsWithoutItems } from './meals/domain/weekPlan'
+import {
+  mealsWithoutItems,
+  type WeekPlanTransfer,
+} from './meals/domain/weekPlan'
 import { MealsArea } from './meals/ui/MealsArea'
 import { SuppliesArea } from './meals/ui/SuppliesArea'
 import { useMeals } from './meals/ui/useMeals'
@@ -111,14 +114,18 @@ export function SignedInApp({
     announce(`${meal.name}, ${additionsAnnouncement(summary)}`)
   }
 
-  function addWeekPlanToShoppingList(planned: readonly Meal[]) {
-    const items = shoppingItemsOf(planned)
+  function addWeekPlanToShoppingList(transfer: WeekPlanTransfer) {
+    const items = shoppingItemsOf(transfer.mealsToBuy)
     const additions =
       items.length === 0
         ? ''
         : additionsAnnouncement(shoppingList.addItems(items))
     announce(
-      weekPlanTransferAnnouncement(additions, mealsWithoutItems(planned)),
+      weekPlanTransferAnnouncement(
+        additions,
+        mealsWithoutItems(transfer.mealsToBuy),
+        transfer.suppliedDays,
+      ),
     )
   }
 

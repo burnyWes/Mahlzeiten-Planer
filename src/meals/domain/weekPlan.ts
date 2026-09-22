@@ -59,13 +59,46 @@ export function isSuppliedOn(
   )
 }
 
+type PlannedDay = {
+  day: Weekday
+  meal: Meal
+}
+
+function plannedDays(
+  plan: WeekPlan,
+  meals: readonly Meal[],
+): readonly PlannedDay[] {
+  return WEEKDAYS.flatMap((day) => {
+    const meal = shownMealOn(plan, day, meals)
+    return meal === null ? [] : [{ day, meal }]
+  })
+}
+
 export function plannedMeals(
   plan: WeekPlan,
   meals: readonly Meal[],
 ): readonly Meal[] {
-  return WEEKDAYS.map((day) => shownMealOn(plan, day, meals)).filter(
-    (meal): meal is Meal => meal !== null,
+  return plannedDays(plan, meals).map(({ meal }) => meal)
+}
+
+export type WeekPlanTransfer = {
+  mealsToBuy: readonly Meal[]
+  suppliedDays: number
+}
+
+export function weekPlanTransfer(
+  plan: WeekPlan,
+  meals: readonly Meal[],
+  supplies: readonly Supply[],
+): WeekPlanTransfer {
+  const days = plannedDays(plan, meals)
+  const toBuy = days.filter(
+    ({ day }) => !isSuppliedOn(plan, day, meals, supplies),
   )
+  return {
+    mealsToBuy: toBuy.map(({ meal }) => meal),
+    suppliedDays: days.length - toBuy.length,
+  }
 }
 
 export function plannedDayCount(

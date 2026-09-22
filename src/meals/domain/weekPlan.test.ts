@@ -9,7 +9,10 @@ import {
   plannedMeals,
   shownMealOn,
   WEEKDAYS,
+  weekPlanTransfer,
   withMealOnDay,
+  type WeekPlan,
+  type Weekday,
 } from './weekPlan'
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
@@ -216,6 +219,68 @@ describe('isSuppliedOn', () => {
     expect(
       WEEKDAYS.filter((day) => isSuppliedOn(plan, day, knownMeals, supplies)),
     ).toEqual(['monday', 'sunday'])
+  })
+})
+
+describe('weekPlanTransfer', () => {
+  function planWith(
+    ...days: readonly (readonly [Weekday, string])[]
+  ): WeekPlan {
+    return days.reduce<WeekPlan>(
+      (plan, [day, id]) => withMealOnDay(plan, day, id),
+      EMPTY_WEEK_PLAN,
+    )
+  }
+
+  it('leaves every planned meal to buy while nothing is kept in store', () => {
+    const plan = planWith(['monday', 'pizza'], ['tuesday', 'bolognese'])
+
+    expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
+      mealsToBuy: [pizza, bolognese],
+      suppliedDays: 0,
+    })
+  })
+
+  it('spends two portions on the first two of three days', () => {
+    const plan = planWith(
+      ['monday', 'pizza'],
+      ['wednesday', 'pizza'],
+      ['friday', 'pizza'],
+    )
+
+    expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 2)])).toEqual({
+      mealsToBuy: [pizza],
+      suppliedDays: 2,
+    })
+  })
+
+  it('keeps the meal on the list once when one portion meets two days', () => {
+    const plan = planWith(['monday', 'pizza'], ['wednesday', 'pizza'])
+
+    expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 1)])).toEqual({
+      mealsToBuy: [pizza],
+      suppliedDays: 1,
+    })
+  })
+
+  it('buys nothing when every planned day is covered', () => {
+    const plan = planWith(['monday', 'pizza'], ['tuesday', 'soup'])
+
+    expect(
+      weekPlanTransfer(plan, knownMeals, [
+        supply('pizza', 1),
+        supply('soup', 1),
+      ]),
+    ).toEqual({ mealsToBuy: [], suppliedDays: 2 })
+  })
+
+  it('skips a day whose meal was deleted meanwhile', () => {
+    const plan = planWith(['monday', 'gone'], ['sunday', 'soup'])
+
+    expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
+      mealsToBuy: [soup],
+      suppliedDays: 0,
+    })
   })
 })
 

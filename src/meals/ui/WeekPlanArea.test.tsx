@@ -16,6 +16,7 @@ import {
   WEEKDAYS,
   withMealOnDay,
   type WeekPlan,
+  type WeekPlanTransfer,
 } from '../domain/weekPlan'
 import { useMeals } from './useMeals'
 import { useWeekPlan } from './useWeekPlan'
@@ -40,7 +41,7 @@ type WeekPlanAreaUnderTestProps = {
   supplies: readonly Supply[]
   announce: (text: string) => void
   random: RandomSource
-  onAddToShoppingList: (planned: readonly Meal[]) => void
+  onAddToShoppingList: (transfer: WeekPlanTransfer) => void
 }
 
 function WeekPlanAreaUnderTest({
@@ -76,7 +77,7 @@ function renderWeekPlanArea(
 ) {
   const weekPlanClient = createInMemoryWeekPlanClient(initialPlan)
   const announcements: string[] = []
-  const transferred: (readonly Meal[])[] = []
+  const transferred: WeekPlanTransfer[] = []
   const rendered = render(
     <WeekPlanAreaUnderTest
       mealsClient={createInMemoryMealsClient(initialMeals)}
@@ -86,8 +87,8 @@ function renderWeekPlanArea(
         announcements.push(text)
       }}
       random={random}
-      onAddToShoppingList={(planned) => {
-        transferred.push(planned)
+      onAddToShoppingList={(transfer) => {
+        transferred.push(transfer)
       }}
     />,
   )
@@ -537,7 +538,9 @@ describe('WeekPlanArea', () => {
 
     await addToShoppingList()
 
-    expect(transferred).toEqual([[pizza, bolognese]])
+    expect(transferred).toEqual([
+      { mealsToBuy: [pizza, bolognese], suppliedDays: 0 },
+    ])
   })
 
   it('leaves out a day whose meal was deleted meanwhile', async () => {
@@ -552,8 +555,46 @@ describe('WeekPlanArea', () => {
 
     await addToShoppingList()
 
-    expect(transferred).toEqual([[bolognese]])
+    expect(transferred).toEqual([{ mealsToBuy: [bolognese], suppliedDays: 0 }])
     expect(weekPlanClient.storedWeekPlan().monday).toBe('gone')
+  })
+
+  it('leaves the covered days out of the transfer', async () => {
+    const { transferred } = renderWeekPlanArea(
+      [bolognese, pizza],
+      withMealOnDay(
+        withMealOnDay(
+          withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+          'tuesday',
+          'pizza',
+        ),
+        'wednesday',
+        'bolognese',
+      ),
+      [supply('bolognese', 1)],
+    )
+
+    await addToShoppingList()
+
+    expect(transferred).toEqual([
+      { mealsToBuy: [pizza, bolognese], suppliedDays: 1 },
+    ])
+  })
+
+  it('keeps the transfer within reach when every day is covered', async () => {
+    const { transferred } = renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
+    ).toBeEnabled()
+
+    await addToShoppingList()
+
+    expect(transferred).toEqual([{ mealsToBuy: [], suppliedDays: 1 }])
   })
 
   it('leaves the plan standing after the transfer', async () => {
