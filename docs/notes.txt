@@ -99,3 +99,11 @@ b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zusta
 - Kategorie-Verwaltung in Einstellungen als dritte Option
 - 3 Zeilen pro Tag im Wochenplan
 - Mengenpicker auf Einkaufsliste
+b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSupplies.ts:25-30),
+  ohne Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - dieselbe Klasse wie der
+  Wochenplan-Eintrag oben, abgefangen nur in useShoppingList ueber unconfirmedWrites.
+  Am 2026-09-22 in zwei E2E-Laeufen gesehen: "recounts a supply and removes it again"
+  erwartete nach dem Aendern auf 4 den Stand "Linsensuppe, 4.", bekam "Linsensuppe, 1." -
+  die verspaetete Momentaufnahme des ersten Schreibvorgangs setzte die Anzeige zurueck.
+  Ebenso "changes the count of a supply at its row" und "buys only the day that the supply
+  no longer covers". Wiederholungslaeufe waren jedes Mal gruen.

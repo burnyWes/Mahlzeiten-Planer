@@ -129,3 +129,18 @@ test('keeps the week plan after a reload', async ({ page }) => {
     'Linsensuppe',
   )
 })
+
+test('lines the weekday field up with its shuffle button', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Wochenplan')
+
+  const field = await page.getByLabel('Montag', { exact: true }).boundingBox()
+  const shuffle = await page
+    .getByRole('button', { name: 'Zufallsgericht für Montag', exact: true })
+    .boundingBox()
+
+  expect(field!.height).toBeCloseTo(shuffle!.height, 0)
+  expect(field!.y).toBeCloseTo(shuffle!.y, 0)
+})
