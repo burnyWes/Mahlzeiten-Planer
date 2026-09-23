@@ -30,7 +30,7 @@ function meal(id: string, name: string, items: Meal['items'] = []): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
   }
 }
 

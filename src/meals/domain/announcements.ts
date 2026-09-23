@@ -5,8 +5,10 @@ import {
 import {
   formatMealItem,
   InvalidMeal,
+  type ChosenMealKind,
   type InvalidMealReason,
   type MealItem,
+  type MealKind,
   type NewMeal,
 } from './meal'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
@@ -70,6 +72,19 @@ export function mealItemRemovedAnnouncement(
 
 export function mealSavedAnnouncement(meal: NewMeal): string {
   return `${meal.name} gespeichert.`
+}
+
+const mealKindNames: Record<ChosenMealKind, string> = {
+  mainMeal: 'Hauptgericht',
+  breakfast: 'Frühstück',
+}
+
+export function replacedKindAnnouncement(
+  previous: MealKind,
+  next: MealKind,
+): string | null {
+  if (previous === 'none' || next === 'none' || previous === next) return null
+  return `${mealKindNames[previous]} abgewählt.`
 }
 
 export function hidingLabel(hidden: boolean): string {

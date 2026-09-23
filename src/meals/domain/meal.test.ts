@@ -8,12 +8,19 @@ import {
   InvalidMeal,
   mealNamed,
   normalizeMealName,
+  withChosenKind,
   withHiding,
   type Meal,
+  type MealDraft,
   type MealItem,
 } from './meal'
 
-const emptyDraft = { name: '', ingredientNotes: '', recipe: '', mainMeal: true }
+const emptyDraft: MealDraft = {
+  name: '',
+  ingredientNotes: '',
+  recipe: '',
+  kind: 'mainMeal',
+}
 
 function meal(name: string): Meal {
   return {
@@ -23,7 +30,7 @@ function meal(name: string): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
   }
 }
 
@@ -72,7 +79,7 @@ describe('createMeal', () => {
           name: 'Bolognese',
           ingredientNotes: 'Zwiebel, Knoblauch',
           recipe: 'Anbraten.',
-          mainMeal: true,
+          kind: 'mainMeal',
         },
         items,
         false,
@@ -83,7 +90,7 @@ describe('createMeal', () => {
       ingredientNotes: 'Zwiebel, Knoblauch',
       recipe: 'Anbraten.',
       hidden: false,
-      mainMeal: true,
+      kind: 'mainMeal',
     })
   })
 
@@ -144,22 +151,29 @@ describe('createMeal', () => {
       ingredientNotes: '',
       recipe: '',
       hidden: false,
-      mainMeal: true,
+      kind: 'mainMeal',
     })
   })
 
   it('creates a main meal when the draft says so', () => {
     expect(
-      createMeal({ ...emptyDraft, name: 'Suppe', mainMeal: true }, [], false)
-        .mainMeal,
-    ).toBe(true)
+      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'mainMeal' }, [], false)
+        .kind,
+    ).toBe('mainMeal')
   })
 
-  it('creates a meal that is no main meal when the draft says so', () => {
+  it('creates a breakfast when the draft says so', () => {
     expect(
-      createMeal({ ...emptyDraft, name: 'Suppe', mainMeal: false }, [], false)
-        .mainMeal,
-    ).toBe(false)
+      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'breakfast' }, [], false)
+        .kind,
+    ).toBe('breakfast')
+  })
+
+  it('creates a meal without a kind when the draft says so', () => {
+    expect(
+      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'none' }, [], false)
+        .kind,
+    ).toBe('none')
   })
 })
 
@@ -171,7 +185,7 @@ describe('withHiding', () => {
     ingredientNotes: 'Zwiebel',
     recipe: 'Anbraten.',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
   }
 
   it('hides a meal that was visible', () => {
@@ -181,21 +195,26 @@ describe('withHiding', () => {
       ingredientNotes: 'Zwiebel',
       recipe: 'Anbraten.',
       hidden: true,
-      mainMeal: true,
+      kind: 'mainMeal',
     })
   })
 
   it('leaves a main meal a main meal', () => {
-    expect(withHiding(bolognese, true).mainMeal).toBe(true)
+    expect(withHiding(bolognese, true).kind).toBe('mainMeal')
+    expect(withHiding(bolognese, false).kind).toBe('mainMeal')
   })
 
-  it('leaves a meal that is no main meal out of the main meals', () => {
-    expect(withHiding({ ...bolognese, mainMeal: false }, true).mainMeal).toBe(
-      false,
+  it('leaves a breakfast a breakfast', () => {
+    expect(withHiding({ ...bolognese, kind: 'breakfast' }, true).kind).toBe(
+      'breakfast',
     )
-    expect(withHiding({ ...bolognese, mainMeal: false }, false).mainMeal).toBe(
-      false,
+    expect(withHiding({ ...bolognese, kind: 'breakfast' }, false).kind).toBe(
+      'breakfast',
     )
+  })
+
+  it('leaves a meal without a kind without a kind', () => {
+    expect(withHiding({ ...bolognese, kind: 'none' }, true).kind).toBe('none')
   })
 
   it('shows a meal that was hidden', () => {
@@ -210,6 +229,32 @@ describe('withHiding', () => {
     withHiding(bolognese, true)
 
     expect(bolognese.hidden).toBe(false)
+  })
+})
+
+describe('withChosenKind', () => {
+  it('makes a main meal a breakfast', () => {
+    expect(withChosenKind('mainMeal', 'breakfast', true)).toBe('breakfast')
+  })
+
+  it('makes a breakfast a main meal', () => {
+    expect(withChosenKind('breakfast', 'mainMeal', true)).toBe('mainMeal')
+  })
+
+  it('gives a meal the kind that was marked when it had none', () => {
+    expect(withChosenKind('none', 'mainMeal', true)).toBe('mainMeal')
+    expect(withChosenKind('none', 'breakfast', true)).toBe('breakfast')
+  })
+
+  it('leaves a meal without a kind when its own mark is taken away', () => {
+    expect(withChosenKind('mainMeal', 'mainMeal', false)).toBe('none')
+    expect(withChosenKind('breakfast', 'breakfast', false)).toBe('none')
+  })
+
+  it('keeps the kind when a mark that was already empty is taken away', () => {
+    expect(withChosenKind('breakfast', 'mainMeal', false)).toBe('breakfast')
+    expect(withChosenKind('mainMeal', 'breakfast', false)).toBe('mainMeal')
+    expect(withChosenKind('none', 'breakfast', false)).toBe('none')
   })
 })
 

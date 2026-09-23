@@ -352,7 +352,7 @@ die Übersetzung in Firestore stimmt.
 
 **Aufgaben**:
 
-- [ ] `MealKind` und `ChosenMealKind` in `src/meals/domain/meal.ts` einführen und
+- [x] `MealKind` und `ChosenMealKind` in `src/meals/domain/meal.ts` einführen und
       `NewMeal` (Zeile 15-22) sowie `MealDraft` (Zeile 28-33) auf `kind` umstellen.
       `createMeal` (Zeile 70-83) und `withHiding` (Zeile 85-94) tragen `kind` statt
       `mainMeal`. Erst die Tests in `meal.test.ts`: `createMeal` mit `kind: 'mainMeal'`
@@ -371,10 +371,10 @@ die Übersetzung in Firestore stimmt.
       ```
       Der Draft bekommt **keinen** Standardwert: `kind` ist Pflichtfeld, damit `draftOf`
       und `EMPTY_DRAFT` es führen müssen.
-- [ ] `withHiding` in `meal.ts` auf `kind: meal.kind` umstellen. Die vorhandenen Tests
+- [x] `withHiding` in `meal.ts` auf `kind: meal.kind` umstellen. Die vorhandenen Tests
       (`meal.test.ts:188-199`, im Block ab Zeile 166) werden mitgezogen: Umschalten der Sichtbarkeit lässt `kind`
       unverändert — geprüft mit `'mainMeal'` und mit `'breakfast'`.
-- [ ] `withChosenKind` in `meal.ts` ergänzen. Erst die Tests in `meal.test.ts`, alle
+- [x] `withChosenKind` in `meal.ts` ergänzen. Erst die Tests in `meal.test.ts`, alle
       sieben Übergänge aus dem Zielbild.
       ```ts
       export function withChosenKind(
@@ -386,7 +386,7 @@ die Übersetzung in Firestore stimmt.
         return previous === chosen ? 'none' : previous
       }
       ```
-- [ ] Die Test-Fabriken und Literale von `mainMeal: true` auf `kind: 'mainMeal'`
+- [x] Die Test-Fabriken und Literale von `mainMeal: true` auf `kind: 'mainMeal'`
       umstellen: `meal.test.ts:16` (`emptyDraft`), `:26`, `:75`, `:86`, `:147`, `:174`,
       `:184` sowie die beiden `createMeal`-Aufrufe `:153` und `:160`;
       `announcements.test.ts:47` und `:344`; `mealSuggestions.test.ts:13`;
@@ -398,7 +398,7 @@ die Übersetzung in Firestore stimmt.
       `{ mainMeal: false }` auf `{ kind: 'none' }`: `MealsArea.test.tsx:620`, `:641`,
       `:663` und `:740`. Die letzte gehört zum Zugänglichkeitstest und muss **hier**
       mit umgestellt werden, sonst übersetzt Phase 1 nicht.
-- [ ] `firestoreMealsClient.ts` auf die Übersetzung umstellen: `toMeal` (Zeile 35-45)
+- [x] `firestoreMealsClient.ts` auf die Übersetzung umstellen: `toMeal` (Zeile 35-45)
       liest über eine eigene Funktion, `toDocument` (Zeile 47-59) schreibt beide
       Boolean-Felder. Die Reihenfolge `breakfast` vor `mainMeal` ist Pflicht, sonst
       gewinnt ein altes `mainMeal: true` gegen ein neues `breakfast: true`. `MealKind`
@@ -415,7 +415,7 @@ die Übersetzung in Firestore stimmt.
         mainMeal: meal.kind === 'mainMeal',
         breakfast: meal.kind === 'breakfast',
       ```
-- [ ] `MealFormPage.tsx` auf `kind` umstellen, ohne die Oberfläche zu verändern:
+- [x] `MealFormPage.tsx` auf `kind` umstellen, ohne die Oberfläche zu verändern:
       `EMPTY_DRAFT` (Zeile 23-28) auf `kind: 'mainMeal'`, `draftOf` (Zeile 30-38) auf
       `kind: meal.kind`, die vorhandene Checkbox (Zeile 120-127) auf `withChosenKind`,
       das zum Import aus `'../domain/meal'` (Zeile 6-12) dazukommt.
@@ -430,7 +430,7 @@ die Übersetzung in Firestore stimmt.
         }
       />
       ```
-- [ ] `ListedMeals` in `e2e/emulatorHousehold.ts` (Zeile 112-120) um
+- [x] `ListedMeals` in `e2e/emulatorHousehold.ts` (Zeile 112-120) um
       `breakfast?: { booleanValue?: boolean }` ergänzen. `nonMainMealNamesOnServer`
       bleibt, wie es ist: `mainMeal === false` gilt nach der Umstellung für
       `'none'` **und** `'breakfast'`, und der Test, der sie nutzt, hakt nur
@@ -438,20 +438,20 @@ die Übersetzung in Firestore stimmt.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `withChosenKind` ist für alle sieben Übergänge aus dem Zielbild grün, besonders
+- [x] `npm run test` läuft durch.
+- [x] `withChosenKind` ist für alle sieben Übergänge aus dem Zielbild grün, besonders
       `withChosenKind('mainMeal', 'breakfast', true) === 'breakfast'` und
       `withChosenKind('mainMeal', 'mainMeal', false) === 'none'`.
-- [ ] `createMeal` übernimmt `kind` aus dem Draft, in allen drei Werten.
-- [ ] `withHiding` lässt `kind` unverändert, mit `'mainMeal'` und mit `'breakfast'`.
-- [ ] `MealsArea.test.tsx` bleibt inhaltlich unverändert grün — die sechs Tests zur
+- [x] `createMeal` übernimmt `kind` aus dem Draft, in allen drei Werten.
+- [x] `withHiding` lässt `kind` unverändert, mit `'mainMeal'` und mit `'breakfast'`.
+- [x] `MealsArea.test.tsx` bleibt inhaltlich unverändert grün — die sechs Tests zur
       Hauptmahlzeit (Zeile 594-680) prüfen jetzt `kind` statt `mainMeal`, das Verhalten
       ist dasselbe.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler. `grep -rn "mainMeal:" src` findet die
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler. `grep -rn "mainMeal:" src` findet die
       Objekteigenschaft `mainMeal` nur noch in `firestoreMealsClient.ts`. Der **Wert**
       `'mainMeal'` und die Hilfsnamen `mainMealBox`/`switchMainMeal` bleiben stehen.
-- [ ] `npm run test:e2e` läuft durch, einschließlich der zwei unveränderten Tests
+- [x] `npm run test:e2e` läuft durch, einschließlich der zwei unveränderten Tests
       `keeps a meal out of the main meals after a reload` und `treats a stored meal
       without the field as a main meal`. Sie belegen beide Richtungen der Übersetzung.
 
@@ -463,7 +463,7 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
 
 **Aufgaben**:
 
-- [ ] `replacedKindAnnouncement` in `src/meals/domain/announcements.ts` ergänzen, bei
+- [x] `replacedKindAnnouncement` in `src/meals/domain/announcements.ts` ergänzen, bei
       den übrigen Gericht-Ansagen (nach `mealSavedAnnouncement`, Zeile 71-73). Erst die
       Tests in `announcements.test.ts`: die zwei Umkipp-Fälle liefern den Satz, alles
       mit `'none'` und `previous === next` liefert `null`.
@@ -485,7 +485,7 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
       `mealKindNames` ist also typsicher — dafür ist `ChosenMealKind` da. Beide Typen
       kommen zum Import aus `'./meal'` (Zeile 5-11) dazu; der Aufbau folgt
       `messagesByReason` (Zeile 15-19).
-- [ ] `chooseKind` in `MealFormPage.tsx` ergänzen, neben `change` (Zeile 60-62), und
+- [x] `chooseKind` in `MealFormPage.tsx` ergänzen, neben `change` (Zeile 60-62), und
       beide Zeilen darüber verdrahten. Die Komponente bekommt **keine** Bedingung über
       die Mahlzeitenart, sie reicht durch.
       ```tsx
@@ -496,7 +496,7 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
         change({ kind })
       }
       ```
-- [ ] Die zweite Zeile in `MealFormPage.tsx` direkt unter die erste setzen, vor die
+- [x] Die zweite Zeile in `MealFormPage.tsx` direkt unter die erste setzen, vor die
       Fehlerzeile (Zeile 128-130). Beide Zeilen sehen danach gleich aus:
       ```tsx
       <label className="toggleField">
@@ -521,14 +521,14 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
       allein das umschließende `<label>`, nicht das `role="switch"` in Zeile 44.
       Die Beschriftung der ersten Zeile wechselt hier von `Hauptmahlzeit` auf
       `Hauptgericht` (`MealFormPage.tsx:121`).
-- [ ] Die drei übrigen Stellen mit dem alten Wort nachziehen, damit die Tests die Zeile
+- [x] Die drei übrigen Stellen mit dem alten Wort nachziehen, damit die Tests die Zeile
       wiederfinden: `MealsArea.test.tsx:125` (`mainMealBox()` greift künftig
       `{ name: 'Hauptgericht' }`) sowie `e2e/meals.spec.ts:83`, `:94` und `:111`. Die
       Testnamen bleiben englisch und unverändert — es ändert sich nur die Beschriftung,
       die sie ansprechen. `mainMealBox`, `switchMainMeal` und
       `nonMainMealNamesOnServer` behalten ihre Namen, weil das Feld weiter `mainMeal`
       heißt.
-- [ ] `breakfastBox()` und `switchBreakfast()` in `MealsArea.test.tsx` ergänzen, neben
+- [x] `breakfastBox()` und `switchBreakfast()` in `MealsArea.test.tsx` ergänzen, neben
       `mainMealBox()`/`switchMainMeal()` (Zeile 124-130) und im selben Stil — über die
       Rolle, damit zugleich geprüft ist, dass es eine Checkbox ist und kein `switch`.
       ```tsx
@@ -540,7 +540,7 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
         return userEvent.click(breakfastBox())
       }
       ```
-- [ ] Tests in `MealsArea.test.tsx` ergänzen, hinter den Hauptgericht-Block
+- [x] Tests in `MealsArea.test.tsx` ergänzen, hinter den Hauptgericht-Block
       (Zeile 594-680):
       - `leaves a new meal out of the breakfasts` — Formular öffnen; `Frühstück` ist
         leer, `Hauptgericht` gesetzt. Nach dem Speichern steht `kind` auf
@@ -575,14 +575,14 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
         einen Lauf mit `kind: 'breakfast'` ergänzen.
       Wie die Ansage geprüft wird, richtet sich nach den vorhandenen Ansage-Tests in
       derselben Datei (`hides a meal and says so`, Zeile 521).
-- [ ] `breakfastMealNamesOnServer` in `e2e/emulatorHousehold.ts` ergänzen, nach dem
+- [x] `breakfastMealNamesOnServer` in `e2e/emulatorHousehold.ts` ergänzen, nach dem
       Vorbild von `nonMainMealNamesOnServer` (Zeile 136-148). Sie nennt den seltenen
       Zustand, damit `expect.poll` wirklich wartet und nicht schon auf dem leeren Server
       grün wird.
       ```ts
       .filter((document) => document.fields.breakfast?.booleanValue === true)
       ```
-- [ ] `storeMealOnServer` (Zeile 150-162) einen zweiten Parameter geben, damit ein
+- [x] `storeMealOnServer` (Zeile 150-162) einen zweiten Parameter geben, damit ein
       Altdokument mit `mainMeal: false` gelegt werden kann. Ohne den Parameter schreibt
       sie weiter genau dasselbe Dokument wie bisher — der Test `treats a stored meal
       without the field as a main meal` bleibt gültig. Die Felder brauchen die
@@ -605,7 +605,7 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
       ```
       `flagFields` wird im vorhandenen `callEmulator`-Aufruf hinter die bisherigen
       Felder gespreizt.
-- [ ] `e2e/meals.spec.ts` um `keeps a meal as a breakfast after a reload` ergänzen:
+- [x] `e2e/meals.spec.ts` um `keeps a meal as a breakfast after a reload` ergänzen:
       `Bolognese` anlegen, `Bearbeiten`, `switchCheckbox(page, 'Frühstück')`,
       `Speichern`, dann `await expect.poll(breakfastMealNamesOnServer).toEqual(
       ['Bolognese'])`, `page.reload()`, `Gerichte`, `Bolognese`, `Bearbeiten` —
@@ -613,14 +613,14 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
       Pflicht**, nicht Vorsicht: ausstehende Schreibvorgänge überleben kein Neuladen
       (offener Punkt zu `persistentLocalCache` in `docs/notes.txt`), und die
       Nachbartests machen es deshalb genauso.
-- [ ] `e2e/meals.spec.ts` um `treats a stored meal that is no main meal as neither`
+- [x] `e2e/meals.spec.ts` um `treats a stored meal that is no main meal as neither`
       ergänzen: `storeMealOnServer('Milchreis', { mainMeal: false })` **vor** dem
       Anmelden, dann anmelden, `Gerichte`, `Milchreis`, `Bearbeiten` — beide Zeilen
       leer. Sichert ab, dass ein Gericht aus MZP-017 nicht still zum Frühstück wird.
-- [ ] In `docs/notes.txt` den Punkt `- Checkbox für Frühstück` (Zeile 120) auf `x`
+- [x] In `docs/notes.txt` den Punkt `- Checkbox für Frühstück` (Zeile 120) auf `x`
       setzen und in den DONE-Block über der TODO-Überschrift verschieben, ohne die
       Reihenfolge der übrigen Zeilen zu berühren.
-- [ ] In `docs/notes.txt` unten unter TODO einen Punkt anhängen, weil der Punkt zu den
+- [x] In `docs/notes.txt` unten unter TODO einen Punkt anhängen, weil der Punkt zu den
       Zufallsregeln (Zeile 118-119) den alten Feldnamen nennt und nicht umformuliert
       werden darf:
       ```
@@ -631,29 +631,29 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `replacedKindAnnouncement('mainMeal', 'breakfast')` liefert
+- [x] `npm run test` läuft durch.
+- [x] `replacedKindAnnouncement('mainMeal', 'breakfast')` liefert
       `Hauptgericht abgewählt.`, `('breakfast', 'mainMeal')` liefert
       `Frühstück abgewählt.`, jeder Fall mit `'none'` und jeder mit gleichem Wert
       liefert `null`.
-- [ ] Die Tests `takes the main meal mark away when a meal becomes breakfast` und
+- [x] Die Tests `takes the main meal mark away when a meal becomes breakfast` und
       `takes the breakfast mark away when a meal becomes a main meal` sind grün — beide
       Haken sind nie zugleich gesetzt.
-- [ ] `says nothing when a mark is only taken away` ist grün: kein doppeltes Sprechen,
+- [x] `says nothing when a mark is only taken away` ist grün: kein doppeltes Sprechen,
       wenn VoiceOver ohnehin `deaktiviert` meldet.
-- [ ] `leaves a new meal out of the breakfasts` ist grün: der Standard beim Anlegen ist
+- [x] `leaves a new meal out of the breakfasts` ist grün: der Standard beim Anlegen ist
       unverändert `Hauptgericht`.
-- [ ] `keeps a meal hidden when its kind changes` ist grün — das Formular verliert
+- [x] `keeps a meal hidden when its kind changes` ist grün — das Formular verliert
       `hidden` nicht.
-- [ ] `forgets the kind that was not saved` ist grün: ohne `Speichern` wird nichts
+- [x] `forgets the kind that was not saved` ist grün: ohne `Speichern` wird nichts
       geschrieben.
-- [ ] Die Zugänglichkeitsprüfungen auf dem Formular sind in allen drei Zuständen grün,
+- [x] Die Zugänglichkeitsprüfungen auf dem Formular sind in allen drei Zuständen grün,
       und beide Kästen sind über `getByRole('checkbox', { name: ... })` erreichbar — sie
       haben also einen zugänglichen Namen und sind keine `switch`.
-- [ ] `grep -rn "Hauptmahlzeit" src e2e` findet nichts mehr.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `keeps a meal as a breakfast after
+- [x] `grep -rn "Hauptmahlzeit" src e2e` findet nichts mehr.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch, einschließlich `keeps a meal as a breakfast after
       a reload` und `treats a stored meal that is no main meal as neither`.
 
 **Manuelle Verifikation**:
@@ -675,6 +675,11 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
       steht.
 
 ## Notizen zur Umsetzung
+
+Der e2e-Test `buys only the day that the supply no longer covers` war im ersten
+vollständigen Lauf nach Phase 1 rot und im Wiederholungslauf grün — der bekannte
+Wackler aus `docs/notes.txt` (useSupplies übernimmt jede Momentaufnahme ungeprüft).
+Er rührt nicht an `kind`. Der Lauf nach Phase 2 war komplett grün, alle 22 Tests.
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
 

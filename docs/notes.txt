@@ -53,6 +53,7 @@ x Eisfach-Memory
 x Button-Farben anpassen
 x Gericht im Wochenplan ausblenden können
 x Gerichteliste: Immer gleichen Platz für Glühbirne freihalten, auch wenn nicht sichtbar
+x Checkbox für Frühstück
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -117,4 +118,6 @@ b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf 
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 - Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
   Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)
-- Checkbox für Frühstück
+- Zufallsregeln: das Feld mainMeal heisst seit MZP-019 kind und traegt
+  'mainMeal' | 'breakfast' | 'none'; der Punkt weiter oben meint dieses Feld.
+  Die Zeile im Formular heisst seitdem Hauptgericht

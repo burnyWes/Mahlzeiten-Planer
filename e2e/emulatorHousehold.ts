@@ -115,6 +115,7 @@ type ListedMeals = {
       name: { stringValue: string }
       hidden?: { booleanValue?: boolean }
       mainMeal?: { booleanValue?: boolean }
+      breakfast?: { booleanValue?: boolean }
     }
   }[]
 }
@@ -147,7 +148,32 @@ export async function nonMainMealNamesOnServer(): Promise<readonly string[]> {
     .map((document) => document.fields.name.stringValue)
 }
 
-export async function storeMealOnServer(name: string): Promise<void> {
+export async function breakfastMealNamesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedMeals
+  return (listed.documents ?? [])
+    .filter((document) => document.fields.breakfast?.booleanValue === true)
+    .map((document) => document.fields.name.stringValue)
+}
+
+type StoredMealFlags = { mainMeal?: boolean; breakfast?: boolean }
+
+export async function storeMealOnServer(
+  name: string,
+  flags: StoredMealFlags = {},
+): Promise<void> {
+  const flagFields = Object.fromEntries(
+    Object.entries(flags).map(([field, value]) => [
+      field,
+      { booleanValue: value },
+    ]),
+  )
   await callEmulator(
     `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`,
     'POST',
@@ -156,6 +182,7 @@ export async function storeMealOnServer(name: string): Promise<void> {
         name: { stringValue: name },
         ingredientNotes: { stringValue: '' },
         recipe: { stringValue: '' },
+        ...flagFields,
       },
     },
   )

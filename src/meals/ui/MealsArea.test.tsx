@@ -16,7 +16,7 @@ function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
     ...parts,
   }
 }
@@ -122,11 +122,19 @@ function editMeal() {
 }
 
 function mainMealBox() {
-  return screen.getByRole('checkbox', { name: 'Hauptmahlzeit' })
+  return screen.getByRole('checkbox', { name: 'Hauptgericht' })
 }
 
 function switchMainMeal() {
   return userEvent.click(mainMealBox())
+}
+
+function breakfastBox() {
+  return screen.getByRole('checkbox', { name: 'Frühstück' })
+}
+
+function switchBreakfast() {
+  return userEvent.click(breakfastBox())
 }
 
 function switchHiding(label: string) {
@@ -207,7 +215,7 @@ describe('MealsArea', () => {
         ingredientNotes: 'Zwiebel, Lorbeer',
         recipe: 'Linsen kochen.',
         hidden: false,
-        mainMeal: true,
+        kind: 'mainMeal',
       },
     ])
     expect(announcements).toContain('Linsensuppe gespeichert.')
@@ -379,6 +387,7 @@ describe('MealsArea', () => {
     expect(screen.getByLabelText('Rezept')).toHaveValue('Anbraten.')
     expect(screen.getByText('Hackfleisch, 500 g')).toBeInTheDocument()
     expect(mainMealBox()).toBeChecked()
+    expect(breakfastBox()).not.toBeChecked()
   })
 
   it('keeps the change to a meal instead of creating a second one', async () => {
@@ -400,7 +409,7 @@ describe('MealsArea', () => {
         ingredientNotes: '',
         recipe: 'Anbraten.',
         hidden: false,
-        mainMeal: true,
+        kind: 'mainMeal',
       },
     ])
     expect(announcements).toContain('Bolognese vom Rind gespeichert.')
@@ -601,7 +610,7 @@ describe('MealsArea', () => {
 
     await save()
 
-    expect(client.storedMeals()[0].mainMeal).toBe(true)
+    expect(client.storedMeals()[0].kind).toBe('mainMeal')
   })
 
   it('keeps a meal that is no main meal', async () => {
@@ -612,12 +621,12 @@ describe('MealsArea', () => {
     await switchMainMeal()
     await save()
 
-    expect(client.storedMeals()[0].mainMeal).toBe(false)
+    expect(client.storedMeals()[0].kind).toBe('none')
   })
 
   it('shows whether the edited meal is a main meal', async () => {
     renderMealsArea([
-      meal('rice', 'Milchreis', { mainMeal: false }),
+      meal('rice', 'Milchreis', { kind: 'none' }),
       meal('soup', 'Suppe'),
     ])
 
@@ -638,7 +647,7 @@ describe('MealsArea', () => {
 
   it('takes a meal back into the main meals', async () => {
     const { client } = renderMealsArea([
-      meal('rice', 'Milchreis', { mainMeal: false }),
+      meal('rice', 'Milchreis', { kind: 'none' }),
     ])
 
     await openMeal('Milchreis')
@@ -646,7 +655,7 @@ describe('MealsArea', () => {
     await switchMainMeal()
     await save()
 
-    expect(client.storedMeals()[0].mainMeal).toBe(true)
+    expect(client.storedMeals()[0].kind).toBe('mainMeal')
   })
 
   it('keeps a meal hidden when its main meal state changes', async () => {
@@ -660,7 +669,7 @@ describe('MealsArea', () => {
     await save()
 
     expect(client.storedMeals()[0]).toEqual(
-      meal('soup', 'Suppe', { hidden: true, mainMeal: false }),
+      meal('soup', 'Suppe', { hidden: true, kind: 'none' }),
     )
   })
 
@@ -676,7 +685,140 @@ describe('MealsArea', () => {
     await editMeal()
 
     expect(mainMealBox()).toBeChecked()
-    expect(client.storedMeals()[0].mainMeal).toBe(true)
+    expect(client.storedMeals()[0].kind).toBe('mainMeal')
+  })
+
+  it('leaves a new meal out of the breakfasts', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Linsensuppe')
+
+    expect(breakfastBox()).not.toBeChecked()
+    expect(mainMealBox()).toBeChecked()
+
+    await save()
+
+    expect(client.storedMeals()[0].kind).toBe('mainMeal')
+  })
+
+  it('marks a meal as breakfast', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Milchreis')
+    await switchBreakfast()
+    await save()
+
+    expect(client.storedMeals()[0].kind).toBe('breakfast')
+  })
+
+  it('takes the main meal mark away when a meal becomes breakfast', async () => {
+    renderMealsArea()
+
+    await openMealForm()
+    await switchBreakfast()
+
+    expect(mainMealBox()).not.toBeChecked()
+    expect(breakfastBox()).toBeChecked()
+  })
+
+  it('takes the breakfast mark away when a meal becomes a main meal', async () => {
+    renderMealsArea([meal('rice', 'Milchreis', { kind: 'breakfast' })])
+
+    await openMeal('Milchreis')
+    await editMeal()
+    await switchMainMeal()
+
+    expect(breakfastBox()).not.toBeChecked()
+    expect(mainMealBox()).toBeChecked()
+  })
+
+  it('says which mark it took away', async () => {
+    const { announcements } = renderMealsArea([
+      meal('rice', 'Milchreis', { kind: 'breakfast' }),
+      meal('soup', 'Suppe'),
+    ])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await switchBreakfast()
+
+    expect(announcements).toContain('Hauptgericht abgewählt.')
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Gericht' }),
+    )
+    await goBackToTheMeals()
+    await openMeal('Milchreis')
+    await editMeal()
+    await switchMainMeal()
+
+    expect(announcements).toContain('Frühstück abgewählt.')
+  })
+
+  it('says nothing when a mark is only taken away', async () => {
+    const { announcements } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await switchMainMeal()
+
+    expect(mainMealBox()).not.toBeChecked()
+    expect(breakfastBox()).not.toBeChecked()
+    expect(announcements).not.toContain('Hauptgericht abgewählt.')
+    expect(announcements).not.toContain('Frühstück abgewählt.')
+  })
+
+  it('shows a meal without any kind again', async () => {
+    renderMealsArea([meal('rice', 'Milchreis', { kind: 'none' })])
+
+    await openMeal('Milchreis')
+    await editMeal()
+
+    expect(mainMealBox()).not.toBeChecked()
+    expect(breakfastBox()).not.toBeChecked()
+  })
+
+  it('shows whether the edited meal is a breakfast', async () => {
+    renderMealsArea([meal('rice', 'Milchreis', { kind: 'breakfast' })])
+
+    await openMeal('Milchreis')
+    await editMeal()
+
+    expect(breakfastBox()).toBeChecked()
+    expect(mainMealBox()).not.toBeChecked()
+  })
+
+  it('forgets the kind that was not saved', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await switchBreakfast()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Gericht' }),
+    )
+    await editMeal()
+
+    expect(mainMealBox()).toBeChecked()
+    expect(breakfastBox()).not.toBeChecked()
+    expect(client.storedMeals()[0].kind).toBe('mainMeal')
+  })
+
+  it('keeps a meal hidden when its kind changes', async () => {
+    const { client } = renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+    ])
+
+    await openMeal('Suppe, ausgeblendet')
+    await editMeal()
+    await switchBreakfast()
+    await save()
+
+    expect(client.storedMeals()[0]).toEqual(
+      meal('soup', 'Suppe', { hidden: true, kind: 'breakfast' }),
+    )
   })
 
   it('shows the actions of a meal as icons only in one row', async () => {
@@ -737,13 +879,25 @@ describe('MealsArea', () => {
 
   it('has no accessibility violations on the form of a meal that is no main meal', async () => {
     const { rendered } = renderMealsArea([
-      meal('rice', 'Milchreis', { mainMeal: false }),
+      meal('rice', 'Milchreis', { kind: 'none' }),
     ])
 
     await openMeal('Milchreis')
     await editMeal()
 
     expect(mainMealBox()).not.toBeChecked()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the form of a breakfast', async () => {
+    const { rendered } = renderMealsArea([
+      meal('rice', 'Milchreis', { kind: 'breakfast' }),
+    ])
+
+    await openMeal('Milchreis')
+    await editMeal()
+
+    expect(breakfastBox()).toBeChecked()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

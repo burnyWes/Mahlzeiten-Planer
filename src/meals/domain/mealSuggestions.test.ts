@@ -10,7 +10,7 @@ function meal(name: string, id = name): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
   }
 }
 

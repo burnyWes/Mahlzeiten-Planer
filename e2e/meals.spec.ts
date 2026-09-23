@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import {
+  breakfastMealNamesOnServer,
   hiddenMealNamesOnServer,
   nonMainMealNamesOnServer,
   prepareEmulators,
@@ -80,7 +81,7 @@ test('keeps a meal out of the main meals after a reload', async ({ page }) => {
   await typeInto(page, 'Name', 'Bolognese')
   await pressButton(page, 'Speichern')
   await pressButton(page, 'Bearbeiten')
-  await switchCheckbox(page, 'Hauptmahlzeit')
+  await switchCheckbox(page, 'Hauptgericht')
   await pressButton(page, 'Speichern')
 
   await expect.poll(nonMainMealNamesOnServer).toEqual(['Bolognese'])
@@ -91,7 +92,7 @@ test('keeps a meal out of the main meals after a reload', async ({ page }) => {
   await pressButton(page, 'Bearbeiten')
 
   await expect(
-    page.getByRole('checkbox', { name: 'Hauptmahlzeit', exact: true }),
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
   ).not.toBeChecked()
 })
 
@@ -108,8 +109,55 @@ test('treats a stored meal without the field as a main meal', async ({
   await pressButton(page, 'Bearbeiten')
 
   await expect(
-    page.getByRole('checkbox', { name: 'Hauptmahlzeit', exact: true }),
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
   ).toBeChecked()
+})
+
+test('keeps a meal as a breakfast after a reload', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Bearbeiten')
+  await switchCheckbox(page, 'Frühstück')
+  await pressButton(page, 'Speichern')
+
+  await expect.poll(breakfastMealNamesOnServer).toEqual(['Bolognese'])
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Frühstück', exact: true }),
+  ).toBeChecked()
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
+  ).not.toBeChecked()
+})
+
+test('treats a stored meal that is no main meal as neither', async ({
+  page,
+}) => {
+  await storeMealOnServer('Milchreis', { mainMeal: false })
+
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Milchreis')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
+  ).not.toBeChecked()
+  await expect(
+    page.getByRole('checkbox', { name: 'Frühstück', exact: true }),
+  ).not.toBeChecked()
 })
 
 test('keeps the actions of a long meal in view at the bottom of the screen', async ({

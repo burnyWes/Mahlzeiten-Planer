@@ -18,6 +18,7 @@ import {
   lessSupplyLabel,
   moreSupplyLabel,
   randomMealLabel,
+  replacedKindAnnouncement,
   suppliesHeading,
   supplyAddedAnnouncement,
   supplyChangedAnnouncement,
@@ -44,7 +45,7 @@ const bolognese: NewMeal = {
   ingredientNotes: '',
   recipe: '',
   hidden: false,
-  mainMeal: true,
+  kind: 'mainMeal',
 }
 
 describe('mealsHeading', () => {
@@ -191,6 +192,36 @@ describe('mealSavedAnnouncement', () => {
     expect(mealSavedAnnouncement(bolognese)).toBe(
       'Spaghetti Bolognese gespeichert.',
     )
+  })
+})
+
+describe('replacedKindAnnouncement', () => {
+  it('names the main meal mark that a breakfast took away', () => {
+    expect(replacedKindAnnouncement('mainMeal', 'breakfast')).toBe(
+      'Hauptgericht abgewählt.',
+    )
+  })
+
+  it('names the breakfast mark that a main meal took away', () => {
+    expect(replacedKindAnnouncement('breakfast', 'mainMeal')).toBe(
+      'Frühstück abgewählt.',
+    )
+  })
+
+  it('says nothing when a mark is only taken away', () => {
+    expect(replacedKindAnnouncement('mainMeal', 'none')).toBeNull()
+    expect(replacedKindAnnouncement('breakfast', 'none')).toBeNull()
+  })
+
+  it('says nothing when a meal had no mark before', () => {
+    expect(replacedKindAnnouncement('none', 'mainMeal')).toBeNull()
+    expect(replacedKindAnnouncement('none', 'breakfast')).toBeNull()
+  })
+
+  it('says nothing when the kind stayed the same', () => {
+    expect(replacedKindAnnouncement('mainMeal', 'mainMeal')).toBeNull()
+    expect(replacedKindAnnouncement('breakfast', 'breakfast')).toBeNull()
+    expect(replacedKindAnnouncement('none', 'none')).toBeNull()
   })
 })
 
@@ -341,7 +372,7 @@ describe('weekPlanTransferAnnouncement', () => {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
   }
 
   it('puts the week plan in front of what was added', () => {

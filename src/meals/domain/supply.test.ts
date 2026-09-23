@@ -26,7 +26,7 @@ function meal(id: string, name: string): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
-    mainMeal: true,
+    kind: 'mainMeal',
   }
 }
 

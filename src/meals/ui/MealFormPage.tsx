@@ -2,9 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { SaveIcon } from '../../shared/ui/SaveIcon'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { mealFailureMessage } from '../domain/announcements'
+import {
+  mealFailureMessage,
+  replacedKindAnnouncement,
+} from '../domain/announcements'
 import {
   createMeal,
+  withChosenKind,
+  type ChosenMealKind,
   type Meal,
   type MealDraft,
   type MealItem,
@@ -24,7 +29,7 @@ const EMPTY_DRAFT: MealDraft = {
   name: '',
   ingredientNotes: '',
   recipe: '',
-  mainMeal: true,
+  kind: 'mainMeal',
 }
 
 function draftOf(meal: Meal | null): MealDraft {
@@ -33,7 +38,7 @@ function draftOf(meal: Meal | null): MealDraft {
     name: meal.name,
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
-    mainMeal: meal.mainMeal,
+    kind: meal.kind,
   }
 }
 
@@ -59,6 +64,13 @@ export function MealFormPage({
 
   function change(part: Partial<MealDraft>) {
     setDraft((previous) => ({ ...previous, ...part }))
+  }
+
+  function chooseKind(chosen: ChosenMealKind, checked: boolean) {
+    const kind = withChosenKind(draft.kind, chosen, checked)
+    const replaced = replacedKindAnnouncement(draft.kind, kind)
+    if (replaced !== null) announce(replaced)
+    change({ kind })
   }
 
   function saveMeal() {
@@ -118,11 +130,19 @@ export function MealFormPage({
         />
       </p>
       <label className="toggleField">
-        <span>Hauptmahlzeit</span>
+        <span>Hauptgericht</span>
         <input
           type="checkbox"
-          checked={draft.mainMeal}
-          onChange={(event) => change({ mainMeal: event.target.checked })}
+          checked={draft.kind === 'mainMeal'}
+          onChange={(event) => chooseKind('mainMeal', event.target.checked)}
+        />
+      </label>
+      <label className="toggleField">
+        <span>Frühstück</span>
+        <input
+          type="checkbox"
+          checked={draft.kind === 'breakfast'}
+          onChange={(event) => chooseKind('breakfast', event.target.checked)}
         />
       </label>
       <p id="mealFailure" className="failure">

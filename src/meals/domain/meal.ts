@@ -7,6 +7,10 @@ import {
 
 export type MealId = string
 
+export type MealKind = 'mainMeal' | 'breakfast' | 'none'
+
+export type ChosenMealKind = Exclude<MealKind, 'none'>
+
 export type MealItem = {
   name: string
   quantity: Quantity | null
@@ -18,7 +22,7 @@ export type NewMeal = {
   ingredientNotes: string
   recipe: string
   hidden: boolean
-  mainMeal: boolean
+  kind: MealKind
 }
 
 export type Meal = NewMeal & {
@@ -29,7 +33,7 @@ export type MealDraft = {
   name: string
   ingredientNotes: string
   recipe: string
-  mainMeal: boolean
+  kind: MealKind
 }
 
 export type MealItemDraft = QuantityDraft & {
@@ -78,7 +82,7 @@ export function createMeal(
     ingredientNotes: readText(draft.ingredientNotes),
     recipe: readText(draft.recipe),
     hidden,
-    mainMeal: draft.mainMeal,
+    kind: draft.kind,
   }
 }
 
@@ -89,8 +93,17 @@ export function withHiding(meal: Meal, hidden: boolean): NewMeal {
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
     hidden,
-    mainMeal: meal.mainMeal,
+    kind: meal.kind,
   }
+}
+
+export function withChosenKind(
+  previous: MealKind,
+  chosen: ChosenMealKind,
+  checked: boolean,
+): MealKind {
+  if (checked) return chosen
+  return previous === chosen ? 'none' : previous
 }
 
 export function normalizeMealName(name: string): string {

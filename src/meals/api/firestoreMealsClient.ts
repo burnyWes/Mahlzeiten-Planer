@@ -8,7 +8,7 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import type { Quantity } from '../../shared/domain/quantity'
-import type { Meal, MealId, MealItem, NewMeal } from '../domain/meal'
+import type { Meal, MealId, MealItem, MealKind, NewMeal } from '../domain/meal'
 import type { MealsClient } from './mealsClient'
 
 const MEALS = 'meals'
@@ -32,6 +32,11 @@ function toMealItems(stored: DocumentData): readonly MealItem[] {
   return Array.isArray(stored.items) ? stored.items.map(toMealItem) : []
 }
 
+function toKind(stored: DocumentData): MealKind {
+  if (stored.breakfast === true) return 'breakfast'
+  return stored.mainMeal !== false ? 'mainMeal' : 'none'
+}
+
 function toMeal(id: MealId, stored: DocumentData): Meal {
   return {
     id,
@@ -40,7 +45,7 @@ function toMeal(id: MealId, stored: DocumentData): Meal {
     ingredientNotes: String(stored.ingredientNotes ?? ''),
     recipe: String(stored.recipe ?? ''),
     hidden: stored.hidden === true,
-    mainMeal: stored.mainMeal !== false,
+    kind: toKind(stored),
   }
 }
 
@@ -54,7 +59,8 @@ function toDocument(meal: NewMeal): DocumentData {
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
     hidden: meal.hidden,
-    mainMeal: meal.mainMeal,
+    mainMeal: meal.kind === 'mainMeal',
+    breakfast: meal.kind === 'breakfast',
   }
 }
 
