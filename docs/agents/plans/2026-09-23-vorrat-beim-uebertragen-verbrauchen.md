@@ -5,7 +5,7 @@ branch: main
 story: MZP-015
 topic: "Vorrat beim Übertragen verbrauchen"
 tags: [plan, meals, weekPlan, supplies, shoppingList]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-015 — Vorrat beim Übertragen verbrauchen
@@ -445,7 +445,7 @@ es.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver: eine Woche mit einem Vorrat planen, »Auf die
+- [x] Auf dem Gerät mit VoiceOver: eine Woche mit einem Vorrat planen, »Auf die
       Einkaufsliste« drücken und prüfen, dass die Ansage die Entnahme nennt, der
       Vorrat auf der Vorräte-Seite entsprechend kleiner ist und die Schneeflocke
       dem Rest folgt — bei aufgebrauchtem Vorrat weg, bei übriger Portion weiter
@@ -462,6 +462,10 @@ es.
 - In `WeekPlanArea.test.tsx` mussten vier statt der geplanten Erwartungen angepasst
   werden; die Zeilenangaben des Plans stimmten, die Form der Objekte ist jetzt
   `spentSupplies: [supply('bolognese', 1)]`.
+
+**2026-09-23 — am Gerät geprüft.** Die Ansage nennt die Entnahme, der Vorrat auf der
+Vorräte-Seite ist entsprechend kleiner und die Schneeflocke folgt dem Rest. Die manuelle
+Verifikation ist abgehakt, der Plan ist abgeschlossen.
 
 ## Verweise
 
