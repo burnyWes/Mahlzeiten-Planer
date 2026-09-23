@@ -18,6 +18,7 @@ export type NewMeal = {
   ingredientNotes: string
   recipe: string
   hidden: boolean
+  mainMeal: boolean
 }
 
 export type Meal = NewMeal & {
@@ -28,6 +29,7 @@ export type MealDraft = {
   name: string
   ingredientNotes: string
   recipe: string
+  mainMeal: boolean
 }
 
 export type MealItemDraft = QuantityDraft & {
@@ -76,6 +78,7 @@ export function createMeal(
     ingredientNotes: readText(draft.ingredientNotes),
     recipe: readText(draft.recipe),
     hidden,
+    mainMeal: draft.mainMeal,
   }
 }
 
@@ -86,6 +89,7 @@ export function withHiding(meal: Meal, hidden: boolean): NewMeal {
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
     hidden,
+    mainMeal: meal.mainMeal,
   }
 }
 

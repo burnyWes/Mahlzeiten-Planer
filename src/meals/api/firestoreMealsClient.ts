@@ -40,6 +40,7 @@ function toMeal(id: MealId, stored: DocumentData): Meal {
     ingredientNotes: String(stored.ingredientNotes ?? ''),
     recipe: String(stored.recipe ?? ''),
     hidden: stored.hidden === true,
+    mainMeal: stored.mainMeal !== false,
   }
 }
 
@@ -53,6 +54,7 @@ function toDocument(meal: NewMeal): DocumentData {
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
     hidden: meal.hidden,
+    mainMeal: meal.mainMeal,
   }
 }
 

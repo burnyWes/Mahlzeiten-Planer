@@ -220,7 +220,17 @@ button:disabled {
   justify-content: space-between;
 }
 
-.itemList input[type='checkbox'] {
+.toggleField {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 44px;
+  margin: 0 0 1rem;
+}
+
+.itemList input[type='checkbox'],
+.toggleField input[type='checkbox'] {
   appearance: none;
   position: relative;
   box-sizing: border-box;
@@ -237,7 +247,8 @@ button:disabled {
   background-color: transparent;
 }
 
-.itemList input[type='checkbox']:checked::before {
+.itemList input[type='checkbox']:checked::before,
+.toggleField input[type='checkbox']:checked::before {
   content: '';
   position: absolute;
   inset: 0;

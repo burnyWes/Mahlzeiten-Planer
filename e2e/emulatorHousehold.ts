@@ -114,6 +114,7 @@ type ListedMeals = {
     fields: {
       name: { stringValue: string }
       hidden?: { booleanValue?: boolean }
+      mainMeal?: { booleanValue?: boolean }
     }
   }[]
 }
@@ -130,6 +131,34 @@ export async function hiddenMealNamesOnServer(): Promise<readonly string[]> {
   return (listed.documents ?? [])
     .filter((document) => document.fields.hidden?.booleanValue === true)
     .map((document) => document.fields.name.stringValue)
+}
+
+export async function nonMainMealNamesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedMeals
+  return (listed.documents ?? [])
+    .filter((document) => document.fields.mainMeal?.booleanValue === false)
+    .map((document) => document.fields.name.stringValue)
+}
+
+export async function storeMealOnServer(name: string): Promise<void> {
+  await callEmulator(
+    `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`,
+    'POST',
+    {
+      fields: {
+        name: { stringValue: name },
+        ingredientNotes: { stringValue: '' },
+        recipe: { stringValue: '' },
+      },
+    },
+  )
 }
 
 type ListedSupplies = {

@@ -19,7 +19,15 @@ import {
 } from './supply'
 
 function meal(id: string, name: string): Meal {
-  return { id, name, items: [], ingredientNotes: '', recipe: '', hidden: false }
+  return {
+    id,
+    name,
+    items: [],
+    ingredientNotes: '',
+    recipe: '',
+    hidden: false,
+    mainMeal: true,
+  }
 }
 
 const bolognese = meal('bolognese', 'Bolognese')

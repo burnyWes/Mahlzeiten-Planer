@@ -6,6 +6,11 @@ export async function typeInto(page: Page, label: string, text: string) {
   await page.keyboard.type(text)
 }
 
+export async function switchCheckbox(page: Page, label: string) {
+  await page.getByLabel(label, { exact: true }).focus()
+  await page.keyboard.press('Space')
+}
+
 export async function pressButton(page: Page, name: string) {
   await page.getByRole('button', { name, exact: true }).focus()
   await page.keyboard.press('Enter')

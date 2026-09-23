@@ -13,7 +13,7 @@ import {
   type MealItem,
 } from './meal'
 
-const emptyDraft = { name: '', ingredientNotes: '', recipe: '' }
+const emptyDraft = { name: '', ingredientNotes: '', recipe: '', mainMeal: true }
 
 function meal(name: string): Meal {
   return {
@@ -23,6 +23,7 @@ function meal(name: string): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
+    mainMeal: true,
   }
 }
 
@@ -71,6 +72,7 @@ describe('createMeal', () => {
           name: 'Bolognese',
           ingredientNotes: 'Zwiebel, Knoblauch',
           recipe: 'Anbraten.',
+          mainMeal: true,
         },
         items,
         false,
@@ -81,6 +83,7 @@ describe('createMeal', () => {
       ingredientNotes: 'Zwiebel, Knoblauch',
       recipe: 'Anbraten.',
       hidden: false,
+      mainMeal: true,
     })
   })
 
@@ -141,7 +144,22 @@ describe('createMeal', () => {
       ingredientNotes: '',
       recipe: '',
       hidden: false,
+      mainMeal: true,
     })
+  })
+
+  it('creates a main meal when the draft says so', () => {
+    expect(
+      createMeal({ ...emptyDraft, name: 'Suppe', mainMeal: true }, [], false)
+        .mainMeal,
+    ).toBe(true)
+  })
+
+  it('creates a meal that is no main meal when the draft says so', () => {
+    expect(
+      createMeal({ ...emptyDraft, name: 'Suppe', mainMeal: false }, [], false)
+        .mainMeal,
+    ).toBe(false)
   })
 })
 
@@ -153,6 +171,7 @@ describe('withHiding', () => {
     ingredientNotes: 'Zwiebel',
     recipe: 'Anbraten.',
     hidden: false,
+    mainMeal: true,
   }
 
   it('hides a meal that was visible', () => {
@@ -162,7 +181,21 @@ describe('withHiding', () => {
       ingredientNotes: 'Zwiebel',
       recipe: 'Anbraten.',
       hidden: true,
+      mainMeal: true,
     })
+  })
+
+  it('leaves a main meal a main meal', () => {
+    expect(withHiding(bolognese, true).mainMeal).toBe(true)
+  })
+
+  it('leaves a meal that is no main meal out of the main meals', () => {
+    expect(withHiding({ ...bolognese, mainMeal: false }, true).mainMeal).toBe(
+      false,
+    )
+    expect(withHiding({ ...bolognese, mainMeal: false }, false).mainMeal).toBe(
+      false,
+    )
   })
 
   it('shows a meal that was hidden', () => {

@@ -114,3 +114,5 @@ b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf 
   drueckbar und kauft beim zweiten Druck die vorher gedeckten Tage mit, weil der Vorrat
   dann schon abgebucht ist (MZP-015, Entscheidung 1).
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
+- Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
+  Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)

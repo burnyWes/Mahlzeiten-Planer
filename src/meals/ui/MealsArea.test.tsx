@@ -16,6 +16,7 @@ function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
+    mainMeal: true,
     ...parts,
   }
 }
@@ -120,6 +121,14 @@ function editMeal() {
   return userEvent.click(screen.getByRole('button', { name: 'Bearbeiten' }))
 }
 
+function mainMealBox() {
+  return screen.getByRole('checkbox', { name: 'Hauptmahlzeit' })
+}
+
+function switchMainMeal() {
+  return userEvent.click(mainMealBox())
+}
+
 function switchHiding(label: string) {
   return userEvent.click(screen.getByRole('button', { name: label }))
 }
@@ -194,6 +203,7 @@ describe('MealsArea', () => {
         ingredientNotes: 'Zwiebel, Lorbeer',
         recipe: 'Linsen kochen.',
         hidden: false,
+        mainMeal: true,
       },
     ])
     expect(announcements).toContain('Linsensuppe gespeichert.')
@@ -364,6 +374,7 @@ describe('MealsArea', () => {
     expect(screen.getByLabelText('Zutaten')).toHaveValue('Zwiebel')
     expect(screen.getByLabelText('Rezept')).toHaveValue('Anbraten.')
     expect(screen.getByText('Hackfleisch, 500 g')).toBeInTheDocument()
+    expect(mainMealBox()).toBeChecked()
   })
 
   it('keeps the change to a meal instead of creating a second one', async () => {
@@ -385,6 +396,7 @@ describe('MealsArea', () => {
         ingredientNotes: '',
         recipe: 'Anbraten.',
         hidden: false,
+        mainMeal: true,
       },
     ])
     expect(announcements).toContain('Bolognese vom Rind gespeichert.')
@@ -561,6 +573,94 @@ describe('MealsArea', () => {
     )
   })
 
+  it('marks a new meal as a main meal', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Linsensuppe')
+
+    expect(mainMealBox()).toBeChecked()
+
+    await save()
+
+    expect(client.storedMeals()[0].mainMeal).toBe(true)
+  })
+
+  it('keeps a meal that is no main meal', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Milchreis')
+    await switchMainMeal()
+    await save()
+
+    expect(client.storedMeals()[0].mainMeal).toBe(false)
+  })
+
+  it('shows whether the edited meal is a main meal', async () => {
+    renderMealsArea([
+      meal('rice', 'Milchreis', { mainMeal: false }),
+      meal('soup', 'Suppe'),
+    ])
+
+    await openMeal('Milchreis')
+    await editMeal()
+
+    expect(mainMealBox()).not.toBeChecked()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Gericht' }),
+    )
+    await goBackToTheMeals()
+    await openMeal('Suppe')
+    await editMeal()
+
+    expect(mainMealBox()).toBeChecked()
+  })
+
+  it('takes a meal back into the main meals', async () => {
+    const { client } = renderMealsArea([
+      meal('rice', 'Milchreis', { mainMeal: false }),
+    ])
+
+    await openMeal('Milchreis')
+    await editMeal()
+    await switchMainMeal()
+    await save()
+
+    expect(client.storedMeals()[0].mainMeal).toBe(true)
+  })
+
+  it('keeps a meal hidden when its main meal state changes', async () => {
+    const { client } = renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+    ])
+
+    await openMeal('Suppe, ausgeblendet')
+    await editMeal()
+    await switchMainMeal()
+    await save()
+
+    expect(client.storedMeals()[0]).toEqual(
+      meal('soup', 'Suppe', { hidden: true, mainMeal: false }),
+    )
+  })
+
+  it('forgets the main meal state that was not saved', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await switchMainMeal()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Gericht' }),
+    )
+    await editMeal()
+
+    expect(mainMealBox()).toBeChecked()
+    expect(client.storedMeals()[0].mainMeal).toBe(true)
+  })
+
   it('shows the actions of a meal as icons only in one row', async () => {
     renderMealsArea([meal('soup', 'Suppe')])
 
@@ -614,6 +714,18 @@ describe('MealsArea', () => {
 
     await openMealForm()
 
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the form of a meal that is no main meal', async () => {
+    const { rendered } = renderMealsArea([
+      meal('rice', 'Milchreis', { mainMeal: false }),
+    ])
+
+    await openMeal('Milchreis')
+    await editMeal()
+
+    expect(mainMealBox()).not.toBeChecked()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

@@ -20,7 +20,12 @@ type MealFormPageProps = {
   suggestNames: (typed: string) => readonly string[]
 }
 
-const EMPTY_DRAFT: MealDraft = { name: '', ingredientNotes: '', recipe: '' }
+const EMPTY_DRAFT: MealDraft = {
+  name: '',
+  ingredientNotes: '',
+  recipe: '',
+  mainMeal: true,
+}
 
 function draftOf(meal: Meal | null): MealDraft {
   if (meal === null) return EMPTY_DRAFT
@@ -28,6 +33,7 @@ function draftOf(meal: Meal | null): MealDraft {
     name: meal.name,
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
+    mainMeal: meal.mainMeal,
   }
 }
 
@@ -111,6 +117,14 @@ export function MealFormPage({
           onChange={(event) => change({ recipe: event.target.value })}
         />
       </p>
+      <label className="toggleField">
+        <span>Hauptmahlzeit</span>
+        <input
+          type="checkbox"
+          checked={draft.mainMeal}
+          onChange={(event) => change({ mainMeal: event.target.checked })}
+        />
+      </label>
       <p id="mealFailure" className="failure">
         {failureMessage}
       </p>

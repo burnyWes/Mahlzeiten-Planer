@@ -347,7 +347,7 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
 
 **Aufgaben**:
 
-- [ ] `NewMeal` und `MealDraft` in `src/meals/domain/meal.ts` um `mainMeal: boolean`
+- [x] `NewMeal` und `MealDraft` in `src/meals/domain/meal.ts` um `mainMeal: boolean`
       erweitern und `createMeal` den Wert aus dem Draft übernehmen lassen. Erst die
       Tests in `meal.test.ts`: `createMeal` mit `mainMeal: true` im Draft liefert eine
       Hauptmahlzeit, mit `false` keine.
@@ -376,10 +376,10 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
       ```
       Der Draft bekommt **keinen** Standardwert: `mainMeal` ist Pflichtfeld, damit
       `draftOf` und `EMPTY_DRAFT` es führen müssen.
-- [ ] `withHiding` in `meal.ts` um `mainMeal: meal.mainMeal` ergänzen. Erst der Test in
+- [x] `withHiding` in `meal.ts` um `mainMeal: meal.mainMeal` ergänzen. Erst der Test in
       `meal.test.ts:148-181`: Umschalten der Sichtbarkeit lässt `mainMeal` unverändert,
       in beiden Zuständen.
-- [ ] Die Test-Fabriken und Literale um `mainMeal: true` ergänzen: `meal.test.ts:16`
+- [x] Die Test-Fabriken und Literale um `mainMeal: true` ergänzen: `meal.test.ts:16`
       (`emptyDraft`) und `meal.test.ts:18-27`, `mealSuggestions.test.ts:6`,
       `randomPlanning.test.ts:19-28`, `supply.test.ts:22`, `weekPlan.test.ts:20`,
       `announcements.test.ts:41-47` und `:337-343`, `MealsArea.test.tsx:11-21`,
@@ -387,11 +387,11 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
       Die Fabriken nehmen `parts` entgegen, deshalb genügt das Feld im Rumpf. Dazu die
       zwei Literale, die an keiner Fabrik hängen: der Draft in `meal.test.ts:70-74` und
       das `Meal` `bolognese` im `withHiding`-Block, `meal.test.ts:149-156`.
-- [ ] `firestoreMealsClient.ts` Feld lesen und schreiben lassen: in `toMeal`
+- [x] `firestoreMealsClient.ts` Feld lesen und schreiben lassen: in `toMeal`
       `mainMeal: stored.mainMeal !== false` (Zeile 42 ff.), in `toDocument`
       `mainMeal: meal.mainMeal` (Zeile 55 ff.). Die Ungleichheit ist Absicht und steht
       bewusst anders herum als `hidden === true`.
-- [ ] `.toggleField` in `src/index.css` ergänzen und die beiden vorhandenen
+- [x] `.toggleField` in `src/index.css` ergänzen und die beiden vorhandenen
       Selektorlisten erweitern (Zeile 223 und 240). Die Kastenregeln selbst bleiben
       Zeichen für Zeichen, wie sie sind — besonders `min-height: 40px` (Zeile 230),
       das die globale Regel `button, input, textarea { min-height: 44px }`
@@ -416,7 +416,7 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
         /* unverändert */
       }
       ```
-- [ ] `MealFormPage.tsx` die Checkbox geben: `EMPTY_DRAFT` (Zeile 23) und `draftOf`
+- [x] `MealFormPage.tsx` die Checkbox geben: `EMPTY_DRAFT` (Zeile 23) und `draftOf`
       (Zeile 25-33) um `mainMeal` ergänzen, die Zeile zwischen das Rezept-Feld
       (Zeile 105-113) und die Fehlerzeile (Zeile 114-116) setzen. Das `<label>` umfasst
       den Kasten, damit die ganze Zeile trifft — wie in `SettingsPage.tsx:40-48`. Kein
@@ -440,10 +440,10 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
       ```
       `change` nimmt `Partial<MealDraft>` und trägt den Boolean ohne Änderung
       (Zeile 54-56).
-- [ ] Die zwei vollständigen Erwartungsobjekte in `MealsArea.test.tsx` um
+- [x] Die zwei vollständigen Erwartungsobjekte in `MealsArea.test.tsx` um
       `mainMeal: true` ergänzen (Zeile 189-197 und 380-388) sowie die in
       `meal.test.ts:78-84`, `:138-144` und `:159-165`.
-- [ ] Tests in `MealsArea.test.tsx` ergänzen. Die Checkbox wird über eine eigene Hilfe
+- [x] Tests in `MealsArea.test.tsx` ergänzen. Die Checkbox wird über eine eigene Hilfe
       angesprochen, neben `editMeal` (Zeile 118-120) und im selben Stil — die Hilfe gibt
       das Versprechen zurück, statt selbst `async` zu sein:
       ```tsx
@@ -478,14 +478,14 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
         Checkbox erweitern.
       - `has no accessibility violations on the form` (Zeile 612) deckt die neue Zeile
         mit ab; zusätzlich einen Lauf mit `mainMeal: false` im bearbeiteten Gericht.
-- [ ] `switchCheckbox` in `e2e/keyboard.ts` ergänzen, nach dem Vorbild von `typeInto`:
+- [x] `switchCheckbox` in `e2e/keyboard.ts` ergänzen, nach dem Vorbild von `typeInto`:
       ```ts
       export async function switchCheckbox(page: Page, label: string) {
         await page.getByLabel(label, { exact: true }).focus()
         await page.keyboard.press('Space')
       }
       ```
-- [ ] `nonMainMealNamesOnServer` und `storeMealOnServer` in `e2e/emulatorHousehold.ts`
+- [x] `nonMainMealNamesOnServer` und `storeMealOnServer` in `e2e/emulatorHousehold.ts`
       ergänzen. `ListedMeals` (Zeile 112-119) bekommt das Feld dazu. Die Lesefunktion
       nennt die Gerichte, die **ausdrücklich keine** Hauptmahlzeit sind — genau wie
       `hiddenMealNamesOnServer` den seltenen Zustand nennt. Nur so wartet
@@ -525,7 +525,7 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
       `items` fehlt im geschriebenen Dokument mit Absicht: `toMealItems` prüft
       `Array.isArray(stored.items)` (`firestoreMealsClient.ts:31-33`), damit deckt der
       Test denselben Weg ab, den ein echtes Altdokument nimmt.
-- [ ] `e2e/meals.spec.ts` um einen Test `keeps a meal out of the main meals after a
+- [x] `e2e/meals.spec.ts` um einen Test `keeps a meal out of the main meals after a
       reload` ergänzen: Gericht `Bolognese` anlegen, `Bearbeiten`,
       `switchCheckbox(page, 'Hauptmahlzeit')`, `Speichern`, dann
       `await expect.poll(nonMainMealNamesOnServer).toEqual(['Bolognese'])`,
@@ -535,11 +535,11 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
       nicht Vorsicht: ausstehende Schreibvorgänge überleben kein Neuladen (offener
       Punkt zu `persistentLocalCache` in `docs/notes.txt`), und `keeps a meal hidden
       after a reload` (`e2e/meals.spec.ts:47-69`) macht es deshalb genauso.
-- [ ] `e2e/meals.spec.ts` um einen Test `treats a stored meal without the field as a
+- [x] `e2e/meals.spec.ts` um einen Test `treats a stored meal without the field as a
       main meal` ergänzen: `storeMealOnServer('Erbsensuppe')` **vor** dem Anmelden,
       dann anmelden, `Gerichte`, `Erbsensuppe`, `Bearbeiten` — die Checkbox ist
       gesetzt. Sichert Entscheidung 4 ab, die sonst nirgends geprüft wäre.
-- [ ] In `docs/notes.txt` unten unter TODO einen Punkt anhängen, ohne etwas anderes zu
+- [x] In `docs/notes.txt` unten unter TODO einen Punkt anhängen, ohne etwas anderes zu
       berühren:
       ```
       - Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
@@ -548,24 +548,24 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `createMeal({ ...emptyDraft, name: 'Suppe', mainMeal: true }, [], false)` liefert
+- [x] `npm run test` läuft durch.
+- [x] `createMeal({ ...emptyDraft, name: 'Suppe', mainMeal: true }, [], false)` liefert
       `mainMeal: true`, mit `mainMeal: false` liefert es `false`.
-- [ ] `withHiding(meal, true)` lässt `mainMeal` unverändert — in beiden Zuständen.
-- [ ] Der Test `marks a new meal as a main meal` ist grün: ein neu angelegtes Gericht
+- [x] `withHiding(meal, true)` lässt `mainMeal` unverändert — in beiden Zuständen.
+- [x] Der Test `marks a new meal as a main meal` ist grün: ein neu angelegtes Gericht
       ist ohne Zutun Hauptmahlzeit.
-- [ ] Der Test `keeps a meal hidden when its main meal state changes` ist grün — das
+- [x] Der Test `keeps a meal hidden when its main meal state changes` ist grün — das
       Formular verliert `hidden` nicht, und `mainMeal` kommt nicht am Draft vorbei.
-- [ ] Der Test `forgets the main meal state that was not saved` ist grün: ohne
+- [x] Der Test `forgets the main meal state that was not saved` ist grün: ohne
       `Speichern` wird nichts geschrieben.
-- [ ] Die Zugänglichkeitsprüfungen auf dem Formular sind in beiden Zuständen grün, und
+- [x] Die Zugänglichkeitsprüfungen auf dem Formular sind in beiden Zuständen grün, und
       die Checkbox ist über `getByRole('checkbox', { name: 'Hauptmahlzeit' })`
       erreichbar — sie hat also einen zugänglichen Namen und ist kein `switch`.
-- [ ] `WeekPlanArea.test.tsx`, `SuppliesArea.test.tsx` und `SignedInApp.test.tsx`
+- [x] `WeekPlanArea.test.tsx`, `SuppliesArea.test.tsx` und `SignedInApp.test.tsx`
       bleiben inhaltlich unverändert grün — nur ihre Fabriken haben ein Feld mehr.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `keeps a meal out of the main
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch, einschließlich `keeps a meal out of the main
       meals after a reload` und `treats a stored meal without the field as a main
       meal`.
 

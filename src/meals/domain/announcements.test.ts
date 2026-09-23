@@ -44,6 +44,7 @@ const bolognese: NewMeal = {
   ingredientNotes: '',
   recipe: '',
   hidden: false,
+  mainMeal: true,
 }
 
 describe('mealsHeading', () => {
@@ -340,6 +341,7 @@ describe('weekPlanTransferAnnouncement', () => {
     ingredientNotes: '',
     recipe: '',
     hidden: false,
+    mainMeal: true,
   }
 
   it('puts the week plan in front of what was added', () => {

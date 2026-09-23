@@ -1,12 +1,15 @@
 import { expect, test } from '@playwright/test'
 import {
   hiddenMealNamesOnServer,
+  nonMainMealNamesOnServer,
   prepareEmulators,
+  storeMealOnServer,
 } from './emulatorHousehold.ts'
 import {
   pressButton,
   shownItems,
   signIn,
+  switchCheckbox,
   takeOverItem,
   typeInto,
 } from './keyboard.ts'
@@ -66,6 +69,47 @@ test('keeps a meal hidden after a reload', async ({ page }) => {
   await expect(
     page.getByRole('button', { name: 'Einblenden', exact: true }),
   ).toBeVisible()
+})
+
+test('keeps a meal out of the main meals after a reload', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Bearbeiten')
+  await switchCheckbox(page, 'Hauptmahlzeit')
+  await pressButton(page, 'Speichern')
+
+  await expect.poll(nonMainMealNamesOnServer).toEqual(['Bolognese'])
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptmahlzeit', exact: true }),
+  ).not.toBeChecked()
+})
+
+test('treats a stored meal without the field as a main meal', async ({
+  page,
+}) => {
+  await storeMealOnServer('Erbsensuppe')
+
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Erbsensuppe')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptmahlzeit', exact: true }),
+  ).toBeChecked()
 })
 
 test('keeps the actions of a long meal in view at the bottom of the screen', async ({

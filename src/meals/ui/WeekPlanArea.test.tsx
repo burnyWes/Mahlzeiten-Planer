@@ -23,7 +23,15 @@ import { useWeekPlan } from './useWeekPlan'
 import { WeekPlanArea } from './WeekPlanArea'
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
-  return { id, name, items, ingredientNotes: '', recipe: '', hidden: false }
+  return {
+    id,
+    name,
+    items,
+    ingredientNotes: '',
+    recipe: '',
+    hidden: false,
+    mainMeal: true,
+  }
 }
 
 function hiddenMeal(id: string, name: string): Meal {
