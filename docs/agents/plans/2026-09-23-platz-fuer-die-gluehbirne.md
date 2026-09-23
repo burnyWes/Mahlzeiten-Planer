@@ -5,7 +5,7 @@ branch: main
 story: MZP-018
 topic: "Platz fuer die Gluehbirne freihalten"
 tags: [plan, meals, mealList, css]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-018 — Platz für die Glühbirne freihalten
@@ -300,7 +300,7 @@ fest.
       ```
       Die Liste sortiert alphabetisch (`byName`), `Eintopf` steht also vor `Suppe` —
       darum `[false, true]`.
-- [ ] Nach der Prüfung am Gerät in `docs/notes.txt` den Punkt `- Gerichteliste: Immer
+- [x] Nach der Prüfung am Gerät in `docs/notes.txt` den Punkt `- Gerichteliste: Immer
       gleichen Platz für Glühbirne freihalten, auch wenn nicht sichtbar` auf `x`
       setzen und **unverändert formuliert** nach DONE verschieben.
 
@@ -321,22 +321,26 @@ fest.
 
 **Manuelle Verifikation**:
 
-- [ ] Die Gerichteliste mit mindestens einem ausgeblendeten und einem sichtbaren
+- [x] Die Gerichteliste mit mindestens einem ausgeblendeten und einem sichtbaren
       Gericht ansehen: alle Namen beginnen auf derselben senkrechten Linie, die Birne
       steht nur an den ausgeblendeten.
-- [ ] Alle Gerichte einblenden: die Spalte bleibt frei, die Namen rücken nicht nach
+- [x] Alle Gerichte einblenden: die Spalte bleibt frei, die Namen rücken nicht nach
       links.
-- [ ] Der Wochenplan sieht unverändert aus — die Schneeflocke steht an ihrem Platz,
+- [x] Der Wochenplan sieht unverändert aus — die Schneeflocke steht an ihrem Platz,
       die Tagesfelder sind untereinander ausgerichtet.
-- [ ] Einstellungen, bekannte Artikel und die Vorräte-Liste sehen unverändert aus.
-- [ ] Beides in beiden Farbstellungen.
-- [ ] Mit VoiceOver über die Gerichteliste wischen: die Zeilen lesen sich unverändert
+- [x] Einstellungen, bekannte Artikel und die Vorräte-Liste sehen unverändert aus.
+- [x] Beides in beiden Farbstellungen.
+- [x] Mit VoiceOver über die Gerichteliste wischen: die Zeilen lesen sich unverändert
       als `<Gericht>` beziehungsweise `<Gericht>, ausgeblendet`, es kommt kein
       zusätzliches Element dazwischen.
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+**2026-09-23 — am Gerät geprüft.** Die Namen der Gerichteliste beginnen auf derselben
+senkrechten Linie, die Birne steht nur an den ausgeblendeten Gerichten, und die Spalte
+bleibt auch ohne ein einziges ausgeblendetes Gericht stehen. Wochenplan, Einstellungen,
+bekannte Artikel und Vorräte-Liste sehen in beiden Farbstellungen unverändert aus, und
+VoiceOver liest die Zeilen ohne zusätzliches Element. Der Plan ist abgeschlossen.
 
 ## Verweise
 
