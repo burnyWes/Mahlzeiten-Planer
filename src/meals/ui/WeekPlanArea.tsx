@@ -7,6 +7,7 @@ import type { Meal, MealId } from '../domain/meal'
 import {
   filledWeekPlan,
   pickMealForDay,
+  randomCandidates,
   type RandomSource,
 } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
@@ -39,6 +40,8 @@ export function WeekPlanArea({
   random,
   onAddToShoppingList,
 }: WeekPlanAreaProps) {
+  const candidates = randomCandidates(meals)
+
   function chooseMeal(day: Weekday, id: MealId | null) {
     weekPlanning.chooseMeal(day, id)
     const chosen = meals.find((meal) => meal.id === id)
@@ -54,13 +57,13 @@ export function WeekPlanArea({
   }
 
   function shuffleDay(day: Weekday) {
-    const picked = pickMealForDay(meals, weekPlanning.plan, day, random)
+    const picked = pickMealForDay(candidates, weekPlanning.plan, day, random)
     if (picked === null) return
     chooseMeal(day, picked.id)
   }
 
   function shuffleWeek() {
-    weekPlanning.replacePlan(filledWeekPlan(meals, random))
+    weekPlanning.replacePlan(filledWeekPlan(candidates, random))
     announce(weekPlanShuffledAnnouncement())
   }
 
@@ -68,6 +71,7 @@ export function WeekPlanArea({
     <WeekPlanPage
       navigation={navigation}
       meals={meals}
+      randomCandidateCount={candidates.length}
       plan={weekPlanning.plan}
       supplies={supplies}
       onChooseMeal={chooseMeal}

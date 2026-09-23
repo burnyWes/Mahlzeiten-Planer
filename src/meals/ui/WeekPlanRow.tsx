@@ -22,6 +22,7 @@ type WeekPlanRowProps = {
   day: Weekday
   plan: WeekPlan
   meals: readonly Meal[]
+  randomCandidateCount: number
   supplies: readonly Supply[]
   onChooseMeal: (day: Weekday, id: MealId | null) => void
   onShuffleDay: (day: Weekday) => void
@@ -31,6 +32,7 @@ export function WeekPlanRow({
   day,
   plan,
   meals,
+  randomCandidateCount,
   supplies,
   onChooseMeal,
   onShuffleDay,
@@ -74,7 +76,7 @@ export function WeekPlanRow({
           type="button"
           className="iconButton"
           aria-label={randomMealLabel(day)}
-          disabled={meals.length === 0}
+          disabled={randomCandidateCount === 0}
           onClick={() => onShuffleDay(day)}
         >
           <ShuffleIcon />

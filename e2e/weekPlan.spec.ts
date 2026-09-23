@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import {
+  hiddenMealNamesOnServer,
   prepareEmulators,
   supplyCountsOnServer,
   weekPlanOnServer,
@@ -132,6 +133,37 @@ test('keeps the week plan after a reload', async ({ page }) => {
 
   await expect(page.getByLabel('Freitag', { exact: true })).toHaveValue(
     'Linsensuppe',
+  )
+})
+
+test('never rolls a hidden meal into the week', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Chili')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Ausblenden')
+
+  await expect.poll(hiddenMealNamesOnServer).toEqual(['Chili'])
+
+  await pressButton(page, 'Zurück zu den Gerichten')
+  await pressButton(page, 'Wochenplan')
+  await pressButton(page, 'Zufallsauswahl generieren')
+
+  await expect
+    .poll(async () => new Set(Object.values(await weekPlanOnServer())).size)
+    .toBe(1)
+  await expect(page.getByLabel('Montag', { exact: true })).toHaveValue(
+    'Bolognese',
+  )
+  await expect(page.getByLabel('Sonntag', { exact: true })).toHaveValue(
+    'Bolognese',
   )
 })
 

@@ -3,7 +3,7 @@ import type { Meal } from './meal'
 import { suggestMeals } from './mealSuggestions'
 
 function meal(name: string, id = name): Meal {
-  return { id, name, items: [], ingredientNotes: '', recipe: '' }
+  return { id, name, items: [], ingredientNotes: '', recipe: '', hidden: false }
 }
 
 function suggestedNames(meals: readonly Meal[], typed: string) {

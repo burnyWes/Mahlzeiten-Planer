@@ -9,7 +9,15 @@ import { MealsArea } from './MealsArea'
 import { useMeals } from './useMeals'
 
 function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
-  return { id, name, items: [], ingredientNotes: '', recipe: '', ...parts }
+  return {
+    id,
+    name,
+    items: [],
+    ingredientNotes: '',
+    recipe: '',
+    hidden: false,
+    ...parts,
+  }
 }
 
 type MealsAreaUnderTestProps = {
@@ -112,6 +120,10 @@ function editMeal() {
   return userEvent.click(screen.getByRole('button', { name: 'Bearbeiten' }))
 }
 
+function switchHiding(label: string) {
+  return userEvent.click(screen.getByRole('button', { name: label }))
+}
+
 function askToDeleteMeal() {
   return userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
 }
@@ -181,6 +193,7 @@ describe('MealsArea', () => {
         items: [],
         ingredientNotes: 'Zwiebel, Lorbeer',
         recipe: 'Linsen kochen.',
+        hidden: false,
       },
     ])
     expect(announcements).toContain('Linsensuppe gespeichert.')
@@ -371,6 +384,7 @@ describe('MealsArea', () => {
         items: [],
         ingredientNotes: '',
         recipe: 'Anbraten.',
+        hidden: false,
       },
     ])
     expect(announcements).toContain('Bolognese vom Rind gespeichert.')
@@ -488,15 +502,82 @@ describe('MealsArea', () => {
     ).toBeInTheDocument()
   })
 
+  it('hides a meal and says so', async () => {
+    const { client, announcements } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await switchHiding('Ausblenden')
+
+    expect(client.storedMeals()[0].hidden).toBe(true)
+    expect(announcements).toContain('Suppe ausgeblendet.')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Suppe' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Einblenden' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows a hidden meal again', async () => {
+    const { client, announcements } = renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+    ])
+
+    await openMeal('Suppe, ausgeblendet')
+    await switchHiding('Einblenden')
+
+    expect(client.storedMeals()[0].hidden).toBe(false)
+    expect(announcements).toContain('Suppe eingeblendet.')
+    expect(
+      screen.getByRole('button', { name: 'Ausblenden' }),
+    ).toBeInTheDocument()
+  })
+
+  it('names a hidden meal as hidden in the list', () => {
+    renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+      meal('stew', 'Eintopf'),
+    ])
+
+    expect(
+      screen.getByRole('button', { name: 'Suppe, ausgeblendet' }).textContent,
+    ).toBe('Suppe')
+    expect(screen.getByRole('button', { name: 'Eintopf' })).toBeInTheDocument()
+    expect(shownMealNames()).toEqual(['Eintopf', 'Suppe'])
+  })
+
+  it('keeps a meal hidden when it is edited', async () => {
+    const { client } = renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+    ])
+
+    await openMeal('Suppe, ausgeblendet')
+    await editMeal()
+    await fillIn('Rezept', 'Kochen.')
+    await save()
+
+    expect(client.storedMeals()[0]).toEqual(
+      meal('soup', 'Suppe', { hidden: true, recipe: 'Kochen.' }),
+    )
+  })
+
   it('shows the actions of a meal as icons only in one row', async () => {
     renderMealsArea([meal('soup', 'Suppe')])
 
     await openMeal('Suppe')
-    const actions = ['Auf die Einkaufsliste', 'Bearbeiten', 'Löschen'].map(
-      (name) => screen.getByRole('button', { name }),
-    )
+    const actions = [
+      'Auf die Einkaufsliste',
+      'Ausblenden',
+      'Bearbeiten',
+      'Löschen',
+    ].map((name) => screen.getByRole('button', { name }))
 
-    expect(actions.map((action) => action.textContent)).toEqual(['', '', ''])
+    expect(actions.map((action) => action.textContent)).toEqual([
+      '',
+      '',
+      '',
+      '',
+    ])
     expect(Array.from(actions[0].parentElement?.children ?? [])).toEqual(
       actions,
     )
@@ -591,6 +672,18 @@ describe('MealsArea', () => {
     ])
 
     await openMeal('Bolognese')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on a hidden meal', async () => {
+    const { rendered } = renderMealsArea([
+      meal('bolognese', 'Bolognese', { hidden: true }),
+    ])
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+
+    await openMeal('Bolognese, ausgeblendet')
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

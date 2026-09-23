@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test'
-import { prepareEmulators } from './emulatorHousehold.ts'
+import {
+  hiddenMealNamesOnServer,
+  prepareEmulators,
+} from './emulatorHousehold.ts'
 import {
   pressButton,
   shownItems,
@@ -39,6 +42,30 @@ test('writes down a meal and transfers it to the shopping list using the keyboar
   await pressButton(page, 'Einkaufsliste')
 
   await expect(shownItems(page)).toHaveText(['Hackfleisch, 500 g', 'Spaghetti'])
+})
+
+test('keeps a meal hidden after a reload', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Ausblenden')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Bolognese ausgeblendet.',
+  )
+  await expect.poll(hiddenMealNamesOnServer).toEqual(['Bolognese'])
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese, ausgeblendet')
+
+  await expect(
+    page.getByRole('button', { name: 'Einblenden', exact: true }),
+  ).toBeVisible()
 })
 
 test('keeps the actions of a long meal in view at the bottom of the screen', async ({

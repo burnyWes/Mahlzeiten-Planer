@@ -4,6 +4,7 @@ import {
   filledWeekPlan,
   narrowedBy,
   pickMealForDay,
+  randomCandidates,
   rarestInThePlan,
   type PlanningRule,
   type RandomSource,
@@ -16,7 +17,14 @@ import {
 } from './weekPlan'
 
 function meal(id: string): Meal {
-  return { id, name: id, items: [], ingredientNotes: '', recipe: '' }
+  return {
+    id,
+    name: id,
+    items: [],
+    ingredientNotes: '',
+    recipe: '',
+    hidden: false,
+  }
 }
 
 function meals(count: number): readonly Meal[] {
@@ -52,6 +60,29 @@ function timesPlannedIn(plan: WeekPlan): readonly number[] {
 const bolognese = meal('bolognese')
 const pizza = meal('pizza')
 const soup = meal('soup')
+
+describe('randomCandidates', () => {
+  const hiddenPizza = { ...pizza, hidden: true }
+
+  it('leaves out the meals that are hidden', () => {
+    expect(randomCandidates([bolognese, hiddenPizza, soup])).toEqual([
+      bolognese,
+      soup,
+    ])
+  })
+
+  it('keeps the order of the meals that are left', () => {
+    expect(randomCandidates([soup, bolognese])).toEqual([soup, bolognese])
+  })
+
+  it('leaves nothing over when every meal is hidden', () => {
+    expect(randomCandidates([hiddenPizza])).toEqual([])
+  })
+
+  it('leaves nothing over without a stored meal', () => {
+    expect(randomCandidates([])).toEqual([])
+  })
+})
 
 describe('rarestInThePlan', () => {
   it('keeps only the meals that stand in the plan least often', () => {

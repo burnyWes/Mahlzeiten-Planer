@@ -1,16 +1,19 @@
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { TrashIcon } from '../../shared/ui/TrashIcon'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { mealItemsHeading } from '../domain/announcements'
+import { hidingLabel, mealItemsHeading } from '../domain/announcements'
 import { formatMealItem, type Meal } from '../domain/meal'
 import { paragraphsOf } from '../domain/text'
 import { AddToShoppingListIcon } from './AddToShoppingListIcon'
 import { EditIcon } from './EditIcon'
+import { LightbulbIcon } from './LightbulbIcon'
+import { LightbulbOffIcon } from './LightbulbOffIcon'
 
 type MealPageProps = {
   meal: Meal
   onBack: () => void
   onAddToShoppingList: () => void
+  onSwitchHiding: () => void
   onEdit: () => void
   onDelete: () => void
 }
@@ -38,6 +41,7 @@ export function MealPage({
   meal,
   onBack,
   onAddToShoppingList,
+  onSwitchHiding,
   onEdit,
   onDelete,
 }: MealPageProps) {
@@ -70,6 +74,13 @@ export function MealPage({
           aria-label="Auf die Einkaufsliste"
         >
           <AddToShoppingListIcon />
+        </button>
+        <button
+          type="button"
+          onClick={onSwitchHiding}
+          aria-label={hidingLabel(meal.hidden)}
+        >
+          {meal.hidden ? <LightbulbOffIcon /> : <LightbulbIcon />}
         </button>
         <button type="button" onClick={onEdit} aria-label="Bearbeiten">
           <EditIcon />

@@ -13,7 +13,7 @@ import { useMeals } from './useMeals'
 import { useSupplies } from './useSupplies'
 
 function meal(id: string, name: string): Meal {
-  return { id, name, items: [], ingredientNotes: '', recipe: '' }
+  return { id, name, items: [], ingredientNotes: '', recipe: '', hidden: false }
 }
 
 function supply(mealId: string, count: number): Supply {

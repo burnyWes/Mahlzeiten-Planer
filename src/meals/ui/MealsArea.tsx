@@ -1,9 +1,15 @@
 import { useState, type ReactNode } from 'react'
 import {
   mealDeletedAnnouncement,
+  mealHidingAnnouncement,
   mealSavedAnnouncement,
 } from '../domain/announcements'
-import type { Meal, MealId, NewMeal } from '../domain/meal'
+import {
+  withHiding,
+  type Meal,
+  type MealId,
+  type NewMeal,
+} from '../domain/meal'
 import { DeleteMealPage } from './DeleteMealPage'
 import { MealFormPage } from './MealFormPage'
 import { MealListPage } from './MealListPage'
@@ -58,6 +64,12 @@ export function MealsArea({
     announce(mealSavedAnnouncement(newMeal))
   }
 
+  function switchHiding(meal: Meal) {
+    const hidden = !meal.hidden
+    meals.changeMeal(meal.id, withHiding(meal, hidden))
+    announce(mealHidingAnnouncement(meal, hidden))
+  }
+
   function deleteMeal(meal: Meal) {
     meals.removeMeal(meal.id)
     onMealDeleted(meal.id)
@@ -86,6 +98,7 @@ export function MealsArea({
         meal={addressedMeal}
         onBack={showList}
         onAddToShoppingList={() => onAddToShoppingList(addressedMeal)}
+        onSwitchHiding={() => switchHiding(addressedMeal)}
         onEdit={() => setPage({ kind: 'form', id: addressedMeal.id })}
         onDelete={() => setPage({ kind: 'delete', id: addressedMeal.id })}
       />

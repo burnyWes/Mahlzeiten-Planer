@@ -17,7 +17,7 @@ import {
 } from './weekPlan'
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
-  return { id, name, items, ingredientNotes: '', recipe: '' }
+  return { id, name, items, ingredientNotes: '', recipe: '', hidden: false }
 }
 
 const bolognese = meal('bolognese', 'Bolognese', [

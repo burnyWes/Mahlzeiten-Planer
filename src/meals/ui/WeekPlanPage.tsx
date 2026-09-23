@@ -17,6 +17,7 @@ import { WeekPlanRow } from './WeekPlanRow'
 type WeekPlanPageProps = {
   navigation: ReactNode
   meals: readonly Meal[]
+  randomCandidateCount: number
   plan: WeekPlan
   supplies: readonly Supply[]
   onChooseMeal: (day: Weekday, id: MealId | null) => void
@@ -28,6 +29,7 @@ type WeekPlanPageProps = {
 export function WeekPlanPage({
   navigation,
   meals,
+  randomCandidateCount,
   plan,
   supplies,
   onChooseMeal,
@@ -55,6 +57,7 @@ export function WeekPlanPage({
               day={day}
               plan={plan}
               meals={meals}
+              randomCandidateCount={randomCandidateCount}
               supplies={supplies}
               onChooseMeal={onChooseMeal}
               onShuffleDay={onShuffleDay}
@@ -65,7 +68,7 @@ export function WeekPlanPage({
           <button
             type="button"
             aria-label="Zufallsauswahl generieren"
-            disabled={meals.length === 0}
+            disabled={randomCandidateCount === 0}
             onClick={onShuffleWeek}
           >
             <ShuffleIcon />

@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
   invalidMealMessage,
+  hidingLabel,
   mealFailureMessage,
+  mealHidingAnnouncement,
+  mealNameLabel,
   mealItemAddedAnnouncement,
   mealItemsHeading,
   mealDeletedAnnouncement,
@@ -40,6 +43,7 @@ const bolognese: NewMeal = {
   items: [],
   ingredientNotes: '',
   recipe: '',
+  hidden: false,
 }
 
 describe('mealsHeading', () => {
@@ -189,6 +193,42 @@ describe('mealSavedAnnouncement', () => {
   })
 })
 
+describe('hidingLabel', () => {
+  it('offers to hide a meal that is visible', () => {
+    expect(hidingLabel(false)).toBe('Ausblenden')
+  })
+
+  it('offers to show a meal that is hidden', () => {
+    expect(hidingLabel(true)).toBe('Einblenden')
+  })
+})
+
+describe('mealNameLabel', () => {
+  it('names a visible meal by its name alone', () => {
+    expect(mealNameLabel(bolognese)).toBe('Spaghetti Bolognese')
+  })
+
+  it('tells that a hidden meal is hidden', () => {
+    expect(mealNameLabel({ ...bolognese, hidden: true })).toBe(
+      'Spaghetti Bolognese, ausgeblendet',
+    )
+  })
+})
+
+describe('mealHidingAnnouncement', () => {
+  it('confirms that the meal was hidden', () => {
+    expect(mealHidingAnnouncement(bolognese, true)).toBe(
+      'Spaghetti Bolognese ausgeblendet.',
+    )
+  })
+
+  it('confirms that the meal was shown again', () => {
+    expect(mealHidingAnnouncement(bolognese, false)).toBe(
+      'Spaghetti Bolognese eingeblendet.',
+    )
+  })
+})
+
 describe('mealDeletedAnnouncement', () => {
   it('counts the meals that are left', () => {
     expect(mealDeletedAnnouncement(bolognese, 2)).toBe(
@@ -299,6 +339,7 @@ describe('weekPlanTransferAnnouncement', () => {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    hidden: false,
   }
 
   it('puts the week plan in front of what was added', () => {

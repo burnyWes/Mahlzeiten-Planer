@@ -71,7 +71,7 @@ function renderSignedInApp(
 }
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
-  return { id, name, items, ingredientNotes: '', recipe: '' }
+  return { id, name, items, ingredientNotes: '', recipe: '', hidden: false }
 }
 
 function transferToShoppingList(name: string) {

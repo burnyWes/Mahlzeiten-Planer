@@ -57,7 +57,7 @@ export function MealFormPage({
 
   function saveMeal() {
     try {
-      onSave(createMeal(draft, items))
+      onSave(createMeal(draft, items, editedMeal?.hidden ?? false))
     } catch (error) {
       const message = mealFailureMessage(error)
       if (message === null) throw error

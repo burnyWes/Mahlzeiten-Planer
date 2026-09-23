@@ -1,5 +1,7 @@
+import { mealNameLabel } from '../domain/announcements'
 import type { Meal } from '../domain/meal'
 import { AddToShoppingListIcon } from './AddToShoppingListIcon'
+import { LightbulbOffIcon } from './LightbulbOffIcon'
 
 type MealListRowProps = {
   meal: Meal
@@ -14,10 +16,16 @@ export function MealListRow({
 }: MealListRowProps) {
   return (
     <li className="mealRow">
+      {meal.hidden && (
+        <span className="hiddenMark" aria-hidden="true">
+          <LightbulbOffIcon />
+        </span>
+      )}
       <button
         type="button"
         className="mealNameButton"
         onClick={() => onOpenMeal(meal)}
+        aria-label={mealNameLabel(meal)}
       >
         {meal.name}
       </button>

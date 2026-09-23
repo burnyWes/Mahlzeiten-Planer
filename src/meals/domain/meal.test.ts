@@ -8,6 +8,7 @@ import {
   InvalidMeal,
   mealNamed,
   normalizeMealName,
+  withHiding,
   type Meal,
   type MealItem,
 } from './meal'
@@ -15,7 +16,14 @@ import {
 const emptyDraft = { name: '', ingredientNotes: '', recipe: '' }
 
 function meal(name: string): Meal {
-  return { id: name, name, items: [], ingredientNotes: '', recipe: '' }
+  return {
+    id: name,
+    name,
+    items: [],
+    ingredientNotes: '',
+    recipe: '',
+    hidden: false,
+  }
 }
 
 function item(name: string, amount = '', unit = ''): MealItem {
@@ -65,30 +73,32 @@ describe('createMeal', () => {
           recipe: 'Anbraten.',
         },
         items,
+        false,
       ),
     ).toEqual({
       name: 'Bolognese',
       items,
       ingredientNotes: 'Zwiebel, Knoblauch',
       recipe: 'Anbraten.',
+      hidden: false,
     })
   })
 
   it('trims the name', () => {
-    expect(createMeal({ ...emptyDraft, name: '  Suppe ' }, []).name).toBe(
-      'Suppe',
-    )
+    expect(
+      createMeal({ ...emptyDraft, name: '  Suppe ' }, [], false).name,
+    ).toBe('Suppe')
   })
 
   it('refuses a meal without a name', () => {
-    expect(() => createMeal(emptyDraft, [])).toThrow(
+    expect(() => createMeal(emptyDraft, [], false)).toThrow(
       new InvalidMeal('nameMissing'),
     )
   })
 
   it('refuses a name longer than a hundred characters', () => {
     expect(() =>
-      createMeal({ ...emptyDraft, name: 'N'.repeat(101) }, []),
+      createMeal({ ...emptyDraft, name: 'N'.repeat(101) }, [], false),
     ).toThrow(new InvalidMeal('nameTooLong'))
   })
 
@@ -97,6 +107,7 @@ describe('createMeal', () => {
       createMeal(
         { ...emptyDraft, name: 'Suppe', ingredientNotes: 'z'.repeat(5001) },
         [],
+        false,
       ),
     ).toThrow(new InvalidMeal('textTooLong'))
   })
@@ -106,17 +117,66 @@ describe('createMeal', () => {
       createMeal(
         { ...emptyDraft, name: 'Suppe', recipe: 'z'.repeat(5001) },
         [],
+        false,
       ),
     ).toThrow(new InvalidMeal('textTooLong'))
   })
 
+  it('creates a visible meal when it is not meant to be hidden', () => {
+    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], false).hidden).toBe(
+      false,
+    )
+  })
+
+  it('creates a hidden meal when it is meant to be hidden', () => {
+    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], true).hidden).toBe(
+      true,
+    )
+  })
+
   it('accepts a meal without items and without texts', () => {
-    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [])).toEqual({
+    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], false)).toEqual({
       name: 'Suppe',
       items: [],
       ingredientNotes: '',
       recipe: '',
+      hidden: false,
     })
+  })
+})
+
+describe('withHiding', () => {
+  const bolognese: Meal = {
+    id: 'bolognese',
+    name: 'Bolognese',
+    items: [item('Hackfleisch', '500', 'g')],
+    ingredientNotes: 'Zwiebel',
+    recipe: 'Anbraten.',
+    hidden: false,
+  }
+
+  it('hides a meal that was visible', () => {
+    expect(withHiding(bolognese, true)).toEqual({
+      name: 'Bolognese',
+      items: bolognese.items,
+      ingredientNotes: 'Zwiebel',
+      recipe: 'Anbraten.',
+      hidden: true,
+    })
+  })
+
+  it('shows a meal that was hidden', () => {
+    expect(withHiding({ ...bolognese, hidden: true }, false).hidden).toBe(false)
+  })
+
+  it('carries no id, because the meal is changed under the id it has', () => {
+    expect(withHiding(bolognese, true)).not.toHaveProperty('id')
+  })
+
+  it('leaves the given meal untouched', () => {
+    withHiding(bolognese, true)
+
+    expect(bolognese.hidden).toBe(false)
   })
 })
 

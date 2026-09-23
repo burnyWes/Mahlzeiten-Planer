@@ -23,7 +23,11 @@ import { useWeekPlan } from './useWeekPlan'
 import { WeekPlanArea } from './WeekPlanArea'
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
-  return { id, name, items, ingredientNotes: '', recipe: '' }
+  return { id, name, items, ingredientNotes: '', recipe: '', hidden: false }
+}
+
+function hiddenMeal(id: string, name: string): Meal {
+  return { ...meal(id, name), hidden: true }
 }
 
 const bolognese = meal('bolognese', 'Bolognese')
@@ -486,6 +490,91 @@ describe('WeekPlanArea', () => {
     expect(announcements).toEqual(['Wochenplan neu gewürfelt, 7 Gerichte.'])
     expect(
       screen.getByRole('heading', { name: 'Wochenplan, 7 von 7' }),
+    ).toBeInTheDocument()
+  })
+
+  it('never rolls a hidden meal for a day', async () => {
+    const values = [0, 0.5, 0.999]
+    let rolled = 0
+    const { weekPlanClient } = renderWeekPlanArea(
+      [hiddenMeal('bolognese', 'Bolognese'), pizza],
+      EMPTY_WEEK_PLAN,
+      [],
+      () => {
+        const value = values[rolled % values.length]
+        rolled += 1
+        return value
+      },
+    )
+
+    await shuffleDay('Montag')
+    await shuffleDay('Dienstag')
+    await shuffleDay('Mittwoch')
+
+    const plan = weekPlanClient.storedWeekPlan()
+    expect([plan.monday, plan.tuesday, plan.wednesday]).toEqual([
+      'pizza',
+      'pizza',
+      'pizza',
+    ])
+  })
+
+  it('never rolls a hidden meal into the week', async () => {
+    const { weekPlanClient } = renderWeekPlanArea([
+      hiddenMeal('bolognese', 'Bolognese'),
+      pizza,
+      soup,
+    ])
+
+    await shuffleWeek()
+
+    const plan = weekPlanClient.storedWeekPlan()
+    expect(WEEKDAYS.map((day) => plan[day])).not.toContain('bolognese')
+    expect(WEEKDAYS.map((day) => plan[day])).not.toContain(null)
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, 7 von 7' }),
+    ).toBeInTheDocument()
+  })
+
+  it('offers no rolling when every meal is hidden', () => {
+    renderWeekPlanArea([
+      hiddenMeal('bolognese', 'Bolognese'),
+      hiddenMeal('pizza', 'Pizza'),
+    ])
+
+    expect(
+      screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
+    ).toBeDisabled()
+    screen
+      .getAllByRole('button', { name: /^Zufallsgericht für/ })
+      .forEach((button) => {
+        expect(button).toBeDisabled()
+      })
+  })
+
+  it('suggests a hidden meal for a day anyway', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([
+      hiddenMeal('bolognese', 'Bolognese'),
+      pizza,
+    ])
+
+    await typeIntoDay('Montag', 'bol')
+    await userEvent.click(suggestionsFor('Montag')[0])
+
+    expect(weekPlanClient.storedWeekPlan().monday).toBe('bolognese')
+    expect(dayField('Montag')).toHaveValue('Bolognese')
+    expect(announcements).toEqual(['Montag, Bolognese.'])
+  })
+
+  it('leaves a hidden meal standing where it was planned', () => {
+    renderWeekPlanArea(
+      [hiddenMeal('bolognese', 'Bolognese')],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+    )
+
+    expect(dayField('Montag')).toHaveValue('Bolognese')
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, 1 von 7' }),
     ).toBeInTheDocument()
   })
 

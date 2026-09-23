@@ -15,6 +15,10 @@ export type PlanningRule = (
   day: Weekday,
 ) => readonly Meal[]
 
+export function randomCandidates(meals: readonly Meal[]): readonly Meal[] {
+  return meals.filter((meal) => !meal.hidden)
+}
+
 function timesPlanned(plan: WeekPlan, meal: Meal): number {
   return WEEKDAYS.filter((day) => plan[day] === meal.id).length
 }

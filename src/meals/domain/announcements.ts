@@ -72,6 +72,18 @@ export function mealSavedAnnouncement(meal: NewMeal): string {
   return `${meal.name} gespeichert.`
 }
 
+export function hidingLabel(hidden: boolean): string {
+  return hidden ? 'Einblenden' : 'Ausblenden'
+}
+
+export function mealNameLabel(meal: NewMeal): string {
+  return meal.hidden ? `${meal.name}, ausgeblendet` : meal.name
+}
+
+export function mealHidingAnnouncement(meal: NewMeal, hidden: boolean): string {
+  return hidden ? `${meal.name} ausgeblendet.` : `${meal.name} eingeblendet.`
+}
+
 function remainingMealPhrase(remainingMeals: number): string {
   if (remainingMeals === 0) return 'keine Gerichte mehr'
   return remainingMeals === 1

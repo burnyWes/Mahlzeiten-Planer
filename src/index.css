@@ -304,6 +304,13 @@ h2 {
   margin-top: 1.5rem;
 }
 
+.hiddenMark {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .mealNameButton {
   flex: 1;
   min-width: 0;

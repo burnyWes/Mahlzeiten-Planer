@@ -17,6 +17,7 @@ export type NewMeal = {
   items: readonly MealItem[]
   ingredientNotes: string
   recipe: string
+  hidden: boolean
 }
 
 export type Meal = NewMeal & {
@@ -67,12 +68,24 @@ export function createMealItem(draft: MealItemDraft): MealItem {
 export function createMeal(
   draft: MealDraft,
   items: readonly MealItem[],
+  hidden: boolean,
 ): NewMeal {
   return {
     name: readName(draft.name),
     items,
     ingredientNotes: readText(draft.ingredientNotes),
     recipe: readText(draft.recipe),
+    hidden,
+  }
+}
+
+export function withHiding(meal: Meal, hidden: boolean): NewMeal {
+  return {
+    name: meal.name,
+    items: meal.items,
+    ingredientNotes: meal.ingredientNotes,
+    recipe: meal.recipe,
+    hidden,
   }
 }
 
