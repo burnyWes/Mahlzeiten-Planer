@@ -5,7 +5,7 @@ branch: main
 story: MZP-016
 topic: "Gericht ausblenden"
 tags: [plan, meals, weekPlan, randomPlanning]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-016 — Gericht ausblenden
@@ -570,7 +570,7 @@ Beide Würfel bekommen nur noch die sichtbaren Gerichte und sperren, wenn keines
       ergänzen: zwei Gerichte anlegen, eines ausblenden, `Zufallsauswahl
       generieren`, dann über `expect.poll(weekPlanOnServer)` prüfen, dass alle
       sieben Tage dieselbe Gericht-Id tragen — die des sichtbaren.
-- [ ] Nach der Prüfung am Gerät in `docs/notes.txt` den Punkt
+- [x] Nach der Prüfung am Gerät in `docs/notes.txt` den Punkt
       `- Gericht im Wochenplan ausblenden können` auf `x` setzen und unverändert
       formuliert nach DONE verschieben.
 
@@ -593,18 +593,18 @@ Beide Würfel bekommen nur noch die sichtbaren Gerichte und sperren, wenn keines
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver: ein Gericht öffnen, den zweiten Knopf der
+- [x] Auf dem Gerät mit VoiceOver: ein Gericht öffnen, den zweiten Knopf der
       unteren Leiste finden — er heißt `Ausblenden` —, drücken und die Ansage
       `<Gericht> ausgeblendet.` hören. Der Knopf heißt danach `Einblenden`.
-- [ ] Auf der Gerichteliste hören, dass die Zeile jetzt
+- [x] Auf der Gerichteliste hören, dass die Zeile jetzt
       `<Gericht>, ausgeblendet` gelesen wird, und sehen, dass links die erloschene
       Birne steht.
-- [ ] Im Wochenplan mehrfach `Zufallsauswahl generieren` drücken: das
+- [x] Im Wochenplan mehrfach `Zufallsauswahl generieren` drücken: das
       ausgeblendete Gericht kommt nicht vor. Seinen Namen in einen Tag tippen: der
       Vorschlag erscheint und lässt sich einplanen.
-- [ ] Die App auf dem zweiten Gerät öffnen und prüfen, dass das Gericht dort
+- [x] Die App auf dem zweiten Gerät öffnen und prüfen, dass das Gericht dort
       ebenfalls ausgeblendet ist.
-- [ ] Alle vier Knöpfe der unteren Leiste sind mit dem Finger gut zu treffen.
+- [x] Alle vier Knöpfe der unteren Leiste sind mit dem Finger gut zu treffen.
 
 ## Notizen zur Umsetzung
 
@@ -618,6 +618,10 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
 - Der e2e-Test `never rolls a hidden meal into the week` prüft über
   `weekPlanOnServer`, dass alle sieben Tage **eine** Gericht-Id tragen, und liest
   zusätzlich Montag und Sonntag als `Bolognese` aus der Oberfläche.
+
+**2026-09-23 — am Gerät geprüft.** Der Umschalter, die Ansagen, die Zeile in der
+Gerichteliste, die Würfel und das zweite Gerät verhalten sich wie geplant. Die
+manuelle Verifikation ist abgehakt, der Plan ist abgeschlossen.
 
 ## Verweise
 

@@ -51,6 +51,7 @@ x Später erweitern zu
 x Wochenplaner
 x Eisfach-Memory
 x Button-Farben anpassen
+x Gericht im Wochenplan ausblenden können
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -85,7 +86,6 @@ b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
   programmatisch. Allein braucht er 2,9 s. Einmal gesehen am 2026-09-18; der
   Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
   oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
-- Gericht im Wochenplan ausblenden können
 - Menge auf Einkaufsliste anpassbar machen
 b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zustand, ohne
   Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - anders als die Einkaufsliste,
