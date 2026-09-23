@@ -5,7 +5,7 @@ branch: main
 story: MZP-019
 topic: "Frühstück kennzeichnen"
 tags: [plan, meals, mealForm, domain, firestore]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-019 — Frühstück kennzeichnen
@@ -658,23 +658,27 @@ Die zweite Checkbox, die Ansage beim Umkippen und die Absicherung gegen den Emul
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver: ein Gericht bearbeiten, bis ans Ende des Formulars
+- [x] Auf dem Gerät mit VoiceOver: ein Gericht bearbeiten, bis ans Ende des Formulars
       wischen und beide Zeilen hören — `Hauptgericht, Kontrollkästchen, aktiviert` und
       `Frühstück, Kontrollkästchen, deaktiviert`.
-- [ ] `Frühstück` anhaken und `Hauptgericht abgewählt.` hören, ohne dass VoiceOvers
+- [x] `Frühstück` anhaken und `Hauptgericht abgewählt.` hören, ohne dass VoiceOvers
       eigenes `aktiviert` abgeschnitten wird. Zurückwischen: `Hauptgericht` ist leer.
-- [ ] Den gesetzten Haken wieder wegnehmen — es kommt keine zusätzliche Ansage, und
+- [x] Den gesetzten Haken wieder wegnehmen — es kommt keine zusätzliche Ansage, und
       beide Zeilen sind leer.
-- [ ] Die zweite Zeile ist mit dem Finger auf ihrer ganzen Breite zu treffen, nicht nur
+- [x] Die zweite Zeile ist mit dem Finger auf ihrer ganzen Breite zu treffen, nicht nur
       auf dem Kasten, und sieht aus wie die erste — auch bei eingeschalteter Farbumkehr.
-- [ ] `Speichern`, erneut bearbeiten — der Zustand steht. `Zurück zum Gericht` nach
+- [x] `Speichern`, erneut bearbeiten — der Zustand steht. `Zurück zum Gericht` nach
       einer Änderung verwirft sie.
-- [ ] Ein Gericht, das vor dieser Änderung angelegt wurde, zeigt `Hauptgericht`
+- [x] Ein Gericht, das vor dieser Änderung angelegt wurde, zeigt `Hauptgericht`
       gesetzt und `Frühstück` leer.
-- [ ] Die App auf dem zweiten Gerät öffnen und prüfen, dass der Zustand dort ebenso
+- [x] Die App auf dem zweiten Gerät öffnen und prüfen, dass der Zustand dort ebenso
       steht.
 
 ## Notizen zur Umsetzung
+
+**2026-09-23 — am Gerät geprüft.** Beide Zeilen lesen sich als Kontrollkästchen, das
+Umkippen wird angesagt, das reine Abwählen bleibt still, und der gespeicherte Zustand
+steht nach dem Neuladen und auf dem zweiten Gerät.
 
 Der e2e-Test `buys only the day that the supply no longer covers` war im ersten
 vollständigen Lauf nach Phase 1 rot und im Wiederholungslauf grün — der bekannte
