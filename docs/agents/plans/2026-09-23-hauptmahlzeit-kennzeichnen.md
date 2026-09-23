@@ -5,7 +5,7 @@ branch: main
 story: MZP-017
 topic: "Hauptmahlzeit kennzeichnen"
 tags: [plan, meals, mealForm, css]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-017 — Hauptmahlzeit kennzeichnen
@@ -571,24 +571,29 @@ Richtungen. Die Zufallsauswahl bleibt unberührt.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver: ein Gericht bearbeiten, bis ans Ende des Formulars
+- [x] Auf dem Gerät mit VoiceOver: ein Gericht bearbeiten, bis ans Ende des Formulars
       wischen und `Hauptmahlzeit, Kontrollkästchen, aktiviert` hören. Umschalten,
       `Speichern`, erneut bearbeiten — der Zustand steht.
-- [ ] Die Zeile ist mit dem Finger auf ihrer ganzen Breite zu treffen, nicht nur auf
+- [x] Die Zeile ist mit dem Finger auf ihrer ganzen Breite zu treffen, nicht nur auf
       dem Kasten.
-- [ ] Der Kasten sieht aus wie der Umschalter `Farben invertieren` in den
+- [x] Der Kasten sieht aus wie der Umschalter `Farben invertieren` in den
       Einstellungen, und der Haken ist bei eingeschalteter Farbumkehr genauso gut zu
       sehen wie dort.
-- [ ] Die Haken der Einkaufsliste und der Einstellungen sehen unverändert aus, in
+- [x] Die Haken der Einkaufsliste und der Einstellungen sehen unverändert aus, in
       beiden Farbstellungen.
-- [ ] Ein Gericht, das vor dieser Änderung angelegt wurde, zeigt beim Bearbeiten den
+- [x] Ein Gericht, das vor dieser Änderung angelegt wurde, zeigt beim Bearbeiten den
       gesetzten Haken.
-- [ ] Die App auf dem zweiten Gerät öffnen und prüfen, dass der Zustand dort ebenso
+- [x] Die App auf dem zweiten Gerät öffnen und prüfen, dass der Zustand dort ebenso
       steht.
 
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+**2026-09-23 — am Gerät geprüft.** Die Zeile, ihre Ansage, die Klickfläche über die
+ganze Breite, die geteilte Kastenoptik in beiden Farbstellungen, ein Bestandsgericht
+ohne das Feld und das zweite Gerät verhalten sich wie geplant. Die manuelle
+Verifikation ist abgehakt, der Plan ist abgeschlossen.
 
 ## Verweise
 
