@@ -117,3 +117,4 @@ b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf 
 - Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
   Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)
 - Gerichteliste: Immer gleichen Platz für Glühbirne freihalten, auch wenn nicht sichtbar
+- Checkbox für Frühstück
