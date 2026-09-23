@@ -315,8 +315,10 @@ h2 {
   margin-top: 1.5rem;
 }
 
-.hiddenMark {
+.hiddenMark,
+.supplyMark {
   flex: none;
+  width: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -386,14 +388,6 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
 .weekday {
   flex: none;
   min-width: 2.5rem;
-}
-
-.supplyMark {
-  flex: none;
-  width: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .weekPlanChoice input {

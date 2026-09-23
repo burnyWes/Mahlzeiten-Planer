@@ -16,11 +16,9 @@ export function MealListRow({
 }: MealListRowProps) {
   return (
     <li className="mealRow">
-      {meal.hidden && (
-        <span className="hiddenMark" aria-hidden="true">
-          <LightbulbOffIcon />
-        </span>
-      )}
+      <span className="hiddenMark" aria-hidden="true">
+        {meal.hidden && <LightbulbOffIcon />}
+      </span>
       <button
         type="button"
         className="mealNameButton"

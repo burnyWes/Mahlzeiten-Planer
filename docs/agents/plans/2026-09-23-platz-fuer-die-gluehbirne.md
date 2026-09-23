@@ -243,7 +243,7 @@ fest.
 
 **Aufgaben**:
 
-- [ ] `MealListRow.tsx` die Marke in jeder Zeile rendern: die Bedingung `meal.hidden`
+- [x] `MealListRow.tsx` die Marke in jeder Zeile rendern: die Bedingung `meal.hidden`
       wandert aus dem umschliessenden Ausdruck in den Span. Die Reihenfolge der
       Geschwister bleibt, damit `shownMealNames()` weiter den reinen Namen aus dem
       ersten Knopf liest.
@@ -252,7 +252,7 @@ fest.
         {meal.hidden && <LightbulbOffIcon />}
       </span>
       ```
-- [ ] `.hiddenMark` in `src/index.css` (Zeile 318-323) zur Selektorliste mit
+- [x] `.hiddenMark` in `src/index.css` (Zeile 318-323) zur Selektorliste mit
       `.supplyMark` erweitern und um `width: 24px` ergänzen; die Regel `.supplyMark`
       bei Zeile 391-397 entfällt dafür ersatzlos. Die übrigen vier Eigenschaften
       bleiben Zeichen für Zeichen, wie sie sind.
@@ -266,7 +266,7 @@ fest.
         justify-content: center;
       }
       ```
-- [ ] `mealRows()` in `MealsArea.test.tsx` einführen und `shownMealNames()`
+- [x] `mealRows()` in `MealsArea.test.tsx` einführen und `shownMealNames()`
       (Zeile 156-160) darauf stützen — dieselbe Aufteilung wie `weekdayRows()` und
       `shownWeekdays()` in `WeekPlanArea.test.tsx:147-153`.
       ```tsx
@@ -280,7 +280,7 @@ fest.
         )
       }
       ```
-- [ ] Den Test `keeps the room for the mark in every row` in `MealsArea.test.tsx`
+- [x] Den Test `keeps the room for the mark in every row` in `MealsArea.test.tsx`
       ergänzen, neben den vorhandenen Tests zum Ausblenden. Er prüft beides in einem
       Durchgang: die Spalte steht in jeder Zeile, das Icon nur in der ausgeblendeten.
       ```tsx
@@ -306,18 +306,18 @@ fest.
 
 **Automatisierte Verifikation**:
 
-- [ ] Der Test `keeps the room for the mark in every row` in `MealsArea.test.tsx` ist
+- [x] Der Test `keeps the room for the mark in every row` in `MealsArea.test.tsx` ist
       grün.
-- [ ] `names a hidden meal as hidden in the list` bleibt grün — das `aria-label` und
+- [x] `names a hidden meal as hidden in the list` bleibt grün — das `aria-label` und
       die Sortierung ändern sich nicht.
-- [ ] `has no accessibility violations on the list` und `... on a hidden meal` bleiben
+- [x] `has no accessibility violations on the list` und `... on a hidden meal` bleiben
       grün: der leere Span erzeugt keine Verletzung.
-- [ ] `keeps the room for the mark in every row` in `WeekPlanArea.test.tsx` bleibt
+- [x] `keeps the room for the mark in every row` in `WeekPlanArea.test.tsx` bleibt
       grün. Er prüft die DOM-Struktur, nicht das Stylesheet — dass der Wochenplan auch
       **aussieht** wie vorher, deckt erst die Prüfung am Gerät ab.
-- [ ] `npm run test` läuft durch.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test` läuft durch.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
 
 **Manuelle Verifikation**:
 

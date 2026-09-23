@@ -153,10 +153,14 @@ function save() {
   return userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
 }
 
+function mealRows() {
+  return within(screen.getByRole('main')).getAllByRole('listitem')
+}
+
 function shownMealNames() {
-  return within(screen.getByRole('main'))
-    .getAllByRole('listitem')
-    .map((row) => within(row).getAllByRole('button')[0].textContent)
+  return mealRows().map(
+    (row) => within(row).getAllByRole('button')[0].textContent,
+  )
 }
 
 describe('MealsArea', () => {
@@ -556,6 +560,20 @@ describe('MealsArea', () => {
     ).toBe('Suppe')
     expect(screen.getByRole('button', { name: 'Eintopf' })).toBeInTheDocument()
     expect(shownMealNames()).toEqual(['Eintopf', 'Suppe'])
+  })
+
+  it('keeps the room for the mark in every row', () => {
+    renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+      meal('stew', 'Eintopf'),
+    ])
+
+    expect(
+      mealRows().map((row) => row.querySelector('.hiddenMark') !== null),
+    ).toEqual([true, true])
+    expect(
+      mealRows().map((row) => row.querySelector('.hiddenMark svg') !== null),
+    ).toEqual([false, true])
   })
 
   it('keeps a meal hidden when it is edited', async () => {
