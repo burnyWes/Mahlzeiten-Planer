@@ -8,6 +8,7 @@ import {
   plannedDayCount,
   plannedMeals,
   shownMealOn,
+  suppliedDayCount,
   WEEKDAYS,
   weekPlanTransfer,
   withMealOnDay,
@@ -237,7 +238,7 @@ describe('weekPlanTransfer', () => {
 
     expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
       mealsToBuy: [pizza, bolognese],
-      suppliedDays: 0,
+      spentSupplies: [],
     })
   })
 
@@ -250,7 +251,7 @@ describe('weekPlanTransfer', () => {
 
     expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 2)])).toEqual({
       mealsToBuy: [pizza],
-      suppliedDays: 2,
+      spentSupplies: [supply('pizza', 2)],
     })
   })
 
@@ -259,7 +260,7 @@ describe('weekPlanTransfer', () => {
 
     expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 1)])).toEqual({
       mealsToBuy: [pizza],
-      suppliedDays: 1,
+      spentSupplies: [supply('pizza', 1)],
     })
   })
 
@@ -271,7 +272,29 @@ describe('weekPlanTransfer', () => {
         supply('pizza', 1),
         supply('soup', 1),
       ]),
-    ).toEqual({ mealsToBuy: [], suppliedDays: 2 })
+    ).toEqual({
+      mealsToBuy: [],
+      spentSupplies: [supply('pizza', 1), supply('soup', 1)],
+    })
+  })
+
+  it('follows the weekdays when several supplies are spent', () => {
+    const plan = planWith(['monday', 'soup'], ['tuesday', 'pizza'])
+
+    expect(
+      weekPlanTransfer(plan, knownMeals, [
+        supply('pizza', 1),
+        supply('soup', 1),
+      ]).spentSupplies,
+    ).toEqual([supply('soup', 1), supply('pizza', 1)])
+  })
+
+  it('spends nothing of a supply whose meal is not planned', () => {
+    const plan = planWith(['monday', 'pizza'])
+
+    expect(
+      weekPlanTransfer(plan, knownMeals, [supply('bolognese', 3)]),
+    ).toEqual({ mealsToBuy: [pizza], spentSupplies: [] })
   })
 
   it('skips a day whose meal was deleted meanwhile', () => {
@@ -279,8 +302,32 @@ describe('weekPlanTransfer', () => {
 
     expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
       mealsToBuy: [soup],
-      suppliedDays: 0,
+      spentSupplies: [],
     })
+  })
+})
+
+describe('suppliedDayCount', () => {
+  it('counts no day while nothing was spent', () => {
+    expect(suppliedDayCount({ mealsToBuy: [], spentSupplies: [] })).toBe(0)
+  })
+
+  it('counts the single day of a single portion', () => {
+    expect(
+      suppliedDayCount({
+        mealsToBuy: [],
+        spentSupplies: [supply('pizza', 1)],
+      }),
+    ).toBe(1)
+  })
+
+  it('adds up the portions of every spent supply', () => {
+    expect(
+      suppliedDayCount({
+        mealsToBuy: [],
+        spentSupplies: [supply('bolognese', 2), supply('pizza', 1)],
+      }),
+    ).toBe(3)
   })
 })
 

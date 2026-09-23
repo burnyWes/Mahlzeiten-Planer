@@ -12,6 +12,7 @@ import {
   supplyOf,
   withOneLess,
   withOneMore,
+  withoutPortions,
   withoutSupply,
   withSupply,
   type Supply,
@@ -155,6 +156,22 @@ describe('withOneLess', () => {
 
   it('leaves no supply behind at the last portion', () => {
     expect(withOneLess(supply('bolognese', 1))).toBeNull()
+  })
+})
+
+describe('withoutPortions', () => {
+  it('takes the spent portions off the supply', () => {
+    expect(withoutPortions(supply('bolognese', 3), 2)).toEqual(
+      supply('bolognese', 1),
+    )
+  })
+
+  it('leaves no supply behind when every portion is spent', () => {
+    expect(withoutPortions(supply('bolognese', 2), 2)).toBeNull()
+  })
+
+  it('leaves no supply behind when more is spent than is there', () => {
+    expect(withoutPortions(supply('bolognese', 1), 3)).toBeNull()
   })
 })
 

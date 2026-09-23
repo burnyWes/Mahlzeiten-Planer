@@ -325,25 +325,25 @@ describe('weekPlanTransferAnnouncement', () => {
 
   it('counts the days that the supply covered', () => {
     expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 3)).toBe(
-      'Wochenplan, 6 Artikel hinzugefügt. 3 Tage aus dem Vorrat.',
+      'Wochenplan, 6 Artikel hinzugefügt. 3 Tage aus dem Vorrat entnommen.',
     )
   })
 
   it('speaks of a single covered day in the singular', () => {
     expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 1)).toBe(
-      'Wochenplan, 6 Artikel hinzugefügt. 1 Tag aus dem Vorrat.',
+      'Wochenplan, 6 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
     )
   })
 
   it('says that the whole week came out of the supply', () => {
     expect(weekPlanTransferAnnouncement('', [], 4)).toBe(
-      'Wochenplan, alle Gerichte aus dem Vorrat, nichts hinzugefügt.',
+      'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.',
     )
   })
 
   it('names the week plan first when only a hint is left', () => {
     expect(weekPlanTransferAnnouncement('', [soup], 2)).toBe(
-      'Wochenplan, nichts hinzugefügt. 2 Tage aus dem Vorrat. Suppe hat keine Einkaufs-Items.',
+      'Wochenplan, nichts hinzugefügt. 2 Tage aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
     )
   })
 })

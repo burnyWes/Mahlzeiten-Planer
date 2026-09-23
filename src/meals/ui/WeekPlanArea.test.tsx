@@ -539,7 +539,7 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [pizza, bolognese], suppliedDays: 0 },
+      { mealsToBuy: [pizza, bolognese], spentSupplies: [] },
     ])
   })
 
@@ -555,7 +555,9 @@ describe('WeekPlanArea', () => {
 
     await addToShoppingList()
 
-    expect(transferred).toEqual([{ mealsToBuy: [bolognese], suppliedDays: 0 }])
+    expect(transferred).toEqual([
+      { mealsToBuy: [bolognese], spentSupplies: [] },
+    ])
     expect(weekPlanClient.storedWeekPlan().monday).toBe('gone')
   })
 
@@ -577,7 +579,10 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [pizza, bolognese], suppliedDays: 1 },
+      {
+        mealsToBuy: [pizza, bolognese],
+        spentSupplies: [supply('bolognese', 1)],
+      },
     ])
   })
 
@@ -594,7 +599,9 @@ describe('WeekPlanArea', () => {
 
     await addToShoppingList()
 
-    expect(transferred).toEqual([{ mealsToBuy: [], suppliedDays: 1 }])
+    expect(transferred).toEqual([
+      { mealsToBuy: [], spentSupplies: [supply('bolognese', 1)] },
+    ])
   })
 
   it('leaves the plan standing after the transfer', async () => {

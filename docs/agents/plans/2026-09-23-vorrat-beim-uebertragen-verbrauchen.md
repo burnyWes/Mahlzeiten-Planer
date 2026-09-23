@@ -290,7 +290,7 @@ Ansagen lauten wie bisher. `SignedInApp.test.tsx` und die E2E-Tests bleiben ohne
 
 **Aufgaben**:
 
-- [ ] `withoutPortions` in `src/meals/domain/supply.ts` test-getrieben anlegen,
+- [x] `withoutPortions` in `src/meals/domain/supply.ts` test-getrieben anlegen,
       neben `withOneLess`. Erst die Tests in `supply.test.ts`: eine Menge wird
       abgezogen; wird alles verbraucht, kommt `null`; wird mehr als vorhanden
       verlangt, kommt ebenfalls `null`.
@@ -300,9 +300,9 @@ Ansagen lauten wie bisher. `SignedInApp.test.tsx` und die E2E-Tests bleiben ohne
         return count <= 0 ? null : { ...supply, count }
       }
       ```
-- [ ] `WeekPlanTransfer` in `src/meals/domain/weekPlan.ts` umstellen:
+- [x] `WeekPlanTransfer` in `src/meals/domain/weekPlan.ts` umstellen:
       `spentSupplies: readonly Supply[]` statt `suppliedDays: number`.
-- [ ] `weekPlanTransfer` die gedeckten Tage je Gericht aufsummieren lassen, über
+- [x] `weekPlanTransfer` die gedeckten Tage je Gericht aufsummieren lassen, über
       die vorhandenen `supplyOf` und `withSupply`. Die Reihenfolge folgt dem
       jeweils ersten gedeckten Wochentag, damit die Tests deterministisch sind.
       **`portionsPerMeal` bekommt nur die gedeckten Tage** — die heutige Variable
@@ -333,31 +333,31 @@ Ansagen lauten wie bisher. `SignedInApp.test.tsx` und die E2E-Tests bleiben ohne
         }
       }
       ```
-- [ ] `suppliedDayCount(transfer)` in `weekPlan.ts` ergänzen — die Summe der
+- [x] `suppliedDayCount(transfer)` in `weekPlan.ts` ergänzen — die Summe der
       `count`-Werte aus `spentSupplies`.
-- [ ] Die Tests in `src/meals/domain/weekPlan.test.ts:225-286` auf `spentSupplies`
+- [x] Die Tests in `src/meals/domain/weekPlan.test.ts:225-286` auf `spentSupplies`
       umstellen und für `suppliedDayCount` je einen Fall für kein, ein und mehrere
       verbrauchte Gerichte ergänzen. Neu dazu: ein Vorrat, der mehrere Tage
       desselben Gerichts deckt, liefert **einen** Eintrag mit `count: 2`; ein
       Vorrat, dessen Gericht nicht im Plan steht, liefert **keinen** Eintrag.
-- [ ] `SignedInApp.tsx:124-128` auf `suppliedDayCount(transfer)` umstellen, damit
+- [x] `SignedInApp.tsx:124-128` auf `suppliedDayCount(transfer)` umstellen, damit
       die Ansage unverändert bleibt.
-- [ ] Die erwarteten Transfer-Objekte in `src/meals/ui/WeekPlanArea.test.tsx`
+- [x] Die erwarteten Transfer-Objekte in `src/meals/ui/WeekPlanArea.test.tsx`
       (Zeilen 538-597) auf die neue Form bringen, etwa
       `{ mealsToBuy: [pizza, bolognese], spentSupplies: [{ mealId: 'bolognese', count: 1 }] }`.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `withoutPortions` gibt für `{ count: 2 }` und `spent: 2` den Wert `null`
+- [x] `npm run test` läuft durch.
+- [x] `withoutPortions` gibt für `{ count: 2 }` und `spent: 2` den Wert `null`
       zurück und für `spent: 1` einen Vorrat mit `count: 1`.
-- [ ] `weekPlanTransfer` liefert für Bolognese mit Vorrat 2 an drei geplanten Tagen
+- [x] `weekPlanTransfer` liefert für Bolognese mit Vorrat 2 an drei geplanten Tagen
       `spentSupplies: [{ mealId: 'bolognese', count: 2 }]` und einen `mealsToBuy`
       mit dem dritten Tag.
-- [ ] `suppliedDayCount` liefert `3` für `[{ bolognese, 2 }, { pizza, 1 }]`.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `SignedInApp.test.tsx` bleibt ohne Änderung grün — das Verhalten hat sich
+- [x] `suppliedDayCount` liefert `3` für `[{ bolognese, 2 }, { pizza, 1 }]`.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `SignedInApp.test.tsx` bleibt ohne Änderung grün — das Verhalten hat sich
       nicht verschoben.
 
 ### Phase 2: Die Übertragung verbraucht den Vorrat
@@ -369,7 +369,7 @@ es.
 
 **Aufgaben**:
 
-- [ ] `suppliedDayPhrase` und den Alles-gedeckt-Satz in
+- [x] `suppliedDayPhrase` und den Alles-gedeckt-Satz in
       `src/meals/domain/announcements.ts:138-165` test-getrieben auf »entnommen«
       umstellen. Erst die vier Erwartungen in `announcements.test.ts:327-347`
       ändern, dann den Code.
@@ -378,7 +378,7 @@ es.
       3 Tage aus dem Vorrat entnommen.
       Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.
       ```
-- [ ] `addWeekPlanToShoppingList` in `src/SignedInApp.tsx:117-130` die verbrauchten
+- [x] `addWeekPlanToShoppingList` in `src/SignedInApp.tsx:117-130` die verbrauchten
       Vorräte abbuchen lassen, zwischen dem Hinzufügen und der Ansage.
       ```ts
       for (const spent of transfer.spentSupplies)
@@ -386,7 +386,7 @@ es.
           withoutPortions(supply, spent.count),
         )
       ```
-- [ ] In `src/SignedInApp.test.tsx` die bestehende Erwartung
+- [x] In `src/SignedInApp.test.tsx` die bestehende Erwartung
       `leaves the items of a covered day off the shopping list` (Zeile 380-407)
       nachziehen: die Ansage heißt jetzt `… 1 Tag aus dem Vorrat entnommen.`, und
       `suppliesClient.storedSupplies()` ist danach leer statt
@@ -395,27 +395,27 @@ es.
       `says that the whole week came out of the supply` (ab Zeile 436) und
       `spares the hint about a covered meal without items` (Zeile 459-483, zwei
       Erwartungen bei 478 und 481).
-- [ ] Einen Test `keeps what the week plan did not eat of a supply` ergänzen:
+- [x] Einen Test `keeps what the week plan did not eat of a supply` ergänzen:
       Bolognese mit Vorrat 3, geplant an Montag und Mittwoch; nach der Übertragung
       steht `storedSupplies()` auf `[{ mealId: 'bolognese', count: 1 }]` und das
       Feld des Montags heißt weiterhin `Montag, im Vorrat` — die übrige Portion
       deckt ihn noch.
-- [ ] Einen Test `leaves a supply alone that the week plan does not touch`
+- [x] Einen Test `leaves a supply alone that the week plan does not touch`
       ergänzen: ein Vorrat für ein Gericht, das nicht im Plan steht, bleibt nach
       der Übertragung unverändert.
-- [ ] Einen Test `buys the covered day on a second transfer` ergänzen: nach zwei
+- [x] Einen Test `buys the covered day on a second transfer` ergänzen: nach zwei
       Drücken stehen auch die Zutaten des vorher gedeckten Tages auf der
       Einkaufsliste, und der Vorrat ist weg.
-- [ ] Einen Test ergänzen, der zeigt, dass Planen und Würfeln den Vorrat **nicht**
+- [x] Einen Test ergänzen, der zeigt, dass Planen und Würfeln den Vorrat **nicht**
       anfassen: nach `chooseSuggestion` auf einen gedeckten Tag ist
       `storedSupplies()` unverändert.
-- [ ] `e2e/weekPlan.spec.ts`, Test `buys only the day that the supply no longer
+- [x] `e2e/weekPlan.spec.ts`, Test `buys only the day that the supply no longer
       covers` (Zeile 63-106, die Ansage steht auf Zeile 100): die Erwartung auf
       `Wochenplan, 2 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.`
       anpassen und nach dem Druck `await expect.poll(supplyCountsOnServer).toEqual([])`
       ergänzen, bevor die Einkaufsliste geprüft wird. `supplyCountsOnServer` wird
       dazu aus `./emulatorHousehold.ts` importiert.
-- [ ] `docs/notes.txt` unten unter TODO anhängen:
+- [x] `docs/notes.txt` unten unter TODO anhängen:
       ```
       b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete
         auf einen Druck ab und trifft damit den useSupplies-Eintrag oben haeufiger
@@ -427,20 +427,20 @@ es.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 1)` ergibt
+- [x] `npm run test` läuft durch.
+- [x] `weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 1)` ergibt
       `Wochenplan, 6 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.`
-- [ ] `weekPlanTransferAnnouncement('', [], 4)` ergibt
+- [x] `weekPlanTransferAnnouncement('', [], 4)` ergibt
       `Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.`
-- [ ] Bolognese mit Vorrat 1, geplant Montag und Mittwoch: nach der Übertragung ist
+- [x] Bolognese mit Vorrat 1, geplant Montag und Mittwoch: nach der Übertragung ist
       `storedSupplies()` leer und nur die Zutaten des Mittwochs stehen auf der
       Einkaufsliste.
-- [ ] Bolognese mit Vorrat 3, geplant an zwei Tagen: `storedSupplies()` steht
+- [x] Bolognese mit Vorrat 3, geplant an zwei Tagen: `storedSupplies()` steht
       danach auf `count: 1`.
-- [ ] Der zweite Druck legt die Zutaten des vorher gedeckten Tages auf die Liste.
-- [ ] `npm run lint` läuft durch.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch; `buys only the day that the supply no longer
+- [x] Der zweite Druck legt die Zutaten des vorher gedeckten Tages auf die Liste.
+- [x] `npm run lint` läuft durch.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch; `buys only the day that the supply no longer
       covers` sieht den leeren Vorrat auf dem Server.
 
 **Manuelle Verifikation**:
@@ -453,7 +453,15 @@ es.
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+- Phase 1 und 2 liefen ohne Abweichung vom Plan durch. Der in Phase 1 genannte
+  wahrscheinlichste Fehler — `portionsPerMeal` bekommt alle statt nur der gedeckten
+  Tage — ist durch den Test `spends nothing of a supply whose meal is not planned`
+  abgedeckt.
+- Der Test für das unberührte Planen heißt
+  `spends nothing of the supply while a day is being planned`.
+- In `WeekPlanArea.test.tsx` mussten vier statt der geplanten Erwartungen angepasst
+  werden; die Zeilenangaben des Plans stimmten, die Form der Objekte ist jetzt
+  `spentSupplies: [supply('bolognese', 1)]`.
 
 ## Verweise
 

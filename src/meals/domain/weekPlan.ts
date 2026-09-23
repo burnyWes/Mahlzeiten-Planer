@@ -1,5 +1,5 @@
 import type { Meal, MealId } from './meal'
-import { supplyOf, type Supply } from './supply'
+import { supplyOf, withSupply, type Supply } from './supply'
 
 export const WEEKDAYS = [
   'monday',
@@ -83,7 +83,16 @@ export function plannedMeals(
 
 export type WeekPlanTransfer = {
   mealsToBuy: readonly Meal[]
-  suppliedDays: number
+  spentSupplies: readonly Supply[]
+}
+
+function portionsPerMeal(days: readonly PlannedDay[]): readonly Supply[] {
+  return days.reduce<readonly Supply[]>((spent, { meal }) => {
+    const counted = supplyOf(spent, meal.id)
+    return counted === null
+      ? [...spent, { mealId: meal.id, count: 1 }]
+      : withSupply(spent, { mealId: meal.id, count: counted.count + 1 })
+  }, [])
 }
 
 export function weekPlanTransfer(
@@ -92,13 +101,20 @@ export function weekPlanTransfer(
   supplies: readonly Supply[],
 ): WeekPlanTransfer {
   const days = plannedDays(plan, meals)
+  const covered = days.filter(({ day }) =>
+    isSuppliedOn(plan, day, meals, supplies),
+  )
   const toBuy = days.filter(
     ({ day }) => !isSuppliedOn(plan, day, meals, supplies),
   )
   return {
     mealsToBuy: toBuy.map(({ meal }) => meal),
-    suppliedDays: days.length - toBuy.length,
+    spentSupplies: portionsPerMeal(covered),
   }
+}
+
+export function suppliedDayCount(transfer: WeekPlanTransfer): number {
+  return transfer.spentSupplies.reduce((days, spent) => days + spent.count, 0)
 }
 
 export function plannedDayCount(

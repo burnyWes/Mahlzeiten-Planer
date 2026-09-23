@@ -107,3 +107,9 @@ b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSuppl
   die verspaetete Momentaufnahme des ersten Schreibvorgangs setzte die Anzeige zurueck.
   Ebenso "changes the count of a supply at its row" und "buys only the day that the supply
   no longer covers". Wiederholungslaeufe waren jedes Mal gruen.
+b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf einen
+  Druck ab und trifft damit den useSupplies-Eintrag oben haeufiger als die
+  Vorraete-Seite, die immer nur einen Vorrat schreibt.
+- Wochenplan-Prozess ueberarbeiten: der Knopf "Auf die Einkaufsliste" ist mehrfach
+  drueckbar und kauft beim zweiten Druck die vorher gedeckten Tage mit, weil der Vorrat
+  dann schon abgebucht ist (MZP-015, Entscheidung 1).

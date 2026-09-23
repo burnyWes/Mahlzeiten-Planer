@@ -8,8 +8,10 @@ import {
 } from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
 import type { RandomSource } from './meals/domain/randomPlanning'
+import { withoutPortions } from './meals/domain/supply'
 import {
   mealsWithoutItems,
+  suppliedDayCount,
   type WeekPlanTransfer,
 } from './meals/domain/weekPlan'
 import { MealsArea } from './meals/ui/MealsArea'
@@ -120,11 +122,15 @@ export function SignedInApp({
       items.length === 0
         ? ''
         : additionsAnnouncement(shoppingList.addItems(items))
+    for (const spent of transfer.spentSupplies)
+      supplies.changeSupply(spent.mealId, (supply) =>
+        withoutPortions(supply, spent.count),
+      )
     announce(
       weekPlanTransferAnnouncement(
         additions,
         mealsWithoutItems(transfer.mealsToBuy),
-        transfer.suppliedDays,
+        suppliedDayCount(transfer),
       ),
     )
   }

@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { prepareEmulators, weekPlanOnServer } from './emulatorHousehold.ts'
+import {
+  prepareEmulators,
+  supplyCountsOnServer,
+  weekPlanOnServer,
+} from './emulatorHousehold.ts'
 import {
   chooseSuggestion,
   pressButton,
@@ -97,8 +101,9 @@ test('buys only the day that the supply no longer covers', async ({ page }) => {
   await pressButton(page, 'Auf die Einkaufsliste')
 
   await expect(page.getByRole('status')).toContainText(
-    'Wochenplan, 2 Artikel hinzugefügt. 1 Tag aus dem Vorrat.',
+    'Wochenplan, 2 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
   )
+  await expect.poll(supplyCountsOnServer).toEqual([])
 
   await pressButton(page, 'Einkaufsliste')
 

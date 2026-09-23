@@ -83,6 +83,11 @@ export function withOneLess(supply: Supply): Supply | null {
   return { ...supply, count: supply.count - 1 }
 }
 
+export function withoutPortions(supply: Supply, spent: number): Supply | null {
+  const count = supply.count - spent
+  return count <= 0 ? null : { ...supply, count }
+}
+
 export function supplyOf(
   supplies: readonly Supply[],
   mealId: MealId,

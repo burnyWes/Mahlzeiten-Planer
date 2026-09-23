@@ -137,8 +137,8 @@ export function weekPlanShuffledAnnouncement(): string {
 
 function suppliedDayPhrase(suppliedDays: number): string {
   return suppliedDays === 1
-    ? '1 Tag aus dem Vorrat.'
-    : `${suppliedDays} Tage aus dem Vorrat.`
+    ? '1 Tag aus dem Vorrat entnommen.'
+    : `${suppliedDays} Tage aus dem Vorrat entnommen.`
 }
 
 function additionsPhrase(additions: string): string {
@@ -156,7 +156,7 @@ export function weekPlanTransferAnnouncement(
       ? hints.join(' ')
       : [`Wochenplan, ${additions}`, ...hints].join(' ')
   if (additions === '' && hints.length === 0)
-    return 'Wochenplan, alle Gerichte aus dem Vorrat, nichts hinzugefügt.'
+    return 'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.'
   return [
     `Wochenplan, ${additionsPhrase(additions)}`,
     suppliedDayPhrase(suppliedDays),
