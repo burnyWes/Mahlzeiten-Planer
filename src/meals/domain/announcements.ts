@@ -48,12 +48,44 @@ export function mealFailureMessage(error: unknown): string | null {
   return null
 }
 
-export function mealsHeading(meals: readonly NewMeal[]): string {
+export function mealsHeading(
+  meals: readonly NewMeal[],
+  filteredFromCount: number | null = null,
+): string {
   if (meals.length === 0) return 'Gerichte, keine'
+  const count =
+    filteredFromCount === null
+      ? `${meals.length}`
+      : `${meals.length} von ${filteredFromCount}`
   const hiddenCount = countHiddenMeals(meals)
   return hiddenCount === 0
-    ? `Gerichte, ${meals.length}`
-    : `Gerichte, ${meals.length} (${hiddenCount} ausgeblendet)`
+    ? `Gerichte, ${count}`
+    : `Gerichte, ${count} (${hiddenCount} ausgeblendet)`
+}
+
+export function shownMealsCount(
+  shownCount: number,
+  filteredFromCount: number | null,
+): string {
+  return filteredFromCount === null
+    ? `${shownCount}`
+    : `${shownCount} / ${filteredFromCount}`
+}
+
+export function categoryFilterAnnouncement(
+  category: string,
+  shownCount: number,
+  totalCount: number,
+): string {
+  return `${category}, ${shownCount} von ${mealCountPhrase(totalCount)}.`
+}
+
+function mealTotalPhrase(mealCount: number): string {
+  return mealCount === 1 ? '1 Gericht' : `${mealCount} Gerichte`
+}
+
+export function filterResetAnnouncement(totalCount: number): string {
+  return `Filter zurückgesetzt, ${mealTotalPhrase(totalCount)}.`
 }
 
 export function mealItemsHeading(itemCount: number): string {

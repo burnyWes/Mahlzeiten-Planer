@@ -198,6 +198,22 @@ function shownMealNames() {
   )
 }
 
+function categoryFilter() {
+  return screen.getByRole('combobox', { name: 'Kategorie' })
+}
+
+function chooseCategory(name: string) {
+  return userEvent.selectOptions(categoryFilter(), name)
+}
+
+function mealsWithSoups() {
+  return [
+    meal('lentils', 'Linsensuppe', { categories: ['Suppe'] }),
+    meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+    meal('onions', 'Zwiebelsuppe', { categories: ['suppe'], hidden: true }),
+  ]
+}
+
 describe('MealsArea', () => {
   it('reports that no meal is known yet', () => {
     renderMealsArea()
@@ -813,6 +829,187 @@ describe('MealsArea', () => {
     expect(
       screen.getByRole('heading', { name: 'Gerichte, 1 (1 ausgeblendet)' }),
     ).toHaveFocus()
+  })
+
+  it('offers no category filter without categories', () => {
+    renderMealsArea([meal('soup', 'Suppe')])
+
+    expect(screen.queryByRole('combobox')).toBeNull()
+  })
+
+  it('offers every category to filter by, hidden meals included', () => {
+    renderMealsArea([
+      meal('soup', 'Linsensuppe', { categories: ['Suppe'] }),
+      meal('bake', 'Nudelauflauf', { categories: ['Auflauf'], hidden: true }),
+    ])
+
+    expect(
+      within(categoryFilter())
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Alle', 'Auflauf', 'Suppe'])
+    expect(
+      (categoryFilter() as HTMLSelectElement).selectedOptions[0].textContent,
+    ).toBe('Alle')
+  })
+
+  it('shows only the meals of the chosen category', async () => {
+    renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+
+    expect(shownMealNames()).toEqual(['Linsensuppe', 'Zwiebelsuppe'])
+  })
+
+  it('counts the shown meals out of all meals in the heading', async () => {
+    renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+
+    const heading = screen.getByRole('heading', {
+      name: 'Gerichte, 2 von 3 (1 ausgeblendet)',
+    })
+    expect(heading.textContent).toBe('Gerichte, 2 / 3 (1 )')
+    expect(heading.querySelector('svg')).not.toBeNull()
+  })
+
+  it('counts out of all meals even when every meal carries the category', async () => {
+    renderMealsArea([
+      meal('lentils', 'Linsensuppe', { categories: ['Suppe'] }),
+      meal('onions', 'Zwiebelsuppe', { categories: ['Suppe'] }),
+    ])
+
+    await chooseCategory('Suppe')
+
+    const heading = screen.getByRole('heading', { name: 'Gerichte, 2 von 2' })
+    expect(heading.textContent).toBe('Gerichte, 2 / 2')
+  })
+
+  it('announces the chosen category with the shown meals', async () => {
+    const { announcements } = renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+
+    expect(announcements).toEqual(['Suppe, 2 von 3 Gerichten.'])
+  })
+
+  it('shows every meal again when all are chosen', async () => {
+    const { announcements } = renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+    await chooseCategory('Alle')
+
+    expect(shownMealNames()).toEqual([
+      'Bolognese',
+      'Linsensuppe',
+      'Zwiebelsuppe',
+    ])
+    expect(
+      screen.getByRole('heading', { name: 'Gerichte, 3 (1 ausgeblendet)' }),
+    ).toBeInTheDocument()
+    expect(announcements.at(-1)).toBe('Filter zurückgesetzt, 3 Gerichte.')
+  })
+
+  it('keeps the filter when returning from a meal', async () => {
+    renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+    await openMeal('Linsensuppe')
+    await goBackToTheMeals()
+
+    expect(categoryFilter()).toHaveValue('Suppe')
+    expect(shownMealNames()).toEqual(['Linsensuppe', 'Zwiebelsuppe'])
+    expect(
+      screen.getByRole('heading', {
+        name: 'Gerichte, 2 von 3 (1 ausgeblendet)',
+      }),
+    ).toHaveFocus()
+  })
+
+  it('shows every meal when the chosen category is gone', async () => {
+    const { client, announcements } = renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+    await act(async () => {
+      client.changeMeals(
+        client
+          .storedMeals()
+          .filter((stored) => stored.id !== 'bolognese')
+          .map((stored) => ({ ...stored, categories: [] })),
+      )
+    })
+
+    expect(categoryFilter()).toHaveValue('')
+    expect(shownMealNames()).toEqual([
+      'Bolognese',
+      'Linsensuppe',
+      'Zwiebelsuppe',
+    ])
+    expect(announcements).toEqual(['Suppe, 2 von 3 Gerichten.'])
+  })
+
+  it('keeps the filter when only the spelling of the category changes', async () => {
+    const { client } = renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+    await act(async () => {
+      client.changeMeals(
+        client
+          .storedMeals()
+          .filter((stored) => stored.id !== 'bolognese')
+          .map((stored) => ({ ...stored, categories: ['suppe'] })),
+      )
+    })
+
+    expect(categoryFilter()).toHaveValue('suppe')
+    expect(shownMealNames()).toEqual(['Linsensuppe', 'Zwiebelsuppe'])
+  })
+
+  it('offers no reset without a chosen category', () => {
+    renderMealsArea(mealsWithSoups())
+
+    expect(
+      screen.queryByRole('button', { name: 'Filter zurücksetzen' }),
+    ).toBeNull()
+  })
+
+  it('resets the filter with the cross', async () => {
+    const { announcements } = renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Filter zurücksetzen' }),
+    )
+
+    expect(shownMealNames()).toEqual([
+      'Bolognese',
+      'Linsensuppe',
+      'Zwiebelsuppe',
+    ])
+    expect(categoryFilter()).toHaveValue('')
+    expect(announcements.at(-1)).toBe('Filter zurückgesetzt, 3 Gerichte.')
+    expect(categoryFilter()).toHaveFocus()
+    expect(
+      screen.queryByRole('button', { name: 'Filter zurücksetzen' }),
+    ).toBeNull()
+  })
+
+  it('shows the reset as an icon only', async () => {
+    renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+    const reset = screen.getByRole('button', { name: 'Filter zurücksetzen' })
+
+    expect(reset.textContent).toBe('')
+    expect(reset.querySelector('svg')).not.toBeNull()
+  })
+
+  it('has no accessibility violations with a chosen category', async () => {
+    const { rendered } = renderMealsArea(mealsWithSoups())
+
+    await chooseCategory('Suppe')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('keeps the room for the mark in every row', () => {

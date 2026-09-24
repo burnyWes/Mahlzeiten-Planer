@@ -5,6 +5,7 @@ import {
   categoryAddedAnnouncement,
   categoryDeletedAnnouncement,
   categoryDeletionNote,
+  categoryFilterAnnouncement,
   categoryRowLabel,
   categorySavedAnnouncement,
   categoryRemovedAnnouncement,
@@ -21,6 +22,8 @@ import {
   mealSavedAnnouncement,
   mealsHeading,
   dayPlannedAnnouncement,
+  filterResetAnnouncement,
+  shownMealsCount,
   mealSuggestionsLabel,
   mealWithoutItemsAnnouncement,
   lessSupplyLabel,
@@ -78,6 +81,57 @@ describe('mealsHeading', () => {
     expect(mealsHeading([hiddenBolognese, hiddenBolognese])).toBe(
       'Gerichte, 2 (2 ausgeblendet)',
     )
+  })
+
+  it('counts the shown meals out of all meals', () => {
+    expect(mealsHeading([bolognese, bolognese], 5)).toBe('Gerichte, 2 von 5')
+  })
+
+  it('names the hidden meals among the shown ones', () => {
+    const hiddenBolognese = { ...bolognese, hidden: true }
+    expect(mealsHeading([bolognese, hiddenBolognese], 5)).toBe(
+      'Gerichte, 2 von 5 (1 ausgeblendet)',
+    )
+  })
+
+  it('says out of how many even when every meal is shown', () => {
+    expect(mealsHeading([bolognese, bolognese], 2)).toBe('Gerichte, 2 von 2')
+  })
+})
+
+describe('shownMealsCount', () => {
+  it('counts the meals without a filter', () => {
+    expect(shownMealsCount(12, null)).toBe('12')
+  })
+
+  it('counts the shown meals out of all meals', () => {
+    expect(shownMealsCount(4, 12)).toBe('4 / 12')
+  })
+})
+
+describe('categoryFilterAnnouncement', () => {
+  it('names the category with the shown meals out of all meals', () => {
+    expect(categoryFilterAnnouncement('Suppe', 4, 12)).toBe(
+      'Suppe, 4 von 12 Gerichten.',
+    )
+  })
+
+  it('speaks of a single meal', () => {
+    expect(categoryFilterAnnouncement('Suppe', 1, 1)).toBe(
+      'Suppe, 1 von 1 Gericht.',
+    )
+  })
+})
+
+describe('filterResetAnnouncement', () => {
+  it('counts every meal', () => {
+    expect(filterResetAnnouncement(12)).toBe(
+      'Filter zurückgesetzt, 12 Gerichte.',
+    )
+  })
+
+  it('speaks of a single meal', () => {
+    expect(filterResetAnnouncement(1)).toBe('Filter zurückgesetzt, 1 Gericht.')
   })
 })
 

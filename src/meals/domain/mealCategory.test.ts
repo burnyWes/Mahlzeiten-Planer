@@ -3,7 +3,9 @@ import { InvalidMeal, type Meal } from './meal'
 import {
   CategoryAlreadyTaken,
   categoryToAdd,
+  knownCategory,
   mealCategories,
+  mealsInCategory,
   suggestCategories,
   withCategoryRenamed,
   withoutCategory,
@@ -313,5 +315,50 @@ describe('withCategoryRenamed', () => {
     expect(
       withCategoryRenamed([meal('Suppe', ['Suppe'])], 'Nudelgericht', 'Nudeln'),
     ).toBeNull()
+  })
+})
+
+describe('knownCategory', () => {
+  const known = [overview('Auflauf'), overview('Suppe', 2)]
+
+  it('finds nothing when nothing is chosen', () => {
+    expect(knownCategory(known, null)).toBeNull()
+  })
+
+  it('finds the chosen category', () => {
+    expect(knownCategory(known, 'Suppe')).toBe('Suppe')
+  })
+
+  it('answers with the known spelling', () => {
+    expect(knownCategory(known, 'suppe')).toBe('Suppe')
+  })
+
+  it('finds nothing when the chosen category is gone', () => {
+    expect(knownCategory(known, 'Nudelgericht')).toBeNull()
+  })
+})
+
+describe('mealsInCategory', () => {
+  const bolognese = meal('Bolognese', ['Nudelgericht'])
+  const lentilSoup = meal('Linsensuppe', ['Suppe'])
+  const onionSoup = meal('Zwiebelsuppe', ['suppe', 'Schnell'], true)
+  const meals = [bolognese, lentilSoup, onionSoup]
+
+  it('keeps every meal without a category chosen', () => {
+    expect(mealsInCategory(meals, null)).toEqual(meals)
+  })
+
+  it('keeps the meals carrying the category, whatever its spelling', () => {
+    expect(mealsInCategory(meals, 'SUPPE')).toEqual([lentilSoup, onionSoup])
+  })
+
+  it('keeps hidden meals carrying the category', () => {
+    expect(mealsInCategory(meals, 'Schnell')).toEqual([onionSoup])
+  })
+
+  it('keeps the order of the meals', () => {
+    expect(
+      mealsInCategory([onionSoup, bolognese, lentilSoup], 'Suppe'),
+    ).toEqual([onionSoup, lentilSoup])
   })
 })

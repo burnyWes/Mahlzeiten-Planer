@@ -236,18 +236,18 @@ dieser Phase nur über „Alle“.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/mealCategory.test.ts`, `describe('knownCategory')`
+- [x] Test zuerst: `src/meals/domain/mealCategory.test.ts`, `describe('knownCategory')`
       - `finds nothing when nothing is chosen` → `null`
       - `finds the chosen category` → „Suppe“
       - `answers with the known spelling` (gewählt „suppe“, bekannt „Suppe“) → „Suppe“
       - `finds nothing when the chosen category is gone` → `null`
-- [ ] Test zuerst: `src/meals/domain/mealCategory.test.ts`, `describe('mealsInCategory')`
+- [x] Test zuerst: `src/meals/domain/mealCategory.test.ts`, `describe('mealsInCategory')`
       - `keeps every meal without a category chosen` (dieselben Gerichte, dieselbe
         Reihenfolge)
       - `keeps the meals carrying the category, whatever its spelling`
       - `keeps hidden meals carrying the category`
       - `keeps the order of the meals`
-- [ ] `src/meals/domain/mealCategory.ts`:
+- [x] `src/meals/domain/mealCategory.ts`:
       ```ts
       export function knownCategory(
         known: readonly CategoryOverview[],
@@ -267,7 +267,7 @@ dieser Phase nur über „Alle“.
       ```
       `carriesCategory` bleibt, wo es ist. `withoutCategory` nutzt es heute schon vor
       seiner Deklaration (`mealCategory.ts:92`, `:101`).
-- [ ] Test zuerst: `src/meals/domain/announcements.test.ts`
+- [x] Test zuerst: `src/meals/domain/announcements.test.ts`
       - `mealsHeading`: `counts the shown meals out of all meals` →
         `mealsHeading([bolognese, bolognese], 5)` = „Gerichte, 2 von 5“
       - `mealsHeading`: `names the hidden meals among the shown ones` →
@@ -280,7 +280,7 @@ dieser Phase nur über „Alle“.
         `('Suppe', 1, 1)` → „Suppe, 1 von 1 Gericht.“
       - `filterResetAnnouncement`: `12` → „Filter zurückgesetzt, 12 Gerichte.“, `1` →
         „Filter zurückgesetzt, 1 Gericht.“
-- [ ] `src/meals/domain/announcements.ts`:
+- [x] `src/meals/domain/announcements.ts`:
       ```ts
       export function shownMealsCount(
         shownCount: number,
@@ -311,7 +311,7 @@ dieser Phase nur über „Alle“.
       „n Gerichte“). Mit Filter ist die Liste nie leer, weil eine bekannte Kategorie
       immer an mindestens einem Gericht hängt. Der Fall „keine“ bleibt deshalb
       unverändert.
-- [ ] `src/meals/ui/MealCategoryFilter.tsx` anlegen:
+- [x] `src/meals/ui/MealCategoryFilter.tsx` anlegen:
       ```tsx
       type MealCategoryFilterProps = {
         categories: readonly CategoryOverview[]
@@ -324,7 +324,7 @@ dieser Phase nur über „Alle“.
       `<option value="">Alle</option>`, dann eine `<option value={name}>` je Kategorie.
       `onChange` gibt `''` als `null` weiter, sonst den Namen. Die Id unterscheidet sich
       von `mealCategoryName` im Formular.
-- [ ] `src/meals/ui/MealListPage.tsx`: neue Props `totalCount: number`,
+- [x] `src/meals/ui/MealListPage.tsx`: neue Props `totalCount: number`,
       `categories: readonly CategoryOverview[]`, `activeCategory: string | null`,
       `onChooseCategory`. `filteredFromCount = activeCategory === null ? null : totalCount`.
       `aria-label={mealsHeading(meals, filteredFromCount)}`, sichtbar:
@@ -337,12 +337,12 @@ dieser Phase nur über „Alle“.
       `categories.length > 0`. Die Bedingung für „Noch keine Gerichte.“ prüft weiter die
       angezeigten Gerichte. Mit Filter ist die Liste nie leer, also greift sie nur ohne
       Gerichte.
-- [ ] `src/meals/ui/MealsArea.tsx`: `const [chosenCategory, setChosenCategory] = useState<string | null>(null)`,
+- [x] `src/meals/ui/MealsArea.tsx`: `const [chosenCategory, setChosenCategory] = useState<string | null>(null)`,
       `categories = mealCategories(meals.meals)` (auch für `knownCategories` des Formulars
       verwenden, statt es dort erneut zu berechnen), `activeCategory`, `shownMeals` wie im
       Zielbild. `chooseCategory(category)` setzt den Zustand und sagt an:
       `category === null ? filterResetAnnouncement(meals.meals.length) : categoryFilterAnnouncement(category, mealsInCategory(meals.meals, category).length, meals.meals.length)`.
-- [ ] `src/index.css`: `select` in die Regeln `button, input, textarea` (Zeile 92-97) und
+- [x] `src/index.css`: `select` in die Regeln `button, input, textarea` (Zeile 92-97) und
       `input, textarea` (Zeile 111-118) aufnehmen. Neu:
       ```css
       .categoryFilter {
@@ -360,10 +360,10 @@ dieser Phase nur über „Alle“.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `mealCategory.test.ts` und `announcements.test.ts` schlagen vor
+- [x] Die neuen Fälle in `mealCategory.test.ts` und `announcements.test.ts` schlagen vor
       der Umsetzung fehl und laufen danach grün, die bestehenden `mealsHeading`-Fälle
       bleiben unverändert grün.
-- [ ] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`, mit den Hilfen
+- [x] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`, mit den Hilfen
       `categoryFilter()` (`screen.getByRole('combobox', { name: 'Kategorie' })`) und
       `chooseCategory(name)` (`userEvent.selectOptions(categoryFilter(), name)`):
       - `offers no category filter without categories`: Gerichte ohne Kategorien, keine
@@ -393,10 +393,10 @@ dieser Phase nur über „Alle“.
         zeigt „suppe“.
       - `has no accessibility violations with a chosen category`: `accessibilityViolations`
         auf der gefilterten Liste.
-- [ ] Die bestehenden Fälle in `MealsArea.test.tsx` laufen unverändert grün, auch die
+- [x] Die bestehenden Fälle in `MealsArea.test.tsx` laufen unverändert grün, auch die
       Überschrift-Tests (Zeile 785-808).
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft unverändert grün.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft unverändert grün.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
@@ -419,10 +419,10 @@ Er setzt auf „Alle“ zurück und gibt den Fokus an die Auswahl.
 
 **Aufgaben**:
 
-- [ ] `src/meals/ui/CrossIcon.tsx` anlegen, Muster `TrashIcon`
+- [x] `src/meals/ui/CrossIcon.tsx` anlegen, Muster `TrashIcon`
       (`src/shared/ui/TrashIcon.tsx`): `svg.buttonIcon`, `viewBox="0 0 24 24"`, Striche
       `M18 6 6 18` und `m6 6 12 12`, `aria-hidden="true"`, `focusable="false"`.
-- [ ] `src/meals/ui/MealCategoryFilter.tsx`: `useRef<HTMLSelectElement>` an der
+- [x] `src/meals/ui/MealCategoryFilter.tsx`: `useRef<HTMLSelectElement>` an der
       Auswahl. Bei `activeCategory !== null` nach der Auswahl ein
       `<button type="button" className="iconButton" aria-label="Filter zurücksetzen">`
       mit `CrossIcon`. `onClick`: `onChooseCategory(null)`, dann
@@ -430,7 +430,7 @@ Er setzt auf „Alle“ zurück und gibt den Fokus an die Auswahl.
 
 **Automatisierte Verifikation**:
 
-- [ ] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`:
+- [x] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`:
       - `offers no reset without a chosen category`: kein Knopf „Filter zurücksetzen“.
       - `resets the filter with the cross`: „Suppe“ wählen, „Filter zurücksetzen“
         drücken. Alle Gerichte sind sichtbar, die Auswahl steht auf „Alle“, die letzte
@@ -438,9 +438,9 @@ Er setzt auf „Alle“ zurück und gibt den Fokus an die Auswahl.
         Knopf ist verschwunden.
       - `shows the reset as an icon only`: der Knopf hat keinen Text, enthält ein `svg`
         (Muster `shows the removal of a taken over item as an icon only`, Zeile 289).
-- [ ] `has no accessibility violations with a chosen category` aus Phase 1 läuft mit dem
+- [x] `has no accessibility violations with a chosen category` aus Phase 1 läuft mit dem
       Knopf weiter grün.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
@@ -452,6 +452,15 @@ Er setzt auf „Alle“ zurück und gibt den Fokus an die Auswahl.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1, `shows every meal when the chosen category is gone`: Entfernt man die
+  Kategorien aus *allen* Gerichten, verschwindet planmäßig die ganze Filterzeile und die
+  Auswahl lässt sich nicht mehr prüfen. Der Test entfernt deshalb nur die Suppen-Kategorie,
+  „Nudelgericht“ an der Bolognese bleibt stehen.
+- Phase 1, `npm run test:e2e`: Im ersten Lauf war „buys only the day that the supply no
+  longer covers“ rot (Ansage „1 Artikel“ statt „2 Artikel“), der Wiederholungslauf war
+  26/26 grün. Das ist der bekannte useSupplies-Bug aus `docs/notes.txt`, nicht diese
+  Änderung.
 
 ## Verweise
 

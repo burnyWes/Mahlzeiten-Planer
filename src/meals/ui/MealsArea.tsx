@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import {
+  categoryFilterAnnouncement,
+  filterResetAnnouncement,
   mealDeletedAnnouncement,
   mealHidingAnnouncement,
   mealSavedAnnouncement,
@@ -10,7 +12,11 @@ import {
   type MealId,
   type NewMeal,
 } from '../domain/meal'
-import { mealCategories } from '../domain/mealCategory'
+import {
+  knownCategory,
+  mealCategories,
+  mealsInCategory,
+} from '../domain/mealCategory'
 import { DeleteMealPage } from './DeleteMealPage'
 import { MealFormPage } from './MealFormPage'
 import { MealListPage } from './MealListPage'
@@ -41,6 +47,10 @@ export function MealsArea({
   suggestNames,
 }: MealsAreaProps) {
   const [page, setPage] = useState<MealsPage>({ kind: 'list' })
+  const [chosenCategory, setChosenCategory] = useState<string | null>(null)
+
+  const categories = mealCategories(meals.meals)
+  const activeCategory = knownCategory(categories, chosenCategory)
 
   const addressedMeal =
     page.kind === 'list' || page.id === null
@@ -49,6 +59,19 @@ export function MealsArea({
 
   function showList() {
     setPage({ kind: 'list' })
+  }
+
+  function chooseCategory(category: string | null) {
+    setChosenCategory(category)
+    announce(
+      category === null
+        ? filterResetAnnouncement(meals.meals.length)
+        : categoryFilterAnnouncement(
+            category,
+            mealsInCategory(meals.meals, category).length,
+            meals.meals.length,
+          ),
+    )
   }
 
   function showMeal(id: MealId) {
@@ -89,7 +112,7 @@ export function MealsArea({
         }
         announce={announce}
         suggestNames={suggestNames}
-        knownCategories={mealCategories(meals.meals)}
+        knownCategories={categories}
       />
     )
   }
@@ -120,7 +143,11 @@ export function MealsArea({
   return (
     <MealListPage
       navigation={navigation}
-      meals={meals.meals}
+      meals={mealsInCategory(meals.meals, activeCategory)}
+      totalCount={meals.meals.length}
+      categories={categories}
+      activeCategory={activeCategory}
+      onChooseCategory={chooseCategory}
       onAddMeal={() => setPage({ kind: 'form', id: null })}
       onOpenMeal={(meal) => setPage({ kind: 'meal', id: meal.id })}
       onAddToShoppingList={onAddToShoppingList}
