@@ -5,7 +5,7 @@ branch: main
 story: MZP-021
 topic: "Kategorien für Gerichte"
 tags: [plan, meals, shared, firestore, ui, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-021 — Kategorien für Gerichte
@@ -680,9 +680,9 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Nach dem Umbenennen zeigt die Detailseite eines betroffenen Gerichts den neuen
+- [x] Nach dem Umbenennen zeigt die Detailseite eines betroffenen Gerichts den neuen
       Namen, auch auf dem anderen Gerät.
-- [ ] Mit VoiceOver: Der Speichern-Knopf wird als "Speichern, Taste" gelesen, die
+- [x] Mit VoiceOver: Der Speichern-Knopf wird als "Speichern, Taste" gelesen, die
       Rückkehr zur Liste ist durch die Ansage nachvollziehbar.
 
 ## Notizen zur Umsetzung
