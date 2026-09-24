@@ -155,7 +155,7 @@ export function SignedInApp({
       enabled: appearance.invertedColors,
       onToggle: appearance.toggleInvertedColors,
     },
-    { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikelverwaltung' },
+    { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel-Verwaltung' },
     { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },
   ]
 

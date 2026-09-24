@@ -105,7 +105,7 @@ describe('KnownItemsArea', () => {
       'Spaghetti',
     ])
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, 3' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 3' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Löschen, hackfleisch' }),
@@ -116,7 +116,7 @@ describe('KnownItemsArea', () => {
     renderKnownItemsArea()
 
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, keine' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Noch keine Vorschläge.')).toBeInTheDocument()
   })
@@ -150,7 +150,7 @@ describe('KnownItemsArea', () => {
 
     expect(storedNames(client)).toEqual(['Butter', 'Brot'])
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, 2' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 2' }),
     ).toBeInTheDocument()
   })
 
@@ -166,7 +166,7 @@ describe('KnownItemsArea', () => {
     expect(storedNames(client)).toEqual(['Brot'])
     expect(announcements).toContain('Butter gelöscht, noch 1 Vorschlag.')
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, 1' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 1' }),
     ).toHaveFocus()
   })
 
@@ -179,7 +179,7 @@ describe('KnownItemsArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, keine' }),
     ).toBeInTheDocument()
   })
 
@@ -203,7 +203,7 @@ describe('KnownItemsArea', () => {
     expect(client.storedKnownItems()).toEqual([known('Hackfleisch', 3, 7)])
     expect(announcements).toContain('Hackfleisch gespeichert.')
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, 1' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 1' }),
     ).toHaveFocus()
   })
 
@@ -257,7 +257,7 @@ describe('KnownItemsArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, keine' }),
     ).toBeInTheDocument()
   })
 

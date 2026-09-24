@@ -968,11 +968,11 @@ describe('SignedInApp', () => {
 
     await goToArea('Einstellungen')
     await userEvent.click(
-      screen.getByRole('button', { name: 'Artikelverwaltung' }),
+      screen.getByRole('button', { name: 'Artikel-Verwaltung' }),
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Artikelverwaltung, 1' }),
+      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 1' }),
     ).toBeInTheDocument()
   })
 
@@ -999,7 +999,7 @@ describe('SignedInApp', () => {
 
     expect(shownItemNames()).toEqual([
       'Farben invertieren',
-      'Artikelverwaltung',
+      'Artikel-Verwaltung',
       'Kategorie-Verwaltung',
     ])
     expect(

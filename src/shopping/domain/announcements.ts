@@ -57,8 +57,8 @@ export function listHeading(openCount: number): string {
 
 export function knownItemsHeading(knownItemCount: number): string {
   return knownItemCount === 0
-    ? 'Artikelverwaltung, keine'
-    : `Artikelverwaltung, ${knownItemCount}`
+    ? 'Artikel-Verwaltung, keine'
+    : `Artikel-Verwaltung, ${knownItemCount}`
 }
 
 export function knownItemSavedAnnouncement(name: string): string {

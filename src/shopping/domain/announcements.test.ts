@@ -118,11 +118,11 @@ describe('listHeading', () => {
 
 describe('knownItemsHeading', () => {
   it('counts the entries of the catalog', () => {
-    expect(knownItemsHeading(42)).toBe('Artikelverwaltung, 42')
+    expect(knownItemsHeading(42)).toBe('Artikel-Verwaltung, 42')
   })
 
   it('says that the catalog is empty', () => {
-    expect(knownItemsHeading(0)).toBe('Artikelverwaltung, keine')
+    expect(knownItemsHeading(0)).toBe('Artikel-Verwaltung, keine')
   })
 })
 

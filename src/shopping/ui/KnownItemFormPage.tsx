@@ -42,7 +42,7 @@ export function KnownItemFormPage({
   return (
     <main className="page">
       <button type="button" onClick={onBack}>
-        Zurück zur Artikelverwaltung
+        Zurück zur Artikel-Verwaltung
       </button>
       <h1 ref={heading} tabIndex={-1}>
         Vorschlag bearbeiten

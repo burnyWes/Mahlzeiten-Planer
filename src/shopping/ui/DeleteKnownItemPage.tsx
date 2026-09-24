@@ -17,7 +17,7 @@ export function DeleteKnownItemPage({
   return (
     <main className="page">
       <button type="button" onClick={onCancel}>
-        Zurück zur Artikelverwaltung
+        Zurück zur Artikel-Verwaltung
       </button>
       <h1 ref={heading} tabIndex={-1}>
         {knownItem.name} löschen?
