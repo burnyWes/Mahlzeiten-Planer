@@ -42,6 +42,13 @@ export function shownItems(page: Page) {
   return page.getByRole('main').getByRole('listitem')
 }
 
+export function shownShoppingItems(page: Page) {
+  return page
+    .getByRole('main')
+    .getByRole('checkbox')
+    .evaluateAll((boxes) => boxes.map((box) => box.getAttribute('aria-label')))
+}
+
 export async function signIn(page: Page) {
   await typeInto(page, 'E-Mail', household.email)
   await typeInto(page, 'Passwort', household.password)

@@ -27,7 +27,7 @@ const COLOUR = new RegExp(
   [
     '#[0-9a-f]{3,8}\\b',
     '\\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color-mix)\\(',
-    '\\b(?:white|black|red|green|blue|gray|grey)\\b',
+    '\\b(?:white|black|red|green|blue|gray|grey)\\b(?!-)',
   ].join('|'),
   'i',
 )
@@ -120,6 +120,11 @@ function weakCombinations(palette: Map<string, string>) {
 describe('palette', () => {
   it('defines every colour in the palette', () => {
     expect(rulesOutsideThePalette(stylesheet)).not.toMatch(COLOUR)
+  })
+
+  it('tells a colour name from a property that starts with it', () => {
+    expect('white-space: nowrap;').not.toMatch(COLOUR)
+    expect('color: white;').toMatch(COLOUR)
   })
 
   it('inverts every colour of the palette exactly', () => {

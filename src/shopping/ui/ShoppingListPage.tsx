@@ -11,6 +11,8 @@ type ShoppingListPageProps = {
   pendingChanges: number
   onAddItem: () => void
   onToggleItem: (item: ShoppingItem) => void
+  onLessItem: (item: ShoppingItem) => void
+  onMoreItem: (item: ShoppingItem) => void
   onCleanUp: () => void
 }
 
@@ -21,6 +23,8 @@ export function ShoppingListPage({
   pendingChanges,
   onAddItem,
   onToggleItem,
+  onLessItem,
+  onMoreItem,
   onCleanUp,
 }: ShoppingListPageProps) {
   const heading = useHeadingFocus()
@@ -56,6 +60,8 @@ export function ShoppingListPage({
                 key={item.id}
                 item={item}
                 onToggle={onToggleItem}
+                onLess={() => onLessItem(item)}
+                onMore={() => onMoreItem(item)}
               />
             ))}
           </ul>

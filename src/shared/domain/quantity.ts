@@ -69,7 +69,7 @@ export function sameQuantity(
   return one.amount === other.amount && one.unit === other.unit
 }
 
-function orOneWithoutUnit(quantity: Quantity | null): Quantity {
+export function orOneWithoutUnit(quantity: Quantity | null): Quantity {
   return quantity ?? ONE_WITHOUT_UNIT
 }
 

@@ -70,6 +70,60 @@ export async function itemNamesOnServer(): Promise<readonly string[]> {
   )
 }
 
+type StoredAmount = { integerValue?: string; doubleValue?: number }
+
+type StoredQuantity = {
+  nullValue?: null
+  mapValue?: {
+    fields: {
+      amount: StoredAmount
+      unit: { stringValue?: string; nullValue?: null }
+    }
+  }
+}
+
+type ListedItemsWithQuantity = {
+  documents?: readonly {
+    fields: { name: { stringValue: string }; quantity?: StoredQuantity }
+  }[]
+}
+
+function storedAmount(amount: StoredAmount): number {
+  return amount.integerValue === undefined
+    ? Number(amount.doubleValue)
+    : Number(amount.integerValue)
+}
+
+function storedItemWithQuantity(
+  name: string,
+  quantity: StoredQuantity | undefined,
+): string {
+  const fields = quantity?.mapValue?.fields
+  if (fields === undefined) return name
+  const amount = storedAmount(fields.amount)
+  const unit = fields.unit.stringValue
+  return unit === undefined
+    ? `${name}, ${amount}`
+    : `${name}, ${amount} ${unit}`
+}
+
+export async function itemQuantitiesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/items`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedItemsWithQuantity
+  return (listed.documents ?? []).map((document) =>
+    storedItemWithQuantity(
+      document.fields.name.stringValue,
+      document.fields.quantity,
+    ),
+  )
+}
+
 type StoredWeekPlan = {
   fields?: Record<string, { stringValue?: string }>
 }

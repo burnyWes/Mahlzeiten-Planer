@@ -1,4 +1,5 @@
 import type { Ref } from 'react'
+import { Stepper } from '../../shared/ui/Stepper'
 import { lessSupplyLabel, moreSupplyLabel } from '../domain/announcements'
 import { isFull, type SuppliedMeal } from '../domain/supply'
 
@@ -29,26 +30,15 @@ export function SupplyListRow({
       >
         {meal.name}
       </button>
-      <span className="supplyStepper">
-        <button
-          type="button"
-          className="stepperButton"
-          aria-label={lessSupplyLabel(meal)}
-          onClick={onLess}
-        >
-          −
-        </button>
-        <span className="supplyCount">{count}</span>
-        <button
-          type="button"
-          className="stepperButton"
-          aria-label={moreSupplyLabel(meal)}
-          disabled={isFull(count)}
-          onClick={onMore}
-        >
-          +
-        </button>
-      </span>
+      <Stepper
+        lessLabel={lessSupplyLabel(meal)}
+        moreLabel={moreSupplyLabel(meal)}
+        moreDisabled={isFull(count)}
+        onLess={onLess}
+        onMore={onMore}
+      >
+        <span className="stepperAmount">{count}</span>
+      </Stepper>
     </li>
   )
 }

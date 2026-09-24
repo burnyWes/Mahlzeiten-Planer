@@ -327,10 +327,10 @@ das Entfernen.
 
 **Aufgaben**:
 
-- [ ] `orOneWithoutUnit` in `src/shared/domain/quantity.ts` (Zeile 72-74) exportieren.
+- [x] `orOneWithoutUnit` in `src/shared/domain/quantity.ts` (Zeile 72-74) exportieren.
       Erst ein Test in `quantity.test.ts`: `null` ergibt `{ amount: 1, unit: null }`,
       eine vorhandene Menge kommt unverändert zurück.
-- [ ] Schritt-Regeln in `src/shopping/domain/shoppingItem.ts` ergänzen, hinter
+- [x] Schritt-Regeln in `src/shopping/domain/shoppingItem.ts` ergänzen, hinter
       `withQuantity` (Zeile 104-109). Erst die Tests in `shoppingItem.test.ts`, ein
       `describe('stepping the quantity')` mit allen Zeilen der Tabelle im Zielbild
       außer „entfernt“:
@@ -382,7 +382,7 @@ das Entfernen.
       `withOneMore` gibt denselben Artikel zurück; `12000 ml` → `canTakeOneMore` ist
       `false`. `Quantity` und `orOneWithoutUnit` kommen zum Import aus
       `'../../shared/domain/quantity'` dazu.
-- [ ] `quantityChangedAnnouncement` in `src/shopping/domain/announcements.ts` ergänzen,
+- [x] `quantityChangedAnnouncement` in `src/shopping/domain/announcements.ts` ergänzen,
       hinter `reopenAnnouncement` (Zeile 93-98). Erst die Tests in
       `announcements.test.ts`: `Mehl, 501 g.` und `Brot, 2.`
       ```ts
@@ -390,7 +390,7 @@ das Entfernen.
         return `${formatItemForAnnouncement(item)}.`
       }
       ```
-- [ ] `src/shared/ui/Stepper.tsx` anlegen:
+- [x] `src/shared/ui/Stepper.tsx` anlegen:
       ```tsx
       type StepperProps = {
         lessLabel: string
@@ -415,11 +415,11 @@ das Entfernen.
       }
       ```
       `lessDisabled` gibt es nur für Phase 1; Phase 2 entfernt die Eigenschaft wieder.
-- [ ] `SupplyListRow.tsx` (Zeile 31-51) auf `Stepper` umstellen; die Mitte bleibt
+- [x] `SupplyListRow.tsx` (Zeile 31-51) auf `Stepper` umstellen; die Mitte bleibt
       `<span className="stepperAmount">{count}</span>` **ohne** `aria-hidden`. Die
       Vorrats-Tests in `SuppliesArea.test.tsx` laufen unverändert grün — sie sind der
       Beleg, dass sich am Vorrat nichts ändert.
-- [ ] `src/index.css`: `.supplyStepper` (Zeile 293-298) in `.stepper` umbenennen,
+- [x] `src/index.css`: `.supplyStepper` (Zeile 293-298) in `.stepper` umbenennen,
       `.supplyCount` (Zeile 306-309) in `.stepperAmount` und dort `white-space: nowrap`
       ergänzen, damit `500 g` nicht umbricht. Neu:
       ```css
@@ -452,7 +452,7 @@ das Entfernen.
       }
       ```
       `grep -rn "supplyStepper\|supplyCount" src` findet danach nichts mehr.
-- [ ] `ShoppingItemRow.tsx` umbauen. Offene Zeile: Label mit Checkbox und
+- [x] `ShoppingItemRow.tsx` umbauen. Offene Zeile: Label mit Checkbox und
       `<span>{item.name}<span className="visuallyHidden">, {formatQuantity(…)}</span></span>`
       — der versteckte Span nur, wenn `item.quantity !== null`, damit die Checkbox bei
       `Brot` weiter genau `Brot` heißt. Daneben `Stepper` mit
@@ -461,11 +461,11 @@ das Entfernen.
       der Mitte `<span className="stepperAmount" aria-hidden="true">{formatQuantity(
       steppedQuantity(item))}</span>`. Abgehakte Zeile: unverändert wie heute. Das `<li>`
       bekommt in beiden Fällen `className="shoppingRow"`. Neue Props `onLess`, `onMore`.
-- [ ] `lessItemLabel` und `moreItemLabel` in `src/shopping/domain/announcements.ts`
+- [x] `lessItemLabel` und `moreItemLabel` in `src/shopping/domain/announcements.ts`
       ergänzen, nach dem Vorbild `lessSupplyLabel`/`moreSupplyLabel` in
       `src/meals/domain/announcements.ts`; erst die Tests: `Weniger, Mehl` und
       `Mehr, Mehl`.
-- [ ] `takeOneMore(item): string` und `takeOneLess(item): string` in
+- [x] `takeOneMore(item): string` und `takeOneLess(item): string` in
       `useShoppingList.ts` ergänzen und in den Typ `ShoppingList` (Zeile 44-52)
       aufnehmen. Beide folgen `toggleItem` (Zeile 158-175):
       ```ts
@@ -486,10 +486,10 @@ das Entfernen.
       durch das Entfernen.
       `changeQuantity` im Port verlangt `Quantity` (nicht `null`); nach einem Schritt ist
       die Menge nie `null`.
-- [ ] `ShoppingListPage.tsx` um `onLessItem` und `onMoreItem` erweitern und an die Zeile
+- [x] `ShoppingListPage.tsx` um `onLessItem` und `onMoreItem` erweitern und an die Zeile
       reichen; `ShoppingArea.tsx` verdrahtet sie mit
       `(item) => announce(takeOneLess(item))` bzw. `takeOneMore`.
-- [ ] `ShoppingArea.test.tsx`: `shownItems()` (Zeile 153-155) liest künftig das Label,
+- [x] `ShoppingArea.test.tsx`: `shownItems()` (Zeile 153-155) liest künftig das Label,
       nicht die ganze Zeile — dann bleiben alle vorhandenen Erwartungen wie
       `['Milch, 2']` gültig:
       ```ts
@@ -501,7 +501,7 @@ das Entfernen.
       ```
       Dazu Hilfen `takeOneLess(name)` und `takeOneMore(name)` wie in
       `SuppliesArea.test.tsx:112-120`.
-- [ ] Neue Tests in `ShoppingArea.test.tsx`, ein `describe('changing the quantity at
+- [x] Neue Tests in `ShoppingArea.test.tsx`, ein `describe('changing the quantity at
       the row')`:
       - `counts an item without quantity up to two` — `Brot` → `Mehr`; gespeichert ist
         `{ amount: 2, unit: null }`, Ansage `Brot, 2.`, `shownItems()` ist `['Brot, 2']`.
@@ -522,7 +522,7 @@ das Entfernen.
         alten Menge; `shownItems()` zeigt weiter die neue.
       - `has no accessibility violations with a stepper` — Liste mit einem Artikel mit und
         einem ohne Menge.
-- [ ] `e2e/keyboard.ts` um `shownShoppingItems(page)` ergänzen:
+- [x] `e2e/keyboard.ts` um `shownShoppingItems(page)` ergänzen:
       ```ts
       export function shownShoppingItems(page: Page) {
         return page.getByRole('main').getByRole('listitem').locator('label')
@@ -531,35 +531,35 @@ das Entfernen.
       Alle Erwartungen an die Einkaufsliste darauf umstellen: `shoppingList.spec.ts:56`,
       `:66`, `:73`, `:89`, `:102`, `:107`, `:119`, `meals.spec.ts:48`,
       `weekPlan.spec.ts:62`, `:111`. `shownItems` bleibt für Vorräte und Gerichte.
-- [ ] `src/SignedInApp.test.tsx`: `shownItemNames()` (Zeile 94-98) liest die ganze
+- [x] `src/SignedInApp.test.tsx`: `shownItemNames()` (Zeile 94-98) liest die ganze
       Zeile und prüft damit die Einkaufsliste (`:359`, `:413`, `:439`, `:568`, `:712`,
       `:730`, `:758`, `:782`, `:859`) — mit Stepper stünde dort
       `Hackfleisch, 500 g−500 g+`. Die Hilfe wird aber auch für die Einstellungen
       genutzt (`:971`) und bleibt deshalb. Neu `shownShoppingItemNames()`, die
       `row.querySelector('label')?.textContent` liest; die neun Einkaufslisten-Stellen
       darauf umstellen.
-- [ ] `itemQuantitiesOnServer()` in `e2e/emulatorHousehold.ts` ergänzen, neben
+- [x] `itemQuantitiesOnServer()` in `e2e/emulatorHousehold.ts` ergänzen, neben
       `itemNamesOnServer` (Zeile 59-72). Sie liefert je Dokument einen Text wie
       `'Milch, 3 l'` bzw. `'Brot'`, damit `expect.poll(...).toEqual([...])` direkt
       vergleicht. Firestore-REST: `quantity.mapValue.fields` (kann fehlen) mit
       `amount.integerValue` als **String** oder `amount.doubleValue` als Zahl und
       `unit.stringValue` bzw. `unit.nullValue`; ohne Menge `quantity.nullValue`.
-- [ ] `e2e/shoppingList.spec.ts` um `changes the quantity of an item at its row`
+- [x] `e2e/shoppingList.spec.ts` um `changes the quantity of an item at its row`
       ergänzen: `Milch, 2 l` anlegen, `Mehr, Milch` zweimal, `Weniger, Milch` einmal;
       Status `Milch, 3 l.`, `shownShoppingItems` ist `['Milch, 3 l']`,
       `expect.poll(itemQuantitiesOnServer).toEqual(['Milch, 3 l'])`.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch, einschließlich der unveränderten Vorrats-Tests.
-- [ ] Die Schritt-Tests in `shoppingItem.test.ts` decken jede Zeile der Tabelle im
+- [x] `npm run test` läuft durch, einschließlich der unveränderten Vorrats-Tests.
+- [x] Die Schritt-Tests in `shoppingItem.test.ts` decken jede Zeile der Tabelle im
       Zielbild ab (ohne „entfernt“ bei `withOneMore`, mit `null` bei `withOneLess`).
-- [ ] `keeps the stepped quantity while the snapshot lags behind` ist grün.
-- [ ] Die Zugänglichkeitsprüfungen der Liste sind grün, mit und ohne Menge.
-- [ ] `grep -rn "supplyStepper\|supplyCount" src` findet nichts.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `changes the quantity of an item at
+- [x] `keeps the stepped quantity while the snapshot lags behind` ist grün.
+- [x] Die Zugänglichkeitsprüfungen der Liste sind grün, mit und ohne Menge.
+- [x] `grep -rn "supplyStepper\|supplyCount" src` findet nichts.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch, einschließlich `changes the quantity of an item at
       its row` und `changes the count of a supply at its row` (`Bolognese−2+`).
 
 **Manuelle Verifikation**:
@@ -717,6 +717,21 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- **Phase 1, Name der Checkbox per `aria-label` statt verstecktem Span** (Rückfrage vom
+  2026-09-24). Chromium hat den Span `.visuallyHidden` wegen `position: absolute` als
+  Block behandelt und den Namen als `Milch , 2 l` berechnet; jsdom rechnet ohne Layout,
+  daher fiel es erst im e2e-Test auf. Jetzt tragen beide Varianten der Zeile
+  `aria-label={formatItemForAnnouncement(item)}`, das offene Label zeigt sichtbar nur den
+  Namen, `.visuallyHidden` entfällt. Die Test-Hilfen `shownItems()`
+  (`ShoppingArea.test.tsx`), `shownShoppingItemNames()` (`SignedInApp.test.tsx`) und
+  `shownShoppingItems(page)` (`e2e/keyboard.ts`) lesen deshalb das `aria-label` der
+  Checkboxen; die e2e-Erwartungen laufen über `expect.poll(...).toEqual(...)`.
+- **Phase 1, Farbtest**: `test/palette.test.ts` hielt `white-space` für die Farbe `white`.
+  Das Muster verlangt jetzt, dass einem Farbwort kein `-` folgt, abgesichert durch den
+  Test `tells a colour name from a property that starts with it`.
+- **Phase 1, Grep auf `supplyCount`** findet weiter die Formular-`id="supplyCount"` in
+  `AddSupplyPage.tsx` und `SupplyPage.tsx`. Gemeint war die CSS-Klasse, die ist weg.
 
 ## Verweise
 

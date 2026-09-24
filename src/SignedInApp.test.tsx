@@ -98,6 +98,12 @@ function shownItemNames() {
     .map((row) => row.textContent)
 }
 
+function shownShoppingItemNames() {
+  return within(screen.getByRole('main'))
+    .getAllByRole('checkbox')
+    .map((box) => box.getAttribute('aria-label'))
+}
+
 function planOf(...ids: readonly string[]): WeekPlan {
   return ids.reduce<WeekPlan>(
     (plan, id, position) => withMealOnDay(plan, WEEKDAYS[position], id),
@@ -356,7 +362,7 @@ describe('SignedInApp', () => {
 
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual([
+    expect(shownShoppingItemNames()).toEqual([
       'Brot, 3',
       'Hackfleisch, 500 g',
       'Bohnen',
@@ -410,7 +416,7 @@ describe('SignedInApp', () => {
 
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Bohnen'])
+    expect(shownShoppingItemNames()).toEqual(['Bohnen'])
   })
 
   it('buys the day that the supply no longer reaches', async () => {
@@ -436,7 +442,7 @@ describe('SignedInApp', () => {
 
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Hackfleisch, 500 g'])
+    expect(shownShoppingItemNames()).toEqual(['Hackfleisch, 500 g'])
   })
 
   it('says that the whole week came out of the supply', async () => {
@@ -565,7 +571,10 @@ describe('SignedInApp', () => {
 
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Bohnen, 2', 'Hackfleisch, 500 g'])
+    expect(shownShoppingItemNames()).toEqual([
+      'Bohnen, 2',
+      'Hackfleisch, 500 g',
+    ])
   })
 
   it('spends nothing of the supply while a day is being planned', async () => {
@@ -709,7 +718,7 @@ describe('SignedInApp', () => {
     await goToArea('Gerichte')
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Brot', 'Milch', 'Käse'])
+    expect(shownShoppingItemNames()).toEqual(['Brot', 'Milch', 'Käse'])
     expect(screen.getByRole('checkbox', { name: 'Milch' })).toBeChecked()
     expect(
       screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
@@ -727,7 +736,7 @@ describe('SignedInApp', () => {
     await goToArea('Vorräte')
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Brot', 'Milch', 'Käse'])
+    expect(shownShoppingItemNames()).toEqual(['Brot', 'Milch', 'Käse'])
     expect(screen.getByRole('checkbox', { name: 'Milch' })).toBeChecked()
     expect(
       screen.getByRole('button', { name: 'Aufräumen, 1 Änderung' }),
@@ -755,7 +764,7 @@ describe('SignedInApp', () => {
 
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual([
+    expect(shownShoppingItemNames()).toEqual([
       'Brot',
       'Hackfleisch, 500 g',
       'Spaghetti',
@@ -779,7 +788,10 @@ describe('SignedInApp', () => {
     await transferToShoppingList('Bolognese')
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Hackfleisch, 1000 g', 'Spaghetti, 2'])
+    expect(shownShoppingItemNames()).toEqual([
+      'Hackfleisch, 1000 g',
+      'Spaghetti, 2',
+    ])
     expect(announcements).toContain(
       'Bolognese, 2 Artikel hinzugefügt. 2 zusammengefasst.',
     )
@@ -856,7 +868,7 @@ describe('SignedInApp', () => {
     await transferToShoppingList('Bolognese')
     await goToArea('Einkaufsliste')
 
-    expect(shownItemNames()).toEqual(['Hackfleisch'])
+    expect(shownShoppingItemNames()).toEqual(['Hackfleisch'])
   })
 
   it('takes over the history into an empty catalog and suggests it', async () => {

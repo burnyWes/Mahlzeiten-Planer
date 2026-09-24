@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
+  canTakeOneMore,
   checkOff,
   createShoppingItem,
   findOpenItemWithSameName,
@@ -8,9 +9,13 @@ import {
   inCreationOrder,
   InvalidShoppingItem,
   isCheckedOff,
+  isLastUnit,
   isOpen,
   normalizeItemName,
   reopen,
+  steppedQuantity,
+  withOneLess,
+  withOneMore,
   withQuantity,
   type ShoppingItem,
 } from './shoppingItem'
@@ -233,4 +238,111 @@ describe('withQuantity', () => {
 
     expect(untouched.quantity).toBeNull()
   })
+})
+
+describe('stepping the quantity', () => {
+  function withAmount(amount: number, unit: string | null = null) {
+    return item({ quantity: { amount, unit } })
+  }
+
+  it('counts an item without quantity as one', () => {
+    expect(steppedQuantity(item())).toEqual({ amount: 1, unit: null })
+  })
+
+  it.each([
+    [null, { amount: 2, unit: null }],
+    [
+      { amount: 1, unit: null },
+      { amount: 2, unit: null },
+    ],
+    [
+      { amount: 0.5, unit: 'l' },
+      { amount: 1.5, unit: 'l' },
+    ],
+    [
+      { amount: 1.2345, unit: 'l' },
+      { amount: 2.2345, unit: 'l' },
+    ],
+    [
+      { amount: 1.5, unit: 'l' },
+      { amount: 2.5, unit: 'l' },
+    ],
+    [
+      { amount: 2.2, unit: 'l' },
+      { amount: 3.2, unit: 'l' },
+    ],
+    [
+      { amount: 500, unit: 'g' },
+      { amount: 501, unit: 'g' },
+    ],
+    [
+      { amount: 9998, unit: 'g' },
+      { amount: 9999, unit: 'g' },
+    ],
+  ])('takes one more of %j', (quantity, expected) => {
+    expect(withOneMore(item({ quantity })).quantity).toEqual(expected)
+  })
+
+  it.each([
+    [
+      { amount: 1.2345, unit: 'l' },
+      { amount: 0.2345, unit: 'l' },
+    ],
+    [
+      { amount: 1.5, unit: 'l' },
+      { amount: 0.5, unit: 'l' },
+    ],
+    [
+      { amount: 2.2, unit: 'l' },
+      { amount: 1.2, unit: 'l' },
+    ],
+    [
+      { amount: 500, unit: 'g' },
+      { amount: 499, unit: 'g' },
+    ],
+    [
+      { amount: 9998, unit: 'g' },
+      { amount: 9997, unit: 'g' },
+    ],
+    [
+      { amount: 9998.5, unit: 'g' },
+      { amount: 9997.5, unit: 'g' },
+    ],
+    [
+      { amount: 9999, unit: 'g' },
+      { amount: 9998, unit: 'g' },
+    ],
+    [
+      { amount: 12000, unit: 'ml' },
+      { amount: 11999, unit: 'ml' },
+    ],
+  ])('takes one less of %j', (quantity, expected) => {
+    expect(withOneLess(item({ quantity }))?.quantity).toEqual(expected)
+  })
+
+  it.each([[null], [{ amount: 1, unit: null }], [{ amount: 0.5, unit: 'l' }]])(
+    'takes the last unit of %j',
+    (quantity) => {
+      expect(isLastUnit(item({ quantity }))).toBe(true)
+      expect(withOneLess(item({ quantity }))).toBeNull()
+    },
+  )
+
+  it('keeps more than one unit', () => {
+    expect(isLastUnit(withAmount(1.5, 'l'))).toBe(false)
+  })
+
+  it('offers one more up to the upper bound', () => {
+    expect(canTakeOneMore(withAmount(9998, 'g'))).toBe(true)
+  })
+
+  it.each([[9998.5], [9999], [12000]])(
+    'offers no more once %d plus one would pass the upper bound',
+    (amount) => {
+      const atTheBound = withAmount(amount, 'g')
+
+      expect(canTakeOneMore(atTheBound)).toBe(false)
+      expect(withOneMore(atTheBound)).toBe(atTheBound)
+    },
+  )
 })

@@ -5,6 +5,7 @@ import {
   formatQuantity,
   invalidQuantityMessage,
   InvalidQuantity,
+  orOneWithoutUnit,
   readQuantity,
   sameQuantity,
   type Quantity,
@@ -166,5 +167,18 @@ describe('invalidQuantityMessage', () => {
     expect(invalidQuantityMessage('unitWithoutAmount')).toBe(
       'Zur Einheit fehlt die Menge.',
     )
+  })
+})
+
+describe('orOneWithoutUnit', () => {
+  it('counts a missing quantity as one without unit', () => {
+    expect(orOneWithoutUnit(null)).toEqual({ amount: 1, unit: null })
+  })
+
+  it('keeps a given quantity', () => {
+    expect(orOneWithoutUnit({ amount: 500, unit: 'g' })).toEqual({
+      amount: 500,
+      unit: 'g',
+    })
   })
 })

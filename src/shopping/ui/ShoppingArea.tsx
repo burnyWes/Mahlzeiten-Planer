@@ -16,8 +16,16 @@ export function ShoppingArea({
   navigation,
   suggestNames,
 }: ShoppingAreaProps) {
-  const { items, openCount, pendingChanges, addItem, toggleItem, cleanUp } =
-    shoppingList
+  const {
+    items,
+    openCount,
+    pendingChanges,
+    addItem,
+    toggleItem,
+    takeOneLess,
+    takeOneMore,
+    cleanUp,
+  } = shoppingList
   const [addingItem, setAddingItem] = useState(false)
 
   if (addingItem) {
@@ -39,6 +47,8 @@ export function ShoppingArea({
       pendingChanges={pendingChanges}
       onAddItem={() => setAddingItem(true)}
       onToggleItem={(item) => announce(toggleItem(item))}
+      onLessItem={(item) => announce(takeOneLess(item))}
+      onMoreItem={(item) => announce(takeOneMore(item))}
       onCleanUp={() => announce(cleanUp())}
     />
   )

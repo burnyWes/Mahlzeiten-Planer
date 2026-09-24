@@ -13,6 +13,7 @@ import {
   additionAnnouncement,
   checkOffAnnouncement,
   cleanUpAnnouncement,
+  quantityChangedAnnouncement,
   reopenAnnouncement,
 } from '../domain/announcements'
 import {
@@ -20,6 +21,9 @@ import {
   createShoppingItem,
   isOpen,
   reopen,
+  steppedQuantity,
+  withOneLess,
+  withOneMore,
   withQuantity,
   type NewShoppingItem,
   type ShoppingItem,
@@ -48,6 +52,8 @@ export type ShoppingList = {
   addItem: (draft: ShoppingItemDraft) => string
   addItems: (newItems: readonly NewShoppingItem[]) => AdditionsSummary
   toggleItem: (item: ShoppingItem) => string
+  takeOneMore: (item: ShoppingItem) => string
+  takeOneLess: (item: ShoppingItem) => string
   cleanUp: () => string
 }
 
@@ -174,6 +180,30 @@ export function useShoppingList(
     [client, liveItems, openCount],
   )
 
+  const changeQuantityTo = useCallback(
+    (changed: ShoppingItem) => {
+      const before = liveItems.find((live) => live.id === changed.id) ?? null
+      client.changeQuantity(changed.id, steppedQuantity(changed))
+      setUnconfirmedWrites((writes) => rememberWrite(writes, changed, before))
+      return quantityChangedAnnouncement(changed)
+    },
+    [client, liveItems],
+  )
+
+  const takeOneMore = useCallback(
+    (item: ShoppingItem) => changeQuantityTo(withOneMore(item)),
+    [changeQuantityTo],
+  )
+
+  const takeOneLess = useCallback(
+    (item: ShoppingItem) => {
+      const lessened = withOneLess(item)
+      if (lessened === null) return quantityChangedAnnouncement(item)
+      return changeQuantityTo(lessened)
+    },
+    [changeQuantityTo],
+  )
+
   const cleanUp = useCallback(() => {
     const order = nextFrozenOrder(settledItems)
     setFrozenOrder(order)
@@ -187,6 +217,8 @@ export function useShoppingList(
     addItem,
     addItems,
     toggleItem,
+    takeOneMore,
+    takeOneLess,
     cleanUp,
   }
 }

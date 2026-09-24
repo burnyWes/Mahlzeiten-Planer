@@ -1,10 +1,16 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
   itemNamesOnServer,
+  itemQuantitiesOnServer,
   prepareEmulators,
   storeItemOnServer,
 } from './emulatorHousehold.ts'
-import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
+import {
+  pressButton,
+  shownShoppingItems,
+  signIn,
+  typeInto,
+} from './keyboard.ts'
 
 test.beforeEach(async () => {
   await prepareEmulators()
@@ -53,7 +59,9 @@ test('sign in, add, check off and clean up using the keyboard only', async ({
   await addItem(page, 'Brot')
   await addItem(page, 'Milch', '2', 'l')
 
-  await expect(shownItems(page)).toHaveText(['Brot', 'Milch, 2 l'])
+  await expect
+    .poll(() => shownShoppingItems(page))
+    .toEqual(['Brot', 'Milch, 2 l'])
   await expect(
     page.getByRole('heading', { name: 'Einkaufsliste, 2 offen' }),
   ).toBeVisible()
@@ -63,14 +71,16 @@ test('sign in, add, check off and clean up using the keyboard only', async ({
   await page.keyboard.press('Space')
 
   await expect(milk).toBeChecked()
-  await expect(shownItems(page)).toHaveText(['Brot', 'Milch, 2 l'])
+  await expect
+    .poll(() => shownShoppingItems(page))
+    .toEqual(['Brot', 'Milch, 2 l'])
   await expect(page.getByRole('status')).toContainText(
     'Milch abgehakt, noch 1 offen',
   )
 
   await pressButton(page, 'Aufräumen, 1 Änderung')
 
-  await expect(shownItems(page)).toHaveText(['Brot'])
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Brot'])
   await expect(page.getByRole('status')).toContainText('Aufgeräumt, 1 offen')
   await expect(
     page.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
@@ -86,7 +96,7 @@ test('counts a second item of the same name into the first', async ({
   await addItem(page, 'Milch', '2', 'l')
   await addItem(page, 'Milch', '1', 'l')
 
-  await expect(shownItems(page)).toHaveText(['Milch, 3 l'])
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch, 3 l'])
   await expect(
     page.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
   ).toBeVisible()
@@ -99,12 +109,12 @@ test('keeps the added item after a reload', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
   await addItem(page, 'Käse')
-  await expect(shownItems(page)).toHaveText(['Käse'])
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Käse'])
   await expect.poll(itemNamesOnServer).toContain('Käse')
 
   await page.reload()
 
-  await expect(shownItems(page)).toHaveText(['Käse'])
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Käse'])
 })
 
 test('shows what the other device stored before this device ever ran', async ({
@@ -116,7 +126,7 @@ test('shows what the other device stored before this device ever ran', async ({
   await page.goto('/')
   await signIn(page)
 
-  await expect(shownItems(page)).toHaveText(['Brot', 'Milch'])
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Brot', 'Milch'])
   await expect(page.getByRole('button', { name: /Aufräumen/ })).toHaveCount(0)
 })
 
@@ -143,4 +153,18 @@ test('suggests an item that was added before', async ({ page }) => {
   await addItem(page, 'Brot')
 
   await openAddItemPageUntilSuggested(page, 'br', 'Brot')
+})
+
+test('changes the quantity of an item at its row', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+  await addItem(page, 'Milch', '2', 'l')
+
+  await pressButton(page, 'Mehr, Milch')
+  await pressButton(page, 'Mehr, Milch')
+  await pressButton(page, 'Weniger, Milch')
+
+  await expect(page.getByRole('status')).toContainText('Milch, 3 l.')
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch, 3 l'])
+  await expect.poll(itemQuantitiesOnServer).toEqual(['Milch, 3 l'])
 })

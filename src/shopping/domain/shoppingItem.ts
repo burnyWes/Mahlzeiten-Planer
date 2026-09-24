@@ -1,5 +1,6 @@
 import {
   formatQuantity,
+  orOneWithoutUnit,
   readQuantity,
   type Quantity,
   type QuantityDraft,
@@ -106,4 +107,40 @@ export function withQuantity(
   quantity: Quantity | null,
 ): ShoppingItem {
   return { ...item, quantity }
+}
+
+export const MAXIMUM_STEPPED_AMOUNT = 9999
+
+function roundedAmount(amount: number): number {
+  return Math.round(amount * 1_000_000) / 1_000_000
+}
+
+export function steppedQuantity(item: ShoppingItem): Quantity {
+  return orOneWithoutUnit(item.quantity)
+}
+
+export function canTakeOneMore(item: ShoppingItem): boolean {
+  return steppedQuantity(item).amount + 1 <= MAXIMUM_STEPPED_AMOUNT
+}
+
+export function withOneMore(item: ShoppingItem): ShoppingItem {
+  if (!canTakeOneMore(item)) return item
+  const quantity = steppedQuantity(item)
+  return withQuantity(item, {
+    ...quantity,
+    amount: roundedAmount(quantity.amount + 1),
+  })
+}
+
+export function isLastUnit(item: ShoppingItem): boolean {
+  return steppedQuantity(item).amount <= 1
+}
+
+export function withOneLess(item: ShoppingItem): ShoppingItem | null {
+  if (isLastUnit(item)) return null
+  const quantity = steppedQuantity(item)
+  return withQuantity(item, {
+    ...quantity,
+    amount: roundedAmount(quantity.amount - 1),
+  })
 }

@@ -8,7 +8,7 @@ import {
 import {
   chooseSuggestion,
   pressButton,
-  shownItems,
+  shownShoppingItems,
   signIn,
   takeOverItem,
   typeInto,
@@ -59,10 +59,9 @@ test('plans a week and puts its items on the shopping list', async ({
 
   await pressButton(page, 'Einkaufsliste')
 
-  await expect(shownItems(page)).toHaveText([
-    'Hackfleisch, 3500 g',
-    'Spaghetti, 7',
-  ])
+  await expect
+    .poll(() => shownShoppingItems(page))
+    .toEqual(['Hackfleisch, 3500 g', 'Spaghetti, 7'])
 })
 
 test('buys only the day that the supply no longer covers', async ({ page }) => {
@@ -108,7 +107,9 @@ test('buys only the day that the supply no longer covers', async ({ page }) => {
 
   await pressButton(page, 'Einkaufsliste')
 
-  await expect(shownItems(page)).toHaveText(['Bohnen', 'Hackfleisch, 500 g'])
+  await expect
+    .poll(() => shownShoppingItems(page))
+    .toEqual(['Bohnen', 'Hackfleisch, 500 g'])
 })
 
 test('keeps the week plan after a reload', async ({ page }) => {

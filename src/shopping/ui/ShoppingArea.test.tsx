@@ -151,7 +151,19 @@ async function backToList() {
 }
 
 function shownItems() {
-  return screen.getAllByRole('listitem').map((row) => row.textContent)
+  return screen
+    .getAllByRole('checkbox')
+    .map((box) => box.getAttribute('aria-label'))
+}
+
+function takeOneLess(name: string) {
+  return userEvent.click(
+    screen.getByRole('button', { name: `Weniger, ${name}` }),
+  )
+}
+
+function takeOneMore(name: string) {
+  return userEvent.click(screen.getByRole('button', { name: `Mehr, ${name}` }))
 }
 
 describe('ShoppingArea', () => {
@@ -739,6 +751,103 @@ describe('the stable list', () => {
     const { rendered } = renderShoppingArea([openItem('milk', 'Milch', 2)])
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Milch' }))
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
+describe('changing the quantity at the row', () => {
+  it('counts an item without quantity up to two', async () => {
+    const { client, announcements } = renderShoppingArea([
+      openItem('bread', 'Brot', 1),
+    ])
+
+    await takeOneMore('Brot')
+
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 2, unit: null })
+    expect(announcements).toContain('Brot, 2.')
+    expect(shownItems()).toEqual(['Brot, 2'])
+  })
+
+  it('counts an amount with unit up and down', async () => {
+    const { client, announcements } = renderShoppingArea([
+      openItem('flour', 'Mehl', 1, { amount: 500, unit: 'g' }),
+    ])
+
+    await takeOneMore('Mehl')
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 501, unit: 'g' })
+
+    await takeOneLess('Mehl')
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 500, unit: 'g' })
+    expect(announcements).toEqual(['Mehl, 501 g.', 'Mehl, 500 g.'])
+  })
+
+  it('rounds the amount after a step', async () => {
+    const { client } = renderShoppingArea([
+      openItem('milk', 'Milch', 1, { amount: 2.2, unit: 'l' }),
+    ])
+
+    await takeOneLess('Milch')
+
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 1.2, unit: 'l' })
+  })
+
+  it('shows one in the middle of an item without quantity', () => {
+    renderShoppingArea([openItem('bread', 'Brot', 1)])
+
+    const row = screen.getByRole('listitem')
+    expect(row.querySelector('.stepperAmount')?.textContent).toBe('1')
+    expect(screen.getByRole('checkbox', { name: 'Brot' })).toBeInTheDocument()
+  })
+
+  it('names the checkbox with its quantity', () => {
+    renderShoppingArea([
+      openItem('flour', 'Mehl', 1, { amount: 500, unit: 'g' }),
+    ])
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Mehl, 500 g' }),
+    ).toBeInTheDocument()
+  })
+
+  it('offers no more at the upper bound', () => {
+    renderShoppingArea([
+      openItem('flour', 'Mehl', 1, { amount: 9999, unit: 'g' }),
+    ])
+
+    expect(screen.getByRole('button', { name: 'Mehr, Mehl' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Weniger, Mehl' })).toBeEnabled()
+  })
+
+  it('offers no stepper on a checked off item', async () => {
+    renderShoppingArea([openItem('milk', 'Milch', 1)])
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Milch' }))
+
+    expect(screen.queryByRole('button', { name: 'Weniger, Milch' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Mehr, Milch' })).toBeNull()
+  })
+
+  it('keeps the stepped quantity while the snapshot lags behind', async () => {
+    const lagging = openItem('milk', 'Milch', 1, { amount: 2, unit: 'l' })
+    const client = renderWithLaggingSnapshots([lagging])
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+
+    await takeOneMore('Milch')
+    await act(async () => {
+      client.snapshotArrives([lagging])
+    })
+
+    expect(shownItems()).toEqual(['Milch, 3 l'])
+  })
+
+  it('has no accessibility violations with a stepper', async () => {
+    const { rendered } = renderShoppingArea([
+      openItem('flour', 'Mehl', 1, { amount: 500, unit: 'g' }),
+      openItem('bread', 'Brot', 2),
+    ])
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

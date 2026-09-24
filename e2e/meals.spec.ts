@@ -8,7 +8,7 @@ import {
 } from './emulatorHousehold.ts'
 import {
   pressButton,
-  shownItems,
+  shownShoppingItems,
   signIn,
   switchCheckbox,
   takeOverItem,
@@ -45,7 +45,9 @@ test('writes down a meal and transfers it to the shopping list using the keyboar
   await pressButton(page, 'Zurück zu den Gerichten')
   await pressButton(page, 'Einkaufsliste')
 
-  await expect(shownItems(page)).toHaveText(['Hackfleisch, 500 g', 'Spaghetti'])
+  await expect
+    .poll(() => shownShoppingItems(page))
+    .toEqual(['Hackfleisch, 500 g', 'Spaghetti'])
 })
 
 test('keeps a meal hidden after a reload', async ({ page }) => {

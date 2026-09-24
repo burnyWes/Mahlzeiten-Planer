@@ -290,7 +290,23 @@ h2 {
   gap: 0.5rem;
 }
 
-.supplyStepper {
+.shoppingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.shoppingRow label {
+  flex: 1;
+  min-width: 0;
+}
+
+.shoppingRow label span {
+  overflow-wrap: anywhere;
+}
+
+.stepper {
   display: flex;
   align-items: center;
   flex: none;
@@ -303,9 +319,10 @@ h2 {
   line-height: 1;
 }
 
-.supplyCount {
+.stepperAmount {
   min-width: 2rem;
   text-align: center;
+  white-space: nowrap;
 }
 
 .pageActions {

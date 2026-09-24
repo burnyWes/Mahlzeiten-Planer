@@ -97,6 +97,18 @@ export function reopenAnnouncement(
   return `${item.name} wieder offen, ${openCount} offen`
 }
 
+export function quantityChangedAnnouncement(item: ShoppingItem): string {
+  return `${formatItemForAnnouncement(item)}.`
+}
+
+export function lessItemLabel(item: ShoppingItem): string {
+  return `Weniger, ${item.name}`
+}
+
+export function moreItemLabel(item: ShoppingItem): string {
+  return `Mehr, ${item.name}`
+}
+
 export function cleanUpLabel(pendingChanges: number): string {
   return pendingChanges === 1
     ? 'Aufräumen, 1 Änderung'

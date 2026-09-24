@@ -12,7 +12,10 @@ import {
   knownItemDeletedAnnouncement,
   knownItemSavedAnnouncement,
   knownItemsHeading,
+  lessItemLabel,
   listHeading,
+  moreItemLabel,
+  quantityChangedAnnouncement,
   reopenAnnouncement,
 } from './announcements'
 import { InvalidShoppingItem, type ShoppingItem } from './shoppingItem'
@@ -216,5 +219,30 @@ describe('additionsAnnouncement', () => {
       '2 Artikel hinzugefügt. Achtung, Milch steht mit anderer Einheit bereits offen. ' +
         'Achtung, Mehl steht mit anderer Einheit bereits offen.',
     )
+  })
+})
+
+describe('the quantity stepper', () => {
+  it('names the stepper buttons after the item', () => {
+    expect(lessItemLabel(openItem('Mehl'))).toBe('Weniger, Mehl')
+    expect(moreItemLabel(openItem('Mehl'))).toBe('Mehr, Mehl')
+  })
+
+  it('announces the changed quantity with its unit', () => {
+    expect(
+      quantityChangedAnnouncement({
+        ...openItem('Mehl'),
+        quantity: { amount: 501, unit: 'g' },
+      }),
+    ).toBe('Mehl, 501 g.')
+  })
+
+  it('announces the changed quantity without unit', () => {
+    expect(
+      quantityChangedAnnouncement({
+        ...openItem('Brot'),
+        quantity: { amount: 2, unit: null },
+      }),
+    ).toBe('Brot, 2.')
   })
 })
