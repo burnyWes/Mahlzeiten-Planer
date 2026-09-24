@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
+  categoriesManagementHeading,
   categoryAddedAnnouncement,
+  categoryDeletedAnnouncement,
+  categoryDeletionNote,
+  categoryRowLabel,
   categoryRemovedAnnouncement,
   invalidMealMessage,
   hidingLabel,
@@ -97,6 +101,58 @@ describe('categoryRemovedAnnouncement', () => {
   it('counts the remaining categories', () => {
     expect(categoryRemovedAnnouncement('Nudelgericht', 3)).toBe(
       'Nudelgericht entfernt, noch 3 Kategorien.',
+    )
+  })
+})
+
+describe('categoriesManagementHeading', () => {
+  it('says that no category is known yet', () => {
+    expect(categoriesManagementHeading(0)).toBe('Kategorie-Verwaltung, keine')
+  })
+
+  it('counts the known categories', () => {
+    expect(categoriesManagementHeading(3)).toBe('Kategorie-Verwaltung, 3')
+  })
+})
+
+describe('categoryRowLabel', () => {
+  it('names the category with the number of its meals', () => {
+    expect(categoryRowLabel({ name: 'Nudelgericht', mealCount: 5 })).toBe(
+      'Nudelgericht, 5',
+    )
+  })
+})
+
+describe('categoryDeletionNote', () => {
+  it('names a single meal', () => {
+    expect(categoryDeletionNote(1)).toBe(
+      'Die Kategorie wird aus 1 Gericht entfernt. Die Gerichte selbst bleiben erhalten.',
+    )
+  })
+
+  it('counts the meals', () => {
+    expect(categoryDeletionNote(5)).toBe(
+      'Die Kategorie wird aus 5 Gerichten entfernt. Die Gerichte selbst bleiben erhalten.',
+    )
+  })
+})
+
+describe('categoryDeletedAnnouncement', () => {
+  it('says that no category is left', () => {
+    expect(categoryDeletedAnnouncement('Nudelgericht', 0)).toBe(
+      'Nudelgericht gelöscht, keine Kategorien mehr.',
+    )
+  })
+
+  it('counts a single remaining category', () => {
+    expect(categoryDeletedAnnouncement('Nudelgericht', 1)).toBe(
+      'Nudelgericht gelöscht, noch 1 Kategorie.',
+    )
+  })
+
+  it('counts the remaining categories', () => {
+    expect(categoryDeletedAnnouncement('Nudelgericht', 2)).toBe(
+      'Nudelgericht gelöscht, noch 2 Kategorien.',
     )
   })
 })

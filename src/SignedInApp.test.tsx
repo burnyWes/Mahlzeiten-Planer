@@ -976,6 +976,22 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('opens the category management from the settings', async () => {
+    renderSignedInApp(
+      [],
+      [{ ...meal('bolognese', 'Bolognese'), categories: ['Nudelgericht'] }],
+    )
+
+    await goToArea('Einstellungen')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Kategorie-Verwaltung' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 1' }),
+    ).toBeInTheDocument()
+  })
+
   it('offers to invert the colours above the known items', async () => {
     renderSignedInApp()
 
@@ -984,6 +1000,7 @@ describe('SignedInApp', () => {
     expect(shownItemNames()).toEqual([
       'Farben invertieren',
       'Artikelverwaltung',
+      'Kategorie-Verwaltung',
     ])
     expect(
       screen.getByRole('switch', { name: 'Farben invertieren' }),

@@ -236,3 +236,35 @@ test('keeps the categories of a meal after a reload', async ({ page }) => {
   ).toBeVisible()
   await expect(shownItems(page)).toHaveText(['Nudelgericht', 'Schnell'])
 })
+
+test('deletes a category from every meal', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  for (const name of ['Bolognese', 'Carbonara']) {
+    await pressButton(page, 'Gericht hinzufügen')
+    await typeInto(page, 'Name', name)
+    await typeInto(page, 'Kategorie', 'Nudelgericht')
+    await pressButton(page, 'Kategorie hinzufügen')
+    await pressButton(page, 'Speichern')
+    await pressButton(page, 'Zurück zu den Gerichten')
+  }
+
+  await expect.poll(mealCategoriesOnServer).toEqual({
+    Bolognese: ['Nudelgericht'],
+    Carbonara: ['Nudelgericht'],
+  })
+
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Kategorie-Verwaltung')
+  await pressButton(page, 'Löschen, Nudelgericht')
+  await pressButton(page, 'Löschen')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Nudelgericht gelöscht, keine Kategorien mehr.',
+  )
+  await expect
+    .poll(mealCategoriesOnServer)
+    .toEqual({ Bolognese: [], Carbonara: [] })
+})

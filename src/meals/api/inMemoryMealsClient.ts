@@ -34,6 +34,13 @@ export function createInMemoryMealsClient(
       meals = meals.map((meal) => (meal.id === id ? { ...changed, id } : meal))
       publish()
     },
+    changeMeals(changed) {
+      meals = meals.map(
+        (meal) =>
+          changed.find((changedMeal) => changedMeal.id === meal.id) ?? meal,
+      )
+      publish()
+    },
     removeMeal(id) {
       meals = meals.filter((meal) => meal.id !== id)
       publish()

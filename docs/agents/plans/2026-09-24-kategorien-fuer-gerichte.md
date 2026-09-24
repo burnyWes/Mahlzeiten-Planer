@@ -494,7 +494,7 @@ vorhandenen Schreibweise ins Gericht.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Mit VoiceOver: Die Vorschläge sind nach dem Feld erreichbar, ein Doppeltipp
+- [x] Mit VoiceOver: Die Vorschläge sind nach dem Feld erreichbar, ein Doppeltipp
       übernimmt die Kategorie und die Ansage bestätigt es.
 
 ### Phase 3: Kategorie-Verwaltung mit Liste und Löschen
@@ -507,24 +507,24 @@ Gerichten.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/mealCategory.test.ts` für `withoutCategory`:
+- [x] Test zuerst: `src/meals/domain/mealCategory.test.ts` für `withoutCategory`:
       - `removes the category from every meal carrying it, whatever its spelling`
       - `returns only the changed meals`
       - `keeps the order of the remaining categories`
       - `returns nothing when no meal carries the category`
-- [ ] Test zuerst: `src/meals/domain/announcements.test.ts`
+- [x] Test zuerst: `src/meals/domain/announcements.test.ts`
       - `categoriesManagementHeading`: "Kategorie-Verwaltung, keine" / "…, 3"
       - `categoryRowLabel({ name: 'Nudelgericht', mealCount: 5 })` → "Nudelgericht, 5"
       - `categoryDeletionNote`: `1` → "Die Kategorie wird aus 1 Gericht entfernt. Die
         Gerichte selbst bleiben erhalten.", `5` → "… aus 5 Gerichten entfernt. …"
       - `categoryDeletedAnnouncement(name, remaining)`: "… gelöscht, keine Kategorien
         mehr." / "… noch 1 Kategorie." / "… noch 2 Kategorien."
-- [ ] `src/meals/domain/mealCategory.ts`: `withoutCategory(meals, name): readonly Meal[]`.
-- [ ] `src/meals/domain/announcements.ts`: die vier Punkte umsetzen.
-- [ ] `src/meals/api/mealsClient.ts`: `changeMeals(changed: readonly Meal[]): void`.
-- [ ] `src/meals/api/inMemoryMealsClient.ts`: `changeMeals` ersetzt jedes Gericht per
+- [x] `src/meals/domain/mealCategory.ts`: `withoutCategory(meals, name): readonly Meal[]`.
+- [x] `src/meals/domain/announcements.ts`: die vier Punkte umsetzen.
+- [x] `src/meals/api/mealsClient.ts`: `changeMeals(changed: readonly Meal[]): void`.
+- [x] `src/meals/api/inMemoryMealsClient.ts`: `changeMeals` ersetzt jedes Gericht per
       `id` und veröffentlicht **einmal**.
-- [ ] `src/meals/api/firestoreMealsClient.ts`: `changeMeals` schreibt in einem Batch.
+- [x] `src/meals/api/firestoreMealsClient.ts`: `changeMeals` schreibt in einem Batch.
       ```ts
       changeMeals(changed) {
         if (changed.length === 0) return
@@ -536,17 +536,17 @@ Gerichten.
       },
       ```
       `toDocument` nimmt nur die Fachfelder, die `id` landet also nicht im Dokument.
-- [ ] `src/meals/ui/useMeals.ts`: `changeMeals` als `useCallback` in `Meals`.
-- [ ] `src/meals/ui/CategoryListRow.tsx` anlegen, Muster `KnownItemListRow`: Knopf
+- [x] `src/meals/ui/useMeals.ts`: `changeMeals` als `useCallback` in `Meals`.
+- [x] `src/meals/ui/CategoryListRow.tsx` anlegen, Muster `KnownItemListRow`: Knopf
       `.mealNameButton` mit `categoryRowLabel(overview)`, Mülleimer `.iconButton` mit
       `aria-label={`Löschen, ${overview.name}`}`.
-- [ ] `src/meals/ui/CategoryListPage.tsx` anlegen, Muster `KnownItemListPage`: Knopf
+- [x] `src/meals/ui/CategoryListPage.tsx` anlegen, Muster `KnownItemListPage`: Knopf
       "Zurück zu den Einstellungen", `h1` mit `categoriesManagementHeading` und
       `useHeadingFocus`, leer "Noch keine Kategorien.", sonst `ul.itemList`.
-- [ ] `src/meals/ui/DeleteCategoryPage.tsx` anlegen, Muster `DeleteKnownItemPage`: Knopf
+- [x] `src/meals/ui/DeleteCategoryPage.tsx` anlegen, Muster `DeleteKnownItemPage`: Knopf
       "Zurück zur Kategorie-Verwaltung", `h1` "<Name> löschen?", Text aus
       `categoryDeletionNote`, `.pageActions` mit "Löschen" und "Abbrechen".
-- [ ] `src/meals/ui/CategoriesArea.tsx` anlegen:
+- [x] `src/meals/ui/CategoriesArea.tsx` anlegen:
       ```tsx
       type CategoriesPage =
         | { kind: 'list' }
@@ -564,27 +564,27 @@ Gerichten.
       `meals.changeMeals(withoutCategory(meals.meals, name))`, zur Liste,
       `categoryDeletedAnnouncement(name, overview.length - 1)`. Der Namens-Knopf setzt
       schon `{ kind: 'form' }`, bis Phase 4 fällt das auf die Liste zurück.
-- [ ] `src/SignedInApp.tsx`: `CATEGORIES_ENTRY = 'categories'`, Eintrag
+- [x] `src/SignedInApp.tsx`: `CATEGORIES_ENTRY = 'categories'`, Eintrag
       `{ kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' }` nach der
       Artikelverwaltung, im Bereich `settings` bei diesem Eintrag
       `<CategoriesArea meals={meals} announce={announce} onBack={() => setSettingsEntry(null)} />`
       rendern.
-- [ ] `src/SignedInApp.test.tsx:980-993`: `offers to invert the colours above the known
+- [x] `src/SignedInApp.test.tsx:980-993`: `offers to invert the colours above the known
       items` erwartet künftig `['Farben invertieren', 'Artikelverwaltung',
       'Kategorie-Verwaltung']`.
-- [ ] `e2e/meals.spec.ts`: `deletes a category from every meal`. Zwei Gerichte mit
+- [x] `e2e/meals.spec.ts`: `deletes a category from every meal`. Zwei Gerichte mit
       "Nudelgericht" anlegen, Einstellungen → Kategorie-Verwaltung → "Löschen,
       Nudelgericht" → "Löschen"; `mealCategoriesOnServer()` zeigt beide Gerichte ohne
       Kategorie. Das belegt den `writeBatch` gegen den echten Emulator.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle zu `withoutCategory` und den Ansagen schlagen vor der Umsetzung fehl
+- [x] Die neuen Fälle zu `withoutCategory` und den Ansagen schlagen vor der Umsetzung fehl
       und laufen danach grün.
-- [ ] Neu in `src/SignedInApp.test.tsx`: `opens the category management from the
+- [x] Neu in `src/SignedInApp.test.tsx`: `opens the category management from the
       settings` — ein Gericht mit Kategorie, Einstellungen → "Kategorie-Verwaltung";
       Überschrift "Kategorie-Verwaltung, 1".
-- [ ] Neue Fälle in `src/meals/ui/CategoriesArea.test.tsx` (mit
+- [x] Neue Fälle in `src/meals/ui/CategoriesArea.test.tsx` (mit
       `createInMemoryMealsClient` und `useMeals`, Muster `KnownItemsArea.test.tsx`):
       - `lists the categories in alphabetical order with their meal count` — Knöpfe
         "Auflauf, 2", "Nudelgericht, 1", je Zeile "Löschen, <Name>".
@@ -600,8 +600,8 @@ Gerichten.
         offen ist, über `mealsArriveFromElsewhere` Gerichte ohne die Kategorie schicken.
       - `has no accessibility violations on the category management` und
         `has no accessibility violations on the deletion page`.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft durch, samt `deletes a category from every meal`.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft durch, samt `deletes a category from every meal`.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 

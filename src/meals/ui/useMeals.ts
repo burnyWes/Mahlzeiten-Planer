@@ -6,6 +6,7 @@ export type Meals = {
   meals: readonly Meal[]
   addMeal: (meal: NewMeal) => MealId
   changeMeal: (id: MealId, meal: NewMeal) => void
+  changeMeals: (changed: readonly Meal[]) => void
   removeMeal: (id: MealId) => void
 }
 
@@ -21,10 +22,21 @@ export function useMeals(client: MealsClient): Meals {
     [client],
   )
 
+  const changeMeals = useCallback(
+    (changed: readonly Meal[]) => client.changeMeals(changed),
+    [client],
+  )
+
   const removeMeal = useCallback(
     (id: MealId) => client.removeMeal(id),
     [client],
   )
 
-  return { meals: byName(knownMeals), addMeal, changeMeal, removeMeal }
+  return {
+    meals: byName(knownMeals),
+    addMeal,
+    changeMeal,
+    changeMeals,
+    removeMeal,
+  }
 }

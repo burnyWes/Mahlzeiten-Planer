@@ -5,6 +5,7 @@ import {
   categoryToAdd,
   mealCategories,
   suggestCategories,
+  withoutCategory,
   type CategoryOverview,
 } from './mealCategory'
 
@@ -156,5 +157,43 @@ describe('suggestCategories', () => {
         'aa',
       ),
     ).toHaveLength(5)
+  })
+})
+
+describe('withoutCategory', () => {
+  it('removes the category from every meal carrying it, whatever its spelling', () => {
+    expect(
+      withoutCategory(
+        [
+          meal('Bolognese', ['Nudelgericht']),
+          meal('Carbonara', ['nudelgericht']),
+        ],
+        'Nudelgericht',
+      ),
+    ).toEqual([meal('Bolognese', []), meal('Carbonara', [])])
+  })
+
+  it('returns only the changed meals', () => {
+    expect(
+      withoutCategory(
+        [meal('Bolognese', ['Nudelgericht']), meal('Suppe', ['Suppe'])],
+        'Nudelgericht',
+      ),
+    ).toEqual([meal('Bolognese', [])])
+  })
+
+  it('keeps the order of the remaining categories', () => {
+    expect(
+      withoutCategory(
+        [meal('Bolognese', ['Schnell', 'Nudelgericht', 'Italienisch'])],
+        'Nudelgericht',
+      ),
+    ).toEqual([meal('Bolognese', ['Schnell', 'Italienisch'])])
+  })
+
+  it('returns nothing when no meal carries the category', () => {
+    expect(withoutCategory([meal('Suppe', ['Suppe'])], 'Nudelgericht')).toEqual(
+      [],
+    )
   })
 })

@@ -4,6 +4,7 @@ import {
   doc,
   onSnapshot,
   setDoc,
+  writeBatch,
   type DocumentData,
   type Firestore,
 } from 'firebase/firestore'
@@ -101,6 +102,15 @@ export function createFirestoreMealsClient(
 
     changeMeal(id, changed) {
       writeInBackground(setDoc(mealDocument(id), toDocument(changed)))
+    },
+
+    changeMeals(changed) {
+      if (changed.length === 0) return
+      const batch = writeBatch(firestore)
+      changed.forEach((meal) =>
+        batch.set(mealDocument(meal.id), toDocument(meal)),
+      )
+      writeInBackground(batch.commit())
     },
 
     removeMeal(id) {

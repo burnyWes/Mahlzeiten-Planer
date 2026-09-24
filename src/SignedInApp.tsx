@@ -14,6 +14,7 @@ import {
   suppliedDayCount,
   type WeekPlanTransfer,
 } from './meals/domain/weekPlan'
+import { CategoriesArea } from './meals/ui/CategoriesArea'
 import { MealsArea } from './meals/ui/MealsArea'
 import { SuppliesArea } from './meals/ui/SuppliesArea'
 import { useMeals } from './meals/ui/useMeals'
@@ -49,6 +50,7 @@ const AREAS = [
 type AreaId = (typeof AREAS)[number]['id']
 
 const KNOWN_ITEMS_ENTRY = 'knownItems'
+const CATEGORIES_ENTRY = 'categories'
 
 function shoppingItemsOf(meals: readonly Meal[]): readonly NewShoppingItem[] {
   const createdAt = Date.now()
@@ -154,6 +156,7 @@ export function SignedInApp({
       onToggle: appearance.toggleInvertedColors,
     },
     { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikelverwaltung' },
+    { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },
   ]
 
   const navigation = (
@@ -164,14 +167,26 @@ export function SignedInApp({
     />
   )
 
-  if (activeArea === 'settings')
-    return settingsEntry === KNOWN_ITEMS_ENTRY ? (
+  if (activeArea === 'settings' && settingsEntry === KNOWN_ITEMS_ENTRY)
+    return (
       <KnownItemsArea
         knownItems={knownItems}
         announce={announce}
         onBack={() => setSettingsEntry(null)}
       />
-    ) : (
+    )
+
+  if (activeArea === 'settings' && settingsEntry === CATEGORIES_ENTRY)
+    return (
+      <CategoriesArea
+        meals={meals}
+        announce={announce}
+        onBack={() => setSettingsEntry(null)}
+      />
+    )
+
+  if (activeArea === 'settings')
+    return (
       <SettingsPage
         navigation={navigation}
         entries={settingsEntries}

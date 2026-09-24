@@ -11,7 +11,7 @@ import {
   type MealKind,
   type NewMeal,
 } from './meal'
-import { CategoryAlreadyTaken } from './mealCategory'
+import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS, type Weekday } from './weekPlan'
 
@@ -95,6 +95,31 @@ export function categoryRemovedAnnouncement(
   remainingCategories: number,
 ): string {
   return `${category} entfernt, ${remainingCategoryPhrase(remainingCategories)}.`
+}
+
+export function categoriesManagementHeading(categoryCount: number): string {
+  return categoryCount === 0
+    ? 'Kategorie-Verwaltung, keine'
+    : `Kategorie-Verwaltung, ${categoryCount}`
+}
+
+export function categoryRowLabel(category: CategoryOverview): string {
+  return `${category.name}, ${category.mealCount}`
+}
+
+function mealCountPhrase(mealCount: number): string {
+  return mealCount === 1 ? '1 Gericht' : `${mealCount} Gerichten`
+}
+
+export function categoryDeletionNote(mealCount: number): string {
+  return `Die Kategorie wird aus ${mealCountPhrase(mealCount)} entfernt. Die Gerichte selbst bleiben erhalten.`
+}
+
+export function categoryDeletedAnnouncement(
+  category: string,
+  remainingCategories: number,
+): string {
+  return `${category} gelöscht, ${remainingCategoryPhrase(remainingCategories)}.`
 }
 
 export function mealSavedAnnouncement(meal: NewMeal): string {

@@ -83,3 +83,19 @@ export function suggestCategories(
     .slice(0, MAXIMUM_SUGGESTIONS)
     .map((category) => category.name)
 }
+
+export function withoutCategory(
+  meals: readonly Meal[],
+  name: string,
+): readonly Meal[] {
+  return meals
+    .filter((meal) =>
+      meal.categories.some((category) => sameCategory(category, name)),
+    )
+    .map((meal) => ({
+      ...meal,
+      categories: meal.categories.filter(
+        (category) => !sameCategory(category, name),
+      ),
+    }))
+}
