@@ -15,7 +15,7 @@ import {
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS, type Weekday } from './weekPlan'
-import { isFixed, type WeekPlanStage } from './weekPlanStage'
+import { isFixed, isTransferred, type WeekPlanStage } from './weekPlanStage'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
   nameMissing: 'Bitte einen Namen eingeben.',
@@ -240,6 +240,7 @@ export function weekPlanHeading(
   stage: WeekPlanStage,
 ): string {
   const heading = `Wochenplan, ${plannedDaysPhrase(plannedDays)}`
+  if (isTransferred(stage)) return `${heading}, festgelegt, übertragen`
   return isFixed(stage) ? `${heading}, festgelegt` : heading
 }
 
@@ -253,6 +254,12 @@ export function planEditableAnnouncement(): string {
 
 export function stageButtonLabel(stage: WeekPlanStage): string {
   return isFixed(stage) ? 'Plan bearbeiten' : 'Plan festlegen'
+}
+
+export function transferButtonLabel(stage: WeekPlanStage): string {
+  return isTransferred(stage)
+    ? 'Schon auf der Einkaufsliste'
+    : 'Auf die Einkaufsliste'
 }
 
 export function fixedDayText(

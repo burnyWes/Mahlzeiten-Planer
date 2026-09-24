@@ -14,6 +14,7 @@ import {
 } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
 import {
+  coveredDaysOf,
   isSuppliedOn,
   plannedDayCount,
   weekPlanTransfer,
@@ -26,6 +27,7 @@ import {
   EDITING_STAGE,
   FIXED_STAGE,
   isFixed,
+  transferredStage,
 } from '../domain/weekPlanStage'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
@@ -90,6 +92,9 @@ export function WeekPlanArea({
 
   function addToShoppingList() {
     if (!canTransfer(stage, plannedDays)) return
+    weekPlanning.changeStage(
+      transferredStage(coveredDaysOf(plan, meals, supplies)),
+    )
     onAddToShoppingList(weekPlanTransfer(plan, meals, supplies))
   }
 

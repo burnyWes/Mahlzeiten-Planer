@@ -1,13 +1,19 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WeekPlanClient } from '../api/weekPlanClient'
 import type { MealId } from '../domain/meal'
+import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import {
   EMPTY_WEEK_PLAN,
+  sameWeekPlan,
   withMealOnDay,
   type WeekPlan,
   type Weekday,
 } from '../domain/weekPlan'
-import { EDITING_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
+import {
+  EDITING_STAGE,
+  sameStage,
+  type WeekPlanStage,
+} from '../domain/weekPlanStage'
 
 export type WeekPlanning = {
   plan: WeekPlan
@@ -20,12 +26,34 @@ export type WeekPlanning = {
 export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
   const [plan, setPlan] = useState<WeekPlan>(EMPTY_WEEK_PLAN)
   const [stage, setStage] = useState<WeekPlanStage>(EDITING_STAGE)
+  const unconfirmedPlan = useRef<WeekPlan | null>(null)
+  const unconfirmedStage = useRef<WeekPlanStage | null>(null)
 
-  useEffect(() => client.observeWeekPlan(setPlan), [client])
-  useEffect(() => client.observeStage(setStage), [client])
+  useEffect(
+    () =>
+      client.observeWeekPlan((arriving) => {
+        if (isStaleSnapshot(unconfirmedPlan.current, arriving, sameWeekPlan))
+          return
+        unconfirmedPlan.current = null
+        setPlan(arriving)
+      }),
+    [client],
+  )
+
+  useEffect(
+    () =>
+      client.observeStage((arriving) => {
+        if (isStaleSnapshot(unconfirmedStage.current, arriving, sameStage))
+          return
+        unconfirmedStage.current = null
+        setStage(arriving)
+      }),
+    [client],
+  )
 
   const replacePlan = useCallback(
     (written: WeekPlan) => {
+      unconfirmedPlan.current = written
       setPlan(written)
       client.writeWeekPlan(written)
     },
@@ -41,6 +69,7 @@ export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
 
   const changeStage = useCallback(
     (written: WeekPlanStage) => {
+      unconfirmedStage.current = written
       setStage(written)
       client.writeStage(written)
     },

@@ -170,6 +170,58 @@ test('keeps the fixed plan after a reload', async ({ page }) => {
   await expect(page.getByRole('textbox', { name: 'Montag' })).toHaveCount(0)
 })
 
+test('transfers a fixed plan only once', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await takeOverItem(page, 'Hackfleisch', '500', 'g')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Vorräte')
+  await pressButton(page, 'Vorrat hinzufügen')
+  await chooseSuggestion(page, 'Gericht', 'bolo', 'Bolognese')
+  await page.getByLabel('Menge', { exact: true }).fill('1')
+  await pressButton(page, 'Speichern')
+
+  await pressButton(page, 'Wochenplan')
+  await chooseSuggestion(page, 'Montag', 'bolo', 'Bolognese')
+
+  await expect(
+    page.getByLabel('Montag, im Vorrat', { exact: true }),
+  ).toHaveValue('Bolognese')
+
+  await pressButton(page, 'Plan festlegen')
+  await pressButton(page, 'Auf die Einkaufsliste')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.',
+  )
+  await expect
+    .poll(async () => (await weekPlanStageOnServer()).coveredDays)
+    .toEqual(['monday'])
+  await expect.poll(supplyCountsOnServer).toEqual([])
+
+  await page.reload()
+  await pressButton(page, 'Wochenplan')
+
+  await expect(
+    page.getByRole('heading', {
+      name: 'Wochenplan, 1 von 7, festgelegt, übertragen',
+    }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', {
+      name: 'Schon auf der Einkaufsliste',
+      exact: true,
+    }),
+  ).toHaveAttribute('aria-disabled', 'true')
+  await expect(page.getByText('Montag, Bolognese, im Vorrat')).toHaveCount(1)
+})
+
 test('never rolls a hidden meal into the week', async ({ page }) => {
   await page.goto('/')
   await signIn(page)

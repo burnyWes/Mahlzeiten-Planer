@@ -58,6 +58,17 @@ x Menge auf Einkaufsliste anpassbar machen
 x Mengenpicker auf Einkaufsliste
 x Kategorien in Gerichten
 x Kategorie-Verwaltung in Einstellungen als dritte Option
+x Wochenplan-Prozess ueberarbeiten: der Knopf "Auf die Einkaufsliste" ist mehrfach
+  drueckbar und kauft beim zweiten Druck die vorher gedeckten Tage mit, weil der Vorrat
+  dann schon abgebucht ist (MZP-015, Entscheidung 1).
+x Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zustand, ohne
+  Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - anders als die Einkaufsliste,
+  die das seit MZP-006 ueber unconfirmedWrites abfaengt. Einmal gesehen am 2026-09-19 im
+  E2E-Lauf: nach "Zufallsauswahl generieren" stand die Ueberschrift auf "7 von 7",
+  uebergeben wurde an die Einkaufsliste aber nur ein Tag. Der Wiederholungslauf war
+  gruen, und im selben Lauf war auch der bekannt wackelige Test "sign in, add, check off
+  and clean up" rot. Der Test wartet jetzt vor der Uebergabe auf den Server; die Ursache
+  ist damit nicht behoben, nur aus dem Test herausgehalten.
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -92,14 +103,6 @@ b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
   programmatisch. Allein braucht er 2,9 s. Einmal gesehen am 2026-09-18; der
   Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
   oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
-b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zustand, ohne
-  Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - anders als die Einkaufsliste,
-  die das seit MZP-006 ueber unconfirmedWrites abfaengt. Einmal gesehen am 2026-09-19 im
-  E2E-Lauf: nach "Zufallsauswahl generieren" stand die Ueberschrift auf "7 von 7",
-  uebergeben wurde an die Einkaufsliste aber nur ein Tag. Der Wiederholungslauf war
-  gruen, und im selben Lauf war auch der bekannt wackelige Test "sign in, add, check off
-  and clean up" rot. Der Test wartet jetzt vor der Uebergabe auf den Server; die Ursache
-  ist damit nicht behoben, nur aus dem Test herausgehalten.
 - 3 Zeilen pro Tag im Wochenplan
 b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSupplies.ts:25-30),
   ohne Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - dieselbe Klasse wie der
@@ -112,9 +115,6 @@ b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSuppl
 b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf einen
   Druck ab und trifft damit den useSupplies-Eintrag oben haeufiger als die
   Vorraete-Seite, die immer nur einen Vorrat schreibt.
-- Wochenplan-Prozess ueberarbeiten: der Knopf "Auf die Einkaufsliste" ist mehrfach
-  drueckbar und kauft beim zweiten Druck die vorher gedeckten Tage mit, weil der Vorrat
-  dann schon abgebucht ist (MZP-015, Entscheidung 1).
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 - Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
   Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)

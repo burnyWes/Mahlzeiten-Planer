@@ -121,15 +121,21 @@ async function planBologneseOnMonday() {
   )
 }
 
-function pressTheTransfer() {
-  return userEvent.click(
+async function transferTheWeekPlan() {
+  await userEvent.click(screen.getByRole('button', { name: 'Plan festlegen' }))
+  await userEvent.click(
     screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
   )
 }
 
-async function transferTheWeekPlan() {
-  await userEvent.click(screen.getByRole('button', { name: 'Plan festlegen' }))
-  await pressTheTransfer()
+function editThePlan() {
+  return userEvent.click(
+    screen.getByRole('button', { name: 'Plan bearbeiten' }),
+  )
+}
+
+function spentTransferButton() {
+  return screen.getByRole('button', { name: 'Schon auf der Einkaufsliste' })
 }
 
 function tabNames() {
@@ -552,7 +558,36 @@ describe('SignedInApp', () => {
     ])
   })
 
-  it('buys the covered day on a second transfer', async () => {
+  it('offers no second transfer of a fixed plan', async () => {
+    const { suppliesClient } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+        ]),
+        meal('chili', 'Chili', [{ name: 'Bohnen', quantity: null }]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'chili')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 2 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+    await userEvent.click(spentTransferButton())
+
+    expect(spentTransferButton()).toHaveAttribute('aria-disabled', 'true')
+    expect(suppliesClient.storedSupplies()).toEqual([
+      { mealId: 'bolognese', count: 1 },
+    ])
+
+    await goToArea('Einkaufsliste')
+
+    expect(shownShoppingItemNames()).toEqual(['Bohnen'])
+  })
+
+  it('buys the covered day once the plan is fixed anew', async () => {
     const { suppliesClient } = renderSignedInApp(
       [],
       [
@@ -569,7 +604,8 @@ describe('SignedInApp', () => {
 
     await goToArea('Wochenplan')
     await transferTheWeekPlan()
-    await pressTheTransfer()
+    await editThePlan()
+    await transferTheWeekPlan()
 
     expect(suppliesClient.storedSupplies()).toEqual([])
 
@@ -579,6 +615,32 @@ describe('SignedInApp', () => {
       'Bohnen, 2',
       'Hackfleisch, 500 g',
     ])
+  })
+
+  it('keeps the snowflake of a spent supply until the plan is edited', async () => {
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: null },
+        ]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 1 }]),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(screen.getByText('Montag, Bolognese, im Vorrat')).toBeInTheDocument()
+
+    await editThePlan()
+
+    expect(screen.getByRole('textbox', { name: 'Montag' })).toHaveValue(
+      'Bolognese',
+    )
   })
 
   it('spends nothing of the supply while a day is being planned', async () => {

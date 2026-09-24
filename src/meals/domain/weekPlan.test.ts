@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { Meal } from './meal'
 import type { Supply } from './supply'
 import {
+  coveredDaysOf,
   EMPTY_WEEK_PLAN,
   isSuppliedOn,
   mealsWithoutItems,
   plannedDayCount,
   plannedMeals,
+  sameWeekPlan,
   shownMealOn,
   suppliedDayCount,
   WEEKDAYS,
@@ -229,6 +231,65 @@ describe('isSuppliedOn', () => {
     expect(
       WEEKDAYS.filter((day) => isSuppliedOn(plan, day, knownMeals, supplies)),
     ).toEqual(['monday', 'sunday'])
+  })
+})
+
+describe('sameWeekPlan', () => {
+  it('holds for two plans with the same meal on every day', () => {
+    expect(
+      sameWeekPlan(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'soup'),
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'soup'),
+      ),
+    ).toBe(true)
+  })
+
+  it('fails for two plans that differ on one day', () => {
+    expect(
+      sameWeekPlan(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'soup'),
+        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'pizza'),
+      ),
+    ).toBe(false)
+  })
+})
+
+describe('coveredDaysOf', () => {
+  it('lists the covered days in the order of the week', () => {
+    const plan = withMealOnDay(
+      withMealOnDay(
+        withMealOnDay(EMPTY_WEEK_PLAN, 'friday', 'soup'),
+        'monday',
+        'bolognese',
+      ),
+      'wednesday',
+      'pizza',
+    )
+
+    expect(
+      coveredDaysOf(plan, knownMeals, [
+        supply('soup', 1),
+        supply('bolognese', 1),
+      ]),
+    ).toEqual(['monday', 'friday'])
+  })
+
+  it('leaves out the day that the supply no longer reaches', () => {
+    const plan = withMealOnDay(
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      'tuesday',
+      'bolognese',
+    )
+
+    expect(coveredDaysOf(plan, knownMeals, [supply('bolognese', 1)])).toEqual([
+      'monday',
+    ])
+  })
+
+  it('lists no day without a supply', () => {
+    const plan = withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese')
+
+    expect(coveredDaysOf(plan, knownMeals, [])).toEqual([])
   })
 })
 

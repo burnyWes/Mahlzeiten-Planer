@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { stageButtonLabel, weekPlanHeading } from '../domain/announcements'
+import {
+  stageButtonLabel,
+  transferButtonLabel,
+  weekPlanHeading,
+} from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import type { Supply } from '../domain/supply'
 import {
@@ -95,7 +99,7 @@ export function WeekPlanPage({
           </button>
           <button
             type="button"
-            aria-label="Auf die Einkaufsliste"
+            aria-label={transferButtonLabel(stage)}
             aria-disabled={!canTransfer(stage, plannedDays)}
             onClick={onAddToShoppingList}
           >

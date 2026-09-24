@@ -357,14 +357,14 @@ noch im Lesemodus, ist aber in dieser Phase noch beliebig oft möglich.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: „Plan festlegen“ drücken. Der Fokus bleibt auf dem
+- [x] Auf dem iPhone mit VoiceOver: „Plan festlegen“ drücken. Der Fokus bleibt auf dem
   Knopf, er heißt jetzt „Plan bearbeiten“, und die Ansage „Plan festgelegt, N von 7
   Tagen geplant.“ ist zu hören.
-- [ ] Im Lesemodus liest VoiceOver jede Tageszeile als eine Einheit („Montag,
+- [x] Im Lesemodus liest VoiceOver jede Tageszeile als eine Einheit („Montag,
   Bolognese, im Vorrat“), und die Würfel werden als abgeblendet gemeldet.
-- [ ] Das Schloss-Icon ist in normalen und invertierten Farben gut erkennbar, und die
+- [x] Das Schloss-Icon ist in normalen und invertierten Farben gut erkennbar, und die
   drei Knöpfe passen nebeneinander in die Leiste.
-- [ ] Legt ein Gerät fest, zeigt das zweite Gerät den Lesemodus ohne Neuladen.
+- [x] Legt ein Gerät fest, zeigt das zweite Gerät den Lesemodus ohne Neuladen.
 
 ### Phase 2: Nur einmal übertragen und Vorrat eingefroren zeigen
 
@@ -375,11 +375,11 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
 
 **Aufgaben**:
 
-- [ ] `weekPlan.test.ts` / `weekPlan.ts`: `coveredDaysOf(plan, meals, supplies)`
+- [x] `weekPlan.test.ts` / `weekPlan.ts`: `coveredDaysOf(plan, meals, supplies)`
   liefert die Wochentage in Reihenfolge, für die `isSuppliedOn` gilt.
   `weekPlanTransfer` nutzt es für die Aufteilung in gedeckt und zu kaufen, ohne
   Verhaltensänderung.
-- [ ] `weekPlanStage.test.ts` / `weekPlanStage.ts`:
+- [x] `weekPlanStage.test.ts` / `weekPlanStage.ts`:
   - `transferredStage(coveredDays)` gibt
     `{ mode: 'reading', coveredDays }` zurück.
   - `isTransferred(stage)` gilt, wenn `coveredDays !== null`.
@@ -390,19 +390,19 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
   - Tests: Nach dem Übertragen bleibt ein Tag gedeckt, obwohl die Vorräte leer sind.
     Ein vorher ungedeckter Tag bleibt ungedeckt, obwohl jetzt Vorrat da ist. Im
     Editiermodus und im Lesemodus vor dem Übertragen zählt live der Vorrat.
-- [ ] `announcements.ts`:
+- [x] `announcements.ts`:
   - `weekPlanHeading` ergänzt nach dem Übertragen `, festgelegt, übertragen`.
   - `transferButtonLabel(stage)` liefert „Auf die Einkaufsliste“ bzw. „Schon auf der
     Einkaufsliste“.
   - Beides kommt samt Tests dazu.
-- [ ] `WeekPlanArea.tsx`: `addToShoppingList()` schreibt zuerst
+- [x] `WeekPlanArea.tsx`: `addToShoppingList()` schreibt zuerst
   `changeStage(transferredStage(coveredDaysOf(plan, meals, supplies)))` und ruft dann
   `onAddToShoppingList(weekPlanTransfer(...))` auf. Beides wird aus demselben
   Vorratsstand vor dem Abziehen berechnet.
-- [ ] `WeekPlanPage.tsx` / `WeekPlanRow.tsx`: Die Flocke, `weekdayFieldLabel` und
+- [x] `WeekPlanPage.tsx` / `WeekPlanRow.tsx`: Die Flocke, `weekdayFieldLabel` und
   `fixedDayText` nutzen `isCoveredOn(stage, ...)` statt `isSuppliedOn(...)`. Der
   Einkaufswagen bekommt `aria-label={transferButtonLabel(stage)}`.
-- [ ] `WeekPlanArea.test.tsx`, neue Tests:
+- [x] `WeekPlanArea.test.tsx`, neue Tests:
   - `locks the transfer after it was pressed once`: Label „Schon auf der
     Einkaufsliste“, `aria-disabled`, ein zweiter Druck liefert keinen zweiten
     Eintrag in `transferred`.
@@ -414,7 +414,7 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
   - `offers the transfer again after the plan was fixed anew`
   - `names the heading after the transfer`
   - `shows the transfer that the other device made`
-- [ ] `SignedInApp.test.tsx`: `buys the covered day on a second transfer` wird ersetzt
+- [x] `SignedInApp.test.tsx`: `buys the covered day on a second transfer` wird ersetzt
   durch
   - `offers no second transfer of a fixed plan`: nach dem Übertragen ist der Knopf
     gesperrt, der Vorrat nur einmal abgezogen, und auf der Liste steht jeder Artikel
@@ -423,12 +423,12 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
     bearbeiten“, „Plan festlegen“ und wieder übertragen ergibt „Bohnen, 2“ und
     „Hackfleisch, 500 g“ (Entscheidung 7).
   - Neu ist außerdem `keeps the snowflake of a spent supply until the plan is edited`.
-- [ ] `e2e/weekPlan.spec.ts`: Neu ist `transfers a fixed plan only once`: planen,
+- [x] `e2e/weekPlan.spec.ts`: Neu ist `transfers a fixed plan only once`: planen,
   festlegen, übertragen, auf `coveredDays` in `weekPlanStageOnServer()` warten, neu
   laden. Danach steht die Überschrift auf „…, festgelegt, übertragen“, der Knopf
   „Schon auf der Einkaufsliste“ ist `aria-disabled`, und die Zeile „Montag, …, im
   Vorrat“ ist noch da, obwohl der Vorrat auf dem Server leer ist.
-- [ ] `docs/notes.txt`:
+- [x] `docs/notes.txt`:
   - „Wochenplan-Prozess ueberarbeiten“ auf `x` setzen und nach DONE verschieben.
   - Unter TODO einen `b`-Hinweis anhängen: Der Snapshot-Bug von `useWeekPlan` betrifft
     seit MZP-025 auch `weekPlan/stage`, und eine verspätete Momentaufnahme könnte den
@@ -436,11 +436,11 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` grün (unter anderem `weekPlan.test.ts`, `weekPlanStage.test.ts`,
+- [x] `npm run test` grün (unter anderem `weekPlan.test.ts`, `weekPlanStage.test.ts`,
   `WeekPlanArea.test.tsx`, `SignedInApp.test.tsx`)
-- [ ] `npx playwright test e2e/weekPlan.spec.ts e2e/supplies.spec.ts` grün
-- [ ] `npm run lint` grün
-- [ ] `npm run build` läuft durch.
+- [x] `npx playwright test e2e/weekPlan.spec.ts e2e/supplies.spec.ts` grün
+- [x] `npm run lint` grün
+- [x] `npm run build` läuft durch.
 
 **Manuelle Verifikation**:
 
@@ -460,6 +460,20 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   React `EditableDay` ab, dadurch verfällt ein angefangenes Tippen ohne eigenen Reset.
   Dazu kommen die Tests `forgets what was typed once the plan is fixed` und
   `starts fixed when the stored stage says so`.
+- Phase 2, Abweichung von Entscheidung 9 (mit Rückfrage beim Nutzer): Der Snapshot-Bug von
+  `useWeekPlan` ist behoben statt nur vermerkt. Seit Phase 1 fiel
+  `buys only the day that the supply no longer covers` in etwa jedem zweiten Lauf durch
+  (vorher 1 von 8), und auf dem Server fehlte der Dienstag. Mitprotokolliert: Firestore
+  liefert die Momentaufnahmen der eigenen Schreibvorgänge teils erst nach allen späteren
+  Schreibvorgängen aus. Eine veraltete Momentaufnahme setzte den Plan zurück, und der
+  nächste `setDoc` überschrieb den Tag. Jetzt merkt sich `useWeekPlan` für Plan und Stage
+  den letzten eigenen Schreibvorgang und verwirft abweichende Momentaufnahmen, bis er
+  zurückkommt (`isStaleSnapshot` in `unconfirmedWrite.ts`, dazu `sameWeekPlan` und
+  `sameStage`, Tests in `useWeekPlan.test.tsx`). Danach waren 60 von 60 Läufen grün. Der
+  geplante `b`-Hinweis zum Stage in `docs/notes.txt` entfällt deshalb, und der
+  Bug-Eintrag steht unter DONE.
+- Phase 2: `transfers a fixed plan only once` wartet vor dem Festlegen auf
+  „Montag, im Vorrat“, damit der eben angelegte Vorrat schon angekommen ist.
 
 ## Verweise
 

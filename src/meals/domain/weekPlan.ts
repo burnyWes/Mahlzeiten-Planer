@@ -27,6 +27,10 @@ export function withMealOnDay(
   return { ...plan, [day]: id }
 }
 
+export function sameWeekPlan(one: WeekPlan, other: WeekPlan): boolean {
+  return WEEKDAYS.every((day) => one[day] === other[day])
+}
+
 export function shownMealOn(
   plan: WeekPlan,
   day: Weekday,
@@ -74,6 +78,14 @@ function plannedDays(
   })
 }
 
+export function coveredDaysOf(
+  plan: WeekPlan,
+  meals: readonly Meal[],
+  supplies: readonly Supply[],
+): readonly Weekday[] {
+  return WEEKDAYS.filter((day) => isSuppliedOn(plan, day, meals, supplies))
+}
+
 export function plannedMeals(
   plan: WeekPlan,
   meals: readonly Meal[],
@@ -101,12 +113,9 @@ export function weekPlanTransfer(
   supplies: readonly Supply[],
 ): WeekPlanTransfer {
   const days = plannedDays(plan, meals)
-  const covered = days.filter(({ day }) =>
-    isSuppliedOn(plan, day, meals, supplies),
-  )
-  const toBuy = days.filter(
-    ({ day }) => !isSuppliedOn(plan, day, meals, supplies),
-  )
+  const coveredDays = coveredDaysOf(plan, meals, supplies)
+  const covered = days.filter(({ day }) => coveredDays.includes(day))
+  const toBuy = days.filter(({ day }) => !coveredDays.includes(day))
   return {
     mealsToBuy: toBuy.map(({ meal }) => meal),
     spentSupplies: portionsPerMeal(covered),

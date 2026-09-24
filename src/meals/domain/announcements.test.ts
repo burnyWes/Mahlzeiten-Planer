@@ -34,6 +34,7 @@ import {
   randomMealLabel,
   replacedKindAnnouncement,
   stageButtonLabel,
+  transferButtonLabel,
   suppliesHeading,
   supplyAddedAnnouncement,
   supplyChangedAnnouncement,
@@ -49,7 +50,7 @@ import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS } from './weekPlan'
-import { EDITING_STAGE, FIXED_STAGE } from './weekPlanStage'
+import { EDITING_STAGE, FIXED_STAGE, transferredStage } from './weekPlanStage'
 
 const mincedMeat: MealItem = {
   name: 'Hackfleisch',
@@ -518,6 +519,12 @@ describe('weekPlanHeading', () => {
     )
   })
 
+  it('adds that the fixed plan was transferred', () => {
+    expect(weekPlanHeading(5, transferredStage(['monday']))).toBe(
+      'Wochenplan, 5 von 7, festgelegt, übertragen',
+    )
+  })
+
   it('adds that an empty plan is fixed', () => {
     expect(weekPlanHeading(0, FIXED_STAGE)).toBe(
       'Wochenplan, keine von 7, festgelegt',
@@ -552,6 +559,19 @@ describe('stageButtonLabel', () => {
 
   it('offers to edit a fixed plan', () => {
     expect(stageButtonLabel(FIXED_STAGE)).toBe('Plan bearbeiten')
+  })
+})
+
+describe('transferButtonLabel', () => {
+  it('offers the transfer before it happened', () => {
+    expect(transferButtonLabel(FIXED_STAGE)).toBe('Auf die Einkaufsliste')
+    expect(transferButtonLabel(EDITING_STAGE)).toBe('Auf die Einkaufsliste')
+  })
+
+  it('says that the plan is on the shopping list already', () => {
+    expect(transferButtonLabel(transferredStage([]))).toBe(
+      'Schon auf der Einkaufsliste',
+    )
   })
 })
 

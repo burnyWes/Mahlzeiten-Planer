@@ -10,14 +10,10 @@ import {
 import type { Meal, MealId } from '../domain/meal'
 import { suggestMeals } from '../domain/mealSuggestions'
 import type { Supply } from '../domain/supply'
-import {
-  isSuppliedOn,
-  shownMealOn,
-  type WeekPlan,
-  type Weekday,
-} from '../domain/weekPlan'
+import { shownMealOn, type WeekPlan, type Weekday } from '../domain/weekPlan'
 import {
   canShuffle,
+  isCoveredOn,
   isFixed,
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
@@ -80,9 +76,9 @@ function ShuffleDayButton({
 }
 
 function FixedDay(props: WeekPlanRowProps) {
-  const { day, plan, meals, supplies } = props
+  const { day, plan, meals, supplies, stage } = props
   const planned = shownMealOn(plan, day, meals)
-  const inSupply = isSuppliedOn(plan, day, meals, supplies)
+  const inSupply = isCoveredOn(stage, plan, day, meals, supplies)
 
   return (
     <div className="weekPlanChoice">
@@ -99,11 +95,11 @@ function FixedDay(props: WeekPlanRowProps) {
 }
 
 function EditableDay(props: WeekPlanRowProps) {
-  const { day, plan, meals, supplies, onChooseMeal } = props
+  const { day, plan, meals, supplies, stage, onChooseMeal } = props
   const [typed, setTyped] = useState<string | null>(null)
   const choice = useRef<HTMLDivElement>(null)
   const plannedName = shownMealOn(plan, day, meals)?.name ?? ''
-  const inSupply = isSuppliedOn(plan, day, meals, supplies)
+  const inSupply = isCoveredOn(stage, plan, day, meals, supplies)
 
   function change(written: string) {
     setTyped(written)
