@@ -5,7 +5,7 @@ branch: main
 story: MZP-020
 topic: "Mengenpicker auf der Einkaufsliste"
 tags: [plan, shopping, quantity, firestore, ui, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-020 — Mengenpicker auf der Einkaufsliste
@@ -706,12 +706,12 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver `Weniger` an einem Artikel ohne Menge drücken:
+- [x] Auf dem Gerät mit VoiceOver `Weniger` an einem Artikel ohne Menge drücken:
       `Brot entfernt, noch N offen.` hören, danach steht der VoiceOver-Fokus auf der
       Checkbox der folgenden Zeile.
-- [ ] Den letzten Artikel der Liste entfernen — der Fokus steht auf der vorhergehenden
+- [x] Den letzten Artikel der Liste entfernen — der Fokus steht auf der vorhergehenden
       Zeile; den einzigen entfernen — auf der Überschrift.
-- [ ] Auf dem zweiten Gerät verschwindet der Artikel ebenfalls; `Aufräumen` erscheint
+- [x] Auf dem zweiten Gerät verschwindet der Artikel ebenfalls; `Aufräumen` erscheint
       auf dem ersten Gerät nicht.
 
 ## Notizen zur Umsetzung
