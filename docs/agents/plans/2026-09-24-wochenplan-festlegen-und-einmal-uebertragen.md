@@ -5,7 +5,7 @@ branch: main
 story: MZP-025
 topic: "Wochenplan festlegen und nur einmal übertragen"
 tags: [plan, meals, weekPlan, supplies, bottomBar, firestore]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-025 — Wochenplan festlegen und nur einmal übertragen
@@ -444,12 +444,12 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: Den Einkaufswagen im Lesemodus drücken. Die
+- [x] Auf dem iPhone mit VoiceOver: Den Einkaufswagen im Lesemodus drücken. Die
   Übertragungsansage ist zu hören, der Fokus bleibt auf dem Knopf, und er heißt jetzt
   „Schon auf der Einkaufsliste, abgeblendet“.
-- [ ] Die Flocken der gedeckten Tage bleiben nach dem Übertragen stehen. Nach „Plan
+- [x] Die Flocken der gedeckten Tage bleiben nach dem Übertragen stehen. Nach „Plan
   bearbeiten“ verschwinden die Flocken der verbrauchten Vorräte.
-- [ ] Nach dem Übertragen auf einem Gerät zeigt das zweite Gerät den gesperrten
+- [x] Nach dem Übertragen auf einem Gerät zeigt das zweite Gerät den gesperrten
   Einkaufswagen und die Überschrift „…, festgelegt, übertragen“.
 
 ## Notizen zur Umsetzung
