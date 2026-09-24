@@ -136,3 +136,9 @@ b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbest
   (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).
 - Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
   Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
+- ausgegraute buttons heller zeichnen
+- Wochenplan erweitern
+  - oben Date-Picker für Startdatum
+  - daneben Anzahl-Tage-Selector
+  - Ab dem Datepickertag und für anzahl tage wird geplant
+  - Links in der Tageszeile steht der richtige Wochentag
