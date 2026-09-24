@@ -13,6 +13,7 @@ import {
   additionAnnouncement,
   checkOffAnnouncement,
   cleanUpAnnouncement,
+  itemRemovedAnnouncement,
   quantityChangedAnnouncement,
   reopenAnnouncement,
 } from '../domain/announcements'
@@ -35,12 +36,17 @@ import {
   nextFrozenOrder,
   pendingChangeCount,
   projectStableList,
+  withoutFromFrozenOrder,
   type FrozenOrder,
 } from '../domain/stableList'
 import {
+  dropConfirmedRemovals,
   dropConfirmedWrites,
+  forgetWritesOf,
   rememberWrite,
+  withoutUnconfirmedRemovals,
   withUnconfirmedWrites,
+  type UnconfirmedRemovals,
   type UnconfirmedWrite,
   type UnconfirmedWrites,
 } from '../domain/unconfirmedWrites'
@@ -67,6 +73,8 @@ export function useShoppingList(
   const [unconfirmedWrites, setUnconfirmedWrites] = useState<UnconfirmedWrites>(
     [],
   )
+  const [unconfirmedRemovals, setUnconfirmedRemovals] =
+    useState<UnconfirmedRemovals>([])
   const frozenOnFirstItems = useRef(false)
 
   useEffect(
@@ -74,6 +82,9 @@ export function useShoppingList(
       client.observeItems((items) => {
         setLiveItems(items)
         setUnconfirmedWrites((writes) => dropConfirmedWrites(writes, items))
+        setUnconfirmedRemovals((removals) =>
+          dropConfirmedRemovals(removals, items),
+        )
         if (!frozenOnFirstItems.current) {
           frozenOnFirstItems.current = true
           setFrozenOrder((appended) => firstFrozenOrder(appended, items))
@@ -82,7 +93,10 @@ export function useShoppingList(
     [client],
   )
 
-  const settledItems = withUnconfirmedWrites(liveItems, unconfirmedWrites)
+  const settledItems = withoutUnconfirmedRemovals(
+    withUnconfirmedWrites(liveItems, unconfirmedWrites),
+    unconfirmedRemovals,
+  )
   const shownItems = projectStableList(frozenOrder, settledItems)
   const openCount = shownItems.filter(isOpen).length
 
@@ -195,13 +209,24 @@ export function useShoppingList(
     [changeQuantityTo],
   )
 
+  const removeItem = useCallback(
+    (item: ShoppingItem) => {
+      client.removeItem(item.id)
+      setUnconfirmedRemovals((removals) => [...removals, item.id])
+      setUnconfirmedWrites((writes) => forgetWritesOf(writes, item.id))
+      setFrozenOrder((order) => withoutFromFrozenOrder(order, item.id))
+      return itemRemovedAnnouncement(item, openCount - 1)
+    },
+    [client, openCount],
+  )
+
   const takeOneLess = useCallback(
     (item: ShoppingItem) => {
       const lessened = withOneLess(item)
-      if (lessened === null) return quantityChangedAnnouncement(item)
+      if (lessened === null) return removeItem(item)
       return changeQuantityTo(lessened)
     },
-    [changeQuantityTo],
+    [changeQuantityTo, removeItem],
   )
 
   const cleanUp = useCallback(() => {

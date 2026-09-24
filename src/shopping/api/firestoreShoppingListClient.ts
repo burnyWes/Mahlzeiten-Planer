@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   query,
@@ -114,6 +115,10 @@ export function createFirestoreShoppingListClient(
 
     reopenItem(id) {
       writeInBackground(updateDoc(itemDocument(id), { checkedOffAt: null }))
+    },
+
+    removeItem(id) {
+      writeInBackground(deleteDoc(itemDocument(id)))
     },
   }
 }

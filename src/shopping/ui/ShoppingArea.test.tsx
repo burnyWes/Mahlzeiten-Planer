@@ -843,6 +843,116 @@ describe('changing the quantity at the row', () => {
     expect(shownItems()).toEqual(['Milch, 3 l'])
   })
 
+  it('removes an item when its last unit is taken', async () => {
+    const { client, announcements } = renderShoppingArea([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2, { amount: 2, unit: null }),
+    ])
+
+    await takeOneLess('Brot')
+
+    expect(client.storedItems().map((stored) => stored.name)).toEqual(['Milch'])
+    expect(announcements).toContain('Brot entfernt, noch 1 offen.')
+    expect(shownItems()).toEqual(['Milch, 2'])
+  })
+
+  it('removes an item with a fraction below one', async () => {
+    const { client } = renderShoppingArea([
+      openItem('milk', 'Milch', 1, { amount: 0.5, unit: 'l' }),
+    ])
+
+    await takeOneLess('Milch')
+
+    expect(client.storedItems()).toEqual([])
+  })
+
+  it('says that nothing is open any more', async () => {
+    const { announcements } = renderShoppingArea([openItem('bread', 'Brot', 1)])
+
+    await takeOneLess('Brot')
+
+    expect(announcements).toContain('Brot entfernt, nichts mehr offen.')
+    expect(
+      screen.getByRole('heading', { name: 'Einkaufsliste, nichts offen' }),
+    ).toBeInTheDocument()
+  })
+
+  it('leaves the focus on the checkbox that follows the removed row', async () => {
+    renderShoppingArea([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2),
+    ])
+
+    await takeOneLess('Brot')
+
+    expect(screen.getByRole('checkbox', { name: 'Milch' })).toHaveFocus()
+  })
+
+  it('leaves the focus on the checkbox before the removed last row', async () => {
+    renderShoppingArea([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2),
+    ])
+
+    await takeOneLess('Milch')
+
+    expect(screen.getByRole('checkbox', { name: 'Brot' })).toHaveFocus()
+  })
+
+  it('leaves the focus on the heading when the only item is removed', async () => {
+    renderShoppingArea([openItem('bread', 'Brot', 1)])
+
+    await takeOneLess('Brot')
+
+    expect(
+      screen.getByRole('heading', { name: 'Einkaufsliste, nichts offen' }),
+    ).toHaveFocus()
+  })
+
+  it('does not count a removed item as a change to clean up', async () => {
+    renderShoppingArea([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2),
+    ])
+
+    await takeOneLess('Brot')
+
+    expect(screen.queryByRole('button', { name: /Aufräumen/ })).toBeNull()
+  })
+
+  it('keeps a removed item away while the snapshot still carries it', async () => {
+    const bread = openItem('bread', 'Brot', 1)
+    const milk = openItem('milk', 'Milch', 2)
+    const client = renderWithLaggingSnapshots([bread, milk])
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+
+    await takeOneLess('Brot')
+    await act(async () => {
+      client.snapshotArrives([bread, milk])
+    })
+
+    expect(shownItems()).toEqual(['Milch'])
+  })
+
+  it('keeps a removed item away after its quantity was changed', async () => {
+    const client = renderWithLaggingSnapshots([
+      openItem('milk', 'Milch', 1, { amount: 2, unit: null }),
+    ])
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+
+    await takeOneLess('Milch')
+    await takeOneLess('Milch')
+    await act(async () => {
+      client.deliverSnapshot()
+    })
+
+    expect(screen.queryAllByRole('checkbox')).toEqual([])
+  })
+
   it('has no accessibility violations with a stepper', async () => {
     const { rendered } = renderShoppingArea([
       openItem('flour', 'Mehl', 1, { amount: 500, unit: 'g' }),

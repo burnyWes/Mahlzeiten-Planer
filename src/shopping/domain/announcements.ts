@@ -97,6 +97,13 @@ export function reopenAnnouncement(
   return `${item.name} wieder offen, ${openCount} offen`
 }
 
+export function itemRemovedAnnouncement(
+  item: ShoppingItem,
+  openCount: number,
+): string {
+  return `${item.name} entfernt, ${openCountPhrase(openCount)}.`
+}
+
 export function quantityChangedAnnouncement(item: ShoppingItem): string {
   return `${formatItemForAnnouncement(item)}.`
 }

@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react'
+import { useFocusAfterRemoval } from '../../shared/ui/useFocusAfterRemoval'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { cleanUpLabel, listHeading } from '../domain/announcements'
-import type { ShoppingItem } from '../domain/shoppingItem'
+import {
+  isLastUnit,
+  type ItemId,
+  type ShoppingItem,
+} from '../domain/shoppingItem'
 import { ShoppingItemRow } from './ShoppingItemRow'
 
 type ShoppingListPageProps = {
@@ -28,6 +33,13 @@ export function ShoppingListPage({
   onCleanUp,
 }: ShoppingListPageProps) {
   const heading = useHeadingFocus()
+  const itemIds: readonly ItemId[] = items.map((item) => item.id)
+  const { keepRow, rowRemovedAt } = useFocusAfterRemoval(itemIds, heading)
+
+  function takeOneLess(item: ShoppingItem, position: number) {
+    if (isLastUnit(item)) rowRemovedAt(position)
+    onLessItem(item)
+  }
 
   function cleanUpAndReturnFocus() {
     onCleanUp()
@@ -55,12 +67,13 @@ export function ShoppingListPage({
           <p>Die Liste ist leer.</p>
         ) : (
           <ul className="itemList">
-            {items.map((item) => (
+            {items.map((item, position) => (
               <ShoppingItemRow
                 key={item.id}
                 item={item}
+                checkbox={keepRow(item.id)}
                 onToggle={onToggleItem}
-                onLess={() => onLessItem(item)}
+                onLess={() => takeOneLess(item, position)}
                 onMore={() => onMoreItem(item)}
               />
             ))}

@@ -564,16 +564,16 @@ das Entfernen.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver durch eine offene Zeile wischen: `Mehl, 500 g,
+- [x] Auf dem Gerät mit VoiceOver durch eine offene Zeile wischen: `Mehl, 500 g,
       Kontrollkästchen`, `Weniger, Mehl, Taste`, `Mehr, Mehl, Taste` — die Menge in der
       Mitte wird **nicht** vorgelesen.
-- [ ] `Mehr` drücken und `Mehl, 501 g.` hören; der Fokus bleibt auf dem Knopf.
-- [ ] Einen Artikel mit `9998 g` anlegen und `Mehr` drücken: der Knopf wird inaktiv.
+- [x] `Mehr` drücken und `Mehl, 501 g.` hören; der Fokus bleibt auf dem Knopf.
+- [x] Einen Artikel mit `9998 g` anlegen und `Mehr` drücken: der Knopf wird inaktiv.
       Prüfen, wo der VoiceOver-Fokus danach steht (bei den Vorräten mit `isFull`
       genauso); fällt er weg, als `b` in `docs/notes.txt` festhalten.
-- [ ] Die Zeile sieht aus wie eine Vorrats-Zeile, auch bei eingeschalteter Farbumkehr;
+- [x] Die Zeile sieht aus wie eine Vorrats-Zeile, auch bei eingeschalteter Farbumkehr;
       `500 g` bricht nicht um, lange Namen verdrängen den Stepper nicht.
-- [ ] Die Mengenänderung erscheint auf dem zweiten Gerät.
+- [x] Die Mengenänderung erscheint auf dem zweiten Gerät.
 
 ### Phase 2: Artikel mit „Weniger“ entfernen
 
@@ -584,7 +584,7 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
 
 **Aufgaben**:
 
-- [ ] `itemRemovedAnnouncement(item, openCount)` in
+- [x] `itemRemovedAnnouncement(item, openCount)` in
       `src/shopping/domain/announcements.ts` ergänzen, mit `openCountPhrase`
       (Zeile 82-84). Erst die Tests: `Milch entfernt, noch 3 offen.` und
       `Milch entfernt, nichts mehr offen.`
@@ -596,7 +596,7 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
         return `${item.name} entfernt, ${openCountPhrase(openCount)}.`
       }
       ```
-- [ ] In `src/shopping/domain/unconfirmedWrites.ts` ergänzen, erst die Tests in
+- [x] In `src/shopping/domain/unconfirmedWrites.ts` ergänzen, erst die Tests in
       `unconfirmedWrites.test.ts`:
       ```ts
       export type UnconfirmedRemovals = readonly ItemId[]
@@ -625,18 +625,18 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
       Tests: eine Löschung blendet den Artikel aus, solange der Snapshot ihn noch trägt;
       sie wird fallen gelassen, sobald er fehlt; `forgetWritesOf` lässt Schreibvorgänge
       anderer Artikel stehen.
-- [ ] `withoutFromFrozenOrder(order, id)` in `src/shopping/domain/stableList.ts`
+- [x] `withoutFromFrozenOrder(order, id)` in `src/shopping/domain/stableList.ts`
       ergänzen, neben `appendToFrozenOrder` (Zeile 49-54). Erst die Tests in
       `stableList.test.ts`: die Id verschwindet, die übrigen behalten ihre Reihenfolge;
       und zusammen mit `pendingChangeCount`: Reihenfolge `['bread', 'milk']`, live nur
       `bread` — `pendingChangeCount(withoutFromFrozenOrder(order, 'milk'), live)` ist
       `0`, ohne die neue Funktion wäre es `1`.
-- [ ] `removeItem(id: ItemId): void` in `src/shopping/api/shoppingListClient.ts`
+- [x] `removeItem(id: ItemId): void` in `src/shopping/api/shoppingListClient.ts`
       aufnehmen. `firestoreShoppingListClient.ts`:
       `writeInBackground(deleteDoc(itemDocument(id)))`, `deleteDoc` zum Import.
       `inMemoryShoppingListClient.ts`: `items = items.filter((item) => item.id !== id)`,
       dann `publish()`.
-- [ ] `useShoppingList.ts`: Zustand `unconfirmedRemovals` neben `unconfirmedWrites`
+- [x] `useShoppingList.ts`: Zustand `unconfirmedRemovals` neben `unconfirmedWrites`
       (Zeile 61-63). Im `observeItems`-Callback (Zeile 66-76) zusätzlich
       `setUnconfirmedRemovals((removals) => dropConfirmedRemovals(removals, items))`.
       `settledItems` (Zeile 79) wird zu
@@ -651,13 +651,13 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
       ```
       Der Artikel ist offen (der Stepper steht nur an offenen Zeilen), also sinkt
       `openCount` um genau 1.
-- [ ] `lessDisabled` aus `Stepper.tsx` und `ShoppingItemRow.tsx` wieder entfernen.
-- [ ] Fokusführung in `ShoppingListPage.tsx` nach dem Vorbild `SupplyListPage.tsx:23-37`:
+- [x] `lessDisabled` aus `Stepper.tsx` und `ShoppingItemRow.tsx` wieder entfernen.
+- [x] Fokusführung in `ShoppingListPage.tsx` nach dem Vorbild `SupplyListPage.tsx:23-37`:
       `useFocusAfterRemoval(items.map((item) => item.id), heading)`, `keepRow(item.id)`
       als `checkbox`-Ref an die Zeile, und vor `onLessItem(item)` bei `isLastUnit(item)`
       `rowRemovedAt(position)`. `ShoppingItemRow` setzt den Ref auf die Checkbox beider
       Varianten.
-- [ ] Neue Tests in `ShoppingArea.test.tsx`, im `describe` aus Phase 1:
+- [x] Neue Tests in `ShoppingArea.test.tsx`, im `describe` aus Phase 1:
       - `removes an item when its last unit is taken` — `Brot` (ohne Menge) und
         `Milch, 2`; `Weniger, Brot`; `client.storedItems()` enthält nur noch Milch,
         Ansage `Brot entfernt, noch 1 offen.`
@@ -676,32 +676,32 @@ fest, bis Firestore sie bestätigt, und der Fokus wandert weiter.
       - `keeps a removed item away after its quantity was changed` — mit
         `renderWithLaggingSnapshots`: `Milch, 2` → `Weniger` → `Weniger`, dann
         `client.deliverSnapshot()`; Milch bleibt weg. Das sichert `forgetWritesOf` ab.
-- [ ] `e2e/shoppingList.spec.ts` um `removes an item with its last unit` ergänzen:
+- [x] `e2e/shoppingList.spec.ts` um `removes an item with its last unit` ergänzen:
       `Brot` und `Milch` anlegen, `Weniger, Brot`; Status `Brot entfernt, noch 1 offen.`,
       `shownShoppingItems` ist `['Milch']`, `Einkaufsliste, 1 offen` ist sichtbar, die
       Checkbox `Milch` hat den Fokus, `expect.poll(itemNamesOnServer).toEqual(
       ['Milch'])`. Danach `page.reload()` — `Brot` bleibt weg.
-- [ ] In `docs/notes.txt` unten unter TODO drei `b`-Einträge aus Entscheidung 10
+- [x] In `docs/notes.txt` unten unter TODO drei `b`-Einträge aus Entscheidung 10
       anhängen (schnelle Schritte mit verspätetem Zwischenstand; Löschung auf dem
       anderen Gerät bei eigenem unbestätigtem Schritt; Entfernen eines noch
       unbestätigten Artikels), je mit Datei:Zeile.
-- [ ] In `docs/notes.txt` die Punkte `- Menge auf Einkaufsliste anpassbar machen`
+- [x] In `docs/notes.txt` die Punkte `- Menge auf Einkaufsliste anpassbar machen`
       (Zeile 91) und `- Mengenpicker auf Einkaufsliste` (Zeile 103) auf `x` setzen und in
       den DONE-Block über der TODO-Überschrift verschieben, ohne die übrigen Zeilen zu
       berühren.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `withoutUnconfirmedRemovals`, `dropConfirmedRemovals`, `forgetWritesOf` und
+- [x] `npm run test` läuft durch.
+- [x] `withoutUnconfirmedRemovals`, `dropConfirmedRemovals`, `forgetWritesOf` und
       `withoutFromFrozenOrder` sind test-getrieben entstanden und grün.
-- [ ] `keeps a removed item away while the snapshot still carries it` und
+- [x] `keeps a removed item away while the snapshot still carries it` und
       `keeps a removed item away after its quantity was changed` sind grün.
-- [ ] Die drei Fokus-Tests sind grün.
-- [ ] `grep -n "lessDisabled" -r src` findet nichts.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `removes an item with its last
+- [x] Die drei Fokus-Tests sind grün.
+- [x] `grep -n "lessDisabled" -r src` findet nichts.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch, einschließlich `removes an item with its last
       unit`.
 
 **Manuelle Verifikation**:

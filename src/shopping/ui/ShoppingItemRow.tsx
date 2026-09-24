@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { formatQuantity } from '../../shared/domain/quantity'
 import { Stepper } from '../../shared/ui/Stepper'
 import { lessItemLabel, moreItemLabel } from '../domain/announcements'
@@ -5,13 +6,13 @@ import {
   canTakeOneMore,
   formatItemForAnnouncement,
   isCheckedOff,
-  isLastUnit,
   steppedQuantity,
   type ShoppingItem,
 } from '../domain/shoppingItem'
 
 type ShoppingItemRowProps = {
   item: ShoppingItem
+  checkbox: Ref<HTMLInputElement>
   onToggle: (item: ShoppingItem) => void
   onLess: () => void
   onMore: () => void
@@ -19,6 +20,7 @@ type ShoppingItemRowProps = {
 
 export function ShoppingItemRow({
   item,
+  checkbox,
   onToggle,
   onLess,
   onMore,
@@ -29,6 +31,7 @@ export function ShoppingItemRow({
         <label className="itemCheckedOff">
           <input
             type="checkbox"
+            ref={checkbox}
             checked
             aria-label={formatItemForAnnouncement(item)}
             onChange={() => onToggle(item)}
@@ -44,6 +47,7 @@ export function ShoppingItemRow({
       <label className="itemOpen">
         <input
           type="checkbox"
+          ref={checkbox}
           checked={false}
           aria-label={formatItemForAnnouncement(item)}
           onChange={() => onToggle(item)}
@@ -53,7 +57,6 @@ export function ShoppingItemRow({
       <Stepper
         lessLabel={lessItemLabel(item)}
         moreLabel={moreItemLabel(item)}
-        lessDisabled={isLastUnit(item)}
         moreDisabled={!canTakeOneMore(item)}
         onLess={onLess}
         onMore={onMore}

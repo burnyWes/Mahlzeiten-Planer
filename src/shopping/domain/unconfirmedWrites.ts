@@ -8,6 +8,8 @@ export type UnconfirmedWrite = {
 
 export type UnconfirmedWrites = readonly UnconfirmedWrite[]
 
+export type UnconfirmedRemovals = readonly ItemId[]
+
 function sameItemState(one: ShoppingItem, other: ShoppingItem): boolean {
   return (
     one.name === other.name &&
@@ -54,4 +56,25 @@ export function dropConfirmedWrites(
     if (write.before === null) return true
     return sameItemState(live, write.before)
   })
+}
+
+export function withoutUnconfirmedRemovals(
+  items: readonly ShoppingItem[],
+  removals: UnconfirmedRemovals,
+): readonly ShoppingItem[] {
+  return items.filter((item) => !removals.includes(item.id))
+}
+
+export function dropConfirmedRemovals(
+  removals: UnconfirmedRemovals,
+  liveItems: readonly ShoppingItem[],
+): UnconfirmedRemovals {
+  return removals.filter((id) => liveItems.some((item) => item.id === id))
+}
+
+export function forgetWritesOf(
+  writes: UnconfirmedWrites,
+  id: ItemId,
+): UnconfirmedWrites {
+  return writes.filter((write) => write.written.id !== id)
 }

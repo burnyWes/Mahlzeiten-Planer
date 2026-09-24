@@ -53,6 +53,13 @@ export function appendToFrozenOrder(
   return frozenOrder.includes(id) ? frozenOrder : [...frozenOrder, id]
 }
 
+export function withoutFromFrozenOrder(
+  frozenOrder: FrozenOrder,
+  id: ItemId,
+): FrozenOrder {
+  return frozenOrder.filter((frozen) => frozen !== id)
+}
+
 export function firstFrozenOrder(
   appended: FrozenOrder,
   liveItems: readonly ShoppingItem[],

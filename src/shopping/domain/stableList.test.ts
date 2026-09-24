@@ -6,6 +6,7 @@ import {
   nextFrozenOrder,
   pendingChangeCount,
   projectStableList,
+  withoutFromFrozenOrder,
 } from './stableList'
 
 function item(
@@ -135,5 +136,22 @@ describe('firstFrozenOrder', () => {
     expect(firstFrozenOrder(['cheese', 'milk'], [bread, milk, cheese])).toEqual(
       ['bread', 'cheese', 'milk'],
     )
+  })
+})
+
+describe('withoutFromFrozenOrder', () => {
+  it('takes the id out and keeps the order of the others', () => {
+    expect(withoutFromFrozenOrder(['bread', 'milk', 'cheese'], 'milk')).toEqual(
+      ['bread', 'cheese'],
+    )
+  })
+
+  it('does not count a removed item as a pending change', () => {
+    const order = ['bread', 'milk']
+
+    expect(pendingChangeCount(order, [bread])).toBe(1)
+    expect(
+      pendingChangeCount(withoutFromFrozenOrder(order, 'milk'), [bread]),
+    ).toBe(0)
   })
 })

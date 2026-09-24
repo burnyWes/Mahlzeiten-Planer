@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 import type { Quantity } from '../../shared/domain/quantity'
 import type { ShoppingItem } from './shoppingItem'
 import {
+  dropConfirmedRemovals,
   dropConfirmedWrites,
+  forgetWritesOf,
   rememberWrite,
+  withoutUnconfirmedRemovals,
   withUnconfirmedWrites,
   type UnconfirmedWrite,
 } from './unconfirmedWrites'
@@ -175,5 +178,32 @@ describe('dropConfirmedWrites', () => {
     )
 
     expect(remaining).toEqual([])
+  })
+})
+
+describe('unconfirmed removals', () => {
+  it('hides a removed item while the snapshot still carries it', () => {
+    expect(
+      withoutUnconfirmedRemovals([item('bread'), item('milk')], ['milk']),
+    ).toEqual([item('bread')])
+  })
+
+  it('keeps a removal while the snapshot still carries the item', () => {
+    expect(dropConfirmedRemovals(['milk'], [item('milk')])).toEqual(['milk'])
+  })
+
+  it('drops a removal once the snapshot no longer carries the item', () => {
+    expect(dropConfirmedRemovals(['milk'], [item('bread')])).toEqual([])
+  })
+
+  it('forgets the writes of a removed item only', () => {
+    const writes = [
+      write(item('milk', { amount: 3, unit: null })),
+      write(item('bread', { amount: 2, unit: null })),
+    ]
+
+    expect(forgetWritesOf(writes, 'milk')).toEqual([
+      write(item('bread', { amount: 2, unit: null })),
+    ])
   })
 })

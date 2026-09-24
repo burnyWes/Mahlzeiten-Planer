@@ -11,4 +11,5 @@ export interface ShoppingListClient {
   changeQuantity(id: ItemId, quantity: Quantity): void
   checkOffItem(id: ItemId): void
   reopenItem(id: ItemId): void
+  removeItem(id: ItemId): void
 }

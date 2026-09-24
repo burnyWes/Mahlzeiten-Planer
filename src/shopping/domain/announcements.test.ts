@@ -11,6 +11,7 @@ import {
   invalidShoppingItemMessage,
   knownItemDeletedAnnouncement,
   knownItemSavedAnnouncement,
+  itemRemovedAnnouncement,
   knownItemsHeading,
   lessItemLabel,
   listHeading,
@@ -244,5 +245,19 @@ describe('the quantity stepper', () => {
         quantity: { amount: 2, unit: null },
       }),
     ).toBe('Brot, 2.')
+  })
+})
+
+describe('itemRemovedAnnouncement', () => {
+  it('names the removed item and what is still open', () => {
+    expect(itemRemovedAnnouncement(openItem('Milch'), 3)).toBe(
+      'Milch entfernt, noch 3 offen.',
+    )
+  })
+
+  it('says that nothing is open any more', () => {
+    expect(itemRemovedAnnouncement(openItem('Milch'), 0)).toBe(
+      'Milch entfernt, nichts mehr offen.',
+    )
   })
 })

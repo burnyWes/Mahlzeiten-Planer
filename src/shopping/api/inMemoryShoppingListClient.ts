@@ -53,6 +53,10 @@ export function createInMemoryShoppingListClient(
     reopenItem(id) {
       change(id, reopen)
     },
+    removeItem(id) {
+      items = items.filter((item) => item.id !== id)
+      publish()
+    },
     itemsArriveFromElsewhere(arriving) {
       items = [...items, ...arriving]
       publish()

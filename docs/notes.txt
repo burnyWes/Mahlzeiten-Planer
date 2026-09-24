@@ -54,6 +54,8 @@ x Button-Farben anpassen
 x Gericht im Wochenplan ausblenden können
 x Gerichteliste: Immer gleichen Platz für Glühbirne freihalten, auch wenn nicht sichtbar
 x Checkbox für Frühstück
+x Menge auf Einkaufsliste anpassbar machen
+x Mengenpicker auf Einkaufsliste
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -88,7 +90,6 @@ b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
   programmatisch. Allein braucht er 2,9 s. Einmal gesehen am 2026-09-18; der
   Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
   oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
-- Menge auf Einkaufsliste anpassbar machen
 b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zustand, ohne
   Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - anders als die Einkaufsliste,
   die das seit MZP-006 ueber unconfirmedWrites abfaengt. Einmal gesehen am 2026-09-19 im
@@ -100,7 +101,6 @@ b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zusta
 - Kategorien in Gerichten
 - Kategorie-Verwaltung in Einstellungen als dritte Option
 - 3 Zeilen pro Tag im Wochenplan
-- Mengenpicker auf Einkaufsliste
 b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSupplies.ts:25-30),
   ohne Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - dieselbe Klasse wie der
   Wochenplan-Eintrag oben, abgefangen nur in useShoppingList ueber unconfirmedWrites.
@@ -121,3 +121,16 @@ b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf 
 - Zufallsregeln: das Feld mainMeal heisst seit MZP-019 kind und traegt
   'mainMeal' | 'breakfast' | 'none'; der Punkt weiter oben meint dieses Feld.
   Die Zeile im Formular heisst seitdem Hauptgericht
+b Einkaufsliste: mehrere schnelle Schritte am Mengen-Stepper. rememberWrite behaelt das
+  before des ersten Schritts (src/shopping/domain/unconfirmedWrites.ts:29). Kommt
+  verspaetet ein Zwischenstand, ist er weder written noch before, der Schreibvorgang
+  gilt als ueberholt und die Anzeige springt kurz auf den Zwischenstand, bis der
+  naechste Snapshot den Endstand bringt (MZP-020, Entscheidung 10).
+b Einkaufsliste: loescht das andere Geraet einen Artikel, waehrend hier ein eigener
+  Mengen-Schritt noch unbestaetigt ist, behaelt dropConfirmedWrites den Schreibvorgang,
+  solange das Dokument fehlt (src/shopping/domain/unconfirmedWrites.ts:54). Der Artikel
+  bleibt als Geist stehen, und updateDoc meldet "Konnte nicht gespeichert werden."
+  (MZP-020, Entscheidung 10).
+b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbestaetigt
+  ist, wertet dropConfirmedRemovals sein Fehlen im Snapshot schon als Bestaetigung
+  (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).

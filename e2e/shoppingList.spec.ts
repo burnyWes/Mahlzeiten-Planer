@@ -168,3 +168,26 @@ test('changes the quantity of an item at its row', async ({ page }) => {
   await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch, 3 l'])
   await expect.poll(itemQuantitiesOnServer).toEqual(['Milch, 3 l'])
 })
+
+test('removes an item with its last unit', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+  await addItem(page, 'Brot')
+  await addItem(page, 'Milch')
+
+  await pressButton(page, 'Weniger, Brot')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Brot entfernt, noch 1 offen.',
+  )
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch'])
+  await expect(
+    page.getByRole('heading', { name: 'Einkaufsliste, 1 offen' }),
+  ).toBeVisible()
+  await expect(page.getByRole('checkbox', { name: 'Milch' })).toBeFocused()
+  await expect.poll(itemNamesOnServer).toEqual(['Milch'])
+
+  await page.reload()
+
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch'])
+})
