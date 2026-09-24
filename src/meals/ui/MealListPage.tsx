@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealsHeading } from '../domain/announcements'
-import type { Meal } from '../domain/meal'
+import { countHiddenMeals, type Meal } from '../domain/meal'
+import { LightbulbOffIcon } from './LightbulbOffIcon'
 import { MealListRow } from './MealListRow'
 
 type MealListPageProps = {
@@ -20,14 +21,22 @@ export function MealListPage({
   onAddToShoppingList,
 }: MealListPageProps) {
   const heading = useHeadingFocus()
+  const hiddenCount = countHiddenMeals(meals)
 
   return (
     <>
       {navigation}
       <main className="page pageBelowNavigation">
         <div className="pageHeader">
-          <h1 ref={heading} tabIndex={-1}>
-            {mealsHeading(meals)}
+          <h1 ref={heading} tabIndex={-1} aria-label={mealsHeading(meals)}>
+            {hiddenCount === 0 ? (
+              mealsHeading(meals)
+            ) : (
+              <>
+                Gerichte, {meals.length} ({hiddenCount}{' '}
+                <LightbulbOffIcon className="headingIcon" />)
+              </>
+            )}
           </h1>
           <button
             type="button"

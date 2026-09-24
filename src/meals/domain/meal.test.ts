@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
   byName,
+  countHiddenMeals,
   createMeal,
   createMealItem,
   formatMealItem,
@@ -13,6 +14,7 @@ import {
   type Meal,
   type MealDraft,
   type MealItem,
+  type NewMeal,
 } from './meal'
 
 const emptyDraft: MealDraft = {
@@ -267,6 +269,35 @@ describe('withHiding', () => {
     withHiding(bolognese, true)
 
     expect(bolognese.hidden).toBe(false)
+  })
+})
+
+describe('countHiddenMeals', () => {
+  const soup: NewMeal = {
+    name: 'Suppe',
+    items: [],
+    ingredientNotes: '',
+    recipe: '',
+    categories: [],
+    hidden: false,
+    kind: 'none',
+  }
+
+  it('counts no hidden meal in an empty list', () => {
+    expect(countHiddenMeals([])).toBe(0)
+  })
+
+  it('counts only the hidden meals', () => {
+    expect(countHiddenMeals([soup, { ...soup, hidden: true }, soup])).toBe(1)
+  })
+
+  it('counts every meal when all are hidden', () => {
+    expect(
+      countHiddenMeals([
+        { ...soup, hidden: true },
+        { ...soup, hidden: true },
+      ]),
+    ).toBe(2)
   })
 })
 

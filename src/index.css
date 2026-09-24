@@ -437,6 +437,13 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   display: block;
 }
 
+.headingIcon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+}
+
 h1:focus-visible {
   outline: 4px solid var(--ink);
   outline-offset: 4px;

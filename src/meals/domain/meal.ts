@@ -101,6 +101,10 @@ export function withHiding(meal: Meal, hidden: boolean): NewMeal {
   }
 }
 
+export function countHiddenMeals(meals: readonly NewMeal[]): number {
+  return meals.filter((meal) => meal.hidden).length
+}
+
 export function withChosenKind(
   previous: MealKind,
   chosen: ChosenMealKind,

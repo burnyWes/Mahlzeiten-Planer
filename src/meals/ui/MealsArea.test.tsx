@@ -788,9 +788,19 @@ describe('MealsArea', () => {
       meal('stew', 'Eintopf'),
     ])
 
-    expect(
-      screen.getByRole('heading', { name: 'Gerichte, 2 (1 ausgeblendet)' }),
-    ).toBeInTheDocument()
+    const heading = screen.getByRole('heading', {
+      name: 'Gerichte, 2 (1 ausgeblendet)',
+    })
+    expect(heading.textContent).toBe('Gerichte, 2 (1 )')
+    expect(heading.querySelector('svg')).not.toBeNull()
+  })
+
+  it('shows no mark in the heading without hidden meals', () => {
+    renderMealsArea([meal('soup', 'Suppe'), meal('stew', 'Eintopf')])
+
+    const heading = screen.getByRole('heading', { name: 'Gerichte, 2' })
+    expect(heading.textContent).toBe('Gerichte, 2')
+    expect(heading.querySelector('svg')).toBeNull()
   })
 
   it('counts a meal that was just hidden in the heading', async () => {

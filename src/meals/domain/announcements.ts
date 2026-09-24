@@ -3,6 +3,7 @@ import {
   invalidQuantityMessage,
 } from '../../shared/domain/quantity'
 import {
+  countHiddenMeals,
   formatMealItem,
   InvalidMeal,
   type ChosenMealKind,
@@ -49,7 +50,7 @@ export function mealFailureMessage(error: unknown): string | null {
 
 export function mealsHeading(meals: readonly NewMeal[]): string {
   if (meals.length === 0) return 'Gerichte, keine'
-  const hiddenCount = meals.filter((meal) => meal.hidden).length
+  const hiddenCount = countHiddenMeals(meals)
   return hiddenCount === 0
     ? `Gerichte, ${meals.length}`
     : `Gerichte, ${meals.length} (${hiddenCount} ausgeblendet)`

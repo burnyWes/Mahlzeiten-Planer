@@ -1,7 +1,13 @@
-export function LightbulbOffIcon() {
+type LightbulbOffIconProps = {
+  className?: string
+}
+
+export function LightbulbOffIcon({
+  className = 'buttonIcon',
+}: LightbulbOffIconProps) {
   return (
     <svg
-      className="buttonIcon"
+      className={className}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
