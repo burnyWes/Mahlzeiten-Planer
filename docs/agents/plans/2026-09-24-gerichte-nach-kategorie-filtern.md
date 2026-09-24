@@ -5,7 +5,7 @@ branch: main
 story: MZP-024
 topic: "Gerichte nach Kategorie filtern"
 tags: [plan, meals, announcements, MealListPage, MealsArea, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-024 — Gerichte nach Kategorie filtern
@@ -400,14 +400,14 @@ dieser Phase nur über „Alle“.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
-- [ ] Die Filterzeile steht unter der Überschrift. Die Auswahl hat dieselbe Höhe und
+- [x] Die Filterzeile steht unter der Überschrift. Die Auswahl hat dieselbe Höhe und
       denselben Rahmen wie die Eingabefelder und ist auch mit invertierten Farben gut
       lesbar.
-- [ ] VoiceOver liest die Auswahl als „Kategorie, Alle, Einblendmenü“ (oder
+- [x] VoiceOver liest die Auswahl als „Kategorie, Alle, Einblendmenü“ (oder
       sinngemäß). Das Auswahlrad zeigt „Alle“ und die Kategorien.
-- [ ] Nach der Wahl von „Suppe“ klingen die Ansage des Rads und „Suppe, n von m
+- [x] Nach der Wahl von „Suppe“ klingen die Ansage des Rads und „Suppe, n von m
       Gerichten.“ zusammen verständlich und nicht störend doppelt.
-- [ ] Nach Öffnen eines Gerichts und „Zurück zu den Gerichten“ ist der Filter noch
+- [x] Nach Öffnen eines Gerichts und „Zurück zu den Gerichten“ ist der Filter noch
       aktiv, die Überschrift liest „Gerichte, n von m“.
 
 ### Phase 2: Filter per ✕ zurücksetzen
@@ -444,9 +444,9 @@ Er setzt auf „Alle“ zurück und gibt den Fokus an die Auswahl.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
-- [ ] Das ✕ steht rechts neben der Auswahl in derselben Zeile, hat den Knopfrahmen wie
+- [x] Das ✕ steht rechts neben der Auswahl in derselben Zeile, hat den Knopfrahmen wie
       die übrigen Icon-Knöpfe und ist mit invertierten Farben gut sichtbar.
-- [ ] VoiceOver liest „Filter zurücksetzen, Taste“. Nach dem Doppeltipp kommt „Filter
+- [x] VoiceOver liest „Filter zurücksetzen, Taste“. Nach dem Doppeltipp kommt „Filter
       zurückgesetzt, m Gerichte.“, und der VoiceOver-Cursor steht auf „Kategorie, Alle“.
 
 ## Notizen zur Umsetzung
