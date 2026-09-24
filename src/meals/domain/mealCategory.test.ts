@@ -5,6 +5,7 @@ import {
   categoryToAdd,
   mealCategories,
   suggestCategories,
+  withCategoryRenamed,
   withoutCategory,
   type CategoryOverview,
 } from './mealCategory'
@@ -195,5 +196,122 @@ describe('withoutCategory', () => {
     expect(withoutCategory([meal('Suppe', ['Suppe'])], 'Nudelgericht')).toEqual(
       [],
     )
+  })
+})
+
+describe('withCategoryRenamed', () => {
+  it('corrects the spelling in every meal carrying the category', () => {
+    expect(
+      withCategoryRenamed(
+        [
+          meal('Bolognese', ['nudelgericht']),
+          meal('Carbonara', ['Nudelgericht ']),
+        ],
+        'nudelgericht',
+        'Nudelgericht',
+      ),
+    ).toEqual([
+      meal('Bolognese', ['Nudelgericht']),
+      meal('Carbonara', ['Nudelgericht']),
+    ])
+  })
+
+  it('renames to a free name', () => {
+    expect(
+      withCategoryRenamed(
+        [meal('Bolognese', ['Schnell', 'Nudeln'])],
+        'Nudeln',
+        '  Nudelgericht ',
+      ),
+    ).toEqual([meal('Bolognese', ['Schnell', 'Nudelgericht'])])
+  })
+
+  it('merges into an existing category, keeping it once at the first position', () => {
+    expect(
+      withCategoryRenamed(
+        [
+          meal('Lasagne', [
+            'Schnell',
+            'Nudelgerichte',
+            'Auflauf',
+            'Nudelgericht',
+          ]),
+        ],
+        'Nudelgerichte',
+        'Nudelgericht',
+      ),
+    ).toEqual([meal('Lasagne', ['Schnell', 'Nudelgericht', 'Auflauf'])])
+  })
+
+  it('spreads the new spelling to meals that carried only the target', () => {
+    expect(
+      withCategoryRenamed(
+        [
+          meal('Bolognese', ['Nudelgerichte']),
+          meal('Carbonara', ['nudelgericht']),
+        ],
+        'Nudelgerichte',
+        'Nudelgericht',
+      ),
+    ).toEqual([
+      meal('Bolognese', ['Nudelgericht']),
+      meal('Carbonara', ['Nudelgericht']),
+    ])
+  })
+
+  it('returns only the changed meals', () => {
+    expect(
+      withCategoryRenamed(
+        [
+          meal('Bolognese', ['Nudelgerichte']),
+          meal('Carbonara', ['Nudelgericht']),
+          meal('Suppe', ['Suppe']),
+        ],
+        'Nudelgerichte',
+        'Nudelgericht',
+      ),
+    ).toEqual([meal('Bolognese', ['Nudelgericht'])])
+  })
+
+  it('returns nothing when the name stays the same', () => {
+    expect(
+      withCategoryRenamed(
+        [meal('Bolognese', ['Nudelgericht'])],
+        'Nudelgericht',
+        'Nudelgericht',
+      ),
+    ).toEqual([])
+  })
+
+  it('refuses an empty name', () => {
+    expect(() =>
+      withCategoryRenamed(
+        [meal('Bolognese', ['Nudelgericht'])],
+        'Nudelgericht',
+        '  ',
+      ),
+    ).toThrow(new InvalidMeal('nameMissing'))
+    expect(() => withCategoryRenamed([], 'Nudelgericht', '  ')).toThrow(
+      new InvalidMeal('nameMissing'),
+    )
+  })
+
+  it('refuses a name longer than a hundred characters', () => {
+    expect(() =>
+      withCategoryRenamed(
+        [meal('Bolognese', ['Nudelgericht'])],
+        'Nudelgericht',
+        'N'.repeat(101),
+      ),
+    ).toThrow(new InvalidMeal('nameTooLong'))
+    expect(() =>
+      withCategoryRenamed([], 'Nudelgericht', 'N'.repeat(101)),
+    ).toThrow(new InvalidMeal('nameTooLong'))
+  })
+
+  it('returns null when no meal carries the category any more', () => {
+    expect(
+      withCategoryRenamed([meal('Suppe', ['Suppe'])], 'Nudelgericht', 'Nudeln'),
+    ).toBeNull()
   })
 })

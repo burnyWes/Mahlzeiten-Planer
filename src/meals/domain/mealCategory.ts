@@ -89,13 +89,59 @@ export function withoutCategory(
   name: string,
 ): readonly Meal[] {
   return meals
-    .filter((meal) =>
-      meal.categories.some((category) => sameCategory(category, name)),
-    )
+    .filter((meal) => carriesCategory(meal, name))
     .map((meal) => ({
       ...meal,
       categories: meal.categories.filter(
         (category) => !sameCategory(category, name),
       ),
     }))
+}
+
+function carriesCategory(meal: Meal, name: string): boolean {
+  return meal.categories.some((category) => sameCategory(category, name))
+}
+
+function renamedCategories(
+  categories: readonly string[],
+  from: string,
+  name: string,
+): readonly string[] {
+  const renamed = categories.map((category) =>
+    sameCategory(category, from) || sameCategory(category, name)
+      ? name
+      : category,
+  )
+  return renamed.filter(
+    (category, position) =>
+      category !== name || renamed.indexOf(name) === position,
+  )
+}
+
+function sameCategories(
+  one: readonly string[],
+  other: readonly string[],
+): boolean {
+  return (
+    one.length === other.length &&
+    one.every((category, position) => category === other[position])
+  )
+}
+
+export function withCategoryRenamed(
+  meals: readonly Meal[],
+  from: string,
+  newName: string,
+): readonly Meal[] | null {
+  const name = createName(newName)
+  if (!meals.some((meal) => carriesCategory(meal, from))) return null
+  return meals
+    .map((meal) => ({
+      ...meal,
+      categories: renamedCategories(meal.categories, from, name),
+    }))
+    .filter(
+      (renamed, position) =>
+        !sameCategories(renamed.categories, meals[position].categories),
+    )
 }

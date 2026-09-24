@@ -605,9 +605,9 @@ Gerichten.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Mit VoiceOver: Die Zeilen werden als "Nudelgericht, 5, Taste" gelesen, der
+- [x] Mit VoiceOver: Die Zeilen werden als "Nudelgericht, 5, Taste" gelesen, der
       Mülleimer als "Löschen, Nudelgericht, Taste".
-- [ ] Eine gelöschte Kategorie verschwindet auf beiden Geräten aus allen Gerichten.
+- [x] Eine gelöschte Kategorie verschwindet auf beiden Geräten aus allen Gerichten.
 
 ### Phase 4: Kategorie umbenennen und zusammenführen
 
@@ -618,7 +618,7 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/mealCategory.test.ts` für `withCategoryRenamed`:
+- [x] Test zuerst: `src/meals/domain/mealCategory.test.ts` für `withCategoryRenamed`:
       - `corrects the spelling in every meal carrying the category`
       - `renames to a free name`
       - `merges into an existing category, keeping it once at the first position`
@@ -628,9 +628,9 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
       - `refuses an empty name` / `refuses a name longer than a hundred characters`
         → `InvalidMeal`, auch wenn die Kategorie inzwischen fehlt
       - `returns null when no meal carries the category any more`
-- [ ] Test zuerst: `src/meals/domain/announcements.test.ts`:
+- [x] Test zuerst: `src/meals/domain/announcements.test.ts`:
       `categorySavedAnnouncement("Nudelgericht")` → "Nudelgericht gespeichert."
-- [ ] `src/meals/domain/mealCategory.ts`:
+- [x] `src/meals/domain/mealCategory.ts`:
       ```ts
       export function withCategoryRenamed(
         meals: readonly Meal[],
@@ -643,18 +643,18 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
       Kategorie durch den neuen Namen ersetzen und Doppelte entfernen, wobei die erste
       Stelle bleibt. Zurück kommen nur Gerichte, deren `categories` sich tatsächlich
       ändern.
-- [ ] `src/meals/domain/announcements.ts`: `categorySavedAnnouncement`.
-- [ ] `src/meals/ui/CategoryFormPage.tsx` anlegen, Muster `KnownItemFormPage`: Knopf
+- [x] `src/meals/domain/announcements.ts`: `categorySavedAnnouncement`.
+- [x] `src/meals/ui/CategoryFormPage.tsx` anlegen, Muster `KnownItemFormPage`: Knopf
       "Zurück zur Kategorie-Verwaltung", `h1` "Kategorie bearbeiten", Feld
       `id="categoryName"` mit Label "Name", Anfangsfokus und bisherigem Namen,
       `p#categoryFailure.failure`, `BottomBar` mit `SaveIcon` und "Speichern",
       `aria-describedby`. Im Fehlerfall `mealFailureMessage` setzen und ansagen.
-- [ ] `src/meals/ui/CategoriesArea.tsx`: Seite `{ kind: 'form' }` bedienen. Beim
+- [x] `src/meals/ui/CategoriesArea.tsx`: Seite `{ kind: 'form' }` bedienen. Beim
       Speichern `withCategoryRenamed` rechnen. Bei `null` zur Liste, sonst
       `meals.changeMeals(changed)`, zur Liste, `categorySavedAnnouncement(<validierter
       Name>)` ansagen. Ungültige Namen wirft `withCategoryRenamed`, die Formularseite
       fängt sie.
-- [ ] `docs/notes.txt`: Die TODO-Punkte "Kategorien in Gerichten" und
+- [x] `docs/notes.txt`: Die TODO-Punkte "Kategorien in Gerichten" und
       "Kategorie-Verwaltung in Einstellungen als dritte Option" auf `x` setzen und nach
       DONE verschieben. Unten unter TODO anhängen:
       `- Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
@@ -662,9 +662,9 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle zu `withCategoryRenamed` und `categorySavedAnnouncement` schlagen
+- [x] Die neuen Fälle zu `withCategoryRenamed` und `categorySavedAnnouncement` schlagen
       vor der Umsetzung fehl und laufen danach grün.
-- [ ] Neue Fälle in `src/meals/ui/CategoriesArea.test.tsx`:
+- [x] Neue Fälle in `src/meals/ui/CategoriesArea.test.tsx`:
       - `starts the form with the current name in focus`.
       - `corrects the spelling of a category in every meal` — "nudelgericht" →
         "Nudelgericht"; `storedMeals()` trägt überall die neue Schreibweise, Ansage
@@ -675,8 +675,8 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
       - `refuses an empty name` und `refuses a name that is too long` — Meldung auf der
         Seite und in den Ansagen, `storedMeals()` unverändert, die Seite bleibt offen.
       - `has no accessibility violations on the form`.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft durch.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 

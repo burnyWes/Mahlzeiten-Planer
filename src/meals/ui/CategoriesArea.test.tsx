@@ -75,6 +75,21 @@ function confirmDeletion() {
   return userEvent.click(screen.getByRole('button', { name: 'Löschen' }))
 }
 
+function openCategory(label: string) {
+  return userEvent.click(screen.getByRole('button', { name: label }))
+}
+
+function save() {
+  return userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+}
+
+async function renameTo(newName: string) {
+  await userEvent.clear(screen.getByLabelText('Name'))
+  if (newName !== '')
+    await userEvent.type(screen.getByLabelText('Name'), newName)
+  await save()
+}
+
 function cancelDeletion() {
   return userEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
 }
@@ -179,6 +194,100 @@ describe('CategoriesArea', () => {
     expect(
       screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 2' }),
     ).toBeInTheDocument()
+  })
+
+  it('starts the form with the current name in focus', async () => {
+    renderCategoriesArea(household)
+
+    await openCategory('Nudelgericht, 1')
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Kategorie bearbeiten' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('Nudelgericht')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+  })
+
+  it('corrects the spelling of a category in every meal', async () => {
+    const { client, announcements } = renderCategoriesArea([
+      meal('Bolognese', ['nudelgericht', 'Schnell']),
+      meal('Carbonara', ['nudelgericht']),
+    ])
+
+    await openCategory('nudelgericht, 2')
+    await renameTo('Nudelgericht')
+
+    expect(client.storedMeals()).toEqual([
+      meal('Bolognese', ['Nudelgericht', 'Schnell']),
+      meal('Carbonara', ['Nudelgericht']),
+    ])
+    expect(announcements).toContain('Nudelgericht gespeichert.')
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 2' }),
+    ).toHaveFocus()
+  })
+
+  it('merges a category into an existing one', async () => {
+    const { client } = renderCategoriesArea([
+      meal('Bolognese', ['Nudelgerichte']),
+      meal('Carbonara', ['Nudelgericht']),
+      meal('Lasagne', ['Nudelgerichte', 'Nudelgericht']),
+    ])
+
+    await openCategory('Nudelgerichte, 2')
+    await renameTo('Nudelgericht')
+
+    expect(shownCategoryRows()).toEqual(['Nudelgericht, 3'])
+    expect(client.storedMeals()[2].categories).toEqual(['Nudelgericht'])
+  })
+
+  it('refuses an empty name', async () => {
+    const { client, announcements } = renderCategoriesArea(household)
+
+    await openCategory('Nudelgericht, 1')
+    await renameTo('')
+
+    expect(client.storedMeals()).toEqual(household)
+    expect(announcements).toContain('Bitte einen Namen eingeben.')
+    expect(screen.getByText('Bitte einen Namen eingeben.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie bearbeiten' }),
+    ).toBeInTheDocument()
+  })
+
+  it('refuses a name that is too long', async () => {
+    const { client, announcements } = renderCategoriesArea(household)
+
+    await openCategory('Nudelgericht, 1')
+    await renameTo('N'.repeat(101))
+
+    expect(client.storedMeals()).toEqual(household)
+    expect(announcements).toContain('Der Name ist zu lang.')
+    expect(screen.getByText('Der Name ist zu lang.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie bearbeiten' }),
+    ).toBeInTheDocument()
+  })
+
+  it('returns to the list when the category to be renamed is already gone', async () => {
+    const { client } = renderCategoriesArea(household)
+
+    await openCategory('Nudelgericht, 1')
+    await act(async () => {
+      client.mealsArriveFromElsewhere([meal('Suppe', [])])
+    })
+
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, keine' }),
+    ).toBeInTheDocument()
+  })
+
+  it('has no accessibility violations on the form', async () => {
+    const { rendered } = renderCategoriesArea(household)
+
+    await openCategory('Nudelgericht, 1')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the category management', async () => {

@@ -6,6 +6,7 @@ import {
   categoryDeletedAnnouncement,
   categoryDeletionNote,
   categoryRowLabel,
+  categorySavedAnnouncement,
   categoryRemovedAnnouncement,
   invalidMealMessage,
   hidingLabel,
@@ -153,6 +154,14 @@ describe('categoryDeletedAnnouncement', () => {
   it('counts the remaining categories', () => {
     expect(categoryDeletedAnnouncement('Nudelgericht', 2)).toBe(
       'Nudelgericht gelöscht, noch 2 Kategorien.',
+    )
+  })
+})
+
+describe('categorySavedAnnouncement', () => {
+  it('names the saved category', () => {
+    expect(categorySavedAnnouncement('Nudelgericht')).toBe(
+      'Nudelgericht gespeichert.',
     )
   })
 })

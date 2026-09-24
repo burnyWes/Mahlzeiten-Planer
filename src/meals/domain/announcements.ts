@@ -122,6 +122,10 @@ export function categoryDeletedAnnouncement(
   return `${category} gelöscht, ${remainingCategoryPhrase(remainingCategories)}.`
 }
 
+export function categorySavedAnnouncement(category: string): string {
+  return `${category} gespeichert.`
+}
+
 export function mealSavedAnnouncement(meal: NewMeal): string {
   return `${meal.name} gespeichert.`
 }

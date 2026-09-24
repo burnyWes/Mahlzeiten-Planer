@@ -56,6 +56,8 @@ x Gerichteliste: Immer gleichen Platz für Glühbirne freihalten, auch wenn nich
 x Checkbox für Frühstück
 x Menge auf Einkaufsliste anpassbar machen
 x Mengenpicker auf Einkaufsliste
+x Kategorien in Gerichten
+x Kategorie-Verwaltung in Einstellungen als dritte Option
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -98,8 +100,6 @@ b Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zusta
   gruen, und im selben Lauf war auch der bekannt wackelige Test "sign in, add, check off
   and clean up" rot. Der Test wartet jetzt vor der Uebergabe auf den Server; die Ursache
   ist damit nicht behoben, nur aus dem Test herausgehalten.
-- Kategorien in Gerichten
-- Kategorie-Verwaltung in Einstellungen als dritte Option
 - 3 Zeilen pro Tag im Wochenplan
 b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSupplies.ts:25-30),
   ohne Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - dieselbe Klasse wie der
@@ -134,3 +134,5 @@ b Einkaufsliste: loescht das andere Geraet einen Artikel, waehrend hier ein eige
 b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbestaetigt
   ist, wertet dropConfirmedRemovals sein Fehlen im Snapshot schon als Bestaetigung
   (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).
+- Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
+  Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)

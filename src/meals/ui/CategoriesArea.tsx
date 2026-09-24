@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { categoryDeletedAnnouncement } from '../domain/announcements'
-import { normalizeMealName } from '../domain/meal'
+import {
+  categoryDeletedAnnouncement,
+  categorySavedAnnouncement,
+} from '../domain/announcements'
+import { createName, normalizeMealName } from '../domain/meal'
 import {
   mealCategories,
+  withCategoryRenamed,
   withoutCategory,
   type CategoryOverview,
 } from '../domain/mealCategory'
+import { CategoryFormPage } from './CategoryFormPage'
 import { CategoryListPage } from './CategoryListPage'
 import { DeleteCategoryPage } from './DeleteCategoryPage'
 import type { Meals } from './useMeals'
@@ -46,6 +51,27 @@ export function CategoriesArea({
     showList()
     announce(categoryDeletedAnnouncement(overview.name, categories.length - 1))
   }
+
+  function renameCategory(overview: CategoryOverview, newName: string) {
+    const changed = withCategoryRenamed(meals.meals, overview.name, newName)
+    if (changed === null) {
+      showList()
+      return
+    }
+    meals.changeMeals(changed)
+    showList()
+    announce(categorySavedAnnouncement(createName(newName)))
+  }
+
+  if (page.kind === 'form' && addressedCategory !== null)
+    return (
+      <CategoryFormPage
+        overview={addressedCategory}
+        onSave={(newName) => renameCategory(addressedCategory, newName)}
+        onBack={showList}
+        announce={announce}
+      />
+    )
 
   if (page.kind === 'delete' && addressedCategory !== null)
     return (
