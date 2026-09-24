@@ -5,7 +5,7 @@ branch: main
 story: MZP-023
 topic: "Glühbirne in der Gerichte-Überschrift"
 tags: [plan, meals, announcements, MealListPage, LightbulbOffIcon]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-023 — Glühbirne in der Gerichte-Überschrift
@@ -219,11 +219,11 @@ Glühbirne statt des Worts und behält den gesprochenen Namen.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone ist ein Gericht ausgeblendet. Die Überschrift zeigt
+- [x] Auf dem iPhone ist ein Gericht ausgeblendet. Die Überschrift zeigt
       `Gerichte, n (1 💡̸)`. Das Icon ist so hoch wie die Schrift und sitzt auf der Zeile.
-- [ ] Mit VoiceOver klingt die Überschrift wie vorher, etwa „Gerichte, zwölf, drei
+- [x] Mit VoiceOver klingt die Überschrift wie vorher, etwa „Gerichte, zwölf, drei
       ausgeblendet, Überschrift“. Das Icon wird nicht eigens angesagt.
-- [ ] Mit Farbumkehr ist das Icon in der Überschrift gut sichtbar (`currentColor`).
+- [x] Mit Farbumkehr ist das Icon in der Überschrift gut sichtbar (`currentColor`).
 
 ## Notizen zur Umsetzung
 
