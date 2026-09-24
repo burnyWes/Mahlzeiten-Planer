@@ -23,6 +23,7 @@ function meal(id: string): Meal {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }

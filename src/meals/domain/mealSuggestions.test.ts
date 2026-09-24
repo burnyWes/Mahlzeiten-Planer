@@ -9,6 +9,7 @@ function meal(name: string, id = name): Meal {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }

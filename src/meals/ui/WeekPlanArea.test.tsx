@@ -29,6 +29,7 @@ function meal(id: string, name: string, items: Meal['items'] = []): Meal {
     items,
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }

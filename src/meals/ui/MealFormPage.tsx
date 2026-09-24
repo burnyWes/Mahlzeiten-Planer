@@ -15,6 +15,7 @@ import {
   type MealItem,
   type NewMeal,
 } from '../domain/meal'
+import { MealCategoriesEditor } from './MealCategoriesEditor'
 import { MealItemsEditor } from './MealItemsEditor'
 
 type MealFormPageProps = {
@@ -23,6 +24,7 @@ type MealFormPageProps = {
   onBack: () => void
   announce: (text: string) => void
   suggestNames: (typed: string) => readonly string[]
+  knownCategories: readonly string[]
 }
 
 const EMPTY_DRAFT: MealDraft = {
@@ -48,11 +50,15 @@ export function MealFormPage({
   onBack,
   announce,
   suggestNames,
+  knownCategories,
 }: MealFormPageProps) {
   const heading = useHeadingFocus()
   const [draft, setDraft] = useState(() => draftOf(editedMeal))
   const [items, setItems] = useState<readonly MealItem[]>(
     editedMeal?.items ?? [],
+  )
+  const [categories, setCategories] = useState<readonly string[]>(
+    editedMeal?.categories ?? [],
   )
   const [failureMessage, setFailureMessage] = useState('')
   const [suggestNamesOnOpen] = useState(() => suggestNames)
@@ -75,7 +81,7 @@ export function MealFormPage({
 
   function saveMeal() {
     try {
-      onSave(createMeal(draft, items, editedMeal?.hidden ?? false))
+      onSave(createMeal(draft, items, categories, editedMeal?.hidden ?? false))
     } catch (error) {
       const message = mealFailureMessage(error)
       if (message === null) throw error
@@ -145,6 +151,17 @@ export function MealFormPage({
           onChange={(event) => chooseKind('breakfast', event.target.checked)}
         />
       </label>
+      <MealCategoriesEditor
+        categories={categories}
+        knownCategories={knownCategories}
+        onAddCategory={(category) =>
+          setCategories((taken) => [...taken, category])
+        }
+        onRemoveCategory={(position) =>
+          setCategories((taken) => taken.filter((_, at) => at !== position))
+        }
+        announce={announce}
+      />
       <p id="mealFailure" className="failure">
         {failureMessage}
       </p>

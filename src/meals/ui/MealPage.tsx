@@ -67,6 +67,16 @@ export function MealPage({
       )}
       <TextSection title="Zutaten" text={meal.ingredientNotes} />
       <TextSection title="Rezept" text={meal.recipe} />
+      {meal.categories.length > 0 && (
+        <>
+          <h2>Kategorien</h2>
+          <ul className="itemList">
+            {meal.categories.map((category) => (
+              <li key={category}>{category}</li>
+            ))}
+          </ul>
+        </>
+      )}
       <BottomBar>
         <button
           type="button"

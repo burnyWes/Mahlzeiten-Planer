@@ -170,6 +170,9 @@ type ListedMeals = {
       hidden?: { booleanValue?: boolean }
       mainMeal?: { booleanValue?: boolean }
       breakfast?: { booleanValue?: boolean }
+      categories?: {
+        arrayValue?: { values?: readonly { stringValue: string }[] }
+      }
     }
   }[]
 }
@@ -214,6 +217,27 @@ export async function breakfastMealNamesOnServer(): Promise<readonly string[]> {
   return (listed.documents ?? [])
     .filter((document) => document.fields.breakfast?.booleanValue === true)
     .map((document) => document.fields.name.stringValue)
+}
+
+export async function mealCategoriesOnServer(): Promise<
+  Record<string, readonly string[]>
+> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedMeals
+  return Object.fromEntries(
+    (listed.documents ?? []).map((document) => [
+      document.fields.name.stringValue,
+      (document.fields.categories?.arrayValue?.values ?? []).map(
+        (value) => value.stringValue,
+      ),
+    ]),
+  )
 }
 
 type StoredMealFlags = { mainMeal?: boolean; breakfast?: boolean }

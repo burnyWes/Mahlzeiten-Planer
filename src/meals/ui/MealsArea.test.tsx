@@ -15,6 +15,7 @@ function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
     ...parts,
@@ -117,6 +118,32 @@ async function takeOverItem(name: string, amount = '', unit = '') {
   )
 }
 
+function categoryForm() {
+  return screen.getByRole('form', { name: 'Kategorie hinzufügen' })
+}
+
+function categoryField() {
+  return within(categoryForm()).getByLabelText('Kategorie')
+}
+
+async function takeOverCategory(name: string) {
+  await userEvent.type(categoryField(), name)
+  await userEvent.click(
+    within(categoryForm()).getByRole('button', {
+      name: 'Kategorie hinzufügen',
+    }),
+  )
+}
+
+function shownCategories() {
+  return within(
+    screen.getByRole('heading', { name: /^Kategorien/ })
+      .nextElementSibling as HTMLElement,
+  )
+    .getAllByRole('listitem')
+    .map((row) => row.textContent)
+}
+
 function editMeal() {
   return userEvent.click(screen.getByRole('button', { name: 'Bearbeiten' }))
 }
@@ -214,6 +241,7 @@ describe('MealsArea', () => {
         items: [],
         ingredientNotes: 'Zwiebel, Lorbeer',
         recipe: 'Linsen kochen.',
+        categories: [],
         hidden: false,
         kind: 'mainMeal',
       },
@@ -268,6 +296,134 @@ describe('MealsArea', () => {
       screen.getByRole('button', { name: 'Entfernen, Hackfleisch, 500 g' })
         .textContent,
     ).toBe('')
+  })
+
+  it('adds categories to a meal', async () => {
+    const { client, announcements } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Bolognese')
+    await takeOverCategory('Nudelgericht')
+    await takeOverCategory('Schnell')
+
+    expect(
+      screen.getByRole('heading', { name: 'Kategorien, 2' }),
+    ).toBeInTheDocument()
+    expect(announcements).toContain('Nudelgericht als Kategorie übernommen.')
+    expect(categoryField()).toHaveValue('')
+    expect(categoryField()).toHaveFocus()
+
+    await save()
+
+    expect(client.storedMeals()[0].categories).toEqual([
+      'Nudelgericht',
+      'Schnell',
+    ])
+  })
+
+  it('adds a category with the enter key', async () => {
+    const { client, announcements } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Bolognese')
+    await userEvent.type(categoryField(), 'Nudelgericht{Enter}')
+    await save()
+
+    expect(client.storedMeals()[0].categories).toEqual(['Nudelgericht'])
+    expect(announcements).toContain('Nudelgericht als Kategorie übernommen.')
+  })
+
+  it('removes a category from the meal', async () => {
+    const { client, announcements } = renderMealsArea([
+      meal('bolognese', 'Bolognese', {
+        categories: ['Nudelgericht', 'Schnell'],
+      }),
+    ])
+
+    await openMeal('Bolognese')
+    await editMeal()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Entfernen, Nudelgericht' }),
+    )
+
+    expect(shownCategories()).toEqual(['Schnell'])
+    expect(announcements).toContain('Nudelgericht entfernt, noch 1 Kategorie.')
+    expect(categoryField()).toHaveFocus()
+
+    await save()
+
+    expect(client.storedMeals()[0].categories).toEqual(['Schnell'])
+  })
+
+  it('refuses an empty category', async () => {
+    const { announcements } = renderMealsArea()
+
+    await openMealForm()
+    await takeOverCategory('   ')
+
+    expect(announcements).toContain('Bitte einen Namen eingeben.')
+    expect(
+      within(categoryForm()).getByText('Bitte einen Namen eingeben.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Kategorien, keine' }),
+    ).toBeInTheDocument()
+  })
+
+  it('refuses a category the meal already carries', async () => {
+    const { announcements } = renderMealsArea([
+      meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+    ])
+
+    await openMeal('Bolognese')
+    await editMeal()
+    await takeOverCategory('nudelgericht')
+
+    expect(announcements).toContain('Nudelgericht ist schon eingetragen.')
+    expect(
+      screen.getByText('Nudelgericht ist schon eingetragen.'),
+    ).toBeInTheDocument()
+    expect(categoryField()).toHaveValue('nudelgericht')
+    expect(shownCategories()).toEqual(['Nudelgericht'])
+  })
+
+  it('keeps the categories when a meal is hidden', async () => {
+    const { client } = renderMealsArea([
+      meal('bolognese', 'Bolognese', {
+        categories: ['Nudelgericht', 'Schnell'],
+      }),
+    ])
+
+    await openMeal('Bolognese')
+    await switchHiding('Ausblenden')
+
+    expect(client.storedMeals()[0].categories).toEqual([
+      'Nudelgericht',
+      'Schnell',
+    ])
+  })
+
+  it('shows the categories on the meal page', async () => {
+    renderMealsArea([
+      meal('bolognese', 'Bolognese', {
+        categories: ['Nudelgericht', 'Schnell'],
+      }),
+    ])
+
+    await openMeal('Bolognese')
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Kategorien' }),
+    ).toBeInTheDocument()
+    expect(shownCategories()).toEqual(['Nudelgericht', 'Schnell'])
+  })
+
+  it('shows no categories section for a meal without categories', async () => {
+    renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+
+    expect(screen.queryByRole('heading', { name: /Kategorien/ })).toBeNull()
   })
 
   it('refuses to save a meal without a name', async () => {
@@ -408,6 +564,7 @@ describe('MealsArea', () => {
         items: [],
         ingredientNotes: '',
         recipe: 'Anbraten.',
+        categories: [],
         hidden: false,
         kind: 'mainMeal',
       },
@@ -909,6 +1066,19 @@ describe('MealsArea', () => {
 
     expect(
       screen.getByRole('button', { name: 'Entfernen, Hackfleisch, 500 g' }),
+    ).toBeInTheDocument()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the form with categories', async () => {
+    const { rendered } = renderMealsArea()
+
+    await openMealForm()
+    await takeOverCategory('Nudelgericht')
+    await takeOverCategory('   ')
+
+    expect(
+      screen.getByRole('button', { name: 'Entfernen, Nudelgericht' }),
     ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

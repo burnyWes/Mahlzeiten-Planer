@@ -32,6 +32,10 @@ function toMealItems(stored: DocumentData): readonly MealItem[] {
   return Array.isArray(stored.items) ? stored.items.map(toMealItem) : []
 }
 
+function toCategories(stored: DocumentData): readonly string[] {
+  return Array.isArray(stored.categories) ? stored.categories.map(String) : []
+}
+
 function toKind(stored: DocumentData): MealKind {
   if (stored.breakfast === true) return 'breakfast'
   return stored.mainMeal !== false ? 'mainMeal' : 'none'
@@ -44,6 +48,7 @@ function toMeal(id: MealId, stored: DocumentData): Meal {
     items: toMealItems(stored),
     ingredientNotes: String(stored.ingredientNotes ?? ''),
     recipe: String(stored.recipe ?? ''),
+    categories: toCategories(stored),
     hidden: stored.hidden === true,
     kind: toKind(stored),
   }
@@ -58,6 +63,7 @@ function toDocument(meal: NewMeal): DocumentData {
     })),
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
+    categories: [...meal.categories],
     hidden: meal.hidden,
     mainMeal: meal.kind === 'mainMeal',
     breakfast: meal.kind === 'breakfast',

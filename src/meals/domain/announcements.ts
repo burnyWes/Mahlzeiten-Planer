@@ -11,6 +11,7 @@ import {
   type MealKind,
   type NewMeal,
 } from './meal'
+import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS, type Weekday } from './weekPlan'
 
@@ -39,6 +40,8 @@ export function invalidSupplyMessage(reason: InvalidSupplyReason): string {
 export function mealFailureMessage(error: unknown): string | null {
   if (error instanceof InvalidMeal) return invalidMealMessage(error.reason)
   if (error instanceof InvalidSupply) return invalidSupplyMessage(error.reason)
+  if (error instanceof CategoryAlreadyTaken)
+    return `${error.category} ist schon eingetragen.`
   if (error instanceof InvalidQuantity)
     return invalidQuantityMessage(error.reason)
   return null
@@ -68,6 +71,30 @@ export function mealItemRemovedAnnouncement(
   remainingItems: number,
 ): string {
   return `${item.name} entfernt, ${remainingItemPhrase(remainingItems)}.`
+}
+
+export function mealCategoriesHeading(categoryCount: number): string {
+  return categoryCount === 0
+    ? 'Kategorien, keine'
+    : `Kategorien, ${categoryCount}`
+}
+
+export function categoryAddedAnnouncement(category: string): string {
+  return `${category} als Kategorie übernommen.`
+}
+
+function remainingCategoryPhrase(remainingCategories: number): string {
+  if (remainingCategories === 0) return 'keine Kategorien mehr'
+  return remainingCategories === 1
+    ? 'noch 1 Kategorie'
+    : `noch ${remainingCategories} Kategorien`
+}
+
+export function categoryRemovedAnnouncement(
+  category: string,
+  remainingCategories: number,
+): string {
+  return `${category} entfernt, ${remainingCategoryPhrase(remainingCategories)}.`
 }
 
 export function mealSavedAnnouncement(meal: NewMeal): string {

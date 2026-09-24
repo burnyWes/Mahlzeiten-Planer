@@ -88,6 +88,7 @@ export function MealsArea({
         }
         announce={announce}
         suggestNames={suggestNames}
+        knownCategories={[]}
       />
     )
   }

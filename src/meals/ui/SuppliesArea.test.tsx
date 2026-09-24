@@ -19,6 +19,7 @@ function meal(id: string, name: string): Meal {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }

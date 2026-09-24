@@ -2,12 +2,14 @@ import { expect, test } from '@playwright/test'
 import {
   breakfastMealNamesOnServer,
   hiddenMealNamesOnServer,
+  mealCategoriesOnServer,
   nonMainMealNamesOnServer,
   prepareEmulators,
   storeMealOnServer,
 } from './emulatorHousehold.ts'
 import {
   pressButton,
+  shownItems,
   shownShoppingItems,
   signIn,
   switchCheckbox,
@@ -204,4 +206,33 @@ test('keeps the actions of a long meal in view at the bottom of the screen', asy
   await expect(
     page.getByRole('button', { name: 'Speichern', exact: true }),
   ).toBeInViewport()
+})
+
+test('keeps the categories of a meal after a reload', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Bearbeiten')
+  await typeInto(page, 'Kategorie', 'Nudelgericht')
+  await pressButton(page, 'Kategorie hinzufügen')
+  await typeInto(page, 'Kategorie', 'Schnell')
+  await pressButton(page, 'Kategorie hinzufügen')
+  await pressButton(page, 'Speichern')
+
+  await expect
+    .poll(mealCategoriesOnServer)
+    .toEqual({ Bolognese: ['Nudelgericht', 'Schnell'] })
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese')
+
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Kategorien' }),
+  ).toBeVisible()
+  await expect(shownItems(page)).toHaveText(['Nudelgericht', 'Schnell'])
 })

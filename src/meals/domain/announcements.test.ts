@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
+  categoryAddedAnnouncement,
+  categoryRemovedAnnouncement,
   invalidMealMessage,
   hidingLabel,
   mealFailureMessage,
   mealHidingAnnouncement,
   mealNameLabel,
   mealItemAddedAnnouncement,
+  mealCategoriesHeading,
   mealItemsHeading,
   mealDeletedAnnouncement,
   mealItemRemovedAnnouncement,
@@ -31,6 +34,7 @@ import {
   weekPlanTransferAnnouncement,
 } from './announcements'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
+import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS } from './weekPlan'
 
@@ -44,6 +48,7 @@ const bolognese: NewMeal = {
   items: [],
   ingredientNotes: '',
   recipe: '',
+  categories: [],
   hidden: false,
   kind: 'mainMeal',
 }
@@ -55,6 +60,44 @@ describe('mealsHeading', () => {
 
   it('counts the known meals', () => {
     expect(mealsHeading(2)).toBe('Gerichte, 2')
+  })
+})
+
+describe('mealCategoriesHeading', () => {
+  it('says that the meal carries no category yet', () => {
+    expect(mealCategoriesHeading(0)).toBe('Kategorien, keine')
+  })
+
+  it('counts the categories of the meal', () => {
+    expect(mealCategoriesHeading(2)).toBe('Kategorien, 2')
+  })
+})
+
+describe('categoryAddedAnnouncement', () => {
+  it('names the category that was taken over', () => {
+    expect(categoryAddedAnnouncement('Nudelgericht')).toBe(
+      'Nudelgericht als Kategorie übernommen.',
+    )
+  })
+})
+
+describe('categoryRemovedAnnouncement', () => {
+  it('says that no category is left', () => {
+    expect(categoryRemovedAnnouncement('Nudelgericht', 0)).toBe(
+      'Nudelgericht entfernt, keine Kategorien mehr.',
+    )
+  })
+
+  it('counts a single remaining category', () => {
+    expect(categoryRemovedAnnouncement('Nudelgericht', 1)).toBe(
+      'Nudelgericht entfernt, noch 1 Kategorie.',
+    )
+  })
+
+  it('counts the remaining categories', () => {
+    expect(categoryRemovedAnnouncement('Nudelgericht', 3)).toBe(
+      'Nudelgericht entfernt, noch 3 Kategorien.',
+    )
   })
 })
 
@@ -94,6 +137,12 @@ describe('mealFailureMessage', () => {
   it('resolves an unreadable quantity', () => {
     expect(mealFailureMessage(new InvalidQuantity('amountNotANumber'))).toBe(
       'Die Menge muss eine Zahl sein.',
+    )
+  })
+
+  it('names the category the meal already carries', () => {
+    expect(mealFailureMessage(new CategoryAlreadyTaken('Nudelgericht'))).toBe(
+      'Nudelgericht ist schon eingetragen.',
     )
   })
 
@@ -371,6 +420,7 @@ describe('weekPlanTransferAnnouncement', () => {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }

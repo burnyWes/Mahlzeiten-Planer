@@ -296,24 +296,24 @@ abgewiesen.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/meal.ts`: `categories: readonly string[]` in `NewMeal`. Alle
+- [x] `src/meals/domain/meal.ts`: `categories: readonly string[]` in `NewMeal`. Alle
       Gericht-Vorlagen in den Testdateien aus der *Ausgangslage* um `categories: []`
       ergänzen, damit `tsc` wieder grün ist.
-- [ ] Test zuerst: `src/meals/domain/meal.test.ts`
+- [x] Test zuerst: `src/meals/domain/meal.test.ts`
       - `createMeal`: `keeps the categories` (Reihenfolge bleibt), bestehende Aufrufe auf
         die neue Signatur umstellen.
       - `withHiding`: `keeps the categories`.
-- [ ] `src/meals/domain/meal.ts`: `readName` als `createName` exportieren (Aufrufer
+- [x] `src/meals/domain/meal.ts`: `readName` als `createName` exportieren (Aufrufer
       `createMealItem`, `createMeal`), `createMeal(draft, items, categories, hidden)`,
       `withHiding` übernimmt `meal.categories`.
-- [ ] Test zuerst: `src/meals/domain/mealCategory.test.ts` für `categoryToAdd`, in dieser
+- [x] Test zuerst: `src/meals/domain/mealCategory.test.ts` für `categoryToAdd`, in dieser
       Phase mit leerem `known`:
       - `trims the written name`
       - `refuses a category without a name` → `InvalidMeal` mit `nameMissing`
       - `refuses a name longer than a hundred characters` → `nameTooLong`
       - `refuses a category the meal already carries, whatever its spelling` →
         `CategoryAlreadyTaken` mit `category` = vorhandene Schreibweise im Gericht
-- [ ] `src/meals/domain/mealCategory.ts` anlegen:
+- [x] `src/meals/domain/mealCategory.ts` anlegen:
       ```ts
       export class CategoryAlreadyTaken extends Error {
         category: string
@@ -337,7 +337,7 @@ abgewiesen.
       Prüft mit `createName`, sucht in `taken` über `normalizeMealName` und wirft bei
       Treffer `new CategoryAlreadyTaken(<Treffer aus taken>)`. `known` wird erst in
       Phase 2 ausgewertet und hier nur durchgereicht.
-- [ ] Test zuerst: `src/meals/domain/announcements.test.ts`
+- [x] Test zuerst: `src/meals/domain/announcements.test.ts`
       - `mealCategoriesHeading`: `0` → "Kategorien, keine", `2` → "Kategorien, 2"
       - `categoryAddedAnnouncement("Nudelgericht")` → "Nudelgericht als Kategorie
         übernommen."
@@ -345,12 +345,12 @@ abgewiesen.
         mehr." / "… noch 1 Kategorie." / "… noch 3 Kategorien."
       - `mealFailureMessage(new CategoryAlreadyTaken('Nudelgericht'))` →
         "Nudelgericht ist schon eingetragen."
-- [ ] `src/meals/domain/announcements.ts`: die vier Punkte umsetzen, Muster
+- [x] `src/meals/domain/announcements.ts`: die vier Punkte umsetzen, Muster
       `mealItemsHeading` und `mealItemRemovedAnnouncement` (Zeile 51-71).
-- [ ] `src/meals/api/firestoreMealsClient.ts`: `toCategories(stored)` liest
+- [x] `src/meals/api/firestoreMealsClient.ts`: `toCategories(stored)` liest
       `Array.isArray(stored.categories) ? stored.categories.map(String) : []`, `toMeal`
       nutzt es, `toDocument` schreibt `categories: [...meal.categories]`.
-- [ ] `src/meals/ui/MealCategoriesEditor.tsx` anlegen, Muster von `MealItemsEditor`:
+- [x] `src/meals/ui/MealCategoriesEditor.tsx` anlegen, Muster von `MealItemsEditor`:
       ```tsx
       type MealCategoriesEditorProps = {
         categories: readonly string[]
@@ -367,20 +367,20 @@ abgewiesen.
       Knopf `type="submit"` "Kategorie hinzufügen". Beim Übernehmen `categoryToAdd`
       rufen, Fehler über `mealFailureMessage` in die Fehlerzeile schreiben und ansagen,
       bei Erfolg Feld leeren, Fehlerzeile leeren, Fokus ins Feld, Ansage.
-- [ ] `src/meals/ui/MealFormPage.tsx`: Zustand `categories` aus
+- [x] `src/meals/ui/MealFormPage.tsx`: Zustand `categories` aus
       `editedMeal?.categories ?? []`, Prop `knownCategories: readonly string[]`, Editor
       nach dem Frühstück-Schalter und vor `p#mealFailure` einsetzen, `createMeal` mit
       `categories` rufen.
-- [ ] `src/meals/ui/MealsArea.tsx`: `knownCategories` an `MealFormPage` reichen. In
+- [x] `src/meals/ui/MealsArea.tsx`: `knownCategories` an `MealFormPage` reichen. In
       dieser Phase `[]`, ab Phase 2 aus `mealCategories`.
-- [ ] `src/meals/ui/MealPage.tsx`: nach dem Rezept, nur bei `meal.categories.length > 0`,
+- [x] `src/meals/ui/MealPage.tsx`: nach dem Rezept, nur bei `meal.categories.length > 0`,
       `h2` "Kategorien" und `ul.itemList` mit einem `li` je Kategorie.
-- [ ] `e2e/emulatorHousehold.ts`: `ListedMeals.fields` um
+- [x] `e2e/emulatorHousehold.ts`: `ListedMeals.fields` um
       `categories?: { arrayValue?: { values?: readonly { stringValue: string }[] } }`
       erweitern, `mealCategoriesOnServer(): Promise<Record<string, readonly string[]>>`
       liefert die Kategorien je Gerichtsname (Muster `breakfastMealNamesOnServer`,
       Zeile 205-217).
-- [ ] `e2e/meals.spec.ts`: `keeps the categories of a meal after a reload`. Gericht
+- [x] `e2e/meals.spec.ts`: `keeps the categories of a meal after a reload`. Gericht
       "Bolognese" anlegen, bearbeiten, "Nudelgericht" und "Schnell" per `typeInto` und
       `pressButton('Kategorie hinzufügen')` eintragen, speichern, auf
       `mealCategoriesOnServer()` warten, neu laden, auf der Detailseite beide Kategorien
@@ -388,9 +388,9 @@ abgewiesen.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `meal.test.ts`, `mealCategory.test.ts` und
+- [x] Die neuen Fälle in `meal.test.ts`, `mealCategory.test.ts` und
       `announcements.test.ts` schlagen vor der Umsetzung fehl und laufen danach grün.
-- [ ] Neue Fälle in `src/meals/ui/MealsArea.test.tsx` (Hilfen nach dem Muster
+- [x] Neue Fälle in `src/meals/ui/MealsArea.test.tsx` (Hilfen nach dem Muster
       `addItem`, Zeile 105-120):
       - `adds categories to a meal` — zwei Kategorien eintragen, speichern;
         `storedMeals()` enthält sie in dieser Reihenfolge, die Ansage stimmt, das Feld
@@ -410,9 +410,9 @@ abgewiesen.
         Namen sind da.
       - `shows no categories section for a meal without categories`.
       - `has no accessibility violations on the form with categories`.
-- [ ] Die bestehenden Fälle in `MealsArea.test.tsx` laufen unverändert grün.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft durch, samt `keeps the categories of a meal after a
+- [x] Die bestehenden Fälle in `MealsArea.test.tsx` laufen unverändert grün.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft durch, samt `keeps the categories of a meal after a
       reload`. Der bestehende Fall `treats a stored meal without the field as a main
       meal` belegt, dass ein Dokument ohne `categories` weiter lädt.
 
@@ -686,6 +686,11 @@ Namen in alle Gerichte. Ein vergebener Name führt beide Kategorien zusammen.
       Rückkehr zur Liste ist durch die Ansage nachvollziehbar.
 
 ## Notizen zur Umsetzung
+
+- Phase 1: `tsc` verbietet mit `noUnusedParameters` ein nur durchgereichtes `known` in
+  `categoryToAdd`. Die beiden Fälle `takes over the spelling a known category already
+  has` und `keeps the written spelling for a new category` aus Phase 2 sind deshalb
+  schon in Phase 1 test-getrieben umgesetzt. `MealsArea` reicht bis Phase 2 weiter `[]`.
 
 ## Verweise
 

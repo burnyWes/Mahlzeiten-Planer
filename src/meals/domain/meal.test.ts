@@ -29,6 +29,7 @@ function meal(name: string): Meal {
     items: [],
     ingredientNotes: '',
     recipe: '',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }
@@ -82,6 +83,7 @@ describe('createMeal', () => {
           kind: 'mainMeal',
         },
         items,
+        [],
         false,
       ),
     ).toEqual({
@@ -89,26 +91,38 @@ describe('createMeal', () => {
       items,
       ingredientNotes: 'Zwiebel, Knoblauch',
       recipe: 'Anbraten.',
+      categories: [],
       hidden: false,
       kind: 'mainMeal',
     })
   })
 
+  it('keeps the categories', () => {
+    expect(
+      createMeal(
+        { ...emptyDraft, name: 'Bolognese' },
+        [],
+        ['Schnell', 'Nudelgericht'],
+        false,
+      ).categories,
+    ).toEqual(['Schnell', 'Nudelgericht'])
+  })
+
   it('trims the name', () => {
     expect(
-      createMeal({ ...emptyDraft, name: '  Suppe ' }, [], false).name,
+      createMeal({ ...emptyDraft, name: '  Suppe ' }, [], [], false).name,
     ).toBe('Suppe')
   })
 
   it('refuses a meal without a name', () => {
-    expect(() => createMeal(emptyDraft, [], false)).toThrow(
+    expect(() => createMeal(emptyDraft, [], [], false)).toThrow(
       new InvalidMeal('nameMissing'),
     )
   })
 
   it('refuses a name longer than a hundred characters', () => {
     expect(() =>
-      createMeal({ ...emptyDraft, name: 'N'.repeat(101) }, [], false),
+      createMeal({ ...emptyDraft, name: 'N'.repeat(101) }, [], [], false),
     ).toThrow(new InvalidMeal('nameTooLong'))
   })
 
@@ -116,6 +130,7 @@ describe('createMeal', () => {
     expect(() =>
       createMeal(
         { ...emptyDraft, name: 'Suppe', ingredientNotes: 'z'.repeat(5001) },
+        [],
         [],
         false,
       ),
@@ -127,51 +142,63 @@ describe('createMeal', () => {
       createMeal(
         { ...emptyDraft, name: 'Suppe', recipe: 'z'.repeat(5001) },
         [],
+        [],
         false,
       ),
     ).toThrow(new InvalidMeal('textTooLong'))
   })
 
   it('creates a visible meal when it is not meant to be hidden', () => {
-    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], false).hidden).toBe(
-      false,
-    )
+    expect(
+      createMeal({ ...emptyDraft, name: 'Suppe' }, [], [], false).hidden,
+    ).toBe(false)
   })
 
   it('creates a hidden meal when it is meant to be hidden', () => {
-    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], true).hidden).toBe(
-      true,
-    )
+    expect(
+      createMeal({ ...emptyDraft, name: 'Suppe' }, [], [], true).hidden,
+    ).toBe(true)
   })
 
   it('accepts a meal without items and without texts', () => {
-    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], false)).toEqual({
-      name: 'Suppe',
-      items: [],
-      ingredientNotes: '',
-      recipe: '',
-      hidden: false,
-      kind: 'mainMeal',
-    })
+    expect(createMeal({ ...emptyDraft, name: 'Suppe' }, [], [], false)).toEqual(
+      {
+        name: 'Suppe',
+        items: [],
+        ingredientNotes: '',
+        recipe: '',
+        categories: [],
+        hidden: false,
+        kind: 'mainMeal',
+      },
+    )
   })
 
   it('creates a main meal when the draft says so', () => {
     expect(
-      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'mainMeal' }, [], false)
-        .kind,
+      createMeal(
+        { ...emptyDraft, name: 'Suppe', kind: 'mainMeal' },
+        [],
+        [],
+        false,
+      ).kind,
     ).toBe('mainMeal')
   })
 
   it('creates a breakfast when the draft says so', () => {
     expect(
-      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'breakfast' }, [], false)
-        .kind,
+      createMeal(
+        { ...emptyDraft, name: 'Suppe', kind: 'breakfast' },
+        [],
+        [],
+        false,
+      ).kind,
     ).toBe('breakfast')
   })
 
   it('creates a meal without a kind when the draft says so', () => {
     expect(
-      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'none' }, [], false)
+      createMeal({ ...emptyDraft, name: 'Suppe', kind: 'none' }, [], [], false)
         .kind,
     ).toBe('none')
   })
@@ -184,6 +211,7 @@ describe('withHiding', () => {
     items: [item('Hackfleisch', '500', 'g')],
     ingredientNotes: 'Zwiebel',
     recipe: 'Anbraten.',
+    categories: [],
     hidden: false,
     kind: 'mainMeal',
   }
@@ -194,9 +222,19 @@ describe('withHiding', () => {
       items: bolognese.items,
       ingredientNotes: 'Zwiebel',
       recipe: 'Anbraten.',
+      categories: [],
       hidden: true,
       kind: 'mainMeal',
     })
+  })
+
+  it('keeps the categories', () => {
+    expect(
+      withHiding(
+        { ...bolognese, categories: ['Nudelgericht', 'Schnell'] },
+        true,
+      ).categories,
+    ).toEqual(['Nudelgericht', 'Schnell'])
   })
 
   it('leaves a main meal a main meal', () => {

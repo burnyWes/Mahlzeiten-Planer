@@ -21,6 +21,7 @@ export type NewMeal = {
   items: readonly MealItem[]
   ingredientNotes: string
   recipe: string
+  categories: readonly string[]
   hidden: boolean
   kind: MealKind
 }
@@ -55,7 +56,7 @@ export class InvalidMeal extends Error {
 const MAXIMUM_NAME_LENGTH = 100
 const MAXIMUM_TEXT_LENGTH = 5000
 
-function readName(written: string): string {
+export function createName(written: string): string {
   const name = written.trim()
   if (name === '') throw new InvalidMeal('nameMissing')
   if (name.length > MAXIMUM_NAME_LENGTH) throw new InvalidMeal('nameTooLong')
@@ -68,19 +69,21 @@ function readText(written: string): string {
 }
 
 export function createMealItem(draft: MealItemDraft): MealItem {
-  return { name: readName(draft.name), quantity: readQuantity(draft) }
+  return { name: createName(draft.name), quantity: readQuantity(draft) }
 }
 
 export function createMeal(
   draft: MealDraft,
   items: readonly MealItem[],
+  categories: readonly string[],
   hidden: boolean,
 ): NewMeal {
   return {
-    name: readName(draft.name),
+    name: createName(draft.name),
     items,
     ingredientNotes: readText(draft.ingredientNotes),
     recipe: readText(draft.recipe),
+    categories,
     hidden,
     kind: draft.kind,
   }
@@ -92,6 +95,7 @@ export function withHiding(meal: Meal, hidden: boolean): NewMeal {
     items: meal.items,
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
+    categories: meal.categories,
     hidden,
     kind: meal.kind,
   }
