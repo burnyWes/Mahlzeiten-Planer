@@ -10,6 +10,7 @@ import {
   type MealId,
   type NewMeal,
 } from '../domain/meal'
+import { mealCategories } from '../domain/mealCategory'
 import { DeleteMealPage } from './DeleteMealPage'
 import { MealFormPage } from './MealFormPage'
 import { MealListPage } from './MealListPage'
@@ -88,7 +89,7 @@ export function MealsArea({
         }
         announce={announce}
         suggestNames={suggestNames}
-        knownCategories={[]}
+        knownCategories={mealCategories(meals.meals)}
       />
     )
   }

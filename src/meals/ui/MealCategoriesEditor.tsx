@@ -1,4 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
+import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import { TrashIcon } from '../../shared/ui/TrashIcon'
 import {
   categoryAddedAnnouncement,
@@ -6,11 +7,15 @@ import {
   mealCategoriesHeading,
   mealFailureMessage,
 } from '../domain/announcements'
-import { categoryToAdd } from '../domain/mealCategory'
+import {
+  categoryToAdd,
+  suggestCategories,
+  type CategoryOverview,
+} from '../domain/mealCategory'
 
 type MealCategoriesEditorProps = {
   categories: readonly string[]
-  knownCategories: readonly string[]
+  knownCategories: readonly CategoryOverview[]
   onAddCategory: (category: string) => void
   onRemoveCategory: (position: number) => void
   announce: (text: string) => void
@@ -27,10 +32,13 @@ export function MealCategoriesEditor({
   const [failureMessage, setFailureMessage] = useState('')
   const nameField = useRef<HTMLInputElement>(null)
 
-  function takeOverCategory(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function takeOverCategory(written: string) {
     try {
-      const category = categoryToAdd(categories, knownCategories, draft)
+      const category = categoryToAdd(
+        categories,
+        knownCategories.map((known) => known.name),
+        written,
+      )
       onAddCategory(category)
       setDraft('')
       setFailureMessage('')
@@ -42,6 +50,11 @@ export function MealCategoriesEditor({
       setFailureMessage(message)
       announce(message)
     }
+  }
+
+  function takeOverDraft(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    takeOverCategory(draft)
   }
 
   function removeCategory(position: number) {
@@ -73,7 +86,7 @@ export function MealCategoriesEditor({
         </ul>
       )}
       <form
-        onSubmit={takeOverCategory}
+        onSubmit={takeOverDraft}
         aria-label="Kategorie hinzufügen"
         aria-describedby="mealCategoryFailure"
       >
@@ -86,6 +99,10 @@ export function MealCategoriesEditor({
             onChange={(event) => setDraft(event.target.value)}
           />
         </p>
+        <NameSuggestions
+          names={suggestCategories(knownCategories, categories, draft)}
+          onChoose={takeOverCategory}
+        />
         <p id="mealCategoryFailure" className="failure">
           {failureMessage}
         </p>

@@ -15,6 +15,7 @@ import {
   type MealItem,
   type NewMeal,
 } from '../domain/meal'
+import type { CategoryOverview } from '../domain/mealCategory'
 import { MealCategoriesEditor } from './MealCategoriesEditor'
 import { MealItemsEditor } from './MealItemsEditor'
 
@@ -24,7 +25,7 @@ type MealFormPageProps = {
   onBack: () => void
   announce: (text: string) => void
   suggestNames: (typed: string) => readonly string[]
-  knownCategories: readonly string[]
+  knownCategories: readonly CategoryOverview[]
 }
 
 const EMPTY_DRAFT: MealDraft = {

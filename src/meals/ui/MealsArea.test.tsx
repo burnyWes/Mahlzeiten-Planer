@@ -426,6 +426,60 @@ describe('MealsArea', () => {
     expect(screen.queryByRole('heading', { name: /Kategorien/ })).toBeNull()
   })
 
+  it('suggests categories of other meals', async () => {
+    renderMealsArea([
+      meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+    ])
+
+    await openMealForm()
+    await userEvent.type(categoryField(), 'nud')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' }))
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Nudelgericht'])
+  })
+
+  it('takes over a suggested category with one click', async () => {
+    const { announcements } = renderMealsArea([
+      meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+    ])
+
+    await openMealForm()
+    await userEvent.type(categoryField(), 'nud')
+    await userEvent.click(screen.getByRole('button', { name: 'Nudelgericht' }))
+
+    expect(shownCategories()).toEqual(['Nudelgericht'])
+    expect(announcements).toContain('Nudelgericht als Kategorie übernommen.')
+    expect(categoryField()).toHaveValue('')
+    expect(categoryField()).toHaveFocus()
+  })
+
+  it('takes over the spelling of a known category', async () => {
+    renderMealsArea([
+      meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+    ])
+
+    await openMealForm()
+    await takeOverCategory('nudelgericht')
+
+    expect(shownCategories()).toEqual(['Nudelgericht'])
+  })
+
+  it('does not suggest a category the meal already carries', async () => {
+    renderMealsArea([
+      meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+      meal('carbonara', 'Carbonara', { categories: ['Nudelgericht'] }),
+    ])
+
+    await openMeal('Carbonara')
+    await editMeal()
+    await userEvent.type(categoryField(), 'nud')
+
+    expect(screen.queryByRole('list', { name: 'Vorschläge' })).toBeNull()
+  })
+
   it('refuses to save a meal without a name', async () => {
     const { client, announcements } = renderMealsArea()
 
@@ -1080,6 +1134,18 @@ describe('MealsArea', () => {
     expect(
       screen.getByRole('button', { name: 'Entfernen, Nudelgericht' }),
     ).toBeInTheDocument()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations with category suggestions', async () => {
+    const { rendered } = renderMealsArea([
+      meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
+    ])
+
+    await openMealForm()
+    await userEvent.type(categoryField(), 'nud')
+
+    expect(screen.getByRole('list', { name: 'Vorschläge' })).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

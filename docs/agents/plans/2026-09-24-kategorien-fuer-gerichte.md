@@ -418,9 +418,9 @@ abgewiesen.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
-- [ ] Mit VoiceOver: Hinzufügen und Entfernen sind durch die Ansagen nachvollziehbar,
+- [x] Mit VoiceOver: Hinzufügen und Entfernen sind durch die Ansagen nachvollziehbar,
       der Fokus landet danach im Feld "Kategorie".
-- [ ] Eine auf einem Gerät eingetragene Kategorie steht kurz darauf auf dem anderen
+- [x] Eine auf einem Gerät eingetragene Kategorie steht kurz darauf auf dem anderen
       Gerät auf der Detailseite.
 
 ### Phase 2: Vorschläge und vorhandene Schreibweise
@@ -433,7 +433,7 @@ vorhandenen Schreibweise ins Gericht.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/mealCategory.test.ts`
+- [x] Test zuerst: `src/meals/domain/mealCategory.test.ts`
       - `mealCategories`:
         - `lists every category once with the number of meals carrying it`
         - `counts hidden meals as well`
@@ -452,7 +452,7 @@ vorhandenen Schreibweise ins Gericht.
         - `ranks categories starting with the typed text first, then by the number of
           meals, then alphabetically`
         - `suggests at most five categories`
-- [ ] `src/meals/domain/mealCategory.ts`:
+- [x] `src/meals/domain/mealCategory.ts`:
       ```ts
       export type CategoryOverview = { name: string; mealCount: number }
 
@@ -469,19 +469,19 @@ vorhandenen Schreibweise ins Gericht.
       `categoryToAdd` gibt die Schreibweise aus `known` zurück, wenn es sie normalisiert
       gibt. Ein Gericht, das dieselbe Kategorie in zwei Schreibweisen trägt, zählt
       einmal.
-- [ ] `src/meals/ui/MealCategoriesEditor.tsx`: Prop `knownCategories` auf
+- [x] `src/meals/ui/MealCategoriesEditor.tsx`: Prop `knownCategories` auf
       `readonly CategoryOverview[]` umstellen, `NameSuggestions` unter dem Feld mit
       `suggestCategories(knownCategories, categories, draft)`. `onChoose` übernimmt die
       Kategorie sofort über denselben Weg wie das Absenden, also mit derselben
       Doppelprüfung und Ansage.
-- [ ] `src/meals/ui/MealFormPage.tsx` und `src/meals/ui/MealsArea.tsx`:
+- [x] `src/meals/ui/MealFormPage.tsx` und `src/meals/ui/MealsArea.tsx`:
       `knownCategories={mealCategories(meals.meals)}` durchreichen.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `mealCategory.test.ts` schlagen vor der Umsetzung fehl und
+- [x] Die neuen Fälle in `mealCategory.test.ts` schlagen vor der Umsetzung fehl und
       laufen danach grün.
-- [ ] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`:
+- [x] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`:
       - `suggests categories of other meals` — ein Gericht trägt "Nudelgericht", im
         neuen Gericht "nud" tippen; die Liste "Vorschläge" enthält "Nudelgericht".
       - `takes over a suggested category with one click` — Klick auf den Vorschlag; die
@@ -490,7 +490,7 @@ vorhandenen Schreibweise ins Gericht.
         übernehmen; in der Liste steht "Nudelgericht".
       - `does not suggest a category the meal already carries`.
       - `has no accessibility violations with category suggestions`.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA):
 
