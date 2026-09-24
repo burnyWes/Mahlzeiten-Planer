@@ -47,8 +47,12 @@ export function mealFailureMessage(error: unknown): string | null {
   return null
 }
 
-export function mealsHeading(mealCount: number): string {
-  return mealCount === 0 ? 'Gerichte, keine' : `Gerichte, ${mealCount}`
+export function mealsHeading(meals: readonly NewMeal[]): string {
+  if (meals.length === 0) return 'Gerichte, keine'
+  const hiddenCount = meals.filter((meal) => meal.hidden).length
+  return hiddenCount === 0
+    ? `Gerichte, ${meals.length}`
+    : `Gerichte, ${meals.length} (${hiddenCount} ausgeblendet)`
 }
 
 export function mealItemsHeading(itemCount: number): string {

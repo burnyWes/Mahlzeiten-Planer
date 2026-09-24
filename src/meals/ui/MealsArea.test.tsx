@@ -782,6 +782,29 @@ describe('MealsArea', () => {
     expect(shownMealNames()).toEqual(['Eintopf', 'Suppe'])
   })
 
+  it('names the hidden meals in the heading', () => {
+    renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true }),
+      meal('stew', 'Eintopf'),
+    ])
+
+    expect(
+      screen.getByRole('heading', { name: 'Gerichte, 2 (1 ausgeblendet)' }),
+    ).toBeInTheDocument()
+  })
+
+  it('counts a meal that was just hidden in the heading', async () => {
+    renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await switchHiding('Ausblenden')
+    await goBackToTheMeals()
+
+    expect(
+      screen.getByRole('heading', { name: 'Gerichte, 1 (1 ausgeblendet)' }),
+    ).toHaveFocus()
+  })
+
   it('keeps the room for the mark in every row', () => {
     renderMealsArea([
       meal('soup', 'Suppe', { hidden: true }),

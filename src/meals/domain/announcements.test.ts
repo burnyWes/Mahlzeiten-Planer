@@ -60,11 +60,24 @@ const bolognese: NewMeal = {
 
 describe('mealsHeading', () => {
   it('says that no meal is known yet', () => {
-    expect(mealsHeading(0)).toBe('Gerichte, keine')
+    expect(mealsHeading([])).toBe('Gerichte, keine')
   })
 
   it('counts the known meals', () => {
-    expect(mealsHeading(2)).toBe('Gerichte, 2')
+    expect(mealsHeading([bolognese, bolognese])).toBe('Gerichte, 2')
+  })
+
+  it('names the hidden meals in brackets', () => {
+    expect(
+      mealsHeading([bolognese, { ...bolognese, hidden: true }, bolognese]),
+    ).toBe('Gerichte, 3 (1 ausgeblendet)')
+  })
+
+  it('counts every meal when all are hidden', () => {
+    const hiddenBolognese = { ...bolognese, hidden: true }
+    expect(mealsHeading([hiddenBolognese, hiddenBolognese])).toBe(
+      'Gerichte, 2 (2 ausgeblendet)',
+    )
   })
 })
 

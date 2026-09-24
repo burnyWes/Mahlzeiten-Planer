@@ -27,7 +27,7 @@ export function MealListPage({
       <main className="page pageBelowNavigation">
         <div className="pageHeader">
           <h1 ref={heading} tabIndex={-1}>
-            {mealsHeading(meals.length)}
+            {mealsHeading(meals)}
           </h1>
           <button
             type="button"
