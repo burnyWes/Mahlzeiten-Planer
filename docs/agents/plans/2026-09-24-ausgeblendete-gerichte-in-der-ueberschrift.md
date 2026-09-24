@@ -5,7 +5,7 @@ branch: main
 story: MZP-022
 topic: "Ausgeblendete Gerichte in der Überschrift"
 tags: [plan, meals, announcements, MealListPage]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-022 — Ausgeblendete Gerichte in der Überschrift
@@ -171,10 +171,10 @@ zur Seite.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver die Gerichteliste öffnen, während ein Gericht
+- [x] Auf dem iPhone mit VoiceOver die Gerichteliste öffnen, während ein Gericht
       ausgeblendet ist. Die Überschrift klingt verständlich, etwa „Gerichte, zwölf,
       drei ausgeblendet“, und die Klammern werden nicht ausgesprochen.
-- [ ] Auf 375 px Breite bleibt die Überschrift lesbar und verdrängt den Plus-Knopf nicht.
+- [x] Auf 375 px Breite bleibt die Überschrift lesbar und verdrängt den Plus-Knopf nicht.
 
 ## Notizen zur Umsetzung
 
