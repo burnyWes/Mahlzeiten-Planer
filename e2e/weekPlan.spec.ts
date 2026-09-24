@@ -4,6 +4,7 @@ import {
   prepareEmulators,
   supplyCountsOnServer,
   weekPlanOnServer,
+  weekPlanStageOnServer,
 } from './emulatorHousehold.ts'
 import {
   chooseSuggestion,
@@ -51,6 +52,7 @@ test('plans a week and puts its items on the shopping list', async ({
     .poll(async () => Object.values(await weekPlanOnServer()).filter(Boolean))
     .toHaveLength(7)
 
+  await pressButton(page, 'Plan festlegen')
   await pressButton(page, 'Auf die Einkaufsliste')
 
   await expect(page.getByRole('status')).toContainText(
@@ -98,6 +100,7 @@ test('buys only the day that the supply no longer covers', async ({ page }) => {
     'Bolognese',
   )
 
+  await pressButton(page, 'Plan festlegen')
   await pressButton(page, 'Auf die Einkaufsliste')
 
   await expect(page.getByRole('status')).toContainText(
@@ -135,6 +138,36 @@ test('keeps the week plan after a reload', async ({ page }) => {
   await expect(page.getByLabel('Freitag', { exact: true })).toHaveValue(
     'Linsensuppe',
   )
+})
+
+test('keeps the fixed plan after a reload', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Linsensuppe')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Wochenplan')
+  await chooseSuggestion(page, 'Montag', 'linsen', 'Linsensuppe')
+  await pressButton(page, 'Plan festlegen')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Plan festgelegt, 1 von 7 Tagen geplant.',
+  )
+  await expect
+    .poll(async () => (await weekPlanStageOnServer()).mode)
+    .toBe('reading')
+
+  await page.reload()
+  await pressButton(page, 'Wochenplan')
+
+  await expect(
+    page.getByRole('heading', { name: 'Wochenplan, 1 von 7, festgelegt' }),
+  ).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Montag' })).toHaveCount(0)
 })
 
 test('never rolls a hidden meal into the week', async ({ page }) => {

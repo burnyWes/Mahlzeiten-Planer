@@ -65,6 +65,8 @@ const weekPlan = {
   sunday: null,
 }
 
+const weekPlanStage = { mode: 'reading', coveredDays: ['monday'] }
+
 const bolognese = {
   name: 'Spaghetti Bolognese',
   items: [],
@@ -133,6 +135,21 @@ describe('firestore security rules', () => {
   it('refuses an unauthenticated visitor on the week plan', async () => {
     await assertFails(getDoc(weekPlanOf(null)('current')))
     await assertFails(setDoc(weekPlanOf(null)('current'), weekPlan))
+  })
+
+  it('lets the household write the stage of the week plan', async () => {
+    await assertSucceeds(
+      setDoc(weekPlanOf(householdUid)('stage'), weekPlanStage),
+    )
+  })
+
+  it('lets the household read the stage of the week plan', async () => {
+    await assertSucceeds(getDoc(weekPlanOf(householdUid)('stage')))
+  })
+
+  it('refuses another account on the stage of the week plan', async () => {
+    await assertFails(getDoc(weekPlanOf(strangerUid)('stage')))
+    await assertFails(setDoc(weekPlanOf(strangerUid)('stage'), weekPlanStage))
   })
 
   it('lets the household write a known item', async () => {

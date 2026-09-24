@@ -15,6 +15,7 @@ import {
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS, type Weekday } from './weekPlan'
+import { isFixed, type WeekPlanStage } from './weekPlanStage'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
   nameMissing: 'Bitte einen Namen eingeben.',
@@ -228,10 +229,40 @@ export function weekdayAbbreviation(day: Weekday): string {
   return `${weekdayName(day).slice(0, 2)}.`
 }
 
-export function weekPlanHeading(plannedDays: number): string {
+function plannedDaysPhrase(plannedDays: number): string {
   return plannedDays === 0
-    ? `Wochenplan, keine von ${WEEKDAYS.length}`
-    : `Wochenplan, ${plannedDays} von ${WEEKDAYS.length}`
+    ? `keine von ${WEEKDAYS.length}`
+    : `${plannedDays} von ${WEEKDAYS.length}`
+}
+
+export function weekPlanHeading(
+  plannedDays: number,
+  stage: WeekPlanStage,
+): string {
+  const heading = `Wochenplan, ${plannedDaysPhrase(plannedDays)}`
+  return isFixed(stage) ? `${heading}, festgelegt` : heading
+}
+
+export function planFixedAnnouncement(plannedDays: number): string {
+  return `Plan festgelegt, ${plannedDaysPhrase(plannedDays)} Tagen geplant.`
+}
+
+export function planEditableAnnouncement(): string {
+  return 'Plan wieder bearbeitbar.'
+}
+
+export function stageButtonLabel(stage: WeekPlanStage): string {
+  return isFixed(stage) ? 'Plan bearbeiten' : 'Plan festlegen'
+}
+
+export function fixedDayText(
+  day: Weekday,
+  meal: NewMeal | null,
+  inSupply: boolean,
+): string {
+  if (meal === null) return `${weekdayName(day)}, nichts geplant`
+  const planned = `${weekdayName(day)}, ${meal.name}`
+  return inSupply ? `${planned}, im Vorrat` : planned
 }
 
 export function randomMealLabel(day: Weekday): string {

@@ -242,7 +242,7 @@ noch im Lesemodus, ist aber in dieser Phase noch beliebig oft möglich.
 
 **Aufgaben**:
 
-- [ ] `weekPlanStage.test.ts` zuerst schreiben (rot), dann `weekPlanStage.ts`:
+- [x] `weekPlanStage.test.ts` zuerst schreiben (rot), dann `weekPlanStage.ts`:
   ```ts
   export type WeekPlanStage =
     | { mode: 'editing' }
@@ -257,7 +257,7 @@ noch im Lesemodus, ist aber in dieser Phase noch beliebig oft möglich.
   ```
   Tests: Editiermodus erlaubt Würfeln und verbietet Übertragen. Der Lesemodus verbietet
   Würfeln und erlaubt Übertragen nur ab einem geplanten Tag.
-- [ ] `announcements.test.ts` / `announcements.ts`:
+- [x] `announcements.test.ts` / `announcements.ts`:
   - `weekPlanHeading(plannedDays, stage)` ergänzt im Lesemodus `, festgelegt`, etwa
     „Wochenplan, 5 von 7, festgelegt“ oder „Wochenplan, keine von 7, festgelegt“.
   - `planFixedAnnouncement(plannedDays)` gibt „Plan festgelegt, 5 von 7 Tagen
@@ -267,28 +267,28 @@ noch im Lesemodus, ist aber in dieser Phase noch beliebig oft möglich.
   - `fixedDayText(day, meal, inSupply)` liefert „Montag, Bolognese, im Vorrat“,
     „Montag, Bolognese“ oder „Montag, nichts geplant“.
   - Der Aufruf in `WeekPlanPage` wird angepasst.
-- [ ] Port `WeekPlanClient` um `observeStage(onStage)` und `writeStage(stage)`
+- [x] Port `WeekPlanClient` um `observeStage(onStage)` und `writeStage(stage)`
   erweitern.
-- [ ] `inMemoryWeekPlanClient.ts`: `createInMemoryWeekPlanClient(initialPlan, initialStage = EDITING_STAGE)`,
+- [x] `inMemoryWeekPlanClient.ts`: `createInMemoryWeekPlanClient(initialPlan, initialStage = EDITING_STAGE)`,
   eigene Listener-Menge für den Stage, dazu `stageArrivesFromElsewhere(stage)` und
   `storedStage()`.
-- [ ] `firestoreWeekPlanClient.ts`: `doc(firestore, WEEK_PLAN, 'stage')`.
+- [x] `firestoreWeekPlanClient.ts`: `doc(firestore, WEEK_PLAN, 'stage')`.
   `toWeekPlanStage(stored)` liefert bei `mode === 'reading'` die Weekday-gefilterten
   `coveredDays` (fehlt die Liste oder ist sie keine, `null`), sonst `EDITING_STAGE`.
   `writeStage` schreibt `{ mode }` bzw. `{ mode, coveredDays }` per `setDoc` und
   meldet Fehler über `onWriteFailure(WRITE_FAILED)`.
-- [ ] `useWeekPlan.ts`: `stage`-Zustand, Beobachtung über `client.observeStage` und
+- [x] `useWeekPlan.ts`: `stage`-Zustand, Beobachtung über `client.observeStage` und
   `changeStage(stage)` (setzt lokal und schreibt), aufgenommen in `WeekPlanning`.
-- [ ] `LockIcon.tsx` im Stil von `EditIcon` anlegen (24er-viewBox, Strich, `aria-hidden`,
+- [x] `LockIcon.tsx` im Stil von `EditIcon` anlegen (24er-viewBox, Strich, `aria-hidden`,
   `className="buttonIcon"`): Bügel und Körper eines geschlossenen Schlosses.
-- [ ] `WeekPlanArea.tsx`:
+- [x] `WeekPlanArea.tsx`:
   - `toggleStage()` wechselt zu `FIXED_STAGE` und sagt
     `planFixedAnnouncement(plannedDayCount(...))` an, oder wechselt zu `EDITING_STAGE`
     und sagt `planEditableAnnouncement()` an.
   - `addToShoppingList()` überträgt nur, wenn
     `canTransfer(stage, plannedDayCount(...))` gilt.
   - `stage` und `onToggleStage` werden an `WeekPlanPage` gereicht.
-- [ ] `WeekPlanPage.tsx`: Die Leiste hat die Reihenfolge Würfel, Umschaltknopf,
+- [x] `WeekPlanPage.tsx`: Die Leiste hat die Reihenfolge Würfel, Umschaltknopf,
   Einkaufswagen.
   - Der Würfel ist `disabled`, wenn `!canShuffle(stage) || randomCandidateCount === 0`.
   - Der Umschaltknopf hat `aria-label={stageButtonLabel(stage)}` und zeigt `LockIcon`
@@ -297,18 +297,18 @@ noch im Lesemodus, ist aber in dieser Phase noch beliebig oft möglich.
     `disabled`.
   - Die Überschrift nutzt `weekPlanHeading(plannedDays, stage)`.
   - `stage` wird an jede Zeile gereicht.
-- [ ] `WeekPlanRow.tsx`: Im Lesemodus steht statt `input` und `MealSuggestions` ein
+- [x] `WeekPlanRow.tsx`: Im Lesemodus steht statt `input` und `MealSuggestions` ein
   `span.weekPlanMeal` (`aria-hidden`) mit dem Gerichtnamen, dazu ein
   `span.visuallyHidden` mit `fixedDayText(...)`. Die bestehenden Spans für Wochentag
   und Flocke bleiben. Der Würfel ist `disabled`, wenn
   `!canShuffle(stage) || randomCandidateCount === 0`. Ein angefangenes Tippen
   (`typed`) wird beim Wechsel in den Lesemodus verworfen, weil das Feld verschwindet.
-- [ ] `index.css`:
+- [x] `index.css`:
   - Die Regel `button:disabled` gilt auch für `button[aria-disabled='true']`.
   - `.visuallyHidden` kommt als übliches Clip-Muster dazu (`position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;`).
   - `.weekPlanMeal` bekommt `flex: 1; min-width: 0; overflow-wrap: anywhere;`, damit
     der Würfel rechts bündig bleibt.
-- [ ] `WeekPlanArea.test.tsx` anpassen und erweitern:
+- [x] `WeekPlanArea.test.tsx` anpassen und erweitern:
   - Hilfsfunktion `fixPlan()` drückt „Plan festlegen“. Die Übertragungstests
     (`hands the planned meals over…`, `leaves out a day…`,
     `leaves the covered days out…`, `keeps the transfer within reach…`,
@@ -331,29 +331,29 @@ noch im Lesemodus, ist aber in dieser Phase noch beliebig oft möglich.
     `shows the stage that the other device wrote` (`stageArrivesFromElsewhere`),
     `keeps the stage button focused after switching`, dazu
     `has no accessibility violations on a fixed plan`.
-- [ ] `SignedInApp.test.tsx`: Die Hilfsfunktion `transferTheWeekPlan()` drückt zuerst
+- [x] `SignedInApp.test.tsx`: Die Hilfsfunktion `transferTheWeekPlan()` drückt zuerst
   „Plan festlegen“ und dann den Einkaufswagen. `buys the covered day on a second transfer`
   wird in dieser Phase so angepasst, dass der zweite Druck nur den Einkaufswagen
   betrifft; Phase 2 schreibt diesen Test um.
-- [ ] `firestore.rules.test.ts`: Der Haushalt darf `weekPlan/stage` lesen und schreiben,
+- [x] `firestore.rules.test.ts`: Der Haushalt darf `weekPlan/stage` lesen und schreiben,
   ein Fremder nicht (analog zu `current`).
-- [ ] `e2e/weekPlan.spec.ts`: In `plans a week and puts its items on the shopping list`
+- [x] `e2e/weekPlan.spec.ts`: In `plans a week and puts its items on the shopping list`
   und `buys only the day that the supply no longer covers` wird vor dem Einkaufswagen
   „Plan festlegen“ gedrückt. Neu ist `keeps the fixed plan after a reload`: festlegen,
   mit `weekPlanStageOnServer()` auf `mode: 'reading'` warten, neu laden, dann steht die
   Überschrift auf „…, festgelegt“ und es gibt keine Textbox „Montag“ mehr.
-- [ ] `e2e/emulatorHousehold.ts`: `weekPlanStageOnServer()` liest `weekPlan/stage` per
+- [x] `e2e/emulatorHousehold.ts`: `weekPlanStageOnServer()` liest `weekPlan/stage` per
   REST und gibt `{ mode, coveredDays }` zurück.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` grün (unter anderem `weekPlanStage.test.ts`,
+- [x] `npm run test` grün (unter anderem `weekPlanStage.test.ts`,
   `announcements.test.ts`, `WeekPlanArea.test.tsx`, `SignedInApp.test.tsx`)
-- [ ] Die Regeltests in `firestore.rules.test.ts` sind grün.
-- [ ] `npx playwright test e2e/weekPlan.spec.ts` grün
-- [ ] `npm run lint` grün, auch die Architekturgrenze: `weekPlanStage.ts` importiert
+- [x] Die Regeltests in `firestore.rules.test.ts` sind grün.
+- [x] `npx playwright test e2e/weekPlan.spec.ts` grün
+- [x] `npm run lint` grün, auch die Architekturgrenze: `weekPlanStage.ts` importiert
   nichts aus `ui`/`api`.
-- [ ] `npm run build` läuft durch.
+- [x] `npm run build` läuft durch.
 
 **Manuelle Verifikation**:
 
@@ -455,6 +455,11 @@ Flocken bleiben auf den Tagen stehen, die beim Druck gedeckt waren.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1: `WeekPlanRow` ist in `FixedDay` und `EditableDay` geteilt. Beim Festlegen baut
+  React `EditableDay` ab, dadurch verfällt ein angefangenes Tippen ohne eigenen Reset.
+  Dazu kommen die Tests `forgets what was typed once the plan is fixed` und
+  `starts fixed when the stored stage says so`.
 
 ## Verweise
 

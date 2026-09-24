@@ -22,14 +22,18 @@ import {
   mealSavedAnnouncement,
   mealsHeading,
   dayPlannedAnnouncement,
+  fixedDayText,
   filterResetAnnouncement,
   shownMealsCount,
   mealSuggestionsLabel,
   mealWithoutItemsAnnouncement,
   lessSupplyLabel,
   moreSupplyLabel,
+  planEditableAnnouncement,
+  planFixedAnnouncement,
   randomMealLabel,
   replacedKindAnnouncement,
+  stageButtonLabel,
   suppliesHeading,
   supplyAddedAnnouncement,
   supplyChangedAnnouncement,
@@ -45,6 +49,7 @@ import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { WEEKDAYS } from './weekPlan'
+import { EDITING_STAGE, FIXED_STAGE } from './weekPlanStage'
 
 const mincedMeat: MealItem = {
   name: 'Hackfleisch',
@@ -500,11 +505,71 @@ describe('weekdayAbbreviation', () => {
 
 describe('weekPlanHeading', () => {
   it('says that no day is planned yet', () => {
-    expect(weekPlanHeading(0)).toBe('Wochenplan, keine von 7')
+    expect(weekPlanHeading(0, EDITING_STAGE)).toBe('Wochenplan, keine von 7')
   })
 
   it('counts the days that carry a meal', () => {
-    expect(weekPlanHeading(5)).toBe('Wochenplan, 5 von 7')
+    expect(weekPlanHeading(5, EDITING_STAGE)).toBe('Wochenplan, 5 von 7')
+  })
+
+  it('adds that the plan is fixed', () => {
+    expect(weekPlanHeading(5, FIXED_STAGE)).toBe(
+      'Wochenplan, 5 von 7, festgelegt',
+    )
+  })
+
+  it('adds that an empty plan is fixed', () => {
+    expect(weekPlanHeading(0, FIXED_STAGE)).toBe(
+      'Wochenplan, keine von 7, festgelegt',
+    )
+  })
+})
+
+describe('planFixedAnnouncement', () => {
+  it('says how many days are planned', () => {
+    expect(planFixedAnnouncement(5)).toBe(
+      'Plan festgelegt, 5 von 7 Tagen geplant.',
+    )
+  })
+
+  it('says that no day is planned', () => {
+    expect(planFixedAnnouncement(0)).toBe(
+      'Plan festgelegt, keine von 7 Tagen geplant.',
+    )
+  })
+})
+
+describe('planEditableAnnouncement', () => {
+  it('says that the plan can be edited again', () => {
+    expect(planEditableAnnouncement()).toBe('Plan wieder bearbeitbar.')
+  })
+})
+
+describe('stageButtonLabel', () => {
+  it('offers to fix a plan that is being edited', () => {
+    expect(stageButtonLabel(EDITING_STAGE)).toBe('Plan festlegen')
+  })
+
+  it('offers to edit a fixed plan', () => {
+    expect(stageButtonLabel(FIXED_STAGE)).toBe('Plan bearbeiten')
+  })
+})
+
+describe('fixedDayText', () => {
+  it('names the day, the meal and the supply', () => {
+    expect(fixedDayText('monday', bolognese, true)).toBe(
+      'Montag, Spaghetti Bolognese, im Vorrat',
+    )
+  })
+
+  it('names the day and the meal without a supply', () => {
+    expect(fixedDayText('monday', bolognese, false)).toBe(
+      'Montag, Spaghetti Bolognese',
+    )
+  })
+
+  it('says that nothing is planned on the day', () => {
+    expect(fixedDayText('monday', null, false)).toBe('Montag, nichts geplant')
   })
 })
 

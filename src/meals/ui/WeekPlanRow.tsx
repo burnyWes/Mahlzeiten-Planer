@@ -1,6 +1,7 @@
 import { useRef, useState, type FocusEvent } from 'react'
 import { SnowflakeIcon } from '../../shared/ui/SnowflakeIcon'
 import {
+  fixedDayText,
   mealSuggestionsLabel,
   randomMealLabel,
   weekdayAbbreviation,
@@ -15,6 +16,11 @@ import {
   type WeekPlan,
   type Weekday,
 } from '../domain/weekPlan'
+import {
+  canShuffle,
+  isFixed,
+  type WeekPlanStage,
+} from '../domain/weekPlanStage'
 import { MealSuggestions } from './MealSuggestions'
 import { ShuffleIcon } from './ShuffleIcon'
 
@@ -24,19 +30,76 @@ type WeekPlanRowProps = {
   meals: readonly Meal[]
   randomCandidateCount: number
   supplies: readonly Supply[]
+  stage: WeekPlanStage
   onChooseMeal: (day: Weekday, id: MealId | null) => void
   onShuffleDay: (day: Weekday) => void
 }
 
-export function WeekPlanRow({
+export function WeekPlanRow(props: WeekPlanRowProps) {
+  return (
+    <li className="weekPlanRow">
+      {isFixed(props.stage) ? (
+        <FixedDay {...props} />
+      ) : (
+        <EditableDay {...props} />
+      )}
+    </li>
+  )
+}
+
+function DayMarks({ day, inSupply }: { day: Weekday; inSupply: boolean }) {
+  return (
+    <>
+      <span className="weekday" aria-hidden="true">
+        {weekdayAbbreviation(day)}
+      </span>
+      <span className="supplyMark" aria-hidden="true">
+        {inSupply && <SnowflakeIcon />}
+      </span>
+    </>
+  )
+}
+
+function ShuffleDayButton({
   day,
-  plan,
-  meals,
   randomCandidateCount,
-  supplies,
-  onChooseMeal,
+  stage,
   onShuffleDay,
 }: WeekPlanRowProps) {
+  return (
+    <button
+      type="button"
+      className="iconButton"
+      aria-label={randomMealLabel(day)}
+      disabled={!canShuffle(stage) || randomCandidateCount === 0}
+      onClick={() => onShuffleDay(day)}
+    >
+      <ShuffleIcon />
+    </button>
+  )
+}
+
+function FixedDay(props: WeekPlanRowProps) {
+  const { day, plan, meals, supplies } = props
+  const planned = shownMealOn(plan, day, meals)
+  const inSupply = isSuppliedOn(plan, day, meals, supplies)
+
+  return (
+    <div className="weekPlanChoice">
+      <DayMarks day={day} inSupply={inSupply} />
+      <span className="weekPlanMeal" aria-hidden="true">
+        {planned?.name}
+      </span>
+      <span className="visuallyHidden">
+        {fixedDayText(day, planned, inSupply)}
+      </span>
+      <ShuffleDayButton {...props} />
+    </div>
+  )
+}
+
+function EditableDay(props: WeekPlanRowProps) {
+  const { day, plan, meals, supplies, onChooseMeal } = props
   const [typed, setTyped] = useState<string | null>(null)
   const choice = useRef<HTMLDivElement>(null)
   const plannedName = shownMealOn(plan, day, meals)?.name ?? ''
@@ -58,35 +121,20 @@ export function WeekPlanRow({
   }
 
   return (
-    <li className="weekPlanRow">
-      <div className="weekPlanChoice" ref={choice}>
-        <span className="weekday" aria-hidden="true">
-          {weekdayAbbreviation(day)}
-        </span>
-        <span className="supplyMark" aria-hidden="true">
-          {inSupply && <SnowflakeIcon />}
-        </span>
-        <input
-          aria-label={weekdayFieldLabel(day, inSupply)}
-          value={typed ?? plannedName}
-          onChange={(event) => change(event.target.value)}
-          onBlur={forgetTypingWhenLeaving}
-        />
-        <button
-          type="button"
-          className="iconButton"
-          aria-label={randomMealLabel(day)}
-          disabled={randomCandidateCount === 0}
-          onClick={() => onShuffleDay(day)}
-        >
-          <ShuffleIcon />
-        </button>
-        <MealSuggestions
-          label={mealSuggestionsLabel(day)}
-          meals={suggestMeals(meals, typed ?? '')}
-          onChoose={chooseSuggestion}
-        />
-      </div>
-    </li>
+    <div className="weekPlanChoice" ref={choice}>
+      <DayMarks day={day} inSupply={inSupply} />
+      <input
+        aria-label={weekdayFieldLabel(day, inSupply)}
+        value={typed ?? plannedName}
+        onChange={(event) => change(event.target.value)}
+        onBlur={forgetTypingWhenLeaving}
+      />
+      <ShuffleDayButton {...props} />
+      <MealSuggestions
+        label={mealSuggestionsLabel(day)}
+        meals={suggestMeals(meals, typed ?? '')}
+        onChoose={chooseSuggestion}
+      />
+    </div>
   )
 }

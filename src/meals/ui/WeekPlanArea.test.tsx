@@ -18,6 +18,7 @@ import {
   type WeekPlan,
   type WeekPlanTransfer,
 } from '../domain/weekPlan'
+import { FIXED_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
 import { useMeals } from './useMeals'
 import { useWeekPlan } from './useWeekPlan'
 import { WeekPlanArea } from './WeekPlanArea'
@@ -87,8 +88,9 @@ function renderWeekPlanArea(
   initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
   supplies: readonly Supply[] = [],
   random: RandomSource = alwaysFirst,
+  initialStage?: WeekPlanStage,
 ) {
-  const weekPlanClient = createInMemoryWeekPlanClient(initialPlan)
+  const weekPlanClient = createInMemoryWeekPlanClient(initialPlan, initialStage)
   const announcements: string[] = []
   const transferred: WeekPlanTransfer[] = []
   const rendered = render(
@@ -108,9 +110,21 @@ function renderWeekPlanArea(
   return { weekPlanClient, announcements, transferred, rendered }
 }
 
+function transferButton() {
+  return screen.getByRole('button', { name: 'Auf die Einkaufsliste' })
+}
+
 function addToShoppingList() {
+  return userEvent.click(transferButton())
+}
+
+function fixPlan() {
+  return userEvent.click(screen.getByRole('button', { name: 'Plan festlegen' }))
+}
+
+function editPlan() {
   return userEvent.click(
-    screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
+    screen.getByRole('button', { name: 'Plan bearbeiten' }),
   )
 }
 
@@ -616,12 +630,32 @@ describe('WeekPlanArea', () => {
     ).toBe('')
   })
 
-  it('offers no transfer while no day carries a meal', () => {
+  it('offers no transfer while no day carries a meal', async () => {
     renderWeekPlanArea([bolognese])
 
-    expect(
-      screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
-    ).toBeDisabled()
+    await fixPlan()
+
+    expect(transferButton()).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('offers no transfer while the plan is being edited', () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+    )
+
+    expect(transferButton()).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('hands nothing over when the locked transfer is pressed', async () => {
+    const { transferred } = renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+    )
+
+    await addToShoppingList()
+
+    expect(transferred).toEqual([])
   })
 
   it('hands the planned meals over in the order of the weekdays', async () => {
@@ -634,6 +668,7 @@ describe('WeekPlanArea', () => {
       ),
     )
 
+    await fixPlan()
     await addToShoppingList()
 
     expect(transferred).toEqual([
@@ -651,6 +686,7 @@ describe('WeekPlanArea', () => {
       ),
     )
 
+    await fixPlan()
     await addToShoppingList()
 
     expect(transferred).toEqual([
@@ -674,6 +710,7 @@ describe('WeekPlanArea', () => {
       [supply('bolognese', 1)],
     )
 
+    await fixPlan()
     await addToShoppingList()
 
     expect(transferred).toEqual([
@@ -691,9 +728,9 @@ describe('WeekPlanArea', () => {
       [supply('bolognese', 1)],
     )
 
-    expect(
-      screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
-    ).toBeEnabled()
+    await fixPlan()
+
+    expect(transferButton()).not.toHaveAttribute('aria-disabled', 'true')
 
     await addToShoppingList()
 
@@ -706,10 +743,164 @@ describe('WeekPlanArea', () => {
     const plan = withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese')
     const { weekPlanClient } = renderWeekPlanArea([bolognese], plan)
 
+    await fixPlan()
     await addToShoppingList()
 
     expect(weekPlanClient.storedWeekPlan()).toEqual(plan)
-    expect(dayField('Montag')).toHaveValue('Bolognese')
+    expect(screen.getByText('Montag, Bolognese')).toBeInTheDocument()
+  })
+
+  it('switches to reading and says how many days are planned', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+    )
+
+    await fixPlan()
+
+    expect(weekPlanClient.storedStage()).toEqual(FIXED_STAGE)
+    expect(announcements).toEqual(['Plan festgelegt, 1 von 7 Tagen geplant.'])
+  })
+
+  it('says that the plan can be edited again', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([bolognese])
+
+    await fixPlan()
+    await editPlan()
+
+    expect(weekPlanClient.storedStage()).toEqual({ mode: 'editing' })
+    expect(announcements).toEqual([
+      'Plan festgelegt, keine von 7 Tagen geplant.',
+      'Plan wieder bearbeitbar.',
+    ])
+    expect(dayField('Montag')).toBeInTheDocument()
+  })
+
+  it('names the stage button after what it does', async () => {
+    renderWeekPlanArea([bolognese])
+
+    expect(
+      screen.getByRole('button', { name: 'Plan festlegen' }).textContent,
+    ).toBe('')
+
+    await fixPlan()
+
+    expect(
+      screen.getByRole('button', { name: 'Plan bearbeiten' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Plan festlegen' })).toBeNull()
+  })
+
+  it('puts the stage button between the rolling and the transfer', () => {
+    const { rendered } = renderWeekPlanArea([bolognese])
+
+    const bottomBar =
+      rendered.container.querySelector<HTMLElement>('.bottomBarContent')!
+    expect(
+      within(bottomBar)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual([
+      'Zufallsauswahl generieren',
+      'Plan festlegen',
+      'Auf die Einkaufsliste',
+    ])
+  })
+
+  it('shows each day as text while the plan is fixed', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    await fixPlan()
+
+    expect(screen.getByText('Montag, Bolognese, im Vorrat')).toBeInTheDocument()
+    expect(screen.getByText('Mittwoch, nichts geplant')).toBeInTheDocument()
+    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(markedWeekdays()).toEqual(['Mo.'])
+  })
+
+  it('locks every rolling button while the plan is fixed', async () => {
+    renderWeekPlanArea([bolognese])
+
+    await fixPlan()
+
+    expect(
+      screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
+    ).toBeDisabled()
+    screen
+      .getAllByRole('button', { name: /^Zufallsgericht für/ })
+      .forEach((button) => {
+        expect(button).toBeDisabled()
+      })
+  })
+
+  it('names the heading after the fixed plan', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+    )
+
+    await fixPlan()
+
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, 1 von 7, festgelegt' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the stage that the other device wrote', async () => {
+    const { weekPlanClient } = renderWeekPlanArea([bolognese])
+
+    await act(async () => {
+      weekPlanClient.stageArrivesFromElsewhere(FIXED_STAGE)
+    })
+
+    expect(
+      screen.getByRole('button', { name: 'Plan bearbeiten' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('textbox')).toBeNull()
+  })
+
+  it('keeps the stage button focused after switching', async () => {
+    renderWeekPlanArea([bolognese])
+
+    await fixPlan()
+
+    expect(
+      screen.getByRole('button', { name: 'Plan bearbeiten' }),
+    ).toHaveFocus()
+
+    await editPlan()
+
+    expect(screen.getByRole('button', { name: 'Plan festlegen' })).toHaveFocus()
+  })
+
+  it('forgets what was typed once the plan is fixed', async () => {
+    renderWeekPlanArea([bolognese])
+
+    await typeIntoDay('Montag', 'bo')
+    await fixPlan()
+    await editPlan()
+
+    expect(dayField('Montag')).toHaveValue('')
+  })
+
+  it('starts fixed when the stored stage says so', () => {
+    renderWeekPlanArea(
+      [bolognese],
+      EMPTY_WEEK_PLAN,
+      [],
+      alwaysFirst,
+      FIXED_STAGE,
+    )
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Wochenplan, keine von 7, festgelegt',
+      }),
+    ).toHaveFocus()
   })
 
   it('has no accessibility violations after the week was rolled', async () => {
@@ -748,6 +939,18 @@ describe('WeekPlanArea', () => {
     )
 
     expect(dayField('Montag, im Vorrat')).toBeInTheDocument()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on a fixed plan', async () => {
+    const { rendered } = renderWeekPlanArea(
+      [bolognese, pizza],
+      withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
+      [supply('bolognese', 1)],
+    )
+
+    await fixPlan()
+
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

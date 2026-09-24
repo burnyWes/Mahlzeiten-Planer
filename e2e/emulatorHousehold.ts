@@ -145,6 +145,38 @@ export async function weekPlanOnServer(): Promise<
   )
 }
 
+type StoredWeekPlanStage = {
+  fields?: {
+    mode?: { stringValue?: string }
+    coveredDays?: {
+      nullValue?: null
+      arrayValue?: { values?: readonly { stringValue: string }[] }
+    }
+  }
+}
+
+export type WeekPlanStageOnServer = {
+  mode: string | null
+  coveredDays: readonly string[] | null
+}
+
+export async function weekPlanStageOnServer(): Promise<WeekPlanStageOnServer> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/stage`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) return { mode: null, coveredDays: null }
+  const stored = (await response.json()) as StoredWeekPlanStage
+  const coveredDays = stored.fields?.coveredDays?.arrayValue
+  return {
+    mode: stored.fields?.mode?.stringValue ?? null,
+    coveredDays:
+      coveredDays === undefined
+        ? null
+        : (coveredDays.values ?? []).map((value) => value.stringValue),
+  }
+}
+
 export async function storeItemOnServer(
   name: string,
   createdAt: number,

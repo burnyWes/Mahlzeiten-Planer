@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import {
   dayPlannedAnnouncement,
+  planEditableAnnouncement,
+  planFixedAnnouncement,
   weekPlanShuffledAnnouncement,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
@@ -13,11 +15,18 @@ import {
 import type { Supply } from '../domain/supply'
 import {
   isSuppliedOn,
+  plannedDayCount,
   weekPlanTransfer,
   withMealOnDay,
   type WeekPlanTransfer,
   type Weekday,
 } from '../domain/weekPlan'
+import {
+  canTransfer,
+  EDITING_STAGE,
+  FIXED_STAGE,
+  isFixed,
+} from '../domain/weekPlanStage'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
 
@@ -41,6 +50,8 @@ export function WeekPlanArea({
   onAddToShoppingList,
 }: WeekPlanAreaProps) {
   const candidates = randomCandidates(meals)
+  const { plan, stage } = weekPlanning
+  const plannedDays = plannedDayCount(plan, meals)
 
   function chooseMeal(day: Weekday, id: MealId | null) {
     weekPlanning.chooseMeal(day, id)
@@ -67,21 +78,34 @@ export function WeekPlanArea({
     announce(weekPlanShuffledAnnouncement())
   }
 
+  function toggleStage() {
+    if (isFixed(stage)) {
+      weekPlanning.changeStage(EDITING_STAGE)
+      announce(planEditableAnnouncement())
+      return
+    }
+    weekPlanning.changeStage(FIXED_STAGE)
+    announce(planFixedAnnouncement(plannedDays))
+  }
+
+  function addToShoppingList() {
+    if (!canTransfer(stage, plannedDays)) return
+    onAddToShoppingList(weekPlanTransfer(plan, meals, supplies))
+  }
+
   return (
     <WeekPlanPage
       navigation={navigation}
       meals={meals}
       randomCandidateCount={candidates.length}
-      plan={weekPlanning.plan}
+      plan={plan}
       supplies={supplies}
       onChooseMeal={chooseMeal}
       onShuffleDay={shuffleDay}
       onShuffleWeek={shuffleWeek}
-      onAddToShoppingList={() =>
-        onAddToShoppingList(
-          weekPlanTransfer(weekPlanning.plan, meals, supplies),
-        )
-      }
+      stage={stage}
+      onToggleStage={toggleStage}
+      onAddToShoppingList={addToShoppingList}
     />
   )
 }

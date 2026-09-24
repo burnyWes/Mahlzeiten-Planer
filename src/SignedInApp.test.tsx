@@ -121,10 +121,15 @@ async function planBologneseOnMonday() {
   )
 }
 
-function transferTheWeekPlan() {
+function pressTheTransfer() {
   return userEvent.click(
     screen.getByRole('button', { name: 'Auf die Einkaufsliste' }),
   )
+}
+
+async function transferTheWeekPlan() {
+  await userEvent.click(screen.getByRole('button', { name: 'Plan festlegen' }))
+  await pressTheTransfer()
 }
 
 function tabNames() {
@@ -521,9 +526,7 @@ describe('SignedInApp', () => {
     expect(suppliesClient.storedSupplies()).toEqual([
       { mealId: 'bolognese', count: 1 },
     ])
-    expect(
-      screen.getByRole('textbox', { name: 'Montag, im Vorrat' }),
-    ).toHaveValue('Bolognese')
+    expect(screen.getByText('Montag, Bolognese, im Vorrat')).toBeInTheDocument()
   })
 
   it('leaves a supply alone that the week plan does not touch', async () => {
@@ -566,7 +569,7 @@ describe('SignedInApp', () => {
 
     await goToArea('Wochenplan')
     await transferTheWeekPlan()
-    await transferTheWeekPlan()
+    await pressTheTransfer()
 
     expect(suppliesClient.storedSupplies()).toEqual([])
 
@@ -621,9 +624,7 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(weekPlanClient.storedWeekPlan()).toEqual(planOf('bolognese'))
-    expect(screen.getByRole('textbox', { name: 'Montag' })).toHaveValue(
-      'Bolognese',
-    )
+    expect(screen.getByText('Montag, Bolognese')).toBeInTheDocument()
   })
 
   it('counts an item of the week plan once per transfer', async () => {

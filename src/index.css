@@ -138,7 +138,8 @@ button {
   border-color: var(--accentLine);
 }
 
-button:disabled {
+button:disabled,
+button[aria-disabled='true'] {
   background-color: var(--disabled);
   border-color: var(--disabled);
   color: var(--surface);
@@ -414,6 +415,12 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   min-width: 0;
 }
 
+.weekPlanMeal {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .weekPlanChoice input,
 .weekPlanChoice .iconButton {
   align-self: stretch;
@@ -431,6 +438,15 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .buttonIcon {

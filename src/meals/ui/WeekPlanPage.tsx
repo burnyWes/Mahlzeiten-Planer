@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { weekPlanHeading } from '../domain/announcements'
+import { stageButtonLabel, weekPlanHeading } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import type { Supply } from '../domain/supply'
 import {
@@ -10,7 +10,15 @@ import {
   type WeekPlan,
   type Weekday,
 } from '../domain/weekPlan'
+import {
+  canShuffle,
+  canTransfer,
+  isFixed,
+  type WeekPlanStage,
+} from '../domain/weekPlanStage'
 import { AddToShoppingListIcon } from './AddToShoppingListIcon'
+import { EditIcon } from './EditIcon'
+import { LockIcon } from './LockIcon'
 import { ShuffleIcon } from './ShuffleIcon'
 import { WeekPlanRow } from './WeekPlanRow'
 
@@ -23,6 +31,8 @@ type WeekPlanPageProps = {
   onChooseMeal: (day: Weekday, id: MealId | null) => void
   onShuffleDay: (day: Weekday) => void
   onShuffleWeek: () => void
+  stage: WeekPlanStage
+  onToggleStage: () => void
   onAddToShoppingList: () => void
 }
 
@@ -35,6 +45,8 @@ export function WeekPlanPage({
   onChooseMeal,
   onShuffleDay,
   onShuffleWeek,
+  stage,
+  onToggleStage,
   onAddToShoppingList,
 }: WeekPlanPageProps) {
   const heading = useHeadingFocus()
@@ -46,7 +58,7 @@ export function WeekPlanPage({
       <main className="page pageBelowNavigation">
         <div className="pageHeader">
           <h1 ref={heading} tabIndex={-1}>
-            {weekPlanHeading(plannedDays)}
+            {weekPlanHeading(plannedDays, stage)}
           </h1>
         </div>
         {meals.length === 0 && <p>Noch keine Gerichte gespeichert.</p>}
@@ -59,6 +71,7 @@ export function WeekPlanPage({
               meals={meals}
               randomCandidateCount={randomCandidateCount}
               supplies={supplies}
+              stage={stage}
               onChooseMeal={onChooseMeal}
               onShuffleDay={onShuffleDay}
             />
@@ -68,15 +81,22 @@ export function WeekPlanPage({
           <button
             type="button"
             aria-label="Zufallsauswahl generieren"
-            disabled={randomCandidateCount === 0}
+            disabled={!canShuffle(stage) || randomCandidateCount === 0}
             onClick={onShuffleWeek}
           >
             <ShuffleIcon />
           </button>
           <button
             type="button"
+            aria-label={stageButtonLabel(stage)}
+            onClick={onToggleStage}
+          >
+            {isFixed(stage) ? <EditIcon /> : <LockIcon />}
+          </button>
+          <button
+            type="button"
             aria-label="Auf die Einkaufsliste"
-            disabled={plannedDays === 0}
+            aria-disabled={!canTransfer(stage, plannedDays)}
             onClick={onAddToShoppingList}
           >
             <AddToShoppingListIcon />
