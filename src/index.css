@@ -12,7 +12,9 @@
   --accentLine: #a63f7d;
   --divider: #d1d5db;
   --fieldBorder: #4b5563;
-  --disabled: #6b7280;
+  --disabled: #f3f4f6;
+  --disabledLine: #6b7280;
+  --disabledInk: #4b5563;
   --failure: #991b1b;
   --checkMark: #ff00cc;
   --bottomBarHeight: calc(3rem + 1rem + 1px);
@@ -26,7 +28,9 @@
   --accentLine: #59c082;
   --divider: #2e2a24;
   --fieldBorder: #b4aa9c;
-  --disabled: #948d7f;
+  --disabled: #0c0b09;
+  --disabledLine: #948d7f;
+  --disabledInk: #b4aa9c;
   --failure: #66e4e4;
   --checkMark: #00ff33;
 }
@@ -141,8 +145,8 @@ button {
 button:disabled,
 button[aria-disabled='true'] {
   background-color: var(--disabled);
-  border-color: var(--disabled);
-  color: var(--surface);
+  border-color: var(--disabledLine);
+  color: var(--disabledInk);
 }
 
 .failure {

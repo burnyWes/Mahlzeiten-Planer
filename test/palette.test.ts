@@ -57,7 +57,7 @@ function complementOf(colour: string) {
 
 const TEXT_ON_ITS_BACKGROUND = [
   ['--ink', '--accent'],
-  ['--surface', '--disabled'],
+  ['--disabledInk', '--disabled'],
   ['--ink', '--surface'],
   ['--failure', '--surface'],
 ]
@@ -67,7 +67,7 @@ const LINES_AGAINST_THEIR_GROUND = [
   ['--ink', '--surface'],
   ['--accentLine', '--surface'],
   ['--fieldBorder', '--surface'],
-  ['--disabled', '--surface'],
+  ['--disabledLine', '--surface'],
   ['--checkMark', '--surface'],
 ]
 
