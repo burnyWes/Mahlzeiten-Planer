@@ -5,7 +5,7 @@ branch: main
 story: MZP-026
 topic: "Snack kennzeichnen"
 tags: [plan, meals, mealForm, domain, firestore]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-026 — Snack kennzeichnen
@@ -443,19 +443,23 @@ Abhängigkeiten: keine.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver ein Gericht bearbeiten und bis ans Ende der Haken
+- [x] Auf dem Gerät mit VoiceOver ein Gericht bearbeiten und bis ans Ende der Haken
   wischen. Die dritte Zeile liest sich als `Snack, Kontrollkästchen, deaktiviert`.
-- [ ] `Snack` anhaken. Man hört `Hauptgericht abgewählt.`, und VoiceOvers eigenes
+- [x] `Snack` anhaken. Man hört `Hauptgericht abgewählt.`, und VoiceOvers eigenes
   `aktiviert` wird dabei nicht abgeschnitten. Danach `Frühstück` anhaken, man hört
   `Snack abgewählt.`
-- [ ] Den gesetzten Haken wieder wegnehmen. Es kommt keine zusätzliche Ansage, und
+- [x] Den gesetzten Haken wieder wegnehmen. Es kommt keine zusätzliche Ansage, und
   alle drei Zeilen sind leer.
-- [ ] Die Zeile `Snack` lässt sich mit dem Finger auf ihrer ganzen Breite treffen und
+- [x] Die Zeile `Snack` lässt sich mit dem Finger auf ihrer ganzen Breite treffen und
   sieht aus wie die beiden anderen, auch bei eingeschalteter Farbumkehr.
-- [ ] Einen Snack speichern und auf dem zweiten Gerät öffnen. Dort ist `Snack`
+- [x] Einen Snack speichern und auf dem zweiten Gerät öffnen. Dort ist `Snack`
   gesetzt, sobald beide Geräte die neue Fassung haben.
 
 ## Notizen zur Umsetzung
+
+**2026-09-25 — am Gerät geprüft.** Die Zeile `Snack` liest sich als Kontrollkästchen,
+das Umkippen wird angesagt, das reine Abwählen bleibt still, und der gespeicherte Zustand
+steht auf dem zweiten Gerät.
 
 **2026-09-25 — Umsetzung.** Im ersten vollständigen e2e-Lauf waren
 `changes the count of a supply at its row` und `buys only the day that the supply no
