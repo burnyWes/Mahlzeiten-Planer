@@ -144,3 +144,18 @@ b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbest
   n Links in der Tageszeile steht der richtige Wochentag
   - Tag steht oben, links und rechts buttons, um zum voherigen, nächsten tag zu kommen
   - 4 Zeilen mit passenden Icons: Morgens, Mittags, Snack, Abends
+- Regeln für die Zufallsauswahl
+  - Hauptgericht darf nur Mittags oder Abends gewürfelt werden.
+    - Wenn mittags für den gleichen tag schon Haupgericht gewürfelt wurde, dann darf abends nicht nochmal Hauptgericht
+    gewürfelt werden und umgekehrt.
+    - Es muss ein Hauptgericht pro Tag da sein.
+  - Frühstück darf nur morgens gewürfelt werden.
+    - Frühstück darf auch mehrere Tage hintereinander das selbe gericht gewürfelt werden
+  - Snack muss in Schnackspalte gewürfelt werden
+    - mehrere Tage hintereinander der selbe Snack ist möglich
+    - snack darf auch zu jeder anderen Tageszeit gewürfelt werden
+  - nichts angehakt darf nur mittags und abends gewürfelt werden
+  - Kategorien: Ist ein Gericht ein Hauptgericht oder ist nichts angehakt, dann dürfen 2 Gerichte mit einer gleichen
+  Kategorie nicht an 2 Tagen hintereinander gewürfelt werden.
+- Zufallsregeln: kind traegt seit MZP-026 auch 'snack' (Firestore-Feld snack);
+  die Snack-Regeln weiter oben koennen darauf aufsetzen

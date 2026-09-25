@@ -171,6 +171,7 @@ export function mealSavedAnnouncement(meal: NewMeal): string {
 const mealKindNames: Record<ChosenMealKind, string> = {
   mainMeal: 'Hauptgericht',
   breakfast: 'Frühstück',
+  snack: 'Snack',
 }
 
 export function replacedKindAnnouncement(

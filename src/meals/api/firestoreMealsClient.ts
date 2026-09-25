@@ -39,6 +39,7 @@ function toCategories(stored: DocumentData): readonly string[] {
 
 function toKind(stored: DocumentData): MealKind {
   if (stored.breakfast === true) return 'breakfast'
+  if (stored.snack === true) return 'snack'
   return stored.mainMeal !== false ? 'mainMeal' : 'none'
 }
 
@@ -68,6 +69,7 @@ function toDocument(meal: NewMeal): DocumentData {
     hidden: meal.hidden,
     mainMeal: meal.kind === 'mainMeal',
     breakfast: meal.kind === 'breakfast',
+    snack: meal.kind === 'snack',
   }
 }
 

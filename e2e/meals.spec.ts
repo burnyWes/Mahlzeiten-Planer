@@ -5,6 +5,7 @@ import {
   mealCategoriesOnServer,
   nonMainMealNamesOnServer,
   prepareEmulators,
+  snackMealNamesOnServer,
   storeMealOnServer,
 } from './emulatorHousehold.ts'
 import {
@@ -161,6 +162,56 @@ test('treats a stored meal that is no main meal as neither', async ({
   ).not.toBeChecked()
   await expect(
     page.getByRole('checkbox', { name: 'Frühstück', exact: true }),
+  ).not.toBeChecked()
+})
+
+test('keeps a meal as a snack after a reload', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Bearbeiten')
+  await switchCheckbox(page, 'Snack')
+  await pressButton(page, 'Speichern')
+
+  await expect.poll(snackMealNamesOnServer).toEqual(['Bolognese'])
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Snack', exact: true }),
+  ).toBeChecked()
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
+  ).not.toBeChecked()
+  await expect(
+    page.getByRole('checkbox', { name: 'Frühstück', exact: true }),
+  ).not.toBeChecked()
+})
+
+test('reads a stored snack without the main meal field as a snack', async ({
+  page,
+}) => {
+  await storeMealOnServer('Nussmix', { snack: true })
+
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Nussmix')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Snack', exact: true }),
+  ).toBeChecked()
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
   ).not.toBeChecked()
 })
 

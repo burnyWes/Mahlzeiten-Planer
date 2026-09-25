@@ -395,19 +395,43 @@ describe('replacedKindAnnouncement', () => {
     )
   })
 
+  it('names the main meal mark that a snack took away', () => {
+    expect(replacedKindAnnouncement('mainMeal', 'snack')).toBe(
+      'Hauptgericht abgewählt.',
+    )
+  })
+
+  it('names the breakfast mark that a snack took away', () => {
+    expect(replacedKindAnnouncement('breakfast', 'snack')).toBe(
+      'Frühstück abgewählt.',
+    )
+  })
+
+  it('names the snack mark that another kind took away', () => {
+    expect(replacedKindAnnouncement('snack', 'mainMeal')).toBe(
+      'Snack abgewählt.',
+    )
+    expect(replacedKindAnnouncement('snack', 'breakfast')).toBe(
+      'Snack abgewählt.',
+    )
+  })
+
   it('says nothing when a mark is only taken away', () => {
     expect(replacedKindAnnouncement('mainMeal', 'none')).toBeNull()
     expect(replacedKindAnnouncement('breakfast', 'none')).toBeNull()
+    expect(replacedKindAnnouncement('snack', 'none')).toBeNull()
   })
 
   it('says nothing when a meal had no mark before', () => {
     expect(replacedKindAnnouncement('none', 'mainMeal')).toBeNull()
     expect(replacedKindAnnouncement('none', 'breakfast')).toBeNull()
+    expect(replacedKindAnnouncement('none', 'snack')).toBeNull()
   })
 
   it('says nothing when the kind stayed the same', () => {
     expect(replacedKindAnnouncement('mainMeal', 'mainMeal')).toBeNull()
     expect(replacedKindAnnouncement('breakfast', 'breakfast')).toBeNull()
+    expect(replacedKindAnnouncement('snack', 'snack')).toBeNull()
     expect(replacedKindAnnouncement('none', 'none')).toBeNull()
   })
 })

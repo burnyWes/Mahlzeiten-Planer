@@ -7,7 +7,7 @@ import {
 
 export type MealId = string
 
-export type MealKind = 'mainMeal' | 'breakfast' | 'none'
+export type MealKind = 'mainMeal' | 'breakfast' | 'snack' | 'none'
 
 export type ChosenMealKind = Exclude<MealKind, 'none'>
 

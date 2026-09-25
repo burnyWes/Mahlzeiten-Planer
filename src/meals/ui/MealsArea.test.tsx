@@ -164,6 +164,14 @@ function switchBreakfast() {
   return userEvent.click(breakfastBox())
 }
 
+function snackBox() {
+  return screen.getByRole('checkbox', { name: 'Snack' })
+}
+
+function switchSnack() {
+  return userEvent.click(snackBox())
+}
+
 function switchHiding(label: string) {
   return userEvent.click(screen.getByRole('button', { name: label }))
 }
@@ -614,6 +622,7 @@ describe('MealsArea', () => {
     expect(screen.getByText('Hackfleisch, 500 g')).toBeInTheDocument()
     expect(mainMealBox()).toBeChecked()
     expect(breakfastBox()).not.toBeChecked()
+    expect(snackBox()).not.toBeChecked()
   })
 
   it('keeps the change to a meal instead of creating a second one', async () => {
@@ -1136,6 +1145,7 @@ describe('MealsArea', () => {
     await fillIn('Name', 'Linsensuppe')
 
     expect(breakfastBox()).not.toBeChecked()
+    expect(snackBox()).not.toBeChecked()
     expect(mainMealBox()).toBeChecked()
 
     await save()
@@ -1207,8 +1217,10 @@ describe('MealsArea', () => {
 
     expect(mainMealBox()).not.toBeChecked()
     expect(breakfastBox()).not.toBeChecked()
+    expect(snackBox()).not.toBeChecked()
     expect(announcements).not.toContain('Hauptgericht abgewählt.')
     expect(announcements).not.toContain('Frühstück abgewählt.')
+    expect(announcements).not.toContain('Snack abgewählt.')
   })
 
   it('shows a meal without any kind again', async () => {
@@ -1219,6 +1231,7 @@ describe('MealsArea', () => {
 
     expect(mainMealBox()).not.toBeChecked()
     expect(breakfastBox()).not.toBeChecked()
+    expect(snackBox()).not.toBeChecked()
   })
 
   it('shows whether the edited meal is a breakfast', async () => {
@@ -1259,6 +1272,105 @@ describe('MealsArea', () => {
 
     expect(client.storedMeals()[0]).toEqual(
       meal('soup', 'Suppe', { hidden: true, kind: 'breakfast' }),
+    )
+  })
+
+  it('marks a meal as snack', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Nussmix')
+    await switchSnack()
+    await save()
+
+    expect(client.storedMeals()[0].kind).toBe('snack')
+  })
+
+  it('takes the other marks away when a meal becomes a snack', async () => {
+    renderMealsArea([meal('rice', 'Milchreis', { kind: 'breakfast' })])
+
+    await openMealForm()
+    await switchSnack()
+
+    expect(mainMealBox()).not.toBeChecked()
+    expect(snackBox()).toBeChecked()
+
+    await goBackToTheMeals()
+    await openMeal('Milchreis')
+    await editMeal()
+    await switchSnack()
+
+    expect(breakfastBox()).not.toBeChecked()
+    expect(snackBox()).toBeChecked()
+  })
+
+  it('takes the snack mark away when a meal becomes a main meal or a breakfast', async () => {
+    renderMealsArea([meal('nuts', 'Nussmix', { kind: 'snack' })])
+
+    await openMeal('Nussmix')
+    await editMeal()
+    await switchMainMeal()
+
+    expect(snackBox()).not.toBeChecked()
+    expect(mainMealBox()).toBeChecked()
+
+    await switchBreakfast()
+
+    expect(mainMealBox()).not.toBeChecked()
+    expect(breakfastBox()).toBeChecked()
+  })
+
+  it('says which mark a snack took away', async () => {
+    const { announcements } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await switchSnack()
+
+    expect(announcements).toContain('Hauptgericht abgewählt.')
+
+    await switchBreakfast()
+
+    expect(announcements).toContain('Snack abgewählt.')
+  })
+
+  it('shows whether the edited meal is a snack', async () => {
+    renderMealsArea([meal('nuts', 'Nussmix', { kind: 'snack' })])
+
+    await openMeal('Nussmix')
+    await editMeal()
+
+    expect(snackBox()).toBeChecked()
+    expect(mainMealBox()).not.toBeChecked()
+    expect(breakfastBox()).not.toBeChecked()
+  })
+
+  it('forgets the snack that was not saved', async () => {
+    const { client } = renderMealsArea([meal('soup', 'Suppe')])
+
+    await openMeal('Suppe')
+    await editMeal()
+    await switchSnack()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Gericht' }),
+    )
+    await editMeal()
+
+    expect(snackBox()).not.toBeChecked()
+    expect(client.storedMeals()[0].kind).toBe('mainMeal')
+  })
+
+  it('keeps a snack hidden when it is saved', async () => {
+    const { client } = renderMealsArea([
+      meal('soup', 'Suppe', { hidden: true, kind: 'snack' }),
+    ])
+
+    await openMeal('Suppe, ausgeblendet')
+    await editMeal()
+    await save()
+
+    expect(client.storedMeals()[0]).toEqual(
+      meal('soup', 'Suppe', { hidden: true, kind: 'snack' }),
     )
   })
 
@@ -1339,6 +1451,18 @@ describe('MealsArea', () => {
     await editMeal()
 
     expect(breakfastBox()).toBeChecked()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the form of a snack', async () => {
+    const { rendered } = renderMealsArea([
+      meal('nuts', 'Nussmix', { kind: 'snack' }),
+    ])
+
+    await openMeal('Nussmix')
+    await editMeal()
+
+    expect(snackBox()).toBeChecked()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

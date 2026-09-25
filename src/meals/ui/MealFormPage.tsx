@@ -152,6 +152,14 @@ export function MealFormPage({
           onChange={(event) => chooseKind('breakfast', event.target.checked)}
         />
       </label>
+      <label className="toggleField">
+        <span>Snack</span>
+        <input
+          type="checkbox"
+          checked={draft.kind === 'snack'}
+          onChange={(event) => chooseKind('snack', event.target.checked)}
+        />
+      </label>
       <MealCategoriesEditor
         categories={categories}
         knownCategories={knownCategories}
