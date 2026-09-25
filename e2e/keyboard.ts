@@ -38,6 +38,27 @@ export async function chooseSuggestion(
   await pressButton(page, suggestion)
 }
 
+export async function openAddItemPageUntilUnitSuggested(
+  page: Page,
+  typed: string,
+  suggestion: string,
+) {
+  await expect(async () => {
+    await pressButton(page, 'Artikel hinzufügen')
+    await typeInto(page, 'Einheit', typed)
+    try {
+      await expect(
+        page
+          .getByRole('list', { name: 'Einheiten-Vorschläge' })
+          .getByRole('button', { name: suggestion, exact: true }),
+      ).toBeVisible({ timeout: 1000 })
+    } catch (notYetSuggested) {
+      await pressButton(page, 'Zurück zur Liste')
+      throw notYetSuggested
+    }
+  }).toPass()
+}
+
 export function shownItems(page: Page) {
   return page.getByRole('main').getByRole('listitem')
 }

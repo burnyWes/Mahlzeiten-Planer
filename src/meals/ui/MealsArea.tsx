@@ -7,6 +7,8 @@ import {
   mealSavedAnnouncement,
 } from '../domain/announcements'
 import {
+  newlyUsedNames,
+  newlyUsedUnits,
   withHiding,
   type Meal,
   type MealId,
@@ -37,7 +39,16 @@ type MealsAreaProps = {
   navigation: ReactNode
   onAddToShoppingList: (meal: Meal) => void
   onMealDeleted: (id: MealId) => void
-  suggestNames: (typed: string) => readonly string[]
+  suggestNames: (
+    typed: string,
+    alsoInUse: readonly string[],
+  ) => readonly string[]
+  suggestUnits: (
+    typed: string,
+    alsoInUse: readonly string[],
+  ) => readonly string[]
+  canonicalUnit: (typed: string) => string
+  onItemsUsed: (names: readonly string[], units: readonly string[]) => void
 }
 
 export function MealsArea({
@@ -47,6 +58,9 @@ export function MealsArea({
   onAddToShoppingList,
   onMealDeleted,
   suggestNames,
+  suggestUnits,
+  canonicalUnit,
+  onItemsUsed,
 }: MealsAreaProps) {
   const [page, setPage] = useState<MealsPage>({ kind: 'list' })
   const [chosenFilter, setChosenFilter] = useState<MealFilter | null>(null)
@@ -81,6 +95,13 @@ export function MealsArea({
     setPage({ kind: 'meal', id })
   }
 
+  function rememberNewItems(before: Meal | null, newMeal: NewMeal) {
+    const itemsBefore = before?.items ?? []
+    const names = newlyUsedNames(itemsBefore, newMeal.items)
+    const units = newlyUsedUnits(itemsBefore, newMeal.items)
+    if (names.length > 0 || units.length > 0) onItemsUsed(names, units)
+  }
+
   function saveMeal(editedId: MealId | null, newMeal: NewMeal) {
     if (editedId === null) {
       showMeal(meals.addMeal(newMeal))
@@ -88,6 +109,7 @@ export function MealsArea({
       meals.changeMeal(editedId, newMeal)
       showMeal(editedId)
     }
+    rememberNewItems(addressedMeal, newMeal)
     announce(mealSavedAnnouncement(newMeal))
   }
 
@@ -115,6 +137,8 @@ export function MealsArea({
         }
         announce={announce}
         suggestNames={suggestNames}
+        suggestUnits={suggestUnits}
+        canonicalUnit={canonicalUnit}
         knownCategories={categories}
       />
     )

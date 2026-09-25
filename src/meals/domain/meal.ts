@@ -133,6 +133,44 @@ export function byName(meals: readonly Meal[]): readonly Meal[] {
   )
 }
 
+function namesNotIn(
+  before: readonly string[],
+  after: readonly string[],
+): readonly string[] {
+  const known = new Set(before.map(normalizeMealName))
+  return after.filter((name) => {
+    const normalized = normalizeMealName(name)
+    if (known.has(normalized)) return false
+    known.add(normalized)
+    return true
+  })
+}
+
+export function unitsOfItems(items: readonly MealItem[]): readonly string[] {
+  return items.flatMap((item) => item.quantity?.unit ?? [])
+}
+
+export function unitsOfMeals(meals: readonly NewMeal[]): readonly string[] {
+  return meals.flatMap((meal) => unitsOfItems(meal.items))
+}
+
+export function newlyUsedNames(
+  before: readonly MealItem[],
+  after: readonly MealItem[],
+): readonly string[] {
+  return namesNotIn(
+    before.map((item) => item.name),
+    after.map((item) => item.name),
+  )
+}
+
+export function newlyUsedUnits(
+  before: readonly MealItem[],
+  after: readonly MealItem[],
+): readonly string[] {
+  return namesNotIn(unitsOfItems(before), unitsOfItems(after))
+}
+
 export function formatMealItem(item: MealItem): string {
   const quantity = formatQuantity(item.quantity)
   return quantity === '' ? item.name : `${item.name}, ${quantity}`

@@ -1,16 +1,25 @@
 import { act, render, screen, within } from '@testing-library/react'
+import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { Quantity } from '../../shared/domain/quantity'
 import { accessibilityViolations } from '../../testSupport/accessibility'
 import { createInMemoryKnownItemsClient } from '../api/inMemoryKnownItemsClient'
 import type { KnownItemsClient } from '../api/knownItemsClient'
+import { createInMemoryKnownUnitsClient } from '../api/inMemoryKnownUnitsClient'
+import type { KnownUnitsClient } from '../api/knownUnitsClient'
 import { createInMemoryShoppingListClient } from '../api/inMemoryShoppingListClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
 import { suggestNames, type KnownItem } from '../domain/knownItem'
+import {
+  DEFAULT_UNITS,
+  suggestUnits,
+  type KnownUnit,
+} from '../domain/knownUnit'
 import type { ShoppingItem } from '../domain/shoppingItem'
 import { ShoppingArea } from './ShoppingArea'
 import { useKnownItems } from './useKnownItems'
+import { useKnownUnits } from './useKnownUnits'
 import { useShoppingList } from './useShoppingList'
 
 function openItem(
@@ -39,19 +48,39 @@ function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
 type ShoppingAreaUnderTestProps = {
   client: ShoppingListClient
   knownItemsClient: KnownItemsClient
+  knownUnitsClient?: KnownUnitsClient
   announce: (text: string) => void
+}
+
+const DEFAULT_KNOWN_UNITS: readonly KnownUnit[] = DEFAULT_UNITS.map((name) => ({
+  name,
+  lastUsedAt: 0,
+  timesUsed: 0,
+}))
+
+async function noMealUnits(): Promise<readonly string[]> {
+  return []
 }
 
 function ShoppingAreaUnderTest({
   client,
   knownItemsClient,
+  knownUnitsClient: givenKnownUnitsClient,
   announce,
 }: ShoppingAreaUnderTestProps) {
+  const [knownUnitsClient] = useState(
+    () =>
+      givenKnownUnitsClient ??
+      createInMemoryKnownUnitsClient(DEFAULT_KNOWN_UNITS),
+  )
   const knownItems = useKnownItems(knownItemsClient)
+  const knownUnits = useKnownUnits(knownUnitsClient, noMealUnits)
   const shoppingList = useShoppingList(
     client,
     knownItemsClient,
     knownItems.knownItems,
+    knownUnitsClient,
+    knownUnits.knownUnits,
   )
   return (
     <ShoppingArea
@@ -59,6 +88,7 @@ function ShoppingAreaUnderTest({
       announce={announce}
       navigation={null}
       suggestNames={(typed) => suggestNames(knownItems.knownItems, typed)}
+      suggestUnits={(typed) => suggestUnits(knownUnits.knownUnits, typed)}
     />
   )
 }
@@ -399,6 +429,71 @@ describe('suggestions while typing a name', () => {
     await userEvent.type(screen.getByLabelText('Name'), 'mil')
 
     expect(suggestionList()).not.toBeNull()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
+describe('suggestions while typing a unit', () => {
+  function unitSuggestionList() {
+    return screen.queryByRole('list', { name: 'Einheiten-Vorschläge' })
+  }
+
+  function suggestedUnits() {
+    return within(screen.getByRole('list', { name: 'Einheiten-Vorschläge' }))
+      .getAllByRole('button')
+      .map((button) => button.textContent)
+  }
+
+  it('suggests units from the first typed character', async () => {
+    renderShoppingArea()
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Einheit'), 'k')
+
+    expect(suggestedUnits()).toEqual(['kg', 'Pck.', 'Stück'])
+  })
+
+  it('takes over a suggested unit and moves on to the add button', async () => {
+    renderShoppingArea()
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Einheit'), 'k')
+    await userEvent.click(screen.getByRole('button', { name: 'kg' }))
+
+    expect(screen.getByLabelText('Einheit')).toHaveValue('kg')
+    expect(screen.getByRole('button', { name: 'Hinzufügen' })).toHaveFocus()
+  })
+
+  it('offers no unit list without a typed unit', async () => {
+    renderShoppingArea()
+
+    await openAddItemPage()
+
+    expect(unitSuggestionList()).toBeNull()
+  })
+
+  it('keeps the name suggestions apart from the unit suggestions', async () => {
+    renderShoppingArea([], [known('Milch')])
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'mil')
+    await userEvent.type(screen.getByLabelText('Einheit'), 'k')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' }))
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Milch'])
+    expect(suggestedUnits()).toEqual(['kg', 'Pck.', 'Stück'])
+  })
+
+  it('has no accessibility violations with unit suggestions', async () => {
+    const { rendered } = renderShoppingArea()
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Einheit'), 'k')
+
+    expect(unitSuggestionList()).not.toBeNull()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 })

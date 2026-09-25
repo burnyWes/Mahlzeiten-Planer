@@ -27,8 +27,16 @@ type MealsAreaUnderTestProps = {
   announce: (text: string) => void
   onAddToShoppingList: (meal: Meal) => void
   onMealDeleted: (id: MealId) => void
-  suggestNames: (typed: string) => readonly string[]
+  suggestNames: Suggest
+  suggestUnits: Suggest
+  canonicalUnit: (typed: string) => string
+  onItemsUsed: (names: readonly string[], units: readonly string[]) => void
 }
+
+type Suggest = (
+  typed: string,
+  alsoInUse: readonly string[],
+) => readonly string[]
 
 function MealsAreaUnderTest({
   client,
@@ -36,6 +44,9 @@ function MealsAreaUnderTest({
   onAddToShoppingList,
   onMealDeleted,
   suggestNames,
+  suggestUnits,
+  canonicalUnit,
+  onItemsUsed,
 }: MealsAreaUnderTestProps) {
   return (
     <MealsArea
@@ -45,27 +56,53 @@ function MealsAreaUnderTest({
       onAddToShoppingList={onAddToShoppingList}
       onMealDeleted={onMealDeleted}
       suggestNames={suggestNames}
+      suggestUnits={suggestUnits}
+      canonicalUnit={canonicalUnit}
+      onItemsUsed={onItemsUsed}
     />
   )
 }
 
-function suggestingFrom(suggestableNames: readonly string[]) {
-  return (typed: string) =>
-    typed.length < 2
+function suggestingAbove(
+  minimumTypedLength: number,
+  suggestable: readonly string[],
+): Suggest {
+  return (typed, alsoInUse) =>
+    typed.length < minimumTypedLength
       ? []
-      : suggestableNames.filter((name) =>
-          name.toLowerCase().includes(typed.toLowerCase()),
+      : [...suggestable, ...alsoInUse].filter(
+          (name) =>
+            name.toLowerCase().includes(typed.toLowerCase()) &&
+            name.toLowerCase() !== typed.toLowerCase(),
         )
 }
+
+function suggestingFrom(suggestableNames: readonly string[]): Suggest {
+  return suggestingAbove(2, suggestableNames)
+}
+
+function suggestingUnitsFrom(suggestableUnits: readonly string[]): Suggest {
+  return suggestingAbove(1, suggestableUnits)
+}
+
+function canonicalAmong(knownUnits: readonly string[]) {
+  return (typed: string) =>
+    knownUnits.find((unit) => unit.toLowerCase() === typed.toLowerCase()) ??
+    typed
+}
+
+type ItemsUsed = { names: readonly string[]; units: readonly string[] }
 
 function renderMealsArea(
   initialMeals: readonly Meal[] = [],
   suggestableNames: readonly string[] = [],
+  knownUnits: readonly string[] = [],
 ) {
   const client = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
   const transferred: Meal[] = []
   const deletedMealIds: MealId[] = []
+  const itemsUsed: ItemsUsed[] = []
   const rendered = render(
     <MealsAreaUnderTest
       client={client}
@@ -79,9 +116,21 @@ function renderMealsArea(
         deletedMealIds.push(id)
       }}
       suggestNames={suggestingFrom(suggestableNames)}
+      suggestUnits={suggestingUnitsFrom(knownUnits)}
+      canonicalUnit={canonicalAmong(knownUnits)}
+      onItemsUsed={(names, units) => {
+        itemsUsed.push({ names, units })
+      }}
     />,
   )
-  return { client, announcements, transferred, deletedMealIds, rendered }
+  return {
+    client,
+    announcements,
+    transferred,
+    deletedMealIds,
+    itemsUsed,
+    rendered,
+  }
 }
 
 function openMealForm() {
@@ -1683,6 +1732,139 @@ describe('MealsArea', () => {
 
     await openMeal('Bolognese, ausgeblendet')
 
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('suggests units in the meal form', async () => {
+    renderMealsArea([], [], ['g', 'kg', 'Zehe'])
+
+    await openMealForm()
+    await userEvent.type(screen.getByLabelText('Einheit'), 'ze')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Einheiten-Vorschläge' }))
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Zehe'])
+  })
+
+  it('takes a suggested unit and moves the focus to the item button', async () => {
+    renderMealsArea([], [], ['kg'])
+
+    await openMealForm()
+    await userEvent.type(screen.getByLabelText('Einheit'), 'k')
+    await userEvent.click(screen.getByRole('button', { name: 'kg' }))
+
+    expect(screen.getByLabelText('Einheit')).toHaveValue('kg')
+    expect(
+      screen.getByRole('button', { name: 'Item hinzufügen' }),
+    ).toHaveFocus()
+  })
+
+  it('suggests the unit of an item taken over in the same form', async () => {
+    renderMealsArea()
+
+    await openMealForm()
+    await takeOverItem('Knoblauch', '2', 'Zehe')
+    await userEvent.type(screen.getByLabelText('Einheit'), 'Ze')
+
+    expect(
+      within(
+        screen.getByRole('list', { name: 'Einheiten-Vorschläge' }),
+      ).getByRole('button', { name: 'Zehe' }),
+    ).toBeInTheDocument()
+  })
+
+  it('suggests the name of an item taken over in the same form', async () => {
+    renderMealsArea()
+
+    await openMealForm()
+    await takeOverItem('Knoblauch')
+    await userEvent.type(screen.getByLabelText('Item'), 'knob')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' })).getByRole(
+        'button',
+        { name: 'Knoblauch' },
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('takes over the spelling of a known unit for a new item', async () => {
+    const { client } = renderMealsArea([], [], ['g'])
+
+    await openMealForm()
+    await fillIn('Name', 'Bolognese')
+    await takeOverItem('Hackfleisch', '500', 'G')
+    await save()
+
+    expect(client.storedMeals()[0].items).toEqual([
+      { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+    ])
+  })
+
+  it('reports the new items when a new meal is saved', async () => {
+    const { itemsUsed } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Bolognese')
+    await takeOverItem('Hackfleisch', '500', 'g')
+    await takeOverItem('Spaghetti')
+    await save()
+
+    expect(itemsUsed).toEqual([
+      { names: ['Hackfleisch', 'Spaghetti'], units: ['g'] },
+    ])
+  })
+
+  it('reports only the items added while editing', async () => {
+    const { itemsUsed } = renderMealsArea([
+      meal('bolognese', 'Bolognese', {
+        items: [{ name: 'Spaghetti', quantity: { amount: 500, unit: 'g' } }],
+      }),
+    ])
+
+    await openMeal('Bolognese')
+    await editMeal()
+    await takeOverItem('Knoblauch', '2', 'Zehe')
+    await save()
+
+    expect(itemsUsed).toEqual([{ names: ['Knoblauch'], units: ['Zehe'] }])
+  })
+
+  it('reports nothing when a meal is saved unchanged', async () => {
+    const { itemsUsed } = renderMealsArea([
+      meal('bolognese', 'Bolognese', {
+        items: [{ name: 'Spaghetti', quantity: { amount: 500, unit: 'g' } }],
+      }),
+    ])
+
+    await openMeal('Bolognese')
+    await editMeal()
+    await save()
+
+    expect(itemsUsed).toEqual([])
+  })
+
+  it('reports nothing when the form is left without saving', async () => {
+    const { itemsUsed } = renderMealsArea()
+
+    await openMealForm()
+    await takeOverItem('Knoblauch', '2', 'Zehe')
+    await goBackToTheMeals()
+
+    expect(itemsUsed).toEqual([])
+  })
+
+  it('has no accessibility violations with unit suggestions in the meal form', async () => {
+    const { rendered } = renderMealsArea([], [], ['kg'])
+
+    await openMealForm()
+    await userEvent.type(screen.getByLabelText('Einheit'), 'k')
+
+    expect(
+      screen.getByRole('list', { name: 'Einheiten-Vorschläge' }),
+    ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 })

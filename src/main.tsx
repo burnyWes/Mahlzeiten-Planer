@@ -9,6 +9,7 @@ import { createServiceWorkerAppUpdateClient } from './shared/appUpdate/serviceWo
 import { auth, firestore, storageWarning } from './shared/auth/firebase.ts'
 import { createFirebaseAuthClient } from './shared/auth/firebaseAuthClient.ts'
 import { createFirestoreKnownItemsClient } from './shopping/api/firestoreKnownItemsClient.ts'
+import { createFirestoreKnownUnitsClient } from './shopping/api/firestoreKnownUnitsClient.ts'
 import { createFirestoreShoppingListClient } from './shopping/api/firestoreShoppingListClient.ts'
 import './index.css'
 
@@ -28,6 +29,8 @@ const openSupplies = (onWriteFailure: (message: string) => void) =>
 
 const openKnownItems = () => createFirestoreKnownItemsClient(firestore)
 
+const openKnownUnits = () => createFirestoreKnownUnitsClient(firestore)
+
 const appUpdateClient = createServiceWorkerAppUpdateClient()
 
 const appearanceClient = createLocalStorageAppearanceClient()
@@ -41,6 +44,7 @@ createRoot(document.getElementById('root')!).render(
       createWeekPlanClient={openWeekPlan}
       createSuppliesClient={openSupplies}
       createKnownItemsClient={openKnownItems}
+      createKnownUnitsClient={openKnownUnits}
       appUpdateClient={appUpdateClient}
       appearanceClient={appearanceClient}
       storageWarning={storageWarning}

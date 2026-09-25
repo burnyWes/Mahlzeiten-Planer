@@ -81,6 +81,24 @@ export async function itemNamesOnServer(): Promise<readonly string[]> {
   )
 }
 
+type ListedKnownUnits = {
+  documents?: readonly { fields: { name: { stringValue: string } } }[]
+}
+
+export async function knownUnitNamesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/units`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedKnownUnits
+  return (listed.documents ?? []).map(
+    (document) => document.fields.name.stringValue,
+  )
+}
+
 type StoredAmount = { integerValue?: string; doubleValue?: number }
 
 type StoredQuantity = {

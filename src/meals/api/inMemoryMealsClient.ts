@@ -1,4 +1,4 @@
-import type { Meal } from '../domain/meal'
+import { unitsOfMeals, type Meal } from '../domain/meal'
 import type { MealsClient } from './mealsClient'
 
 export type InMemoryMealsClient = MealsClient & {
@@ -44,6 +44,9 @@ export function createInMemoryMealsClient(
     removeMeal(id) {
       meals = meals.filter((meal) => meal.id !== id)
       publish()
+    },
+    async unitsOnServer() {
+      return unitsOfMeals(meals)
     },
     mealsArriveFromElsewhere(arriving) {
       meals = [...arriving]

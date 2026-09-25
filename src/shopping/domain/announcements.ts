@@ -79,6 +79,30 @@ export function knownItemDeletedAnnouncement(
   return `${name} gelöscht, ${remainingKnownItemPhrase(remainingKnownItems)}.`
 }
 
+export function knownUnitsHeading(knownUnitCount: number): string {
+  return knownUnitCount === 0
+    ? 'Einheiten-Verwaltung, keine'
+    : `Einheiten-Verwaltung, ${knownUnitCount}`
+}
+
+export function knownUnitSavedAnnouncement(name: string): string {
+  return `${name} gespeichert.`
+}
+
+function remainingKnownUnitPhrase(remainingKnownUnits: number): string {
+  if (remainingKnownUnits === 0) return 'keine Einheiten mehr'
+  return remainingKnownUnits === 1
+    ? 'noch 1 Einheit'
+    : `noch ${remainingKnownUnits} Einheiten`
+}
+
+export function knownUnitDeletedAnnouncement(
+  name: string,
+  remainingKnownUnits: number,
+): string {
+  return `${name} gelöscht, ${remainingKnownUnitPhrase(remainingKnownUnits)}.`
+}
+
 function openCountPhrase(openCount: number): string {
   return openCount === 0 ? 'nichts mehr offen' : `noch ${openCount} offen`
 }

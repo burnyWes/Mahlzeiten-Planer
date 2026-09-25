@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KnownItemsClient } from '../api/knownItemsClient'
+import type { KnownUnitsClient } from '../api/knownUnitsClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
 import {
   planAddition,
@@ -9,6 +10,7 @@ import {
   type AdditionsSummary,
 } from '../domain/addition'
 import { canonicalName, type KnownItem } from '../domain/knownItem'
+import { withCanonicalUnit, type KnownUnit } from '../domain/knownUnit'
 import {
   additionAnnouncement,
   checkOffAnnouncement,
@@ -68,6 +70,8 @@ export function useShoppingList(
   client: ShoppingListClient,
   knownItemsClient: KnownItemsClient,
   knownItems: readonly KnownItem[],
+  knownUnitsClient: KnownUnitsClient,
+  knownUnits: readonly KnownUnit[],
 ): ShoppingList {
   const [liveItems, setLiveItems] = useState<readonly ShoppingItem[]>([])
   const [frozenOrder, setFrozenOrder] = useState<FrozenOrder>([])
@@ -127,9 +131,11 @@ export function useShoppingList(
   const carryOutAll = useCallback(
     (outcomes: readonly AdditionOutcome[]) => {
       const written = outcomes.map(carryOut)
-      outcomes.forEach((outcome) =>
-        knownItemsClient.recordUse(outcome.item.name, outcome.item.createdAt),
-      )
+      outcomes.forEach(({ item }) => {
+        knownItemsClient.recordUse(item.name, item.createdAt)
+        const unit = item.quantity?.unit ?? null
+        if (unit !== null) knownUnitsClient.recordUse(unit, item.createdAt)
+      })
       setUnconfirmedWrites((writes) =>
         written.reduce(
           (sofar, write) => rememberWrite(sofar, write.written, write.before),
@@ -143,15 +149,16 @@ export function useShoppingList(
         ),
       )
     },
-    [carryOut, knownItemsClient],
+    [carryOut, knownItemsClient, knownUnitsClient],
   )
 
   const underGroomedName = useCallback(
     (item: NewShoppingItem): NewShoppingItem => ({
       ...item,
       name: canonicalName(knownItems, item.name),
+      quantity: withCanonicalUnit(knownUnits, item.quantity),
     }),
-    [knownItems],
+    [knownItems, knownUnits],
   )
 
   const addItem = useCallback(

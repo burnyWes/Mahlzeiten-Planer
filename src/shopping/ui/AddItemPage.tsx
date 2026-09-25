@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { UNITS } from '../../shared/domain/quantity'
 import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import { additionFailureMessage } from '../domain/announcements'
 import type { ShoppingItemDraft } from '../domain/shoppingItem'
@@ -9,6 +8,7 @@ type AddItemPageProps = {
   announce: (text: string) => void
   onBack: () => void
   suggestNames: (typed: string) => readonly string[]
+  suggestUnits: (typed: string) => readonly string[]
 }
 
 const EMPTY_DRAFT: ShoppingItemDraft = { name: '', amount: '', unit: '' }
@@ -18,12 +18,15 @@ export function AddItemPage({
   announce,
   onBack,
   suggestNames,
+  suggestUnits,
 }: AddItemPageProps) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [failureMessage, setFailureMessage] = useState('')
   const [suggestNamesOnOpen] = useState(() => suggestNames)
+  const [suggestUnitsOnOpen] = useState(() => suggestUnits)
   const nameField = useRef<HTMLInputElement>(null)
   const amountField = useRef<HTMLInputElement>(null)
+  const addButton = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     nameField.current?.focus()
@@ -36,6 +39,11 @@ export function AddItemPage({
   function chooseSuggestion(name: string) {
     change({ name })
     amountField.current?.focus()
+  }
+
+  function chooseUnit(unit: string) {
+    change({ unit })
+    addButton.current?.focus()
   }
 
   function submitDraft(event: FormEvent<HTMLFormElement>) {
@@ -94,21 +102,22 @@ export function AddItemPage({
             <label htmlFor="itemUnit">Einheit</label>
             <input
               id="itemUnit"
-              list="units"
               value={draft.unit}
               onChange={(event) => change({ unit: event.target.value })}
             />
-            <datalist id="units">
-              {UNITS.map((unit) => (
-                <option key={unit} value={unit} />
-              ))}
-            </datalist>
           </p>
         </div>
+        <NameSuggestions
+          label="Einheiten-Vorschläge"
+          names={suggestUnitsOnOpen(draft.unit)}
+          onChoose={chooseUnit}
+        />
         <p id="addItemFailure" className="failure">
           {failureMessage}
         </p>
-        <button type="submit">Hinzufügen</button>
+        <button type="submit" ref={addButton}>
+          Hinzufügen
+        </button>
       </form>
     </main>
   )

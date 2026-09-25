@@ -2,12 +2,14 @@ import { expect, test, type Page } from '@playwright/test'
 import {
   itemNamesOnServer,
   itemQuantitiesOnServer,
+  knownUnitNamesOnServer,
   prepareEmulators,
   removeItemOnServer,
   settleWrites,
   storeItemOnServer,
 } from './emulatorHousehold.ts'
 import {
+  openAddItemPageUntilUnitSuggested,
   pressButton,
   shownShoppingItems,
   signIn,
@@ -159,6 +161,29 @@ test('suggests an item that was added before', async ({ page }) => {
   await addItem(page, 'Brot')
 
   await openAddItemPageUntilSuggested(page, 'br', 'Brot')
+})
+
+test('suggests a unit and takes over its spelling', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+  await expect
+    .poll(knownUnitNamesOnServer)
+    .toEqual(expect.arrayContaining(['Stück', 'g', 'kg', 'ml', 'l', 'Pck.']))
+
+  await openAddItemPageUntilUnitSuggested(page, 'k', 'kg')
+  await typeInto(page, 'Name', 'Mehl')
+  await typeInto(page, 'Menge', '1')
+  await pressButton(page, 'kg')
+  await expect(
+    page.getByRole('button', { name: 'Hinzufügen', exact: true }),
+  ).toBeFocused()
+  await page.keyboard.press('Enter')
+  await pressButton(page, 'Zurück zur Liste')
+  await addItem(page, 'Zucker', '500', 'G')
+
+  await expect
+    .poll(() => shownShoppingItems(page))
+    .toEqual(['Mehl, 1 kg', 'Zucker, 500 g'])
 })
 
 test('changes the quantity of an item at its row', async ({ page }) => {

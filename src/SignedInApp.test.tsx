@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
@@ -19,7 +19,12 @@ import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppe
 import { useAppearance } from './shared/appearance/useAppearance'
 import { SignedInApp } from './SignedInApp'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
+import {
+  createInMemoryKnownUnitsClient,
+  type InMemoryKnownUnitsClient,
+} from './shopping/api/inMemoryKnownUnitsClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
+import { DEFAULT_UNITS } from './shopping/domain/knownUnit'
 import type { ShoppingItem } from './shopping/domain/shoppingItem'
 import { accessibilityViolations } from './testSupport/accessibility'
 
@@ -55,6 +60,9 @@ function renderSignedInApp(
   weekPlanClient = createInMemoryWeekPlanClient(),
   suppliesClient = createInMemorySuppliesClient(),
   clock: Clock = stoppedAt(aMonday),
+  knownUnitsClient = createInMemoryKnownUnitsClient(
+    DEFAULT_UNITS.map((name) => ({ name, lastUsedAt: 0, timesUsed: 0 })),
+  ),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -65,6 +73,7 @@ function renderSignedInApp(
       createWeekPlanClient={() => weekPlanClient}
       createSuppliesClient={() => suppliesClient}
       createKnownItemsClient={() => knownItemsClient}
+      createKnownUnitsClient={() => knownUnitsClient}
       appearanceClient={appearanceClient}
       clock={clock}
       announce={(text) => {
@@ -79,7 +88,57 @@ function renderSignedInApp(
     appearanceClient,
     weekPlanClient,
     suppliesClient,
+    knownUnitsClient,
   }
+}
+
+function renderWithKnownUnits(
+  knownUnitsClient: InMemoryKnownUnitsClient,
+  initialMeals: readonly Meal[] = [],
+) {
+  return renderSignedInApp(
+    [],
+    initialMeals,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    knownUnitsClient,
+  )
+}
+
+function knownUnit(name: string, timesUsed = 1, lastUsedAt = 1) {
+  return { name, timesUsed, lastUsedAt }
+}
+
+async function addShoppingItem(name: string, amount: string, unit = '') {
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Artikel hinzufügen' }),
+  )
+  await userEvent.type(screen.getByLabelText('Name'), name)
+  await userEvent.type(screen.getByLabelText('Menge'), amount)
+  if (unit !== '') await userEvent.type(screen.getByLabelText('Einheit'), unit)
+  await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+}
+
+async function writeDownMeal(
+  name: string,
+  itemName: string,
+  amount = '',
+  unit = '',
+) {
+  await goToArea('Gerichte')
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Gericht hinzufügen' }),
+  )
+  await userEvent.type(screen.getByLabelText('Name'), name)
+  await userEvent.type(screen.getByLabelText('Item'), itemName)
+  if (amount !== '')
+    await userEvent.type(screen.getByLabelText('Menge'), amount)
+  if (unit !== '') await userEvent.type(screen.getByLabelText('Einheit'), unit)
+  await userEvent.click(screen.getByRole('button', { name: 'Item hinzufügen' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
 }
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
@@ -1122,6 +1181,152 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('fills an empty unit catalog with the defaults, the history and the meals', async () => {
+    const knownUnitsClient = createInMemoryKnownUnitsClient(
+      [],
+      [
+        {
+          ...openItem('flour', 'Mehl', 1),
+          quantity: { amount: 500, unit: 'g' },
+        },
+      ],
+    )
+    renderWithKnownUnits(knownUnitsClient, [
+      meal('aioli', 'Aioli', [
+        { name: 'Knoblauch', quantity: { amount: 2, unit: 'Zehe' } },
+      ]),
+    ])
+
+    await waitFor(() =>
+      expect(
+        knownUnitsClient.storedKnownUnits().map((unit) => unit.name),
+      ).toEqual(expect.arrayContaining([...DEFAULT_UNITS, 'Zehe'])),
+    )
+    expect(knownUnitsClient.storedKnownUnits()).toHaveLength(7)
+    expect(knownUnitsClient.storedKnownUnits()).toContainEqual(
+      knownUnit('g', 1, 1),
+    )
+    expect(knownUnitsClient.storedKnownUnits()).toContainEqual(
+      knownUnit('Zehe', 1, 0),
+    )
+  })
+
+  it('leaves a unit catalog that is already filled alone', async () => {
+    const knownUnitsClient = createInMemoryKnownUnitsClient([knownUnit('Zehe')])
+    renderWithKnownUnits(knownUnitsClient, [
+      meal('bolognese', 'Bolognese', [
+        { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+      ]),
+    ])
+
+    await act(async () => {})
+
+    expect(knownUnitsClient.storedKnownUnits()).toEqual([knownUnit('Zehe')])
+  })
+
+  it('takes over the spelling of a known unit on the shopping list', async () => {
+    const { client } = renderSignedInApp()
+
+    await addShoppingItem('Zucker', '500', 'G')
+
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 500, unit: 'g' })
+  })
+
+  it('remembers the unit of an item that lands on the shopping list', async () => {
+    const knownUnitsClient = createInMemoryKnownUnitsClient([
+      knownUnit('g', 0, 0),
+    ])
+    renderWithKnownUnits(knownUnitsClient, [
+      meal('bolognese', 'Bolognese', [
+        { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+      ]),
+    ])
+
+    await addShoppingItem('Zucker', '500', 'g')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zur Liste' }),
+    )
+    await goToArea('Gerichte')
+    await transferToShoppingList('Bolognese')
+
+    expect(knownUnitsClient.storedKnownUnits()).toEqual([
+      expect.objectContaining({ name: 'g', timesUsed: 2 }),
+    ])
+    expect(knownUnitsClient.storedKnownUnits()[0].lastUsedAt).toBeGreaterThan(0)
+  })
+
+  it('remembers nothing for an item without a unit', async () => {
+    const { knownUnitsClient } = renderSignedInApp()
+
+    await addShoppingItem('Eier', '6')
+
+    expect(knownUnitsClient.storedKnownUnits()).toEqual(
+      DEFAULT_UNITS.map((name) => knownUnit(name, 0, 0)),
+    )
+  })
+
+  it('suggests the units of the meals on the shopping list', async () => {
+    renderSignedInApp(
+      [],
+      [
+        meal('aioli', 'Aioli', [
+          { name: 'Knoblauch', quantity: { amount: 2, unit: 'Zehe' } },
+        ]),
+      ],
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikel hinzufügen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Einheit'), 'Ze')
+
+    expect(
+      within(
+        screen.getByRole('list', { name: 'Einheiten-Vorschläge' }),
+      ).getByRole('button', { name: 'Zehe' }),
+    ).toBeInTheDocument()
+  })
+
+  it('remembers the name and the unit of a new meal item in both catalogs', async () => {
+    const knownItemsClient = createInMemoryKnownItemsClient()
+    const knownUnitsClient = createInMemoryKnownUnitsClient([
+      knownUnit('g', 0, 0),
+    ])
+    renderSignedInApp(
+      [],
+      [],
+      knownItemsClient,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      knownUnitsClient,
+    )
+
+    await writeDownMeal('Aioli', 'Knoblauch', '2', 'Zehe')
+
+    expect(knownItemsClient.storedKnownItems()).toEqual([
+      expect.objectContaining({ name: 'Knoblauch', timesUsed: 1 }),
+    ])
+    expect(knownUnitsClient.storedKnownUnits()).toEqual([
+      knownUnit('g', 0, 0),
+      expect.objectContaining({ name: 'Zehe', timesUsed: 1 }),
+    ])
+  })
+
+  it('keeps the catalog spelling of a name remembered from a meal', async () => {
+    const knownItemsClient = createInMemoryKnownItemsClient([
+      { name: 'Hackfleisch', lastUsedAt: 1, timesUsed: 1 },
+    ])
+    renderSignedInApp([], [], knownItemsClient)
+
+    await writeDownMeal('Bolognese', 'hackfleisch')
+
+    expect(knownItemsClient.storedKnownItems()).toEqual([
+      expect.objectContaining({ name: 'Hackfleisch', timesUsed: 2 }),
+    ])
+  })
+
   it('reaches the settings through the gear button', async () => {
     renderSignedInApp()
 
@@ -1173,6 +1378,21 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('opens the unit management from the settings', async () => {
+    renderSignedInApp()
+
+    await goToArea('Einstellungen')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Einheiten-Verwaltung' }),
+    )
+
+    expect(
+      screen.getByRole('heading', {
+        name: `Einheiten-Verwaltung, ${DEFAULT_UNITS.length}`,
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('offers to invert the colours above the known items', async () => {
     renderSignedInApp()
 
@@ -1183,6 +1403,7 @@ describe('SignedInApp', () => {
       expect.stringMatching(/^Hauptgericht würfeln/),
       'Artikel-Verwaltung',
       'Kategorie-Verwaltung',
+      'Einheiten-Verwaltung',
     ])
     expect(
       screen.getByRole('switch', { name: 'Farben invertieren' }),

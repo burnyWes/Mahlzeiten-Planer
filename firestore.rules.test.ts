@@ -50,10 +50,13 @@ function collectionOf(collectionName: string) {
 const itemsOf = collectionOf('items')
 const mealsOf = collectionOf('meals')
 const knownItemsOf = collectionOf('knownItems')
+const knownUnitsOf = collectionOf('units')
 const suppliesOf = collectionOf('supplies')
 const weekPlanOf = collectionOf('weekPlan')
 
 const milk = { name: 'Milch', lastUsedAt: 1, timesUsed: 1 }
+
+const gram = { name: 'g', lastUsedAt: 1, timesUsed: 1 }
 
 const emptyDay = { breakfast: null, lunch: null, snack: null, dinner: null }
 
@@ -179,6 +182,28 @@ describe('firestore security rules', () => {
   it('refuses an unauthenticated visitor on the known items', async () => {
     await assertFails(getDoc(knownItemsOf(null)('milch')))
     await assertFails(setDoc(knownItemsOf(null)('milch'), milk))
+  })
+
+  it('lets the household write a known unit', async () => {
+    await assertSucceeds(setDoc(knownUnitsOf(householdUid)('g'), gram))
+  })
+
+  it('lets the household read a known unit', async () => {
+    await assertSucceeds(getDoc(knownUnitsOf(householdUid)('g')))
+  })
+
+  it('lets the household delete a known unit', async () => {
+    await assertSucceeds(deleteDoc(knownUnitsOf(householdUid)('g')))
+  })
+
+  it('refuses another account on the known units', async () => {
+    await assertFails(getDoc(knownUnitsOf(strangerUid)('g')))
+    await assertFails(setDoc(knownUnitsOf(strangerUid)('g'), gram))
+  })
+
+  it('refuses an unauthenticated visitor on the known units', async () => {
+    await assertFails(getDoc(knownUnitsOf(null)('g')))
+    await assertFails(setDoc(knownUnitsOf(null)('g'), gram))
   })
 
   it('lets the household write a supply', async () => {

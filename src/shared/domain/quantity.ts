@@ -24,8 +24,6 @@ export class InvalidQuantity extends Error {
   }
 }
 
-export const UNITS = ['Stück', 'g', 'kg', 'ml', 'l', 'Pck.']
-
 const ONE_WITHOUT_UNIT: Quantity = { amount: 1, unit: null }
 
 const messagesByReason: Record<InvalidQuantityReason, string> = {

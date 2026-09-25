@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDocsFromServer,
   onSnapshot,
   setDoc,
   writeBatch,
@@ -9,7 +10,14 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import type { Quantity } from '../../shared/domain/quantity'
-import type { Meal, MealId, MealItem, MealKind, NewMeal } from '../domain/meal'
+import {
+  unitsOfMeals,
+  type Meal,
+  type MealId,
+  type MealItem,
+  type MealKind,
+  type NewMeal,
+} from '../domain/meal'
 import type { MealsClient } from './mealsClient'
 
 const MEALS = 'meals'
@@ -117,6 +125,13 @@ export function createFirestoreMealsClient(
 
     removeMeal(id) {
       writeInBackground(deleteDoc(mealDocument(id)))
+    },
+
+    async unitsOnServer() {
+      const snapshot = await getDocsFromServer(meals)
+      return unitsOfMeals(
+        snapshot.docs.map((document) => toMeal(document.id, document.data())),
+      )
     },
   }
 }

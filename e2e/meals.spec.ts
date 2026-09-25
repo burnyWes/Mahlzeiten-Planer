@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   breakfastMealNamesOnServer,
   hiddenMealNamesOnServer,
+  knownUnitNamesOnServer,
   mealCategoriesOnServer,
   nonMainMealNamesOnServer,
   prepareEmulators,
@@ -10,6 +11,7 @@ import {
   storeMealOnServer,
 } from './emulatorHousehold.ts'
 import {
+  openAddItemPageUntilUnitSuggested,
   pressButton,
   shownItems,
   shownShoppingItems,
@@ -56,6 +58,22 @@ test('writes down a meal and transfers it to the shopping list using the keyboar
   await expect
     .poll(() => shownShoppingItems(page))
     .toEqual(['Hackfleisch, 500 g', 'Spaghetti'])
+})
+
+test('remembers the unit of a new meal item', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Aioli')
+  await takeOverItem(page, 'Knoblauch', '2', 'Zehe')
+  await pressButton(page, 'Speichern')
+  await expect.poll(knownUnitNamesOnServer).toContain('Zehe')
+
+  await pressButton(page, 'Zurück zu den Gerichten')
+  await pressButton(page, 'Einkaufsliste')
+  await openAddItemPageUntilUnitSuggested(page, 'Ze', 'Zehe')
 })
 
 test('keeps a meal hidden after a reload', async ({ page }) => {

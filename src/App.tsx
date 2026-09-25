@@ -15,6 +15,7 @@ import { Announcer } from './shared/ui/Announcer'
 import { useAnnouncer } from './shared/ui/useAnnouncer'
 import { useConnectionAnnouncements } from './shared/ui/useConnectionAnnouncements'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
+import type { KnownUnitsClient } from './shopping/api/knownUnitsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 
 type AppProps = {
@@ -30,6 +31,7 @@ type AppProps = {
     onWriteFailure: (message: string) => void,
   ) => SuppliesClient
   createKnownItemsClient: () => KnownItemsClient
+  createKnownUnitsClient: () => KnownUnitsClient
   appUpdateClient: AppUpdateClient
   appearanceClient: AppearanceClient
   storageWarning?: string
@@ -42,6 +44,7 @@ export function App({
   createWeekPlanClient,
   createSuppliesClient,
   createKnownItemsClient,
+  createKnownUnitsClient,
   appUpdateClient,
   appearanceClient,
   storageWarning = '',
@@ -70,6 +73,7 @@ export function App({
           createWeekPlanClient={createWeekPlanClient}
           createSuppliesClient={createSuppliesClient}
           createKnownItemsClient={createKnownItemsClient}
+          createKnownUnitsClient={createKnownUnitsClient}
           appearance={appearance}
           announce={announce}
         />

@@ -7,7 +7,7 @@ import {
   mealWithoutItemsAnnouncement,
   weekPlanTransferAnnouncement,
 } from './meals/domain/announcements'
-import type { Meal } from './meals/domain/meal'
+import { unitsOfMeals, type Meal } from './meals/domain/meal'
 import {
   isMainMealTimeRule,
   MAIN_MEAL_TIME_RULES,
@@ -40,13 +40,25 @@ import { SettingsIcon } from './shared/ui/SettingsIcon'
 import { SettingsPage, type SettingsEntry } from './shared/ui/SettingsPage'
 import { SnowflakeIcon } from './shared/ui/SnowflakeIcon'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
+import type { KnownUnitsClient } from './shopping/api/knownUnitsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 import { additionsAnnouncement } from './shopping/domain/announcements'
-import { suggestNames, withNamesInUse } from './shopping/domain/knownItem'
+import {
+  canonicalName,
+  suggestNames,
+  withNamesInUse,
+} from './shopping/domain/knownItem'
+import {
+  canonicalUnit,
+  suggestUnits,
+  withUnitsInUse,
+} from './shopping/domain/knownUnit'
 import type { NewShoppingItem } from './shopping/domain/shoppingItem'
 import { KnownItemsArea } from './shopping/ui/KnownItemsArea'
+import { KnownUnitsArea } from './shopping/ui/KnownUnitsArea'
 import { ShoppingArea } from './shopping/ui/ShoppingArea'
 import { useKnownItems } from './shopping/ui/useKnownItems'
+import { useKnownUnits } from './shopping/ui/useKnownUnits'
 import { useShoppingList } from './shopping/ui/useShoppingList'
 
 const AREAS = [
@@ -61,6 +73,7 @@ type AreaId = (typeof AREAS)[number]['id']
 
 const KNOWN_ITEMS_ENTRY = 'knownItems'
 const CATEGORIES_ENTRY = 'categories'
+const KNOWN_UNITS_ENTRY = 'knownUnits'
 
 function shoppingItemsOf(meals: readonly Meal[]): readonly NewShoppingItem[] {
   const createdAt = Date.now()
@@ -85,6 +98,7 @@ type SignedInAppProps = {
     onWriteFailure: (message: string) => void,
   ) => SuppliesClient
   createKnownItemsClient: () => KnownItemsClient
+  createKnownUnitsClient: () => KnownUnitsClient
   appearance: Appearance
   announce: (text: string) => void
   random?: RandomSource
@@ -97,6 +111,7 @@ export function SignedInApp({
   createWeekPlanClient,
   createSuppliesClient,
   createKnownItemsClient,
+  createKnownUnitsClient,
   appearance,
   announce,
   random = Math.random,
@@ -110,10 +125,14 @@ export function SignedInApp({
   const [suppliesClient] = useState(() => createSuppliesClient(announce))
   const [knownItemsClient] = useState(createKnownItemsClient)
   const knownItems = useKnownItems(knownItemsClient)
+  const [knownUnitsClient] = useState(createKnownUnitsClient)
+  const knownUnits = useKnownUnits(knownUnitsClient, mealsClient.unitsOnServer)
   const shoppingList = useShoppingList(
     shoppingListClient,
     knownItemsClient,
     knownItems.knownItems,
+    knownUnitsClient,
+    knownUnits.knownUnits,
   )
   const meals = useMeals(mealsClient)
   const weekPlanning = useWeekPlan(weekPlanClient)
@@ -152,14 +171,37 @@ export function SignedInApp({
     )
   }
 
-  function suggestKnownNames(typed: string) {
+  function suggestKnownNames(typed: string, alsoInUse: readonly string[]) {
     const mealItemNames = meals.meals.flatMap((meal) =>
       meal.items.map((item) => item.name),
     )
     return suggestNames(
-      withNamesInUse(knownItems.knownItems, mealItemNames),
+      withNamesInUse(knownItems.knownItems, [...mealItemNames, ...alsoInUse]),
       typed,
     )
+  }
+
+  function suggestKnownUnits(typed: string, alsoInUse: readonly string[]) {
+    return suggestUnits(
+      withUnitsInUse(knownUnits.knownUnits, [
+        ...unitsOfMeals(meals.meals),
+        ...alsoInUse,
+      ]),
+      typed,
+    )
+  }
+
+  function rememberItemsOfMeal(
+    names: readonly string[],
+    units: readonly string[],
+  ) {
+    const usedAt = Date.now()
+    for (const name of names)
+      knownItemsClient.recordUse(
+        canonicalName(knownItems.knownItems, name),
+        usedAt,
+      )
+    for (const unit of units) knownUnitsClient.recordUse(unit, usedAt)
   }
 
   const settingsEntries: readonly SettingsEntry[] = [
@@ -186,6 +228,7 @@ export function SignedInApp({
     },
     { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel-Verwaltung' },
     { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },
+    { kind: 'page', id: KNOWN_UNITS_ENTRY, label: 'Einheiten-Verwaltung' },
   ]
 
   const navigation = (
@@ -209,6 +252,15 @@ export function SignedInApp({
     return (
       <CategoriesArea
         meals={meals}
+        announce={announce}
+        onBack={() => setSettingsEntry(null)}
+      />
+    )
+
+  if (activeArea === 'settings' && settingsEntry === KNOWN_UNITS_ENTRY)
+    return (
+      <KnownUnitsArea
+        knownUnits={knownUnits}
         announce={announce}
         onBack={() => setSettingsEntry(null)}
       />
@@ -261,6 +313,9 @@ export function SignedInApp({
         onAddToShoppingList={addMealToShoppingList}
         onMealDeleted={supplies.removeSupply}
         suggestNames={suggestKnownNames}
+        suggestUnits={suggestKnownUnits}
+        canonicalUnit={(typed) => canonicalUnit(knownUnits.knownUnits, typed)}
+        onItemsUsed={rememberItemsOfMeal}
       />
     )
 
@@ -269,7 +324,8 @@ export function SignedInApp({
       shoppingList={shoppingList}
       announce={announce}
       navigation={navigation}
-      suggestNames={suggestKnownNames}
+      suggestNames={(typed) => suggestKnownNames(typed, [])}
+      suggestUnits={(typed) => suggestKnownUnits(typed, [])}
     />
   )
 }

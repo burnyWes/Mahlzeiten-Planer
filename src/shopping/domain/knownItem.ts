@@ -152,8 +152,16 @@ export function suggestNames(
   knownItems: readonly KnownItem[],
   typed: string,
 ): readonly string[] {
+  return suggestFromCatalog(knownItems, typed, MINIMUM_TYPED_LENGTH)
+}
+
+export function suggestFromCatalog(
+  knownItems: readonly KnownItem[],
+  typed: string,
+  minimumTypedLength: number,
+): readonly string[] {
   const wanted = normalizeItemName(typed)
-  if (wanted.length < MINIMUM_TYPED_LENGTH) return []
+  if (wanted.length < minimumTypedLength) return []
   return knownItems
     .filter((knownItem) => {
       const name = normalizeItemName(knownItem.name)

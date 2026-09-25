@@ -24,7 +24,15 @@ type MealFormPageProps = {
   onSave: (meal: NewMeal) => void
   onBack: () => void
   announce: (text: string) => void
-  suggestNames: (typed: string) => readonly string[]
+  suggestNames: (
+    typed: string,
+    alsoInUse: readonly string[],
+  ) => readonly string[]
+  suggestUnits: (
+    typed: string,
+    alsoInUse: readonly string[],
+  ) => readonly string[]
+  canonicalUnit: (typed: string) => string
   knownCategories: readonly CategoryOverview[]
 }
 
@@ -51,6 +59,8 @@ export function MealFormPage({
   onBack,
   announce,
   suggestNames,
+  suggestUnits,
+  canonicalUnit,
   knownCategories,
 }: MealFormPageProps) {
   const heading = useHeadingFocus()
@@ -63,6 +73,7 @@ export function MealFormPage({
   )
   const [failureMessage, setFailureMessage] = useState('')
   const [suggestNamesOnOpen] = useState(() => suggestNames)
+  const [suggestUnitsOnOpen] = useState(() => suggestUnits)
   const nameField = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -117,6 +128,8 @@ export function MealFormPage({
         }
         announce={announce}
         suggestNames={suggestNamesOnOpen}
+        suggestUnits={suggestUnitsOnOpen}
+        canonicalUnit={canonicalUnit}
       />
       <p className="field">
         <label htmlFor="mealIngredientNotes">Zutaten</label>

@@ -9,7 +9,9 @@ import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
+import { createInMemoryKnownUnitsClient } from './shopping/api/inMemoryKnownUnitsClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
+import { DEFAULT_UNITS } from './shopping/domain/knownUnit'
 
 const household = {
   email: 'haushalt@example.com',
@@ -30,6 +32,11 @@ function renderApp(
       createWeekPlanClient={() => createInMemoryWeekPlanClient()}
       createSuppliesClient={() => createInMemorySuppliesClient()}
       createKnownItemsClient={() => createInMemoryKnownItemsClient()}
+      createKnownUnitsClient={() =>
+        createInMemoryKnownUnitsClient(
+          DEFAULT_UNITS.map((name) => ({ name, lastUsedAt: 0, timesUsed: 0 })),
+        )
+      }
       appUpdateClient={appUpdateClient}
       appearanceClient={appearanceClient}
       storageWarning={storageWarning}

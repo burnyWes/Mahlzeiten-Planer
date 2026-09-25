@@ -8,7 +8,10 @@ import {
   formatMealItem,
   InvalidMeal,
   mealNamed,
+  newlyUsedNames,
+  newlyUsedUnits,
   normalizeMealName,
+  unitsOfMeals,
   withChosenKind,
   withHiding,
   type Meal,
@@ -431,5 +434,78 @@ describe('mealNamed', () => {
 
   it('finds no meal for a name nobody wrote down', () => {
     expect(mealNamed(meals, 'Pizza')).toBeNull()
+  })
+})
+
+describe('unitsOfMeals', () => {
+  it('names the unit of every item, once per item', () => {
+    const meals = [
+      { ...meal('Aioli'), items: [item('Knoblauch', '2', 'Zehe')] },
+      {
+        ...meal('Bolognese'),
+        items: [item('Hackfleisch', '500', 'g'), item('Nudeln', '500', 'g')],
+      },
+    ]
+
+    expect(unitsOfMeals(meals)).toEqual(['Zehe', 'g', 'g'])
+  })
+
+  it('ignores items without a unit', () => {
+    const meals = [
+      { ...meal('Brotzeit'), items: [item('Brot'), item('Eier', '6')] },
+    ]
+
+    expect(unitsOfMeals(meals)).toEqual([])
+  })
+})
+
+describe('newlyUsedNames', () => {
+  it('names every item of a new meal once', () => {
+    expect(
+      newlyUsedNames([], [item('Hackfleisch', '500', 'g'), item('Nudeln')]),
+    ).toEqual(['Hackfleisch', 'Nudeln'])
+  })
+
+  it('leaves out names the meal carried before, whatever their spelling', () => {
+    expect(
+      newlyUsedNames(
+        [item('Hackfleisch')],
+        [item(' hackfleisch '), item('Knoblauch')],
+      ),
+    ).toEqual(['Knoblauch'])
+  })
+
+  it('names an item added twice only once', () => {
+    expect(
+      newlyUsedNames([], [item('Knoblauch', '2'), item('knoblauch', '1')]),
+    ).toEqual(['Knoblauch'])
+  })
+})
+
+describe('newlyUsedUnits', () => {
+  it('names every unit of a new meal once', () => {
+    expect(
+      newlyUsedUnits(
+        [],
+        [
+          item('Hackfleisch', '500', 'g'),
+          item('Nudeln', '500', 'g'),
+          item('Knoblauch', '2', 'Zehe'),
+        ],
+      ),
+    ).toEqual(['g', 'Zehe'])
+  })
+
+  it('leaves out units the meal carried before', () => {
+    expect(
+      newlyUsedUnits(
+        [item('Hackfleisch', '500', 'g')],
+        [item('Hackfleisch', '500', 'g'), item('Nudeln', '1', 'G')],
+      ),
+    ).toEqual([])
+  })
+
+  it('ignores items without a unit', () => {
+    expect(newlyUsedUnits([], [item('Brot'), item('Eier', '6')])).toEqual([])
   })
 })

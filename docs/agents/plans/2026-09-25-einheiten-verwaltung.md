@@ -351,13 +351,13 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shopping/domain/knownItem.test.ts`, `describe('suggestFromCatalog')`:
+- [x] Test zuerst: `src/shopping/domain/knownItem.test.ts`, `describe('suggestFromCatalog')`:
       - `suggests from the first typed character when asked to`
       - `suggests nothing below the given number of typed characters`
       Die bestehenden `suggestNames`-Fälle bleiben unverändert grün.
-- [ ] `src/shopping/domain/knownItem.ts`: `suggestFromCatalog` extrahieren und
+- [x] `src/shopping/domain/knownItem.ts`: `suggestFromCatalog` extrahieren und
       exportieren, `suggestNames` ruft sie mit `MINIMUM_TYPED_LENGTH` auf.
-- [ ] Test zuerst: `src/shopping/domain/knownUnit.test.ts`:
+- [x] Test zuerst: `src/shopping/domain/knownUnit.test.ts`:
       - `suggestUnits`: `suggests a unit from a single typed character`,
         `puts units starting with the typed text first`, `leaves out the unit that
         equals what was typed`, `suggests five units at most`
@@ -374,7 +374,7 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
           keine Historie → ein Eintrag "g" mit `timesUsed` 1)
         - `ignores items without a unit`
       - `withUnitsInUse`: `adds a unit unknown so far as never used`
-- [ ] `src/shopping/domain/knownUnit.ts` nach *Abstraktionen* anlegen.
+- [x] `src/shopping/domain/knownUnit.ts` nach *Abstraktionen* anlegen.
       `knownUnitsFromHistory(items: readonly ShoppingItem[], mealUnits: readonly string[])`
       arbeitet in dieser Reihenfolge:
       1. Artikel mit Einheit nach `createdAt` absteigend einsetzen. Die jüngste
@@ -385,17 +385,17 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
 
       Gerichts-Einheiten haben kein Datum und verdrängen deshalb keine vorhandene
       Schreibweise.
-- [ ] Test zuerst: `src/shopping/domain/announcements.test.ts`
+- [x] Test zuerst: `src/shopping/domain/announcements.test.ts`
       - `knownUnitsHeading`: `0` → "Einheiten-Verwaltung, keine", `7` →
         "Einheiten-Verwaltung, 7"
       - `knownUnitDeletedAnnouncement`: "g gelöscht, keine Einheiten mehr." /
         "… noch 1 Einheit." / "… noch 3 Einheiten."
-- [ ] `src/shopping/domain/announcements.ts`: die Funktionen umsetzen, dazu
+- [x] `src/shopping/domain/announcements.ts`: die Funktionen umsetzen, dazu
       `knownUnitSavedAnnouncement(name)` → "<Name> gespeichert." (für Phase 3).
-- [ ] `src/shopping/api/knownUnitsClient.ts`: Port wie unter *Abstraktionen*.
+- [x] `src/shopping/api/knownUnitsClient.ts`: Port wie unter *Abstraktionen*.
       `KnownUnitRename` ist ein Alias von `KnownItemRename`, exportiert aus
       `knownUnit.ts`.
-- [ ] `src/shopping/api/inMemoryKnownUnitsClient.ts`: Muster
+- [x] `src/shopping/api/inMemoryKnownUnitsClient.ts`: Muster
       `inMemoryKnownItemsClient.ts`, Signatur
       `createInMemoryKnownUnitsClient(initialKnownUnits: readonly KnownUnit[] = [], history: readonly ShoppingItem[] = [])`,
       mit `knownUnitsArriveFromElsewhere` und `storedKnownUnits`.
@@ -403,47 +403,47 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
       prüft es, ob der Katalog leer ist, und bricht sonst ab. Dann wartet es auf
       `unitsOfMeals()`. Danach befüllt es mit `knownUnitsFromHistory(history, mealUnits)`
       und veröffentlicht.
-- [ ] `src/shopping/api/firestoreKnownUnitsClient.ts`: Muster
+- [x] `src/shopping/api/firestoreKnownUnitsClient.ts`: Muster
       `firestoreKnownItemsClient.ts`, Sammlung `units`, Dokument-ID
       `knownItemIdOf(unit)`. `takeOverIfEmpty` prüft `catalogIsEmptyOnServer`, liest
       `items` vom Server (`toShoppingItem`) und die Gerichts-Einheiten über die gereichte
       Funktion, dann schreibt es in Batches. `inBatches` und `ignoreFailure` werden
       dazu aus `firestoreKnownItemsClient.ts` exportiert und wiederverwendet.
-- [ ] `firestore.rules`: `match /units/{unitId} { allow read, write: if isHousehold(); }`
+- [x] `firestore.rules`: `match /units/{unitId} { allow read, write: if isHousehold(); }`
       vor dem Auffang-`match`.
-- [ ] `firestore.rules.test.ts`: `const knownUnitsOf = collectionOf('units')` und die
+- [x] `firestore.rules.test.ts`: `const knownUnitsOf = collectionOf('units')` und die
       fünf Fälle nach dem Muster der `knownItems`-Fälle (Zeile 160-181): Der Haushalt
       schreibt, liest und löscht, ein Fremder liest nicht, ein nicht angemeldeter
       Besucher wird abgewiesen.
-- [ ] `src/meals/api/mealsClient.ts`: `unitsOnServer(): Promise<readonly string[]>`.
+- [x] `src/meals/api/mealsClient.ts`: `unitsOnServer(): Promise<readonly string[]>`.
       Geprüft wird die Methode über die Erstbefüllungs-Fälle in `SignedInApp.test.tsx`
       (siehe Verifikation).
-- [ ] `src/meals/api/firestoreMealsClient.ts`: `unitsOnServer` liest
+- [x] `src/meals/api/firestoreMealsClient.ts`: `unitsOnServer` liest
       `getDocsFromServer(meals)`, bildet mit `toMeal` ab und liefert die Einheiten aller
       Items ohne `null`, eine je Fundstelle. Doppelte bleiben stehen, weil sie
       `timesUsed` hochzählen. Ist der Server nicht erreichbar, schlägt das Versprechen
       fehl, `takeOverIfEmpty` verwirft den Fehler (`ignoreFailure`), und der nächste
       Start versucht es erneut.
-- [ ] `src/meals/api/inMemoryMealsClient.ts`: `unitsOnServer` liefert dasselbe aus
+- [x] `src/meals/api/inMemoryMealsClient.ts`: `unitsOnServer` liefert dasselbe aus
       `meals`.
-- [ ] `src/shopping/ui/useKnownUnits.ts`: Muster `useKnownItems.ts`, Signatur
+- [x] `src/shopping/ui/useKnownUnits.ts`: Muster `useKnownItems.ts`, Signatur
       `useKnownUnits(client, unitsOfMeals)`. Der Effekt für `takeOverIfEmpty` läuft
       einmal je Client, die Funktion wird über einen `useRef` gehalten, damit ein neuer
       Funktionswert keinen zweiten Lauf auslöst.
-- [ ] `src/shopping/ui/useShoppingList.ts`: zusätzliche Parameter
+- [x] `src/shopping/ui/useShoppingList.ts`: zusätzliche Parameter
       `knownUnitsClient: KnownUnitsClient` und `knownUnits: readonly KnownUnit[]`.
       `underGroomedName` gleicht auch `quantity.unit` über `canonicalUnit` an
       (`quantity` `null` oder `unit` `null` bleiben unverändert). `carryOutAll` ruft je
       Ergebnis mit Einheit `knownUnitsClient.recordUse(unit, createdAt)`.
-- [ ] `src/shared/ui/NameSuggestions.tsx`: Prop `label?: string` mit Standard
+- [x] `src/shared/ui/NameSuggestions.tsx`: Prop `label?: string` mit Standard
       `'Vorschläge'`, als `aria-label` der Liste.
-- [ ] `src/shopping/ui/AddItemPage.tsx`: Prop `suggestUnits: (typed: string) => readonly string[]`,
+- [x] `src/shopping/ui/AddItemPage.tsx`: Prop `suggestUnits: (typed: string) => readonly string[]`,
       beim Öffnen einfrieren wie `suggestNames`. `datalist` und `list="units"` entfernen,
       unter `div.quantityFields` ein `<NameSuggestions label="Einheiten-Vorschläge"
       names={suggestUnitsOnOpen(draft.unit)} onChoose={chooseUnit} />`. `chooseUnit`
       setzt `unit` und fokussiert den Knopf "Hinzufügen" (neuer `ref`).
-- [ ] `src/shopping/ui/ShoppingArea.tsx`: Prop `suggestUnits` durchreichen.
-- [ ] `src/SignedInApp.tsx`: Prop `createKnownUnitsClient: () => KnownUnitsClient`,
+- [x] `src/shopping/ui/ShoppingArea.tsx`: Prop `suggestUnits` durchreichen.
+- [x] `src/SignedInApp.tsx`: Prop `createKnownUnitsClient: () => KnownUnitsClient`,
       `useKnownUnits(knownUnitsClient, mealsClient.unitsOnServer)`,
       `useShoppingList(…, knownUnitsClient, knownUnits.knownUnits)`. Die Einheiten der
       Gerichte ergeben sich als
@@ -451,9 +451,9 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
       Neue Funktion `suggestKnownUnits(typed, alsoInUse)` =
       `suggestUnits(withUnitsInUse(knownUnits.knownUnits, [...mealItemUnits, ...alsoInUse]), typed)`.
       An `ShoppingArea` geht `(typed) => suggestKnownUnits(typed, [])`.
-- [ ] `src/App.tsx`, `src/main.tsx`: `createKnownUnitsClient` durchreichen,
+- [x] `src/App.tsx`, `src/main.tsx`: `createKnownUnitsClient` durchreichen,
       `main.tsx` baut `createFirestoreKnownUnitsClient(firestore)`.
-- [ ] `src/App.test.tsx`, `src/SignedInApp.test.tsx`: `createKnownUnitsClient`
+- [x] `src/App.test.tsx`, `src/SignedInApp.test.tsx`: `createKnownUnitsClient`
       ergänzen. `renderSignedInApp` bekommt als letzten Positionsparameter
       `knownUnitsClient = createInMemoryKnownUnitsClient(DEFAULT_UNITS.map((name) => ({ name, lastUsedAt: 0, timesUsed: 0 })))`
       und gibt ihn zurück. Der Standard-Client ist also schon befüllt und löst keine
@@ -461,15 +461,15 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
       keine State-Änderungen außerhalb von `act`. Dasselbe gilt für `App.test.tsx`. Nur
       die Befüllungs-Tests reichen ausdrücklich einen leeren Client herein und prüfen
       mit `await waitFor(...)`.
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx`: Der Harness `ShoppingAreaUnderTest`
+- [x] `src/shopping/ui/ShoppingArea.test.tsx`: Der Harness `ShoppingAreaUnderTest`
       (Zeile 44-63) bekommt einen `createInMemoryKnownUnitsClient` mit den
       Standard-Einheiten, dazu `useKnownUnits(client, async () => [])`,
       `useShoppingList(…, knownUnitsClient, knownUnits.knownUnits)` und
       `suggestUnits={(typed) => suggestUnits(knownUnits.knownUnits, typed)}`. Ohne
       diese Anpassung scheitern `tsc -b` und jeder Test mit Einheit.
-- [ ] `e2e/emulatorHousehold.ts`: `knownUnitNamesOnServer(): Promise<readonly string[]>`
+- [x] `e2e/emulatorHousehold.ts`: `knownUnitNamesOnServer(): Promise<readonly string[]>`
       nach dem Muster von `itemNamesOnServer`, Sammlung `units`.
-- [ ] `e2e/shoppingList.spec.ts`: `suggests a unit and takes over its spelling`.
+- [x] `e2e/shoppingList.spec.ts`: `suggests a unit and takes over its spelling`.
       - Zuerst mit `expect.poll(knownUnitNamesOnServer)` warten, bis die sechs
         Standard-Einheiten auf dem Server liegen. Die Erstbefüllung läuft asynchron,
         und "Artikel hinzufügen" friert die Vorschläge beim Öffnen ein.
@@ -482,9 +482,9 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `knownItem.test.ts`, `knownUnit.test.ts` und
+- [x] Die neuen Fälle in `knownItem.test.ts`, `knownUnit.test.ts` und
       `announcements.test.ts` schlagen vor der Umsetzung fehl und laufen danach grün.
-- [ ] Neue Fälle in `src/shopping/ui/ShoppingArea.test.tsx`:
+- [x] Neue Fälle in `src/shopping/ui/ShoppingArea.test.tsx`:
       - `suggests units from the first typed character` - "k" tippen → Liste
         "Einheiten-Vorschläge" mit "kg"
       - `takes over a suggested unit and moves on to the add button` - Tipp auf "kg",
@@ -493,7 +493,7 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
       - `keeps the name suggestions apart from the unit suggestions` - beide Listen
         gleichzeitig, jeweils am Namen gefunden
       - `has no accessibility violations with unit suggestions`
-- [ ] Neue Fälle in `src/SignedInApp.test.tsx`:
+- [x] Neue Fälle in `src/SignedInApp.test.tsx`:
       - `fills an empty unit catalog with the defaults, the history and the meals` -
         leerer `knownUnitsClient`, ein Artikel "Mehl, 500 g" in der Historie, ein
         Gericht mit "Knoblauch, 2 Zehe"; `storedKnownUnits()` enthält die sechs
@@ -505,13 +505,13 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
         "Auf die Einkaufsliste" an einem Gericht
       - `remembers nothing for an item without a unit`
       - `suggests the units of the meals on the shopping list`
-- [ ] `npm run test:rules` läuft grün, samt den neuen `units`-Fällen.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft grün, samt dem neuen Ablauf.
+- [x] `npm run test:rules` läuft grün, samt den neuen `units`-Fällen.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft grün, samt dem neuen Ablauf.
 
 **Manuelle Verifikation**:
 
-- [ ] `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`
+- [x] `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`
       ist ausgeführt, bevor die App ausgerollt wird.
 - [ ] Auf dem iPhone mit VoiceOver: In "Artikel hinzufügen" "k" ins Feld "Einheit"
       tippen. VoiceOver erreicht per Wischen "Einheiten-Vorschläge, Liste", ein
@@ -527,15 +527,15 @@ den Vorschlägen. `UNITS` verschwindet.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/meal.test.ts`
+- [x] Test zuerst: `src/meals/domain/meal.test.ts`
       - `newlyUsedNames`: `names every item of a new meal once` (Aufruf mit `[]` als
         `before`), `leaves out names the meal carried before, whatever their spelling`,
         `names an item added twice only once`
       - `newlyUsedUnits`: `names every unit of a new meal once`, `leaves out units the
         meal carried before`, `ignores items without a unit`
-- [ ] `src/meals/domain/meal.ts`: beide Funktionen, Vergleich über `normalizeMealName`,
+- [x] `src/meals/domain/meal.ts`: beide Funktionen, Vergleich über `normalizeMealName`,
       Ergebnis in der Schreibweise und Reihenfolge von `after`.
-- [ ] `src/meals/ui/MealItemsEditor.tsx`: Props
+- [x] `src/meals/ui/MealItemsEditor.tsx`: Props
       `suggestNames: (typed: string, alsoInUse: readonly string[]) => readonly string[]`,
       `suggestUnits` gleicher Form und `canonicalUnit: (typed: string) => string`.
       `datalist` und den `UNITS`-Import entfernen, `NameSuggestions` mit
@@ -543,16 +543,16 @@ den Vorschlägen. `UNITS` verschwindet.
       Namen bzw. Einheiten aus `items` als `alsoInUse`. `takeOverItem` ruft
       `createMealItem({ ...draft, unit: canonicalUnit(draft.unit) })`. Ein Tipp auf einen
       Einheiten-Vorschlag fokussiert "Item hinzufügen".
-- [ ] `src/meals/ui/MealFormPage.tsx`: `suggestUnits` wie `suggestNames` beim Öffnen
+- [x] `src/meals/ui/MealFormPage.tsx`: `suggestUnits` wie `suggestNames` beim Öffnen
       einfrieren, beide sowie `canonicalUnit` an den Editor reichen. `onSave` bleibt
       unverändert, der Vergleich alt/neu geschieht in `MealsArea`.
-- [ ] `src/meals/ui/MealsArea.tsx`: Props `suggestNames` in neuer Signatur,
+- [x] `src/meals/ui/MealsArea.tsx`: Props `suggestNames` in neuer Signatur,
       `suggestUnits`, `canonicalUnit`,
       `onItemsUsed: (names: readonly string[], units: readonly string[]) => void`.
       `saveMeal` bestimmt `before` = Items des bisherigen Gerichts bzw. `[]` und ruft
       nach dem Schreiben `onItemsUsed(newlyUsedNames(before, newMeal.items),
       newlyUsedUnits(before, newMeal.items))`, nur wenn eine der Listen nicht leer ist.
-- [ ] `src/SignedInApp.tsx`: `suggestKnownNames(typed, alsoInUse)` mischt `alsoInUse`
+- [x] `src/SignedInApp.tsx`: `suggestKnownNames(typed, alsoInUse)` mischt `alsoInUse`
       zu `withNamesInUse`. `ShoppingArea` bekommt weiterhin eine einparametrige Funktion
       `(typed) => suggestKnownNames(typed, [])`. `MealsArea` bekommt
       `suggestKnownNames`, `suggestKnownUnits`,
@@ -560,13 +560,13 @@ den Vorschlägen. `UNITS` verschwindet.
       `onItemsUsed`. Dieses ruft mit einem gemeinsamen `Date.now()` je Name
       `knownItemsClient.recordUse(canonicalName(knownItems.knownItems, name), usedAt)`
       und je Einheit `knownUnitsClient.recordUse(unit, usedAt)`.
-- [ ] `src/shared/domain/quantity.ts`: `UNITS` entfernen.
-- [ ] `src/meals/ui/MealsArea.test.tsx`: Der Harness `MealsAreaUnderTest` (Zeile 25-49)
+- [x] `src/shared/domain/quantity.ts`: `UNITS` entfernen.
+- [x] `src/meals/ui/MealsArea.test.tsx`: Der Harness `MealsAreaUnderTest` (Zeile 25-49)
       bekommt die Props `suggestUnits`, `canonicalUnit` und `onItemsUsed`, wobei
       `onItemsUsed` die Aufrufe in einer Liste sammelt. `suggestingFrom` (Zeile 52-58)
       mischt `alsoInUse` zu den vorgegebenen Namen, und ein gleich gebautes
       `suggestingUnitsFrom` kommt dazu.
-- [ ] `e2e/meals.spec.ts`: `remembers the unit of a new meal item`. Gericht "Aioli"
+- [x] `e2e/meals.spec.ts`: `remembers the unit of a new meal item`. Gericht "Aioli"
       anlegen, Item "Knoblauch", Menge 2, Einheit "Zehe", speichern; warten, bis
       `knownUnitNamesOnServer()` "Zehe" enthält. Dann "Artikel hinzufügen" über
       `openAddItemPageUntilUnitSuggested` (aus Phase 1, dafür nach
@@ -575,9 +575,9 @@ den Vorschlägen. `UNITS` verschwindet.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `meal.test.ts` schlagen vor der Umsetzung fehl und laufen
+- [x] Die neuen Fälle in `meal.test.ts` schlagen vor der Umsetzung fehl und laufen
       danach grün.
-- [ ] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`:
+- [x] Neue Fälle in `src/meals/ui/MealsArea.test.tsx`:
       - `suggests units in the meal form` - "Einheiten-Vorschläge" mit einem Treffer
       - `suggests the unit of an item taken over in the same form` - Item mit "Zehe"
         übernehmen, beim nächsten Item "Ze" tippen → "Zehe"
@@ -590,14 +590,14 @@ den Vorschlägen. `UNITS` verschwindet.
       - `reports nothing when a meal is saved unchanged`
       - `reports nothing when the form is left without saving`
       - `has no accessibility violations with unit suggestions in the meal form`
-- [ ] Neue Fälle in `src/SignedInApp.test.tsx`:
+- [x] Neue Fälle in `src/SignedInApp.test.tsx`:
       - `remembers the name and the unit of a new meal item in both catalogs`
       - `keeps the catalog spelling of a name remembered from a meal` - Katalog
         "Hackfleisch", neues Gericht-Item "hackfleisch" → der Katalog heißt weiter
         "Hackfleisch", `timesUsed` + 1
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch; `UNITS` kommt in
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch; `UNITS` kommt in
       `src` nicht mehr vor.
-- [ ] `npm run test:e2e` läuft grün, samt dem neuen Ablauf.
+- [x] `npm run test:e2e` läuft grün, samt dem neuen Ablauf.
 
 ### Phase 3: Einheiten-Verwaltung in den Einstellungen
 
@@ -608,35 +608,35 @@ samt Verschmelzen und Löschen.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/shopping/domain/knownUnit.test.ts`
+- [x] Test zuerst: `src/shopping/domain/knownUnit.test.ts`
       - `planKnownUnitRename`: `merges the unit into the one that holds the name
         already` ("gr" → "g": `timesUsed` addiert, `removedName` "gr"), `only corrects
         the spelling` ("Zehe" → "zehe": `removedName` `null`), `refuses an empty name`
         (`InvalidShoppingItem` mit `nameMissing`)
       - `knownUnitsByName`: `sorts the units the German way`
-- [ ] `src/shopping/domain/knownUnit.ts`: `planKnownUnitRename`, `applyUnitRename` und
+- [x] `src/shopping/domain/knownUnit.ts`: `planKnownUnitRename`, `applyUnitRename` und
       `knownUnitsByName` als Delegation an die `knownItem`-Funktionen.
-- [ ] `src/shopping/ui/useKnownUnits.ts`: `removeKnownUnit` und `renameKnownUnit` in
+- [x] `src/shopping/ui/useKnownUnits.ts`: `removeKnownUnit` und `renameKnownUnit` in
       `KnownUnits`, Muster `useKnownItems.ts:23-33`.
-- [ ] `src/shopping/ui/KnownUnitListRow.tsx`, `KnownUnitListPage.tsx`: Kopie der
+- [x] `src/shopping/ui/KnownUnitListRow.tsx`, `KnownUnitListPage.tsx`: Kopie der
       `KnownItem…`-Dateien. Überschrift `knownUnitsHeading`, Leertext "Noch keine
       Einheiten.", sortiert mit `knownUnitsByName`, Mülleimer
       `aria-label={`Löschen, ${knownUnit.name}`}`.
-- [ ] `src/shopping/ui/KnownUnitFormPage.tsx`: Kopie von `KnownItemFormPage.tsx`,
+- [x] `src/shopping/ui/KnownUnitFormPage.tsx`: Kopie von `KnownItemFormPage.tsx`,
       Rückknopf "Zurück zur Einheiten-Verwaltung", `h1` "Einheit bearbeiten", Feld
       `id="knownUnitName"`, Fehlerzeile `id="knownUnitFailure"`.
-- [ ] `src/shopping/ui/DeleteKnownUnitPage.tsx`: Kopie von `DeleteKnownItemPage.tsx`,
+- [x] `src/shopping/ui/DeleteKnownUnitPage.tsx`: Kopie von `DeleteKnownItemPage.tsx`,
       Text "Die Einheit wird für beide Geräte entfernt. Wird sie wieder verwendet,
       entsteht sie neu.".
-- [ ] `src/shopping/ui/KnownUnitsArea.tsx`: Kopie von `KnownItemsArea.tsx` mit
+- [x] `src/shopping/ui/KnownUnitsArea.tsx`: Kopie von `KnownItemsArea.tsx` mit
       `planKnownUnitRename`, `knownUnitSavedAnnouncement` und
       `knownUnitDeletedAnnouncement`. Adressiert wird über `normalizeItemName`.
-- [ ] `src/SignedInApp.tsx`: `const KNOWN_UNITS_ENTRY = 'knownUnits'`, Eintrag
+- [x] `src/SignedInApp.tsx`: `const KNOWN_UNITS_ENTRY = 'knownUnits'`, Eintrag
       `{ kind: 'page', id: KNOWN_UNITS_ENTRY, label: 'Einheiten-Verwaltung' }` nach der
       Kategorie-Verwaltung, `KnownUnitsArea` rendern wie `KnownItemsArea`.
-- [ ] `src/SignedInApp.test.tsx`: der Test `offers to invert the colours above the
+- [x] `src/SignedInApp.test.tsx`: der Test `offers to invert the colours above the
       known items` (Zeile 1175-1190) erwartet zusätzlich "Einheiten-Verwaltung" am Ende.
-- [ ] `e2e/settings.spec.ts`: `merges a misspelt unit into the right one`. In der App
+- [x] `e2e/settings.spec.ts`: `merges a misspelt unit into the right one`. In der App
       den Artikel "Mehl" mit Menge 500 und getippter Einheit "gr" hinzufügen und warten,
       bis `knownUnitNamesOnServer()` "gr" enthält. Dann Einstellungen →
       "Einheiten-Verwaltung" → "gr" → Name "g" → "Speichern". Die Liste zeigt kein "gr"
@@ -644,9 +644,9 @@ samt Verschmelzen und Löschen.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `knownUnit.test.ts` schlagen vor der Umsetzung fehl und laufen
+- [x] Die neuen Fälle in `knownUnit.test.ts` schlagen vor der Umsetzung fehl und laufen
       danach grün.
-- [ ] `src/shopping/ui/KnownUnitsArea.test.tsx` mit den Fällen aus
+- [x] `src/shopping/ui/KnownUnitsArea.test.tsx` mit den Fällen aus
       `KnownItemsArea.test.tsx:95-282`, übertragen auf Einheiten:
       `lists the units in alphabetical order`, `shows an empty catalog`, `leads back to
       the settings`, `asks before deleting a unit`, `keeps the unit when the deletion is
@@ -656,10 +656,10 @@ samt Verschmelzen und Löschen.
       name`, `refuses a name that is too long`, `returns to the list when the unit to be
       renamed is already gone` sowie die drei axe-Fälle für Formular, Liste und
       Löschseite.
-- [ ] Neuer Fall in `src/SignedInApp.test.tsx`: `opens the unit management from the
+- [x] Neuer Fall in `src/SignedInApp.test.tsx`: `opens the unit management from the
       settings` - `h1` "Einheiten-Verwaltung, N".
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft grün, samt dem neuen Ablauf.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft grün, samt dem neuen Ablauf.
 
 **Manuelle Verifikation**:
 
@@ -671,6 +671,27 @@ samt Verschmelzen und Löschen.
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
 
+- Phase 1: Die Einheiten aller Items einer Gerichtsliste bildet die neue
+  Domänenfunktion `unitsOfMeals` in `src/meals/domain/meal.ts`. Sie wird von
+  `firestoreMealsClient`, `inMemoryMealsClient` und `SignedInApp` genutzt statt des
+  im Plan inline notierten `flatMap`.
+- Phase 1: Das Angleichen der Einheit einer Menge ist als `withCanonicalUnit` in
+  `knownUnit.ts` gelandet (mit Tests), `useShoppingList` ruft es nur auf.
+- Phase 1: `openAddItemPageUntilUnitSuggested` liegt gleich in `e2e/keyboard.ts`, damit
+  Phase 2 es ohne Umzug nutzen kann.
+- Phase 1: Der Tipp "k" in "Einheit" schlägt mit den Standard-Einheiten "kg", "Pck."
+  und "Stück" vor, weil jede davon ein "k" enthält.
+- Phase 2: `unitsOfItems` in `meal.ts` ist exportiert und wird von `unitsOfMeals`,
+  `newlyUsedUnits` und `MealItemsEditor` (Einheiten des offenen Formulars) geteilt.
+- Phase 2: Die Sammlungs-Konstante im Firestore-Adapter heisst `KNOWN_UNITS`, damit
+  `UNITS` in `src` nicht mehr vorkommt.
+- Phase 2: Zusätzlicher Komponententest `takes a suggested unit and moves the focus to
+  the item button` in `MealsArea.test.tsx`.
+- Phase 3: `inMemoryKnownUnitsClient` nutzt jetzt `applyUnitRename` statt
+  `applyRename` aus `knownItem.ts`.
+- Phase 3: Der E2E-Ablauf `merges a misspelt unit into the right one` wartet zuerst,
+  bis die Erstbefüllung "g" auf den Server gebracht hat, damit das Verschmelzen auf
+  einen vorhandenen Eintrag trifft.
 - Nach Abschluss in `docs/notes.txt` den TODO-Punkt "Einheit ebenfalls merken und
   Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung" auf `x`
   setzen und nach DONE verschieben.

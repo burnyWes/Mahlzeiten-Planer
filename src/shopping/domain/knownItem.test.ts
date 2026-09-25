@@ -7,6 +7,7 @@ import {
   knownItemsFromHistory,
   planKnownItemRename,
   recordUse,
+  suggestFromCatalog,
   suggestNames,
   withNamesInUse,
   type KnownItem,
@@ -86,6 +87,18 @@ describe('suggestNames', () => {
     )
 
     expect(suggestNames(knownItems, 'milch')).toHaveLength(5)
+  })
+})
+
+describe('suggestFromCatalog', () => {
+  it('suggests from the first typed character when asked to', () => {
+    expect(suggestFromCatalog([known('kg'), known('Milch')], 'k', 1)).toEqual([
+      'kg',
+    ])
+  })
+
+  it('suggests nothing below the given number of typed characters', () => {
+    expect(suggestFromCatalog([known('Milch')], 'mil', 4)).toEqual([])
   })
 })
 

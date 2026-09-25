@@ -32,7 +32,7 @@ function toKnownItem(stored: DocumentData): KnownItem {
   }
 }
 
-function inBatches<T>(
+export function inBatches<T>(
   entries: readonly T[],
   size: number,
 ): readonly (readonly T[])[] {
@@ -41,7 +41,7 @@ function inBatches<T>(
   )
 }
 
-function ignoreFailure() {}
+export function ignoreFailure() {}
 
 export function createFirestoreKnownItemsClient(
   firestore: Firestore,

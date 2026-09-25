@@ -1,5 +1,4 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { UNITS } from '../../shared/domain/quantity'
 import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import { TrashIcon } from '../../shared/ui/TrashIcon'
 import {
@@ -11,6 +10,7 @@ import {
 import {
   createMealItem,
   formatMealItem,
+  unitsOfItems,
   type MealItem,
   type MealItemDraft,
 } from '../domain/meal'
@@ -20,7 +20,15 @@ type MealItemsEditorProps = {
   onAddItem: (item: MealItem) => void
   onRemoveItem: (position: number) => void
   announce: (text: string) => void
-  suggestNames: (typed: string) => readonly string[]
+  suggestNames: (
+    typed: string,
+    alsoInUse: readonly string[],
+  ) => readonly string[]
+  suggestUnits: (
+    typed: string,
+    alsoInUse: readonly string[],
+  ) => readonly string[]
+  canonicalUnit: (typed: string) => string
 }
 
 const EMPTY_DRAFT: MealItemDraft = { name: '', amount: '', unit: '' }
@@ -31,11 +39,16 @@ export function MealItemsEditor({
   onRemoveItem,
   announce,
   suggestNames,
+  suggestUnits,
+  canonicalUnit,
 }: MealItemsEditorProps) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [failureMessage, setFailureMessage] = useState('')
   const nameField = useRef<HTMLInputElement>(null)
   const amountField = useRef<HTMLInputElement>(null)
+  const addButton = useRef<HTMLButtonElement>(null)
+  const namesInForm = items.map((item) => item.name)
+  const unitsInForm = unitsOfItems(items)
 
   function change(part: Partial<MealItemDraft>) {
     setDraft((previous) => ({ ...previous, ...part }))
@@ -46,10 +59,18 @@ export function MealItemsEditor({
     amountField.current?.focus()
   }
 
+  function chooseUnit(unit: string) {
+    change({ unit })
+    addButton.current?.focus()
+  }
+
   function takeOverItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     try {
-      const item = createMealItem(draft)
+      const item = createMealItem({
+        ...draft,
+        unit: canonicalUnit(draft.unit),
+      })
       onAddItem(item)
       setDraft(EMPTY_DRAFT)
       setFailureMessage('')
@@ -104,7 +125,7 @@ export function MealItemsEditor({
           />
         </p>
         <NameSuggestions
-          names={suggestNames(draft.name)}
+          names={suggestNames(draft.name, namesInForm)}
           onChoose={chooseSuggestion}
         />
         <div className="quantityFields">
@@ -123,21 +144,22 @@ export function MealItemsEditor({
             <label htmlFor="mealItemUnit">Einheit</label>
             <input
               id="mealItemUnit"
-              list="mealUnits"
               value={draft.unit}
               onChange={(event) => change({ unit: event.target.value })}
             />
-            <datalist id="mealUnits">
-              {UNITS.map((unit) => (
-                <option key={unit} value={unit} />
-              ))}
-            </datalist>
           </p>
         </div>
+        <NameSuggestions
+          label="Einheiten-Vorschläge"
+          names={suggestUnits(draft.unit, unitsInForm)}
+          onChoose={chooseUnit}
+        />
         <p id="mealItemFailure" className="failure">
           {failureMessage}
         </p>
-        <button type="submit">Item hinzufügen</button>
+        <button type="submit" ref={addButton}>
+          Item hinzufügen
+        </button>
       </form>
     </>
   )

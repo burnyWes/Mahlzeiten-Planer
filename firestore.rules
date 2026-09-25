@@ -26,6 +26,10 @@ service cloud.firestore {
       allow read, write: if isHousehold();
     }
 
+    match /units/{unitId} {
+      allow read, write: if isHousehold();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

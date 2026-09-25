@@ -13,6 +13,9 @@ import {
   knownItemSavedAnnouncement,
   itemRemovedAnnouncement,
   knownItemsHeading,
+  knownUnitDeletedAnnouncement,
+  knownUnitSavedAnnouncement,
+  knownUnitsHeading,
   lessItemLabel,
   listHeading,
   moreItemLabel,
@@ -151,6 +154,42 @@ describe('knownItemSavedAnnouncement', () => {
     expect(knownItemSavedAnnouncement('Hackfleisch')).toBe(
       'Hackfleisch gespeichert.',
     )
+  })
+})
+
+describe('knownUnitsHeading', () => {
+  it('counts the units of the catalog', () => {
+    expect(knownUnitsHeading(7)).toBe('Einheiten-Verwaltung, 7')
+  })
+
+  it('says that the catalog is empty', () => {
+    expect(knownUnitsHeading(0)).toBe('Einheiten-Verwaltung, keine')
+  })
+})
+
+describe('knownUnitDeletedAnnouncement', () => {
+  it('names the unit and how many units are left', () => {
+    expect(knownUnitDeletedAnnouncement('g', 3)).toBe(
+      'g gelöscht, noch 3 Einheiten.',
+    )
+  })
+
+  it('speaks of a single remaining unit', () => {
+    expect(knownUnitDeletedAnnouncement('g', 1)).toBe(
+      'g gelöscht, noch 1 Einheit.',
+    )
+  })
+
+  it('says when no unit is left', () => {
+    expect(knownUnitDeletedAnnouncement('g', 0)).toBe(
+      'g gelöscht, keine Einheiten mehr.',
+    )
+  })
+})
+
+describe('knownUnitSavedAnnouncement', () => {
+  it('confirms the saved unit', () => {
+    expect(knownUnitSavedAnnouncement('Zehe')).toBe('Zehe gespeichert.')
   })
 })
 

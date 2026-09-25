@@ -6,4 +6,5 @@ export interface MealsClient {
   changeMeal(id: MealId, meal: NewMeal): void
   changeMeals(changed: readonly Meal[]): void
   removeMeal(id: MealId): void
+  unitsOnServer(): Promise<readonly string[]>
 }
