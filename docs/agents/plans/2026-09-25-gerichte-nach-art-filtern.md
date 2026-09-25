@@ -5,7 +5,7 @@ branch: main
 story: MZP-032
 topic: "Gerichte nach Art filtern"
 tags: [plan, meals, announcements, MealListPage, MealsArea, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-032 — Gerichte nach Art filtern
@@ -390,7 +390,7 @@ die Liste nach der gewählten Art oder Kategorie.
         zurücksetzen“ drücken. Die Ansage lautet „Filter zurückgesetzt, n
         Gerichte.“, die Auswahl zeigt „Alle“ und hat den Fokus.
       - `has no accessibility violations with a chosen kind`.
-- [ ] `docs/notes.txt`: den TODO-Punkt „Hauptgericht, Frühstück und Snack in den
+- [x] `docs/notes.txt`: den TODO-Punkt „Hauptgericht, Frühstück und Snack in den
       Filter mit aufnehmen“ nach der manuellen Prüfung auf `x` setzen und nach DONE
       verschieben.
 
@@ -407,13 +407,13 @@ die Liste nach der gewählten Art oder Kategorie.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
-- [ ] VoiceOver liest die Auswahl als „Filter, Alle, Einblendmenü“ (oder sinngemäß).
-- [ ] Das Rad zeigt „Alle“, darunter die Arten und die Kategorien. Notieren, ob iOS
+- [x] VoiceOver liest die Auswahl als „Filter, Alle, Einblendmenü“ (oder sinngemäß).
+- [x] Das Rad zeigt „Alle“, darunter die Arten und die Kategorien. Notieren, ob iOS
       die Überschriften „Art“ und „Kategorie“ anzeigt und ob VoiceOver sie vorliest.
       Beides ist erwünscht, aber keine Bedingung.
-- [ ] Nach der Wahl von „Frühstück“ kommt „Frühstück, n von m Gerichten.“, die Liste
+- [x] Nach der Wahl von „Frühstück“ kommt „Frühstück, n von m Gerichten.“, die Liste
       zeigt nur Frühstücke, und die Überschrift liest „Gerichte, n von m“.
-- [ ] Das ✕ setzt auch eine gewählte Art zurück, und der VoiceOver-Cursor steht danach
+- [x] Das ✕ setzt auch eine gewählte Art zurück, und der VoiceOver-Cursor steht danach
       auf „Filter, Alle“.
 
 ## Notizen zur Umsetzung
@@ -428,6 +428,7 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   `.categoryFilter`, `categoryFilterAnnouncement` und `chooseCategory` ist nichts
   übrig.
 - `npm run test`: 1142 grün, `npm run test:e2e`: 36 grün, Lint und Build sauber.
+- Manuelle Prüfung auf dem iPhone mit VoiceOver am 2026-09-25 bestanden.
 
 ## Verweise
 

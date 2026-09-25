@@ -141,6 +141,7 @@ x Zufallsregeln: der Wochenplan hat seit MZP-028 vier Plaetze pro Tag
 x Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
   Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
 x ausgegraute buttons heller zeichnen
+x Hauptgericht, Frühstück und Snack in den Filter mit aufnehmen
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -186,4 +187,3 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
 - Einheit ebenfalls merken und Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung
 - Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
   gelesen und koennen von Hand geloescht werden
-- Hauptgericht, Frühstück und Snack in den Filter mit aufnehmen
