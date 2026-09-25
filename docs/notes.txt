@@ -114,6 +114,7 @@ x 3 Zeilen pro Tag im Wochenplan
   x Tag steht oben, links und rechts buttons, um zum voherigen, nächsten tag zu kommen
   x 4 Zeilen mit passenden Icons: Morgens, Mittags, Snack, Abends
 x reset-button auf Wochenplan-Seite
+x Wochenansicht auf Wochenplan-Seite
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -185,4 +186,3 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   PlanSlot, die Regeln oben koennen slot.time mit meal.kind vergleichen
 - Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
   gelesen und koennen von Hand geloescht werden
-- Wochenansicht auf Wochenplan-Seite

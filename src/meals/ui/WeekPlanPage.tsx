@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import {
+  mealTimeName,
   stageButtonLabel,
   transferButtonLabel,
   weekdayAbbreviation,
@@ -11,6 +12,7 @@ import {
 import type { Meal, MealId } from '../domain/meal'
 import type { Supply } from '../domain/supply'
 import {
+  MEAL_TIMES,
   plannedMealCount,
   weekdayAfter,
   weekdayBefore,
@@ -39,6 +41,7 @@ import { ChevronRightIcon } from './ChevronRightIcon'
 import { EditIcon } from './EditIcon'
 import { EraserIcon } from './EraserIcon'
 import { LockIcon } from './LockIcon'
+import { MealTimeIcon } from './MealTimeIcon'
 import { ShuffleIcon } from './ShuffleIcon'
 import { WeekPlanRow } from './WeekPlanRow'
 
@@ -53,6 +56,7 @@ type WeekPlanPageProps = {
   shownView: WeekPlanView
   onShowView: (view: WeekPlanView) => void
   shownTime: MealTime
+  onShowTime: (time: MealTime) => void
   onChooseMeal: (slot: PlanSlot, id: MealId | null) => void
   onShuffleSlot: (slot: PlanSlot) => void
   onShuffleWeek: () => void
@@ -121,6 +125,31 @@ function DayNavigation({
   )
 }
 
+function MealTimeNavigation({
+  shownTime,
+  onShowTime,
+}: {
+  shownTime: MealTime
+  onShowTime: (time: MealTime) => void
+}) {
+  return (
+    <div className="mealTimeNavigation" role="group" aria-label="Tageszeit">
+      {MEAL_TIMES.map((time) => (
+        <button
+          key={time}
+          type="button"
+          className="iconButton"
+          aria-label={mealTimeName(time)}
+          aria-pressed={time === shownTime}
+          onClick={() => onShowTime(time)}
+        >
+          <MealTimeIcon time={time} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function ViewSwitchButton({
   shownView,
   onShowView,
@@ -160,6 +189,7 @@ export function WeekPlanPage({
   shownView,
   onShowView,
   shownTime,
+  onShowTime,
   onChooseMeal,
   onShuffleSlot,
   onShuffleWeek,
@@ -184,10 +214,13 @@ export function WeekPlanPage({
           {shownView === 'day' ? (
             <DayNavigation shownDay={shownDay} onShowDay={onShowDay} />
           ) : (
-            <div className="mealTimeNavigation" />
+            <MealTimeNavigation shownTime={shownTime} onShowTime={onShowTime} />
           )}
           <ViewSwitchButton shownView={shownView} onShowView={onShowView} />
         </div>
+        {shownView === 'week' && (
+          <h2 className="visuallyHidden">{mealTimeName(shownTime)}</h2>
+        )}
         {meals.length === 0 && <p>Noch keine Gerichte gespeichert.</p>}
         <ul className="itemList">
           {shownSlots(shownView, shownDay, shownTime).map((slot) => (

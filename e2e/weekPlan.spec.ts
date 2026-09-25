@@ -376,3 +376,30 @@ test('plans a day of the week in the week view', async ({ page }) => {
     'Bolognese',
   )
 })
+
+test('shows the dinner of the whole week', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Chili')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Wochenplan')
+  await chooseSuggestion(page, 'Abendessen', 'chi', 'Chili')
+
+  await expect
+    .poll(async () => (await weekPlanOnServer())['monday.dinner'])
+    .toEqual(expect.any(String))
+
+  await pressButton(page, 'Wochenansicht')
+  await pressButton(page, 'Abendessen')
+
+  await expect(page.getByRole('status')).toContainText('Abendessen.')
+  await expect(page.getByLabel('Montag', { exact: true })).toHaveValue('Chili')
+  await expect(
+    page.getByRole('button', { name: 'Abendessen', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true')
+})

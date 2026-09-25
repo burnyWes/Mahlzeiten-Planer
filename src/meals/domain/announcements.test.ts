@@ -24,6 +24,7 @@ import {
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   fixedSlotText,
+  mealTimeShownAnnouncement,
   filterResetAnnouncement,
   shownMealsCount,
   mealSuggestionsLabel,
@@ -734,6 +735,12 @@ describe('weekViewShownAnnouncement', () => {
     expect(weekViewShownAnnouncement('lunch')).toBe(
       'Wochenansicht, Mittagessen.',
     )
+  })
+})
+
+describe('mealTimeShownAnnouncement', () => {
+  it('names the meal time that is shown now', () => {
+    expect(mealTimeShownAnnouncement('dinner')).toBe('Abendessen.')
   })
 })
 

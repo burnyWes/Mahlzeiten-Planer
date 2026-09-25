@@ -118,6 +118,7 @@ function WeekPlanAreaUnderTest({
 }: WeekPlanAreaUnderTestProps) {
   const [shownDay, setShownDay] = useState(initialDay)
   const [shownView, setShownView] = useState(initialView)
+  const [shownTime, setShownTime] = useState(initialTime)
   return (
     <WeekPlanArea
       meals={useMeals(mealsClient).meals}
@@ -127,7 +128,8 @@ function WeekPlanAreaUnderTest({
       onShowDay={setShownDay}
       shownView={shownView}
       onShowView={setShownView}
-      shownTime={initialTime}
+      shownTime={shownTime}
+      onShowTime={setShownTime}
       navigation={<div data-testid="navigation" />}
       announce={announce}
       random={random}
@@ -216,6 +218,13 @@ function renderWeekView(
     'monday',
     'week',
     'lunch',
+  )
+}
+
+function mealTimeButton(name: string) {
+  return within(screen.getByRole('group', { name: 'Tageszeit' })).getByRole(
+    'button',
+    { name },
   )
 }
 
@@ -1657,6 +1666,134 @@ describe('WeekPlanArea', () => {
     expect(
       screen.getByRole('list', { name: 'Vorschläge für Dienstag' }),
     ).toBeInTheDocument()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('offers the four meal times in the week view', () => {
+    renderWeekView([bolognese])
+
+    const buttons = within(
+      screen.getByRole('group', { name: 'Tageszeit' }),
+    ).getAllByRole('button')
+
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Frühstück',
+      'Mittagessen',
+      'Snack',
+      'Abendessen',
+    ])
+    expect(
+      buttons.map((button) => button.querySelector('svg') !== null),
+    ).toEqual(MEAL_TIMES.map(() => true))
+    expect(buttons.map((button) => button.textContent)).toEqual(
+      MEAL_TIMES.map(() => ''),
+    )
+  })
+
+  it('marks the shown meal time as pressed', () => {
+    renderWeekView([bolognese])
+
+    expect(
+      MEAL_TIMES.map(mealTimeName).map((name) =>
+        mealTimeButton(name).getAttribute('aria-pressed'),
+      ),
+    ).toEqual(['false', 'true', 'false', 'false'])
+  })
+
+  it('shows the dinner of every day after the dinner was chosen', async () => {
+    const { announcements } = renderWeekView(
+      [bolognese, chili],
+      planWith(
+        [slot('tuesday', 'lunch'), 'bolognese'],
+        [slot('tuesday', 'dinner'), 'chili'],
+      ),
+    )
+
+    await userEvent.click(mealTimeButton('Abendessen'))
+
+    expect(mealTimeField('Dienstag')).toHaveValue('Chili')
+    expect(mealTimeButton('Abendessen')).toHaveAttribute('aria-pressed', 'true')
+    expect(mealTimeButton('Mittagessen')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(announcements).toEqual(['Abendessen.'])
+    expect(mealTimeButton('Abendessen')).toHaveFocus()
+  })
+
+  it('says nothing when the shown meal time is chosen again', async () => {
+    const { announcements } = renderWeekView([bolognese])
+
+    await userEvent.click(mealTimeButton('Mittagessen'))
+
+    expect(announcements).toEqual([])
+    expect(mealTimeButton('Mittagessen')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('names the meal time in a hidden heading of the week view', async () => {
+    renderWeekView([bolognese])
+
+    expect(shownDayHeading()).toHaveAccessibleName('Mittagessen')
+    expect(shownDayHeading()).toHaveClass('visuallyHidden')
+
+    await userEvent.click(mealTimeButton('Snack'))
+
+    expect(shownDayHeading()).toHaveAccessibleName('Snack')
+  })
+
+  it('names the meal time that was chosen when switching to the week', async () => {
+    const { announcements } = renderWeekPlanArea(
+      [bolognese],
+      EMPTY_WEEK_PLAN,
+      [],
+      alwaysFirst,
+      undefined,
+      'monday',
+      'day',
+      'snack',
+    )
+
+    await userEvent.click(weekViewButton())
+
+    expect(announcements).toEqual(['Wochenansicht, Snack.'])
+  })
+
+  it('keeps the shown day when the meal time changes', async () => {
+    renderWeekPlanAreaOn('friday', [bolognese])
+
+    await userEvent.click(weekViewButton())
+    await userEvent.click(mealTimeButton('Abendessen'))
+    await userEvent.click(dayViewButton())
+
+    expect(shownDayHeading()).toHaveAccessibleName('Freitag')
+  })
+
+  it('forgets what was typed when the meal time changes', async () => {
+    renderWeekView(
+      [bolognese],
+      planWith([slot('monday', 'lunch'), 'bolognese']),
+    )
+
+    await userEvent.type(mealTimeField('Montag'), 'quark')
+    await userEvent.click(mealTimeButton('Abendessen'))
+    await userEvent.click(mealTimeButton('Mittagessen'))
+
+    expect(mealTimeField('Montag')).toHaveValue('Bolognese')
+  })
+
+  it('has no accessibility violations with another meal time chosen', async () => {
+    const { rendered } = renderWeekView(
+      [bolognese, pizza],
+      planWith([slot('monday', 'dinner'), 'bolognese']),
+      [supply('bolognese', 1)],
+    )
+
+    await userEvent.click(mealTimeButton('Abendessen'))
+
+    expect(mealTimeField('Montag, im Vorrat')).toHaveValue('Bolognese')
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 

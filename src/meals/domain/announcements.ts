@@ -326,6 +326,10 @@ export function weekViewShownAnnouncement(time: MealTime): string {
   return `Wochenansicht, ${mealTimeName(time)}.`
 }
 
+export function mealTimeShownAnnouncement(time: MealTime): string {
+  return `${mealTimeName(time)}.`
+}
+
 export function dayViewShownAnnouncement(day: Weekday): string {
   return `Tagesansicht, ${weekdayName(day)}.`
 }

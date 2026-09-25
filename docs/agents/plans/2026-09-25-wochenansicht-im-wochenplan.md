@@ -477,13 +477,13 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
 
 **Manuelle Verifikation**:
 
-- [ ] Mit VoiceOver im Wochenplan `Wochenansicht` doppeltippen: Man hört
+- [x] Mit VoiceOver im Wochenplan `Wochenansicht` doppeltippen: Man hört
   `Wochenansicht, Mittagessen.`, der Fokus steht auf `Tagesansicht`. Beim Weiterwischen
   folgen `Montag`, `Zufallsgericht für Montag` und so weiter bis `Sonntag`. Die
   Kürzel werden nicht vorgelesen.
-- [ ] `Tagesansicht` doppeltippen: Man hört `Tagesansicht, <Tag>.`, und es steht
+- [x] `Tagesansicht` doppeltippen: Man hört `Tagesansicht, <Tag>.`, und es steht
   derselbe Tag da wie vorher.
-- [ ] Auf dem Handy stehen in der Wochenansicht alle sieben Felder bündig, mit und
+- [x] Auf dem Handy stehen in der Wochenansicht alle sieben Felder bündig, mit und
   ohne Schneeflocke, auch bei eingeschalteter Farbumkehr. Der Umschalter steht in
   beiden Ansichten an derselben Stelle.
 
@@ -496,15 +496,15 @@ unsichtbare `<h2>` nennt die gezeigte Tageszeit.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/announcements.test.ts` zuerst:
+- [x] `src/meals/domain/announcements.test.ts` zuerst:
   `mealTimeShownAnnouncement('dinner')` ergibt `Abendessen.`
-- [ ] `src/meals/domain/announcements.ts`:
+- [x] `src/meals/domain/announcements.ts`:
   ```ts
   export function mealTimeShownAnnouncement(time: MealTime): string {
     return `${mealTimeName(time)}.`
   }
   ```
-- [ ] `src/meals/ui/WeekPlanPage.tsx`:
+- [x] `src/meals/ui/WeekPlanPage.tsx`:
   - Neue Prop `onShowTime: (time: MealTime) => void`.
   - Lokale Komponente `MealTimeNavigation({ shownTime, onShowTime })` ersetzt den
     Platzhalter:
@@ -526,19 +526,19 @@ unsichtbare `<h2>` nennt die gezeigte Tageszeit.
     ```
   - Nach `.planNavigation` steht in der Wochenansicht
     `<h2 className="visuallyHidden">{mealTimeName(shownTime)}</h2>`.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: Neue Prop `onShowTime`.
+- [x] `src/meals/ui/WeekPlanArea.tsx`: Neue Prop `onShowTime`.
   `showTime(time)` bricht ab, wenn `time === shownTime`. Sonst ruft es
   `onShowTime(time)` auf und sagt `mealTimeShownAnnouncement(time)` an.
-- [ ] `src/SignedInApp.tsx`: `const [shownTime, setShownTime] = useState<MealTime>('lunch')`,
+- [x] `src/SignedInApp.tsx`: `const [shownTime, setShownTime] = useState<MealTime>('lunch')`,
   `onShowTime={setShownTime}`.
-- [ ] `src/index.css`:
+- [x] `src/index.css`:
   - `.mealTimeNavigation { display: flex; gap: 0.5rem; }` (zusätzlich zu `flex: 1`
     aus Phase 1), und die Knöpfe darin bekommen `flex: 1`.
   - Neutrale Knöpfe:
     `.mealTimeNavigation button { background-color: var(--surface); border-color: var(--accentLine); }`
   - Der gewählte:
     `.mealTimeNavigation button[aria-pressed='true'] { background-color: var(--accent); border-color: var(--ink); }`
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: `WeekPlanAreaUnderTest` hält zusätzlich
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`: `WeekPlanAreaUnderTest` hält zusätzlich
   `shownTime` in `useState`. Neu:
   - `offers the four meal times in the week view`: In der Gruppe `Tageszeit` stehen
     die Knöpfe `Frühstück`, `Mittagessen`, `Snack` und `Abendessen` in dieser
@@ -561,24 +561,24 @@ unsichtbare `<h2>` nennt die gezeigte Tageszeit.
   - `forgets what was typed when the meal time changes`: in `Montag` tippen,
     `Abendessen`, dann `Mittagessen`. Das Feld zeigt wieder den geplanten Wert.
   - `has no accessibility violations with another meal time chosen`.
-- [ ] `src/SignedInApp.test.tsx`: Neu ist `keeps the chosen meal time after a visit to
+- [x] `src/SignedInApp.test.tsx`: Neu ist `keeps the chosen meal time after a visit to
   the meals area`: `Wochenansicht`, `Snack`, `Gerichte`, `Wochenplan`. `Snack` ist
   gedrückt.
-- [ ] `e2e/weekPlan.spec.ts`: Neu ist `shows the dinner of the whole week`. Im
+- [x] `e2e/weekPlan.spec.ts`: Neu ist `shows the dinner of the whole week`. Im
   Tagesansicht-Feld `Abendessen` am Montag Chili planen, auf `monday.dinner` warten,
   `Wochenansicht` und `Abendessen` drücken. Das Feld `Montag` zeigt `Chili`, und
   `Abendessen` hat `aria-pressed="true"`.
-- [ ] `docs/notes.txt`: Den Punkt `- Wochenansicht auf Wochenplan-Seite` unter TODO auf
+- [x] `docs/notes.txt`: Den Punkt `- Wochenansicht auf Wochenplan-Seite` unter TODO auf
   `x` setzen und nach DONE verschieben, ans Ende über der Trennlinie.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `shows the dinner of every day after the dinner was chosen` und `says nothing
+- [x] `npm run test` läuft durch.
+- [x] `shows the dinner of every day after the dinner was chosen` und `says nothing
   when the shown meal time is chosen again` sind grün.
-- [ ] `has no accessibility violations with another meal time chosen` ist grün.
-- [ ] `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `shows the dinner of the whole
+- [x] `has no accessibility violations with another meal time chosen` ist grün.
+- [x] `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft durch, einschließlich `shows the dinner of the whole
   week`.
 
 **Manuelle Verifikation**:

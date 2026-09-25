@@ -116,7 +116,7 @@ export function SignedInApp({
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
   const [shownDay, setShownDay] = useState<Weekday>(() => weekdayOf(clock()))
   const [shownView, setShownView] = useState<WeekPlanView>('day')
-  const [shownTime] = useState<MealTime>('lunch')
+  const [shownTime, setShownTime] = useState<MealTime>('lunch')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
   function addMealToShoppingList(meal: Meal) {
@@ -215,6 +215,7 @@ export function SignedInApp({
         shownView={shownView}
         onShowView={setShownView}
         shownTime={shownTime}
+        onShowTime={setShownTime}
         navigation={navigation}
         announce={announce}
         random={random}

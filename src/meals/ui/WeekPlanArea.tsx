@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import {
   dayShownAnnouncement,
   dayViewShownAnnouncement,
+  mealTimeShownAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   slotPlannedAnnouncement,
@@ -50,6 +51,7 @@ type WeekPlanAreaProps = {
   shownView: WeekPlanView
   onShowView: (view: WeekPlanView) => void
   shownTime: MealTime
+  onShowTime: (time: MealTime) => void
   navigation: ReactNode
   announce: (text: string) => void
   random: RandomSource
@@ -65,6 +67,7 @@ export function WeekPlanArea({
   shownView,
   onShowView,
   shownTime,
+  onShowTime,
   navigation,
   announce,
   random,
@@ -86,6 +89,12 @@ export function WeekPlanArea({
         ? weekViewShownAnnouncement(shownTime)
         : dayViewShownAnnouncement(shownDay),
     )
+  }
+
+  function showTime(time: MealTime) {
+    if (time === shownTime) return
+    onShowTime(time)
+    announce(mealTimeShownAnnouncement(time))
   }
 
   function chooseMeal(slot: PlanSlot, id: MealId | null) {
@@ -150,6 +159,7 @@ export function WeekPlanArea({
       shownView={shownView}
       onShowView={showView}
       shownTime={shownTime}
+      onShowTime={showTime}
       onChooseMeal={chooseMeal}
       onShuffleSlot={shuffleSlot}
       onShuffleWeek={shuffleWeek}

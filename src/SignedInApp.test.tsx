@@ -373,6 +373,21 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
+  it('keeps the chosen meal time after a visit to the meals area', async () => {
+    renderSignedInApp()
+
+    await goToArea('Wochenplan')
+    await userEvent.click(screen.getByRole('button', { name: 'Wochenansicht' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Snack' }))
+    await goToArea('Gerichte')
+    await goToArea('Wochenplan')
+
+    expect(screen.getByRole('button', { name: 'Snack' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
   it('keeps a planned meal for the whole household', async () => {
     const { weekPlanClient } = renderSignedInApp(
       [],

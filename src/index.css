@@ -427,6 +427,19 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
 
 .mealTimeNavigation {
   flex: 1;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mealTimeNavigation button {
+  flex: 1;
+  background-color: var(--surface);
+  border-color: var(--accentLine);
+}
+
+.mealTimeNavigation button[aria-pressed='true'] {
+  background-color: var(--accent);
+  border-color: var(--ink);
 }
 
 .weekdayMark {
