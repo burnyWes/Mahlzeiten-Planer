@@ -5,7 +5,7 @@ branch: main
 story: MZP-035
 topic: "Wochenplan: Zeitraum wählen"
 tags: [plan, meals, weekPlan, domain, api, ui, firestore]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-035 — Wochenplan: Zeitraum wählen
@@ -694,7 +694,7 @@ zeigt der Wochenplan die gewählten Tage.
   „Übernehmen“. Danach heißt die Überschrift `Montag, 28. September`, die Wochenansicht
   hat 10 Zeilen bis `Mi. 07.`, „Zufallsauswahl generieren“ füllt alle 10 Tage, und
   `weekPlanOnServer()` enthält nur Schlüssel vom 28.09. bis 07.10.
-- [ ] `docs/notes.txt`: erst nach der manuellen Abnahme den Punkt `- Wochenplan
+- [x] `docs/notes.txt`: erst nach der manuellen Abnahme den Punkt `- Wochenplan
   erweitern` mit seinen drei Unterpunkten auf `x` setzen und nach DONE verschieben (die
   bestehende `n`-Zeile bleibt unverändert darunter). Unter TODO anhängen:
   `- Firestore: weekPlan/meals wird seit MZP-035 nur noch gelesen, solange
@@ -717,7 +717,7 @@ zeigt der Wochenplan die gewählten Tage.
 - [x] Auf dem iPhone mit VoiceOver: Der Knopf rechts neben der Überschrift heißt
   „Zeitraum wählen, Taste“ und ist im festgelegten Plan abgeblendet, und die
   Stepper-Ansage „8 Tage“ kommt.
-- [ ] Auf dem iPhone mit VoiceOver: Das Startdatum lässt sich mit „Ein Tag früher“ und
+- [x] Auf dem iPhone mit VoiceOver: Das Startdatum lässt sich mit „Ein Tag früher“ und
   „Ein Tag später“ verschieben, sichtbar steht z. B. `Mo. 28.09.`, und VoiceOver sagt
   den neuen Tag an.
 - [x] Nach „Übernehmen“ kommt die Zeitraum-Ansage, der Fokus steht auf der

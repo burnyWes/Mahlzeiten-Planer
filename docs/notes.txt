@@ -144,6 +144,11 @@ x ausgegraute buttons heller zeichnen
 x Hauptgericht, Frühstück und Snack in den Filter mit aufnehmen
 x Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 x Einheit ebenfalls merken und Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung
+x Wochenplan erweitern
+  x oben Date-Picker für Startdatum
+  x daneben Anzahl-Tage-Selector
+  x Ab dem Datepickertag und für anzahl tage wird geplant
+  n Links in der Tageszeile steht der richtige Wochentag
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -167,11 +172,6 @@ TODO
   MZP-006 sichtbar, weil die Zeile sofort erscheint und nicht erst nach der
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
-- Wochenplan erweitern
-  - oben Date-Picker für Startdatum
-  - daneben Anzahl-Tage-Selector
-  - Ab dem Datepickertag und für anzahl tage wird geplant
-  n Links in der Tageszeile steht der richtige Wochentag
 b Vorraete: Wird ein Vorrat angelegt und sofort wieder entfernt, kann eine sehr alte
   Momentaufnahme ohne ihn das Entfernen zu frueh bestaetigen (dropConfirmedSupplies),
   und eine spaetere verspaetete mit ihm laesst ihn kurz wieder erscheinen (MZP-027,
@@ -187,3 +187,5 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   (MZP-027, Entscheidung 1).
 - Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
   gelesen und koennen von Hand geloescht werden
+- Firestore: weekPlan/meals wird seit MZP-035 nur noch gelesen, solange
+  weekPlan/datedMeals fehlt, und kann danach von Hand geloescht werden
