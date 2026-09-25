@@ -20,6 +20,7 @@ import {
   type Weekday,
 } from '../domain/weekPlan'
 import {
+  canClear,
   canShuffle,
   canTransfer,
   isFixed,
@@ -29,6 +30,7 @@ import { AddToShoppingListIcon } from './AddToShoppingListIcon'
 import { ChevronLeftIcon } from './ChevronLeftIcon'
 import { ChevronRightIcon } from './ChevronRightIcon'
 import { EditIcon } from './EditIcon'
+import { EraserIcon } from './EraserIcon'
 import { LockIcon } from './LockIcon'
 import { ShuffleIcon } from './ShuffleIcon'
 import { WeekPlanRow } from './WeekPlanRow'
@@ -47,6 +49,7 @@ type WeekPlanPageProps = {
   stage: WeekPlanStage
   onToggleStage: () => void
   onAddToShoppingList: () => void
+  onClearPlan: () => void
 }
 
 type DayStepButtonProps = {
@@ -122,6 +125,7 @@ export function WeekPlanPage({
   stage,
   onToggleStage,
   onAddToShoppingList,
+  onClearPlan,
 }: WeekPlanPageProps) {
   const heading = useHeadingFocus()
   const plannedMeals = plannedMealCount(plan, meals)
@@ -175,6 +179,14 @@ export function WeekPlanPage({
             onClick={onAddToShoppingList}
           >
             <AddToShoppingListIcon />
+          </button>
+          <button
+            type="button"
+            aria-label="Wochenplan leeren"
+            aria-disabled={!canClear(stage, plannedMeals)}
+            onClick={onClearPlan}
+          >
+            <EraserIcon />
           </button>
         </BottomBar>
       </main>

@@ -4,6 +4,7 @@ import {
   planEditableAnnouncement,
   planFixedAnnouncement,
   slotPlannedAnnouncement,
+  weekPlanClearedAnnouncement,
   weekPlanShuffledAnnouncement,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
@@ -16,6 +17,7 @@ import {
 import type { Supply } from '../domain/supply'
 import {
   coveredSlotsOf,
+  EMPTY_WEEK_PLAN,
   isSuppliedIn,
   plannedMealCount,
   weekPlanTransfer,
@@ -25,6 +27,7 @@ import {
   type Weekday,
 } from '../domain/weekPlan'
 import {
+  canClear,
   canTransfer,
   EDITING_STAGE,
   FIXED_STAGE,
@@ -91,6 +94,12 @@ export function WeekPlanArea({
     announce(weekPlanShuffledAnnouncement())
   }
 
+  function clearPlan() {
+    if (!canClear(stage, plannedMeals)) return
+    weekPlanning.replacePlan(EMPTY_WEEK_PLAN)
+    announce(weekPlanClearedAnnouncement())
+  }
+
   function toggleStage() {
     if (isFixed(stage)) {
       weekPlanning.changeStage(EDITING_STAGE)
@@ -124,6 +133,7 @@ export function WeekPlanArea({
       stage={stage}
       onToggleStage={toggleStage}
       onAddToShoppingList={addToShoppingList}
+      onClearPlan={clearPlan}
     />
   )
 }

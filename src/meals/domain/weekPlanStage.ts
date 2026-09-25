@@ -64,6 +64,10 @@ export function canTransfer(
   return isFixed(stage) && !isTransferred(stage) && plannedMeals > 0
 }
 
+export function canClear(stage: WeekPlanStage, plannedMeals: number): boolean {
+  return !isFixed(stage) && plannedMeals > 0
+}
+
 export function isCoveredIn(
   stage: WeekPlanStage,
   plan: WeekPlan,

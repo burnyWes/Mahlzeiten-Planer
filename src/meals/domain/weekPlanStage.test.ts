@@ -9,6 +9,7 @@ import {
   type Weekday,
 } from './weekPlan'
 import {
+  canClear,
   canShuffle,
   canTransfer,
   EDITING_STAGE,
@@ -71,6 +72,14 @@ describe('EDITING_STAGE', () => {
   it('offers no transfer however many meals are planned', () => {
     expect(canTransfer(EDITING_STAGE, 5)).toBe(false)
   })
+
+  it('allows clearing once a meal is planned', () => {
+    expect(canClear(EDITING_STAGE, 1)).toBe(true)
+  })
+
+  it('allows no clearing while no meal is planned', () => {
+    expect(canClear(EDITING_STAGE, 0)).toBe(false)
+  })
 })
 
 describe('FIXED_STAGE', () => {
@@ -88,6 +97,10 @@ describe('FIXED_STAGE', () => {
 
   it('offers no transfer while no meal is planned', () => {
     expect(canTransfer(FIXED_STAGE, 0)).toBe(false)
+  })
+
+  it('allows no clearing however many meals are planned', () => {
+    expect(canClear(FIXED_STAGE, 5)).toBe(false)
   })
 })
 
@@ -109,6 +122,10 @@ describe('transferredStage', () => {
 
   it('allows no rolling', () => {
     expect(canShuffle(transferredStage([]))).toBe(false)
+  })
+
+  it('allows no clearing', () => {
+    expect(canClear(transferredStage([]), 5)).toBe(false)
   })
 })
 

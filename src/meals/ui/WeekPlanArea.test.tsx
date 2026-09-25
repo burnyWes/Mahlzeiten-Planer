@@ -190,6 +190,14 @@ function addToShoppingList() {
   return userEvent.click(transferButton())
 }
 
+function clearButton() {
+  return screen.getByRole('button', { name: 'Wochenplan leeren' })
+}
+
+function clearPlan() {
+  return userEvent.click(clearButton())
+}
+
 function fixPlan() {
   return userEvent.click(screen.getByRole('button', { name: 'Plan festlegen' }))
 }
@@ -812,7 +820,7 @@ describe('WeekPlanArea', () => {
       })
   })
 
-  it('shows the rolling and stepping buttons as icons only', () => {
+  it('shows the rolling, stepping and clearing buttons as icons only', () => {
     renderWeekPlanArea([pizza])
 
     expect(
@@ -825,6 +833,7 @@ describe('WeekPlanArea', () => {
     ).toBe('')
     expect(previousDayButton().textContent).toBe('')
     expect(nextDayButton().textContent).toBe('')
+    expect(clearButton().textContent).toBe('')
   })
 
   it('offers no transfer while no meal time carries a meal', async () => {
@@ -1005,7 +1014,7 @@ describe('WeekPlanArea', () => {
     expect(screen.queryByRole('button', { name: 'Plan festlegen' })).toBeNull()
   })
 
-  it('puts the stage button between the rolling and the transfer', () => {
+  it('orders the bottom bar as rolling, stage, transfer and clearing', () => {
     const { rendered } = renderWeekPlanArea([bolognese])
 
     const bottomBar =
@@ -1018,6 +1027,7 @@ describe('WeekPlanArea', () => {
       'Zufallsauswahl generieren',
       'Plan festlegen',
       'Auf die Einkaufsliste',
+      'Wochenplan leeren',
     ])
   })
 
@@ -1343,6 +1353,93 @@ describe('WeekPlanArea', () => {
     )
 
     await fixPlan()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('clears every meal time of the week and says so', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea(
+      [bolognese, pizza],
+      planWith(
+        [slot('monday', 'lunch'), 'bolognese'],
+        [slot('sunday', 'dinner'), 'pizza'],
+      ),
+    )
+
+    await clearPlan()
+
+    expect(mealsOf(weekPlanClient.storedWeekPlan())).toEqual(
+      mealsOf(EMPTY_WEEK_PLAN),
+    )
+    expect(announcements.at(-1)).toBe('Wochenplan geleert.')
+  })
+
+  it('names the heading after the cleared plan', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      planWith([slot('monday', 'lunch'), 'bolognese']),
+    )
+
+    await clearPlan()
+
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, keine von 28' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps the clear button focused after clearing', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      planWith([slot('monday', 'lunch'), 'bolognese']),
+    )
+
+    await clearPlan()
+
+    expect(clearButton()).toHaveFocus()
+    expect(clearButton()).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('offers no clearing while no meal time carries a meal', () => {
+    renderWeekPlanArea([bolognese])
+
+    expect(clearButton()).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('offers no clearing while the plan is fixed', async () => {
+    const planned = planWith([slot('monday', 'lunch'), 'bolognese'])
+    const { weekPlanClient, announcements } = renderWeekPlanArea(
+      [bolognese],
+      planned,
+    )
+
+    await fixPlan()
+    const announcementsBefore = announcements.length
+    await clearPlan()
+
+    expect(clearButton()).toHaveAttribute('aria-disabled', 'true')
+    expect(mealsOf(weekPlanClient.storedWeekPlan())).toEqual(mealsOf(planned))
+    expect(announcements).toHaveLength(announcementsBefore)
+  })
+
+  it('offers no clearing after the transfer', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      planWith([slot('monday', 'lunch'), 'bolognese']),
+    )
+
+    await fixPlan()
+    await addToShoppingList()
+
+    expect(clearButton()).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('has no accessibility violations after the plan was cleared', async () => {
+    const { rendered } = renderWeekPlanArea(
+      [bolognese],
+      planWith([slot('monday', 'lunch'), 'bolognese']),
+    )
+
+    await clearPlan()
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

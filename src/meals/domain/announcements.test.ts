@@ -45,6 +45,7 @@ import {
   weekdayAbbreviation,
   weekdayName,
   weekPlanHeading,
+  weekPlanClearedAnnouncement,
   weekPlanShuffledAnnouncement,
   weekPlanTransferAnnouncement,
 } from './announcements'
@@ -671,6 +672,12 @@ describe('weekPlanShuffledAnnouncement', () => {
     expect(weekPlanShuffledAnnouncement()).toBe(
       'Wochenplan neu gewürfelt, 28 Gerichte.',
     )
+  })
+})
+
+describe('weekPlanClearedAnnouncement', () => {
+  it('says that the plan was cleared', () => {
+    expect(weekPlanClearedAnnouncement()).toBe('Wochenplan geleert.')
   })
 })
 

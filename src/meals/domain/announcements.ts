@@ -309,6 +309,10 @@ export function weekPlanShuffledAnnouncement(): string {
   return `Wochenplan neu gewürfelt, ${PLAN_SLOTS.length} Gerichte.`
 }
 
+export function weekPlanClearedAnnouncement(): string {
+  return 'Wochenplan geleert.'
+}
+
 function suppliedMealPhrase(suppliedMeals: number): string {
   return `${mealTotalPhrase(suppliedMeals)} aus dem Vorrat entnommen.`
 }
