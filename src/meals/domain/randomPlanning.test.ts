@@ -15,17 +15,30 @@ import {
   type PlanningRule,
   type RandomSource,
 } from './randomPlanning'
+import { toPlanDate, type PlanDate } from './planDate'
+import { datesOf, type PlanPeriod } from './planPeriod'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   mealIn,
-  PLAN_SLOTS,
-  WEEKDAYS,
+  planSlotsOf,
   withMealIn,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from './weekPlan'
+
+const MONDAY = toPlanDate('2026-09-21')
+const TUESDAY = toPlanDate('2026-09-22')
+const WEDNESDAY = toPlanDate('2026-09-23')
+const FRIDAY = toPlanDate('2026-09-25')
+const SATURDAY = toPlanDate('2026-09-26')
+const SUNDAY = toPlanDate('2026-09-27')
+const NEXT_MONDAY = toPlanDate('2026-09-28')
+
+const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
+const WEEK_DATES = datesOf(WEEK)
+const WEEK_SLOTS = planSlotsOf(WEEK)
+const EMPTY_PLAN = emptyWeekPlan(WEEK)
 
 function meal(
   id: string,
@@ -66,17 +79,17 @@ function sequence(values: readonly number[]): RandomSource {
 function planOf(...ids: readonly (string | null)[]): WeekPlan {
   return ids.reduce<WeekPlan>(
     (plan, id, position) =>
-      id === null ? plan : withMealIn(plan, PLAN_SLOTS[position], id),
-    EMPTY_WEEK_PLAN,
+      id === null ? plan : withMealIn(plan, WEEK_SLOTS[position], id),
+    EMPTY_PLAN,
   )
 }
 
-function slot(day: Weekday, time: MealTime): PlanSlot {
-  return { day, time }
+function slot(date: PlanDate, time: MealTime): PlanSlot {
+  return { date, time }
 }
 
 function mealsOf(plan: WeekPlan): readonly (string | null)[] {
-  return PLAN_SLOTS.map((each) => mealIn(plan, each))
+  return WEEK_SLOTS.map((each) => mealIn(plan, each))
 }
 
 function timesPlannedIn(plan: WeekPlan): readonly number[] {
@@ -90,7 +103,7 @@ function mainMealTimesOf(
   plan: WeekPlan,
   stored: readonly Meal[],
 ): readonly (readonly MealTime[])[] {
-  return WEEKDAYS.map((day) =>
+  return WEEK_DATES.map((day) =>
     (['lunch', 'dinner'] as const).filter(
       (time) =>
         stored.find((each) => each.id === mealIn(plan, slot(day, time)))
@@ -147,7 +160,7 @@ describe('rarestInThePlan', () => {
       rarestInThePlan(
         [bolognese, pizza, soup],
         plan,
-        slot('monday', 'dinner'),
+        slot(MONDAY, 'dinner'),
         anyRandom,
         [bolognese, pizza, soup],
       ),
@@ -158,8 +171,8 @@ describe('rarestInThePlan', () => {
     expect(
       rarestInThePlan(
         [bolognese, pizza],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza],
       ),
@@ -173,7 +186,7 @@ describe('rarestInThePlan', () => {
       rarestInThePlan(
         [bolognese, pizza],
         plan,
-        slot('monday', 'breakfast'),
+        slot(MONDAY, 'breakfast'),
         anyRandom,
         [bolognese, pizza],
       ),
@@ -182,8 +195,8 @@ describe('rarestInThePlan', () => {
 
   it('counts the meals of every meal time of the week', () => {
     const plan = withMealIn(
-      withMealIn(EMPTY_WEEK_PLAN, slot('tuesday', 'snack'), 'bolognese'),
-      slot('sunday', 'dinner'),
+      withMealIn(EMPTY_PLAN, slot(TUESDAY, 'snack'), 'bolognese'),
+      slot(SUNDAY, 'dinner'),
       'pizza',
     )
 
@@ -191,7 +204,7 @@ describe('rarestInThePlan', () => {
       rarestInThePlan(
         [bolognese, pizza, soup],
         plan,
-        slot('friday', 'lunch'),
+        slot(FRIDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza, soup],
       ),
@@ -207,8 +220,8 @@ describe('narrowedBy', () => {
       narrowedBy(
         [nothingLeft],
         [bolognese, pizza],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza],
       ),
@@ -224,7 +237,7 @@ describe('narrowedBy', () => {
         [withoutPizza, rarestInThePlan],
         [bolognese, pizza, soup],
         planOf('bolognese'),
-        slot('monday', 'lunch'),
+        slot(MONDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza, soup],
       ),
@@ -234,17 +247,13 @@ describe('narrowedBy', () => {
 
 describe('otherThanPlanned', () => {
   it('leaves out the meal that stands in the slot', () => {
-    const plan = withMealIn(
-      EMPTY_WEEK_PLAN,
-      slot('monday', 'breakfast'),
-      'muesli',
-    )
+    const plan = withMealIn(EMPTY_PLAN, slot(MONDAY, 'breakfast'), 'muesli')
 
     expect(
       otherThanPlanned(
         [muesli, porridge],
         plan,
-        slot('monday', 'breakfast'),
+        slot(MONDAY, 'breakfast'),
         anyRandom,
         [muesli, porridge],
       ),
@@ -255,8 +264,8 @@ describe('otherThanPlanned', () => {
     expect(
       otherThanPlanned(
         [muesli, porridge],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'breakfast'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'breakfast'),
         anyRandom,
         [muesli, porridge],
       ),
@@ -264,17 +273,13 @@ describe('otherThanPlanned', () => {
   })
 
   it('rolls the planned meal again when no other one suits', () => {
-    const plan = withMealIn(
-      EMPTY_WEEK_PLAN,
-      slot('monday', 'breakfast'),
-      'muesli',
-    )
+    const plan = withMealIn(EMPTY_PLAN, slot(MONDAY, 'breakfast'), 'muesli')
 
     expect(
       pickMealFor(
         [muesli, bolognese],
         plan,
-        slot('monday', 'breakfast'),
+        slot(MONDAY, 'breakfast'),
         sequence([0.99]),
         'lunchOrDinner',
       ),
@@ -282,17 +287,13 @@ describe('otherThanPlanned', () => {
   })
 
   it('rolls another meal than the planned one', () => {
-    const plan = withMealIn(
-      EMPTY_WEEK_PLAN,
-      slot('monday', 'breakfast'),
-      'porridge',
-    )
+    const plan = withMealIn(EMPTY_PLAN, slot(MONDAY, 'breakfast'), 'porridge')
 
     expect(
       pickMealFor(
         [muesli, porridge],
-        withMealIn(plan, slot('friday', 'breakfast'), 'muesli'),
-        slot('monday', 'breakfast'),
+        withMealIn(plan, slot(FRIDAY, 'breakfast'), 'muesli'),
+        slot(MONDAY, 'breakfast'),
         sequence([0.99]),
         'lunchOrDinner',
       ),
@@ -311,14 +312,14 @@ describe('apartFromSameCategory', () => {
   }
 
   function planned(at: PlanSlot, id: string): WeekPlan {
-    return withMealIn(EMPTY_WEEK_PLAN, at, id)
+    return withMealIn(EMPTY_PLAN, at, id)
   }
 
   it('leaves out a meal that shares a category with the day before', () => {
     expect(
       apartFor(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'lunch'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'lunch'),
       ),
     ).toEqual([rice])
   })
@@ -326,8 +327,8 @@ describe('apartFromSameCategory', () => {
   it('leaves out a meal that shares a category with the day after', () => {
     expect(
       apartFor(
-        planned(slot('wednesday', 'lunch'), 'lasagne'),
-        slot('tuesday', 'dinner'),
+        planned(slot(WEDNESDAY, 'lunch'), 'lasagne'),
+        slot(TUESDAY, 'dinner'),
       ),
     ).toEqual([rice])
   })
@@ -335,8 +336,8 @@ describe('apartFromSameCategory', () => {
   it('leaves out a meal that shares a category with the other meal time of the day', () => {
     expect(
       apartFor(
-        planned(slot('tuesday', 'lunch'), 'lasagne'),
-        slot('tuesday', 'dinner'),
+        planned(slot(TUESDAY, 'lunch'), 'lasagne'),
+        slot(TUESDAY, 'dinner'),
       ),
     ).toEqual([rice])
   })
@@ -346,8 +347,8 @@ describe('apartFromSameCategory', () => {
 
     expect(
       apartFor(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'lunch'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'lunch'),
         [pasta, rice],
         [lowerLasagne, pasta, rice],
       ),
@@ -357,8 +358,8 @@ describe('apartFromSameCategory', () => {
   it('keeps a side apart as well', () => {
     expect(
       apartFor(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'lunch'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'lunch'),
         [carbonara, rice],
       ),
     ).toEqual([rice])
@@ -366,15 +367,15 @@ describe('apartFromSameCategory', () => {
 
   it('does not count a snack or a breakfast beside it', () => {
     const plan = withMealIn(
-      planned(slot('monday', 'dinner'), 'noodleSnack'),
-      slot('tuesday', 'dinner'),
+      planned(slot(MONDAY, 'dinner'), 'noodleSnack'),
+      slot(TUESDAY, 'dinner'),
       'noodleBreakfast',
     )
 
     expect(
       apartFor(
         plan,
-        slot('tuesday', 'lunch'),
+        slot(TUESDAY, 'lunch'),
         [pasta, rice],
         [noodleSnack, noodleBreakfast, pasta, rice],
       ),
@@ -384,8 +385,8 @@ describe('apartFromSameCategory', () => {
   it('keeps a snack that shares a category', () => {
     expect(
       apartFor(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'lunch'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'lunch'),
         [noodleSnack, rice],
       ),
     ).toEqual([noodleSnack, rice])
@@ -394,26 +395,37 @@ describe('apartFromSameCategory', () => {
   it('does not count the slot that is being rolled', () => {
     expect(
       apartFor(
-        planned(slot('tuesday', 'lunch'), 'lasagne'),
-        slot('tuesday', 'lunch'),
+        planned(slot(TUESDAY, 'lunch'), 'lasagne'),
+        slot(TUESDAY, 'lunch'),
       ),
     ).toEqual([pasta, rice])
   })
 
-  it('looks at no day before Monday', () => {
+  it('keeps the same category apart across a Sunday', () => {
+    const acrossTheWeekend = emptyWeekPlan({ start: SATURDAY, days: 3 })
+
     expect(
       apartFor(
-        planned(slot('sunday', 'dinner'), 'lasagne'),
-        slot('monday', 'lunch'),
+        withMealIn(acrossTheWeekend, slot(SUNDAY, 'dinner'), 'lasagne'),
+        slot(NEXT_MONDAY, 'lunch'),
+      ),
+    ).toEqual([rice])
+  })
+
+  it('looks at no day before the start of the period', () => {
+    expect(
+      apartFor(
+        planned(slot(SUNDAY, 'dinner'), 'lasagne'),
+        slot(MONDAY, 'lunch'),
       ),
     ).toEqual([pasta, rice])
   })
 
-  it('looks at no day after Sunday', () => {
+  it('looks at no day after the end of the period', () => {
     expect(
       apartFor(
-        planned(slot('monday', 'lunch'), 'lasagne'),
-        slot('sunday', 'dinner'),
+        planned(slot(MONDAY, 'lunch'), 'lasagne'),
+        slot(SUNDAY, 'dinner'),
       ),
     ).toEqual([pasta, rice])
   })
@@ -421,8 +433,8 @@ describe('apartFromSameCategory', () => {
   it('counts a hidden meal beside it', () => {
     expect(
       apartFor(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'lunch'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'lunch'),
         [pasta, rice],
         [{ ...lasagne, hidden: true }, pasta, rice],
       ),
@@ -432,11 +444,11 @@ describe('apartFromSameCategory', () => {
   it('keeps the categories apart before it looks for the rarest meal', () => {
     const plan = withMealIn(
       withMealIn(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'dinner'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'dinner'),
         'bread',
       ),
-      slot('friday', 'lunch'),
+      slot(FRIDAY, 'lunch'),
       'rice',
     )
 
@@ -444,7 +456,7 @@ describe('apartFromSameCategory', () => {
       pickMealFor(
         [lasagne, pasta, rice, bread],
         plan,
-        slot('tuesday', 'lunch'),
+        slot(TUESDAY, 'lunch'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -454,11 +466,11 @@ describe('apartFromSameCategory', () => {
   it('leaves the choice to the rarest meal when every meal shares a category', () => {
     const plan = withMealIn(
       withMealIn(
-        planned(slot('monday', 'dinner'), 'lasagne'),
-        slot('tuesday', 'dinner'),
+        planned(slot(MONDAY, 'dinner'), 'lasagne'),
+        slot(TUESDAY, 'dinner'),
         'bread',
       ),
-      slot('friday', 'lunch'),
+      slot(FRIDAY, 'lunch'),
       'penne',
     )
 
@@ -466,7 +478,7 @@ describe('apartFromSameCategory', () => {
       pickMealFor(
         [lasagne, pasta, penne, bread],
         plan,
-        slot('tuesday', 'lunch'),
+        slot(TUESDAY, 'lunch'),
         sequence([0.99]),
         'lunchOrDinner',
       ),
@@ -476,8 +488,8 @@ describe('apartFromSameCategory', () => {
 
 describe('stayingLikeTheDayBefore', () => {
   const mondayMuesli = withMealIn(
-    EMPTY_WEEK_PLAN,
-    slot('monday', 'breakfast'),
+    EMPTY_PLAN,
+    slot(MONDAY, 'breakfast'),
     'muesli',
   )
 
@@ -495,7 +507,7 @@ describe('stayingLikeTheDayBefore', () => {
       pickMealFor(
         [muesli, porridge],
         mondayMuesli,
-        slot('tuesday', 'breakfast'),
+        slot(TUESDAY, 'breakfast'),
         sequence([0, 0.99]),
         'lunchOrDinner',
       ),
@@ -510,7 +522,7 @@ describe('stayingLikeTheDayBefore', () => {
         pickMealFor(
           [muesli, porridge],
           mondayMuesli,
-          slot('tuesday', 'breakfast'),
+          slot(TUESDAY, 'breakfast'),
           sequence([coin, 0]),
           'lunchOrDinner',
         ),
@@ -519,28 +531,28 @@ describe('stayingLikeTheDayBefore', () => {
   })
 
   it('stays with the snack of the day before', () => {
-    const plan = withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'snack'), 'apple')
+    const plan = withMealIn(EMPTY_PLAN, slot(MONDAY, 'snack'), 'apple')
     const nuts = meal('nuts', 'snack')
 
     expect(
       pickMealFor(
         [nuts, apple],
         plan,
-        slot('tuesday', 'snack'),
+        slot(TUESDAY, 'snack'),
         sequence([0]),
         'lunchOrDinner',
       ),
     ).toEqual(apple)
   })
 
-  it('tosses no coin on Monday', () => {
+  it('tosses no coin on the first day of the period', () => {
     const { random, tossed } = countingRandom(0)
 
     expect(
       stayingLikeTheDayBefore(
         [muesli, porridge],
-        withMealIn(EMPTY_WEEK_PLAN, slot('sunday', 'breakfast'), 'muesli'),
-        slot('monday', 'breakfast'),
+        withMealIn(EMPTY_PLAN, slot(SUNDAY, 'breakfast'), 'muesli'),
+        slot(MONDAY, 'breakfast'),
         random,
         [muesli, porridge],
       ),
@@ -554,8 +566,8 @@ describe('stayingLikeTheDayBefore', () => {
     expect(
       stayingLikeTheDayBefore(
         [muesli, porridge],
-        EMPTY_WEEK_PLAN,
-        slot('tuesday', 'breakfast'),
+        EMPTY_PLAN,
+        slot(TUESDAY, 'breakfast'),
         random,
         [muesli, porridge],
       ),
@@ -569,8 +581,8 @@ describe('stayingLikeTheDayBefore', () => {
     expect(
       stayingLikeTheDayBefore(
         [muesli, porridge],
-        withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'breakfast'), 'bolognese'),
-        slot('tuesday', 'breakfast'),
+        withMealIn(EMPTY_PLAN, slot(MONDAY, 'breakfast'), 'bolognese'),
+        slot(TUESDAY, 'breakfast'),
         random,
         [bolognese, muesli, porridge],
       ),
@@ -581,8 +593,8 @@ describe('stayingLikeTheDayBefore', () => {
   it('never stays at lunch or dinner, not even with a snack', () => {
     const { random, tossed } = countingRandom(0)
     const plan = withMealIn(
-      withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'lunch'), 'apple'),
-      slot('monday', 'dinner'),
+      withMealIn(EMPTY_PLAN, slot(MONDAY, 'lunch'), 'apple'),
+      slot(MONDAY, 'dinner'),
       'apple',
     )
     const times = ['lunch', 'dinner'] as const
@@ -592,7 +604,7 @@ describe('stayingLikeTheDayBefore', () => {
         stayingLikeTheDayBefore(
           [bread, apple],
           plan,
-          slot('tuesday', time),
+          slot(TUESDAY, time),
           random,
           [bread, apple],
         ),
@@ -602,17 +614,13 @@ describe('stayingLikeTheDayBefore', () => {
   })
 
   it('rolls another meal than the planned one even if it stood there the day before', () => {
-    const plan = withMealIn(
-      mondayMuesli,
-      slot('tuesday', 'breakfast'),
-      'muesli',
-    )
+    const plan = withMealIn(mondayMuesli, slot(TUESDAY, 'breakfast'), 'muesli')
 
     expect(
       pickMealFor(
         [muesli, porridge],
         plan,
-        slot('tuesday', 'breakfast'),
+        slot(TUESDAY, 'breakfast'),
         sequence([0.99, 0]),
         'lunchOrDinner',
       ),
@@ -622,36 +630,39 @@ describe('stayingLikeTheDayBefore', () => {
   it('keeps the same breakfast all week when it always stays', () => {
     const plan = filledWeekPlan(
       meals(3, 'breakfast'),
+      WEEK,
       sequence([0]),
       'lunchOrDinner',
     )
 
-    expect(WEEKDAYS.map((day) => mealIn(plan, slot(day, 'breakfast')))).toEqual(
-      WEEKDAYS.map(() => 'meal-1'),
-    )
+    expect(
+      WEEK_DATES.map((day) => mealIn(plan, slot(day, 'breakfast'))),
+    ).toEqual(WEEK_DATES.map(() => 'meal-1'))
   })
 
   it('keeps the same snack all week when it always stays', () => {
     const plan = filledWeekPlan(
       meals(3, 'snack'),
+      WEEK,
       sequence([0]),
       'lunchOrDinner',
     )
-    const mondaySnack = mealIn(plan, slot('monday', 'snack'))
+    const mondaySnack = mealIn(plan, slot(MONDAY, 'snack'))
 
     expect(mondaySnack).not.toBeNull()
-    expect(WEEKDAYS.map((day) => mealIn(plan, slot(day, 'snack')))).toEqual(
-      WEEKDAYS.map(() => mondaySnack),
+    expect(WEEK_DATES.map((day) => mealIn(plan, slot(day, 'snack')))).toEqual(
+      WEEK_DATES.map(() => mondaySnack),
     )
   })
 
   it('changes the breakfast every day when it never stays', () => {
     const plan = filledWeekPlan(
       meals(3, 'breakfast'),
+      WEEK,
       sequence([0.99]),
       'lunchOrDinner',
     )
-    const breakfasts = WEEKDAYS.map((day) =>
+    const breakfasts = WEEK_DATES.map((day) =>
       mealIn(plan, slot(day, 'breakfast')),
     )
 
@@ -659,7 +670,7 @@ describe('stayingLikeTheDayBefore', () => {
       breakfasts
         .slice(1)
         .map((breakfast, position) => breakfast !== breakfasts[position]),
-    ).toEqual(WEEKDAYS.slice(1).map(() => true))
+    ).toEqual(WEEK_DATES.slice(1).map(() => true))
   })
 })
 
@@ -692,8 +703,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -704,8 +715,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [bolognese],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0, 0.5]),
         'lunchOrDinner',
       ),
@@ -716,8 +727,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [hiddenBolognese, pizza],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0, 0]),
         'lunchOrDinner',
       ),
@@ -731,7 +742,7 @@ describe('pickMealFor', () => {
       pickMealFor(
         [muesli, apple],
         plan,
-        slot('monday', 'breakfast'),
+        slot(MONDAY, 'breakfast'),
         sequence([0.9]),
         'lunchOrDinner',
       ),
@@ -745,7 +756,7 @@ describe('pickMealFor', () => {
       pickMealFor(
         [muesli, apple],
         plan,
-        slot('monday', 'breakfast'),
+        slot(MONDAY, 'breakfast'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -758,8 +769,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         snacks,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'snack'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'snack'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -767,8 +778,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         snacks,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'snack'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'snack'),
         sequence([0.999999]),
         'lunchOrDinner',
       ),
@@ -776,8 +787,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         snacks,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'snack'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'snack'),
         sequence([1]),
         'lunchOrDinner',
       ),
@@ -790,8 +801,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'breakfast'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'breakfast'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -799,8 +810,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'breakfast'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'breakfast'),
         sequence([0.99]),
         'lunchOrDinner',
       ),
@@ -811,8 +822,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [muesli, bolognese, bread, apple],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'snack'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'snack'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -828,8 +839,8 @@ describe('pickMealFor', () => {
         expect(
           pickMealFor(
             [muesli],
-            EMPTY_WEEK_PLAN,
-            slot('monday', time),
+            EMPTY_PLAN,
+            slot(MONDAY, time),
             sequence([coin, 0]),
             'lunchOrDinner',
           ),
@@ -839,18 +850,14 @@ describe('pickMealFor', () => {
   })
 
   it('rolls a side or a snack beside the main meal of the day', () => {
-    const plan = withMealIn(
-      EMPTY_WEEK_PLAN,
-      slot('monday', 'dinner'),
-      'bolognese',
-    )
+    const plan = withMealIn(EMPTY_PLAN, slot(MONDAY, 'dinner'), 'bolognese')
     const stored = [bolognese, pizza, bread, apple]
 
     expect(
       pickMealFor(
         stored,
         plan,
-        slot('monday', 'lunch'),
+        slot(MONDAY, 'lunch'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -859,7 +866,7 @@ describe('pickMealFor', () => {
       pickMealFor(
         stored,
         plan,
-        slot('monday', 'lunch'),
+        slot(MONDAY, 'lunch'),
         sequence([0.99]),
         'lunchOrDinner',
       ),
@@ -873,8 +880,8 @@ describe('pickMealFor', () => {
       expect(
         pickMealFor(
           [muesli, pizza, bread, apple],
-          withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'lunch'), beside),
-          slot('monday', 'dinner'),
+          withMealIn(EMPTY_PLAN, slot(MONDAY, 'lunch'), beside),
+          slot(MONDAY, 'dinner'),
           sequence([0.99]),
           'lunchOrDinner',
         ),
@@ -888,8 +895,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0, 0]),
         'lunchOrDinner',
       ),
@@ -897,8 +904,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0.5, 0]),
         'lunchOrDinner',
       ),
@@ -906,8 +913,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'dinner'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'dinner'),
         sequence([0, 0]),
         'lunchOrDinner',
       ),
@@ -915,8 +922,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'dinner'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'dinner'),
         sequence([0.5, 0]),
         'lunchOrDinner',
       ),
@@ -927,8 +934,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [pizza, bread],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0]),
         'lunchOrDinner',
         'dinner',
@@ -940,8 +947,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [hiddenBolognese, pizza, bread],
-        withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'dinner'), 'bolognese'),
-        slot('monday', 'lunch'),
+        withMealIn(EMPTY_PLAN, slot(MONDAY, 'dinner'), 'bolognese'),
+        slot(MONDAY, 'lunch'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -949,13 +956,13 @@ describe('pickMealFor', () => {
   })
 
   it('counts an unknown meal on the other meal time as empty', () => {
-    const plan = withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'dinner'), 'gone')
+    const plan = withMealIn(EMPTY_PLAN, slot(MONDAY, 'dinner'), 'gone')
 
     expect(
       pickMealFor(
         [pizza, bread],
         plan,
-        slot('monday', 'lunch'),
+        slot(MONDAY, 'lunch'),
         sequence([0, 0]),
         'lunchOrDinner',
       ),
@@ -964,7 +971,7 @@ describe('pickMealFor', () => {
       pickMealFor(
         [pizza, bread],
         plan,
-        slot('monday', 'lunch'),
+        slot(MONDAY, 'lunch'),
         sequence([0.5, 0]),
         'lunchOrDinner',
       ),
@@ -975,8 +982,8 @@ describe('pickMealFor', () => {
     expect(
       pickMealFor(
         [bolognese],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'breakfast'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'breakfast'),
         sequence([0]),
         'lunchOrDinner',
       ),
@@ -989,8 +996,8 @@ describe('filledWeekPlan', () => {
   const mixedRandom = () => sequence([0.3, 0.8, 0.6, 0.1, 0.9, 0.7])
 
   it('leaves the plan empty without a stored meal', () => {
-    expect(filledWeekPlan([], sequence([0.3]), 'lunchOrDinner')).toEqual(
-      EMPTY_WEEK_PLAN,
+    expect(filledWeekPlan([], WEEK, sequence([0.3]), 'lunchOrDinner')).toEqual(
+      EMPTY_PLAN,
     )
   })
 
@@ -1001,7 +1008,7 @@ describe('filledWeekPlan', () => {
       ...meals(7, 'mainMeal', 'main'),
       ...meals(7, 'none', 'side'),
     ]
-    const plan = filledWeekPlan(stored, sequence([0.99]), 'lunchOrDinner')
+    const plan = filledWeekPlan(stored, WEEK, sequence([0.99]), 'lunchOrDinner')
     const planned = mealsOf(plan)
 
     expect(new Set(planned).size).toBe(28)
@@ -1011,6 +1018,7 @@ describe('filledWeekPlan', () => {
   it('spreads the meals of one kind over their slots as evenly as it can when it never stays', () => {
     const plan = filledWeekPlan(
       meals(3, 'snack'),
+      WEEK,
       sequence([0.99]),
       'lunchOrDinner',
     )
@@ -1018,11 +1026,26 @@ describe('filledWeekPlan', () => {
     expect(timesPlannedIn(plan)).toEqual([7, 7, 7])
   })
 
+  it('fills every day of a ten day period', () => {
+    const tenDays = { start: FRIDAY, days: 10 }
+    const plan = filledWeekPlan(
+      everyKind,
+      tenDays,
+      mixedRandom(),
+      'lunchOrDinner',
+    )
+
+    expect(
+      datesOf(tenDays).map((date) => mealIn(plan, slot(date, 'snack'))),
+    ).toEqual(datesOf(tenDays).map(() => 'apple'))
+    expect(plan.period).toEqual(tenDays)
+  })
+
   it('walks through the candidates when the random source always gives zero', () => {
-    const plan = filledWeekPlan(meals(7), sequence([0]), 'lunchOrDinner')
+    const plan = filledWeekPlan(meals(7), WEEK, sequence([0]), 'lunchOrDinner')
 
     expect(mealsOf(plan)).toEqual(
-      WEEKDAYS.flatMap((_, position) => [
+      WEEK_DATES.flatMap((_, position) => [
         null,
         `meal-${position + 1}`,
         null,
@@ -1032,19 +1055,19 @@ describe('filledWeekPlan', () => {
   })
 
   it('plans exactly one main meal a day, now at lunch and now at dinner', () => {
-    const plan = filledWeekPlan(everyKind, mixedRandom(), 'lunchOrDinner')
+    const plan = filledWeekPlan(everyKind, WEEK, mixedRandom(), 'lunchOrDinner')
     const mainMealTimes = mainMealTimesOf(plan, everyKind)
 
     expect(mainMealTimes.map((times) => times.length)).toEqual(
-      WEEKDAYS.map(() => 1),
+      WEEK_DATES.map(() => 1),
     )
     expect(new Set(mainMealTimes.flat())).toEqual(new Set(['lunch', 'dinner']))
   })
 
   it('puts a side or a snack beside the main meal of each day', () => {
-    const plan = filledWeekPlan(everyKind, mixedRandom(), 'lunchOrDinner')
+    const plan = filledWeekPlan(everyKind, WEEK, mixedRandom(), 'lunchOrDinner')
 
-    WEEKDAYS.forEach((day) =>
+    WEEK_DATES.forEach((day) =>
       expect(
         [mealIn(plan, slot(day, 'lunch')), mealIn(plan, slot(day, 'dinner'))]
           .filter((id) => id !== 'bolognese')
@@ -1054,9 +1077,9 @@ describe('filledWeekPlan', () => {
   })
 
   it('rolls a breakfast or a snack for every breakfast and a snack for every snack', () => {
-    const plan = filledWeekPlan(everyKind, mixedRandom(), 'lunchOrDinner')
+    const plan = filledWeekPlan(everyKind, WEEK, mixedRandom(), 'lunchOrDinner')
 
-    WEEKDAYS.forEach((day) => {
+    WEEK_DATES.forEach((day) => {
       expect(['muesli', 'apple']).toContain(
         mealIn(plan, slot(day, 'breakfast')),
       )
@@ -1067,11 +1090,12 @@ describe('filledWeekPlan', () => {
   it('never plans the same category of main meal on two days in a row', () => {
     const plan = filledWeekPlan(
       [pasta, penne, rice, meal('risotto', 'mainMeal', ['Reis'])],
+      WEEK,
       sequence([0]),
       'lunchOrDinner',
     )
 
-    expect(WEEKDAYS.map((day) => mealIn(plan, slot(day, 'lunch')))).toEqual([
+    expect(WEEK_DATES.map((day) => mealIn(plan, slot(day, 'lunch')))).toEqual([
       'pasta',
       'rice',
       'penne',
@@ -1083,16 +1107,21 @@ describe('filledWeekPlan', () => {
   })
 
   it('leaves every slot empty that no stored meal suits', () => {
-    const plan = filledWeekPlan([bolognese], mixedRandom(), 'lunchOrDinner')
+    const plan = filledWeekPlan(
+      [bolognese],
+      WEEK,
+      mixedRandom(),
+      'lunchOrDinner',
+    )
 
     expect(mealsOf(plan).filter((id) => id !== null)).toHaveLength(7)
-    WEEKDAYS.forEach((day) => {
+    WEEK_DATES.forEach((day) => {
       expect(mealIn(plan, slot(day, 'breakfast'))).toBeNull()
       expect(mealIn(plan, slot(day, 'snack'))).toBeNull()
     })
     expect(
       mainMealTimesOf(plan, [bolognese]).map((times) => times.length),
-    ).toEqual(WEEKDAYS.map(() => 1))
+    ).toEqual(WEEK_DATES.map(() => 1))
   })
 })
 
@@ -1105,41 +1134,48 @@ describe('filledWeekPlan with a fixed main meal time', () => {
     times.forEach((time) =>
       expect(
         mainMealTimesOf(
-          filledWeekPlan(everyKind, mixedRandom(), time),
+          filledWeekPlan(everyKind, WEEK, mixedRandom(), time),
           everyKind,
         ),
-      ).toEqual(WEEKDAYS.map(() => [time])),
+      ).toEqual(WEEK_DATES.map(() => [time])),
     )
   })
 
   it('puts a side or a snack at the other time of every day', () => {
-    const plan = filledWeekPlan(everyKind, mixedRandom(), 'lunch')
+    const plan = filledWeekPlan(everyKind, WEEK, mixedRandom(), 'lunch')
 
-    WEEKDAYS.forEach((day) =>
+    WEEK_DATES.forEach((day) =>
       expect(['bread', 'apple']).toContain(mealIn(plan, slot(day, 'dinner'))),
     )
   })
 
   it('tosses no coin for the time of the main meal', () => {
-    const plan = filledWeekPlan([bolognese, bread], sequence([0]), 'dinner')
+    const plan = filledWeekPlan(
+      [bolognese, bread],
+      WEEK,
+      sequence([0]),
+      'dinner',
+    )
 
     expect(mainMealTimesOf(plan, [bolognese, bread])).toEqual(
-      WEEKDAYS.map(() => ['dinner']),
+      WEEK_DATES.map(() => ['dinner']),
     )
   })
 
   it('leaves the other time empty with nothing but main meals', () => {
     const stored = meals(7)
-    const plan = filledWeekPlan(stored, mixedRandom(), 'lunch')
+    const plan = filledWeekPlan(stored, WEEK, mixedRandom(), 'lunch')
 
     expect(mealsOf(plan).filter((id) => id !== null)).toHaveLength(7)
-    expect(mainMealTimesOf(plan, stored)).toEqual(WEEKDAYS.map(() => ['lunch']))
+    expect(mainMealTimesOf(plan, stored)).toEqual(
+      WEEK_DATES.map(() => ['lunch']),
+    )
   })
 
   it('still rolls the breakfast and the snack', () => {
-    const plan = filledWeekPlan(everyKind, mixedRandom(), 'lunch')
+    const plan = filledWeekPlan(everyKind, WEEK, mixedRandom(), 'lunch')
 
-    WEEKDAYS.forEach((day) => {
+    WEEK_DATES.forEach((day) => {
       expect(['muesli', 'apple']).toContain(
         mealIn(plan, slot(day, 'breakfast')),
       )
@@ -1152,7 +1188,7 @@ describe('pickMealFor with a fixed main meal time', () => {
   const stored = [muesli, pizza, bread, apple]
 
   function onlyAt(time: MealTime, id: string): WeekPlan {
-    return withMealIn(EMPTY_WEEK_PLAN, slot('monday', time), id)
+    return withMealIn(EMPTY_PLAN, slot(MONDAY, time), id)
   }
 
   function countingRandom() {
@@ -1168,8 +1204,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'dinner'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'dinner'),
         sequence([0]),
         'lunch',
       ),
@@ -1177,8 +1213,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'dinner'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'dinner'),
         sequence([0.99]),
         'lunch',
       ),
@@ -1190,7 +1226,7 @@ describe('pickMealFor with a fixed main meal time', () => {
       pickMealFor(
         stored,
         onlyAt('lunch', 'bread'),
-        slot('monday', 'dinner'),
+        slot(MONDAY, 'dinner'),
         sequence([0]),
         'lunch',
       ),
@@ -1201,8 +1237,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         [pizza, bolognese],
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'dinner'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'dinner'),
         sequence([0]),
         'lunch',
       ),
@@ -1213,13 +1249,7 @@ describe('pickMealFor with a fixed main meal time', () => {
     const { random, counted } = countingRandom()
 
     expect(
-      pickMealFor(
-        stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
-        random,
-        'lunch',
-      ),
+      pickMealFor(stored, EMPTY_PLAN, slot(MONDAY, 'lunch'), random, 'lunch'),
     ).toEqual(pizza)
     expect(counted.calls).toBe(1)
   })
@@ -1232,7 +1262,7 @@ describe('pickMealFor with a fixed main meal time', () => {
         pickMealFor(
           stored,
           onlyAt('dinner', beside),
-          slot('monday', 'lunch'),
+          slot(MONDAY, 'lunch'),
           sequence([0.99]),
           'lunch',
         ),
@@ -1245,7 +1275,7 @@ describe('pickMealFor with a fixed main meal time', () => {
       pickMealFor(
         [bolognese, ...stored],
         onlyAt('dinner', 'bolognese'),
-        slot('monday', 'lunch'),
+        slot(MONDAY, 'lunch'),
         sequence([0]),
         'lunch',
       ),
@@ -1256,8 +1286,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'lunch'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
         sequence([0]),
         'dinner',
       ),
@@ -1265,8 +1295,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'dinner'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'dinner'),
         sequence([0.99]),
         'dinner',
       ),
@@ -1275,7 +1305,7 @@ describe('pickMealFor with a fixed main meal time', () => {
       pickMealFor(
         [bolognese, ...stored],
         onlyAt('lunch', 'bolognese'),
-        slot('monday', 'dinner'),
+        slot(MONDAY, 'dinner'),
         sequence([0]),
         'dinner',
       ),
@@ -1286,8 +1316,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'breakfast'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'breakfast'),
         sequence([0]),
         'lunch',
       ),
@@ -1295,8 +1325,8 @@ describe('pickMealFor with a fixed main meal time', () => {
     expect(
       pickMealFor(
         stored,
-        EMPTY_WEEK_PLAN,
-        slot('monday', 'snack'),
+        EMPTY_PLAN,
+        slot(MONDAY, 'snack'),
         sequence([0]),
         'dinner',
       ),

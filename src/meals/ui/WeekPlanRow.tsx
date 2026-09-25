@@ -3,9 +3,9 @@ import { SnowflakeIcon } from '../../shared/ui/SnowflakeIcon'
 import {
   fixedSlotText,
   mealSuggestionsLabel,
+  planDateMark,
   randomMealLabel,
   slotFieldLabel,
-  weekdayAbbreviation,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import { suggestMeals } from '../domain/mealSuggestions'
@@ -62,7 +62,7 @@ function SlotMarks({
         </span>
       ) : (
         <span className="weekdayMark" aria-hidden="true">
-          {weekdayAbbreviation(slot.day)}
+          {planDateMark(slot.date)}
         </span>
       )}
       <span className="supplyMark" aria-hidden="true">

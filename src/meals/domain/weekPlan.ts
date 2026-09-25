@@ -1,62 +1,89 @@
 import type { Meal, MealId } from './meal'
+import { daysAfter, WEEKDAYS, type PlanDate, type Weekday } from './planDate'
+import {
+  datesOf,
+  includesDate,
+  samePeriod,
+  type PlanPeriod,
+} from './planPeriod'
 import { supplyOf, withSupply, type Supply } from './supply'
 
-export const WEEKDAYS = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
-] as const
-
-export type Weekday = (typeof WEEKDAYS)[number]
+export { WEEKDAYS, type Weekday } from './planDate'
 
 export const MEAL_TIMES = ['breakfast', 'lunch', 'snack', 'dinner'] as const
 
 export type MealTime = (typeof MEAL_TIMES)[number]
 
-export type PlanSlot = { day: Weekday; time: MealTime }
-
-export const PLAN_SLOTS: readonly PlanSlot[] = WEEKDAYS.flatMap((day) =>
-  MEAL_TIMES.map((time) => ({ day, time })),
-)
+export type PlanSlot = { date: PlanDate; time: MealTime }
 
 export type DayPlan = Readonly<Record<MealTime, MealId | null>>
 
-export type WeekPlan = Readonly<Record<Weekday, DayPlan>>
+export type WeekPlan = {
+  readonly period: PlanPeriod
+  readonly days: Readonly<Partial<Record<PlanDate, DayPlan>>>
+}
 
 const EMPTY_DAY_PLAN: DayPlan = Object.fromEntries(
   MEAL_TIMES.map((time) => [time, null]),
 ) as DayPlan
 
-export const EMPTY_WEEK_PLAN: WeekPlan = Object.fromEntries(
-  WEEKDAYS.map((day) => [day, EMPTY_DAY_PLAN]),
-) as WeekPlan
-
-const DAYS_FROM_SUNDAY_TO_MONDAY = 6
-
-export function weekdayOf(date: Date): Weekday {
-  return WEEKDAYS[
-    (date.getDay() + DAYS_FROM_SUNDAY_TO_MONDAY) % WEEKDAYS.length
-  ]
+export function planSlotsOf(period: PlanPeriod): readonly PlanSlot[] {
+  return datesOf(period).flatMap((date) =>
+    MEAL_TIMES.map((time) => ({ date, time })),
+  )
 }
 
-export function weekdayBefore(day: Weekday): Weekday | null {
-  return WEEKDAYS[WEEKDAYS.indexOf(day) - 1] ?? null
+function dayPlanOf(plan: WeekPlan, date: PlanDate): DayPlan {
+  return plan.days[date] ?? EMPTY_DAY_PLAN
 }
 
-export function weekdayAfter(day: Weekday): Weekday | null {
-  return WEEKDAYS[WEEKDAYS.indexOf(day) + 1] ?? null
+function withDays(
+  period: PlanPeriod,
+  dayPlanOn: (date: PlanDate) => DayPlan,
+): WeekPlan {
+  return {
+    period,
+    days: Object.fromEntries(
+      datesOf(period).map((date) => [date, dayPlanOn(date)]),
+    ),
+  }
+}
+
+export function emptyWeekPlan(period: PlanPeriod): WeekPlan {
+  return withDays(period, () => EMPTY_DAY_PLAN)
+}
+
+export function emptied(plan: WeekPlan): WeekPlan {
+  return emptyWeekPlan(plan.period)
+}
+
+export function slotCountOf(plan: WeekPlan): number {
+  return planSlotsOf(plan.period).length
+}
+
+export function dateOfWeekday(week: PlanPeriod, day: Weekday): PlanDate {
+  return daysAfter(week.start, WEEKDAYS.indexOf(day))
+}
+
+export function weekPlanFromWeekdays(
+  weekdays: Readonly<Record<Weekday, DayPlan>>,
+  week: PlanPeriod,
+): WeekPlan {
+  return WEEKDAYS.reduce(
+    (plan, day) => ({
+      ...plan,
+      days: { ...plan.days, [dateOfWeekday(week, day)]: weekdays[day] },
+    }),
+    emptyWeekPlan(week),
+  )
 }
 
 export function sameSlot(one: PlanSlot, other: PlanSlot): boolean {
-  return one.day === other.day && one.time === other.time
+  return one.date === other.date && one.time === other.time
 }
 
 export function mealIn(plan: WeekPlan, slot: PlanSlot): MealId | null {
-  return plan[slot.day][slot.time]
+  return plan.days[slot.date]?.[slot.time] ?? null
 }
 
 export function withMealIn(
@@ -64,11 +91,23 @@ export function withMealIn(
   slot: PlanSlot,
   id: MealId | null,
 ): WeekPlan {
-  return { ...plan, [slot.day]: { ...plan[slot.day], [slot.time]: id } }
+  if (!includesDate(plan.period, slot.date)) return plan
+  return {
+    ...plan,
+    days: {
+      ...plan.days,
+      [slot.date]: { ...dayPlanOf(plan, slot.date), [slot.time]: id },
+    },
+  }
 }
 
 export function sameWeekPlan(one: WeekPlan, other: WeekPlan): boolean {
-  return PLAN_SLOTS.every((slot) => mealIn(one, slot) === mealIn(other, slot))
+  return (
+    samePeriod(one.period, other.period) &&
+    planSlotsOf(one.period).every(
+      (slot) => mealIn(one, slot) === mealIn(other, slot),
+    )
+  )
 }
 
 export function shownMealIn(
@@ -79,10 +118,11 @@ export function shownMealIn(
   return meals.find((meal) => meal.id === mealIn(plan, slot)) ?? null
 }
 
-function slotsBefore(slot: PlanSlot): readonly PlanSlot[] {
-  return PLAN_SLOTS.slice(
+function slotsBefore(plan: WeekPlan, slot: PlanSlot): readonly PlanSlot[] {
+  const slots = planSlotsOf(plan.period)
+  return slots.slice(
     0,
-    PLAN_SLOTS.findIndex((each) => sameSlot(each, slot)),
+    slots.findIndex((each) => sameSlot(each, slot)),
   )
 }
 
@@ -91,8 +131,9 @@ function timesPlannedBefore(
   slot: PlanSlot,
   mealId: MealId,
 ): number {
-  return slotsBefore(slot).filter((earlier) => mealIn(plan, earlier) === mealId)
-    .length
+  return slotsBefore(plan, slot).filter(
+    (earlier) => mealIn(plan, earlier) === mealId,
+  ).length
 }
 
 export function isSuppliedIn(
@@ -118,7 +159,7 @@ function plannedSlots(
   plan: WeekPlan,
   meals: readonly Meal[],
 ): readonly PlannedSlot[] {
-  return PLAN_SLOTS.flatMap((slot) => {
+  return planSlotsOf(plan.period).flatMap((slot) => {
     const meal = shownMealIn(plan, slot, meals)
     return meal === null ? [] : [{ slot, meal }]
   })
@@ -129,7 +170,9 @@ export function coveredSlotsOf(
   meals: readonly Meal[],
   supplies: readonly Supply[],
 ): readonly PlanSlot[] {
-  return PLAN_SLOTS.filter((slot) => isSuppliedIn(plan, slot, meals, supplies))
+  return planSlotsOf(plan.period).filter((slot) =>
+    isSuppliedIn(plan, slot, meals, supplies),
+  )
 }
 
 export function plannedMeals(

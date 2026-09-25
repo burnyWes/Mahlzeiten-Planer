@@ -1,47 +1,95 @@
 import {
   doc,
+  getDoc,
   onSnapshot,
   setDoc,
   type DocumentData,
   type Firestore,
 } from 'firebase/firestore'
+import type { Clock } from '../../shared/domain/clock'
+import {
+  isPlanDate,
+  planDateOf,
+  WEEKDAYS,
+  type PlanDate,
+  type Weekday,
+} from '../domain/planDate'
+import {
+  datesOf,
+  isPlanPeriod,
+  weekOf,
+  type PlanPeriod,
+} from '../domain/planPeriod'
 import {
   DEFAULT_MAIN_MEAL_TIME_RULE,
   isMainMealTimeRule,
   type MainMealTimeRule,
 } from '../domain/randomPlanning'
 import {
-  EMPTY_WEEK_PLAN,
+  dateOfWeekday,
   MEAL_TIMES,
-  PLAN_SLOTS,
-  WEEKDAYS,
-  withMealIn,
+  mealIn,
+  weekPlanFromWeekdays,
+  type DayPlan,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from '../domain/weekPlan'
 import { EDITING_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
 import type { WeekPlanClient } from './weekPlanClient'
 
 const WEEK_PLAN = 'weekPlan'
-const MEALS = 'meals'
+const DATED_MEALS = 'datedMeals'
+const WEEKDAY_MEALS = 'meals'
 const MEAL_STAGE = 'mealStage'
 const ROLLING_RULES = 'rollingRules'
 
 const WRITE_FAILED = 'Konnte nicht gespeichert werden.'
 
-function toWeekPlan(stored: DocumentData | undefined): WeekPlan {
-  return PLAN_SLOTS.reduce((plan, { day, time }) => {
-    const storedId: unknown = stored?.[day]?.[time]
-    return typeof storedId === 'string'
-      ? withMealIn(plan, { day, time }, storedId)
-      : plan
-  }, EMPTY_WEEK_PLAN)
+function toDayPlan(stored: unknown): DayPlan {
+  const storedDay: Partial<Record<MealTime, unknown>> =
+    typeof stored === 'object' && stored !== null ? stored : {}
+  return Object.fromEntries(
+    MEAL_TIMES.map((time) => {
+      const storedId = storedDay[time]
+      return [time, typeof storedId === 'string' ? storedId : null]
+    }),
+  ) as DayPlan
+}
+
+function toWeekPlan(stored: DocumentData | undefined): WeekPlan | null {
+  const period: unknown = { start: stored?.start, days: stored?.days }
+  if (!isPlanPeriod(period)) return null
+  return {
+    period,
+    days: Object.fromEntries(
+      datesOf(period).map((date) => [date, toDayPlan(stored?.plan?.[date])]),
+    ),
+  }
+}
+
+function fromDayPlan(plan: WeekPlan, date: PlanDate): DocumentData {
+  return Object.fromEntries(
+    MEAL_TIMES.map((time) => [time, mealIn(plan, { date, time })]),
+  )
 }
 
 function fromWeekPlan(plan: WeekPlan): DocumentData {
-  return Object.fromEntries(WEEKDAYS.map((day) => [day, { ...plan[day] }]))
+  return {
+    start: plan.period.start,
+    days: plan.period.days,
+    plan: Object.fromEntries(
+      datesOf(plan.period).map((date) => [date, fromDayPlan(plan, date)]),
+    ),
+  }
+}
+
+function toWeekdays(
+  stored: DocumentData | undefined,
+): Readonly<Record<Weekday, DayPlan>> {
+  return Object.fromEntries(
+    WEEKDAYS.map((day) => [day, toDayPlan(stored?.[day])]),
+  ) as Record<Weekday, DayPlan>
 }
 
 function isWeekday(value: unknown): value is Weekday {
@@ -52,26 +100,33 @@ function isMealTime(value: unknown): value is MealTime {
   return MEAL_TIMES.some((time) => time === value)
 }
 
-function isPlanSlot(value: unknown): value is PlanSlot {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'day' in value &&
-    'time' in value &&
-    isWeekday(value.day) &&
-    isMealTime(value.time)
-  )
+function toPlanSlot(stored: unknown, week: PlanPeriod): PlanSlot[] {
+  if (typeof stored !== 'object' || stored === null) return []
+  const { date, day, time } = stored as Record<string, unknown>
+  if (!isMealTime(time)) return []
+  if (isPlanDate(date)) return [{ date, time }]
+  if (isWeekday(day)) return [{ date: dateOfWeekday(week, day), time }]
+  return []
 }
 
-function toCoveredSlots(stored: unknown): readonly PlanSlot[] | null {
+function toCoveredSlots(
+  stored: unknown,
+  week: PlanPeriod,
+): readonly PlanSlot[] | null {
   return Array.isArray(stored)
-    ? stored.filter(isPlanSlot).map(({ day, time }) => ({ day, time }))
+    ? stored.flatMap((each) => toPlanSlot(each, week))
     : null
 }
 
-function toWeekPlanStage(stored: DocumentData | undefined): WeekPlanStage {
+function toWeekPlanStage(
+  stored: DocumentData | undefined,
+  week: PlanPeriod,
+): WeekPlanStage {
   return stored?.mode === 'reading'
-    ? { mode: 'reading', coveredSlots: toCoveredSlots(stored.coveredSlots) }
+    ? {
+        mode: 'reading',
+        coveredSlots: toCoveredSlots(stored.coveredSlots, week),
+      }
     : EDITING_STAGE
 }
 
@@ -80,7 +135,7 @@ function fromWeekPlanStage(stage: WeekPlanStage): DocumentData {
     ? {
         mode: stage.mode,
         coveredSlots:
-          stage.coveredSlots?.map(({ day, time }) => ({ day, time })) ?? null,
+          stage.coveredSlots?.map(({ date, time }) => ({ date, time })) ?? null,
       }
     : { mode: stage.mode }
 }
@@ -97,16 +152,46 @@ function toMainMealTimeRule(
 export function createFirestoreWeekPlanClient(
   firestore: Firestore,
   onWriteFailure: (message: string) => void,
+  clock: Clock,
 ): WeekPlanClient {
-  const weekPlan = doc(firestore, WEEK_PLAN, MEALS)
+  const weekPlan = doc(firestore, WEEK_PLAN, DATED_MEALS)
+  const weekdayPlan = doc(firestore, WEEK_PLAN, WEEKDAY_MEALS)
   const stage = doc(firestore, WEEK_PLAN, MEAL_STAGE)
   const rollingRules = doc(firestore, WEEK_PLAN, ROLLING_RULES)
 
+  const currentWeek = () => weekOf(planDateOf(clock()))
+
   return {
     observeWeekPlan(onWeekPlan) {
-      return onSnapshot(weekPlan, (snapshot) => {
-        onWeekPlan(toWeekPlan(snapshot.data()))
+      let datedPlanArrived = false
+      let weekdayPlanRequested = false
+      let stopped = false
+
+      function moveWeekdayPlan() {
+        weekdayPlanRequested = true
+        getDoc(weekdayPlan)
+          .then(
+            (snapshot) => snapshot.data(),
+            () => undefined,
+          )
+          .then((stored) => {
+            if (stopped || datedPlanArrived) return
+            onWeekPlan(weekPlanFromWeekdays(toWeekdays(stored), currentWeek()))
+          })
+      }
+
+      const stopListening = onSnapshot(weekPlan, (snapshot) => {
+        const arriving = toWeekPlan(snapshot.data())
+        if (arriving !== null) {
+          datedPlanArrived = true
+          onWeekPlan(arriving)
+        } else if (!weekdayPlanRequested) moveWeekdayPlan()
       })
+
+      return () => {
+        stopped = true
+        stopListening()
+      }
     },
 
     writeWeekPlan(plan) {
@@ -117,7 +202,7 @@ export function createFirestoreWeekPlanClient(
 
     observeStage(onStage) {
       return onSnapshot(stage, (snapshot) => {
-        onStage(toWeekPlanStage(snapshot.data()))
+        onStage(toWeekPlanStage(snapshot.data(), currentWeek()))
       })
     },
 

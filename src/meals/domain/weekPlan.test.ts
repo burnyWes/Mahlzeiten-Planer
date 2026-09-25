@@ -1,31 +1,42 @@
 import { describe, expect, it } from 'vitest'
 import type { Meal } from './meal'
+import { toPlanDate, type PlanDate } from './planDate'
+import type { PlanPeriod } from './planPeriod'
 import type { Supply } from './supply'
 import {
   coveredSlotsOf,
-  EMPTY_WEEK_PLAN,
+  dateOfWeekday,
+  emptied,
+  emptyWeekPlan,
   isSuppliedIn,
   MEAL_TIMES,
   mealIn,
   mealsWithoutItems,
-  PLAN_SLOTS,
+  planSlotsOf,
   plannedMealCount,
   plannedMeals,
   sameSlot,
   sameWeekPlan,
   shownMealIn,
+  slotCountOf,
   suppliedMealCount,
-  WEEKDAYS,
-  weekdayAfter,
-  weekdayBefore,
-  weekdayOf,
+  weekPlanFromWeekdays,
   weekPlanTransfer,
   withMealIn,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from './weekPlan'
+
+const MONDAY = toPlanDate('2026-09-21')
+const TUESDAY = toPlanDate('2026-09-22')
+const WEDNESDAY = toPlanDate('2026-09-23')
+const FRIDAY = toPlanDate('2026-09-25')
+const SUNDAY = toPlanDate('2026-09-27')
+const NEXT_MONDAY = toPlanDate('2026-09-28')
+
+const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
+const EMPTY_PLAN = emptyWeekPlan(WEEK)
 
 function meal(id: string, name: string, items: Meal['items'] = []): Meal {
   return {
@@ -52,8 +63,8 @@ function supply(mealId: string, count: number): Supply {
   return { mealId, count }
 }
 
-function slot(day: Weekday, time: MealTime): PlanSlot {
-  return { day, time }
+function slot(date: PlanDate, time: MealTime): PlanSlot {
+  return { date, time }
 }
 
 function planWith(
@@ -61,27 +72,13 @@ function planWith(
 ): WeekPlan {
   return planned.reduce<WeekPlan>(
     (plan, [plannedSlot, id]) => withMealIn(plan, plannedSlot, id),
-    EMPTY_WEEK_PLAN,
+    EMPTY_PLAN,
   )
 }
 
 function filledSlots(plan: WeekPlan): readonly PlanSlot[] {
-  return PLAN_SLOTS.filter((each) => mealIn(plan, each) !== null)
+  return planSlotsOf(plan.period).filter((each) => mealIn(plan, each) !== null)
 }
-
-describe('WEEKDAYS', () => {
-  it('runs from Monday to Sunday', () => {
-    expect(WEEKDAYS).toEqual([
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday',
-    ])
-  })
-})
 
 describe('MEAL_TIMES', () => {
   it('runs from breakfast to dinner', () => {
@@ -89,91 +86,151 @@ describe('MEAL_TIMES', () => {
   })
 })
 
-describe('PLAN_SLOTS', () => {
-  it('holds four slots for every weekday in the order of the week', () => {
-    expect(PLAN_SLOTS).toHaveLength(28)
-    expect(PLAN_SLOTS[0]).toEqual(slot('monday', 'breakfast'))
-    expect(PLAN_SLOTS[4]).toEqual(slot('tuesday', 'breakfast'))
-    expect(PLAN_SLOTS[27]).toEqual(slot('sunday', 'dinner'))
+describe('planSlotsOf', () => {
+  it('holds four slots for every day in the order of the calendar', () => {
+    const slots = planSlotsOf(WEEK)
+
+    expect(slots).toHaveLength(28)
+    expect(slots[0]).toEqual(slot(MONDAY, 'breakfast'))
+    expect(slots[4]).toEqual(slot(TUESDAY, 'breakfast'))
+    expect(slots[27]).toEqual(slot(SUNDAY, 'dinner'))
   })
 })
 
-describe('EMPTY_WEEK_PLAN', () => {
+describe('emptyWeekPlan', () => {
   it('plans no meal in any slot', () => {
-    expect(filledSlots(EMPTY_WEEK_PLAN)).toEqual([])
+    expect(filledSlots(EMPTY_PLAN)).toEqual([])
+  })
+
+  it('keeps the period it was given', () => {
+    expect(EMPTY_PLAN.period).toEqual(WEEK)
+  })
+})
+
+describe('slotCountOf', () => {
+  it('counts four meal times per day of the week', () => {
+    expect(slotCountOf(EMPTY_PLAN)).toBe(28)
+  })
+
+  it('counts four meal times per day of the period', () => {
+    expect(slotCountOf(emptyWeekPlan({ start: FRIDAY, days: 10 }))).toBe(40)
+  })
+})
+
+describe('emptied', () => {
+  it('drops every meal and keeps the period', () => {
+    const plan = emptied(
+      planWith(
+        [slot(MONDAY, 'lunch'), 'pizza'],
+        [slot(SUNDAY, 'dinner'), 'soup'],
+      ),
+    )
+
+    expect(filledSlots(plan)).toEqual([])
+    expect(plan.period).toEqual(WEEK)
+  })
+})
+
+describe('mealIn', () => {
+  it('finds no meal on a day outside the period', () => {
+    const plan = withMealIn(EMPTY_PLAN, slot(NEXT_MONDAY, 'lunch'), 'pizza')
+
+    expect(mealIn(plan, slot(NEXT_MONDAY, 'lunch'))).toBeNull()
+  })
+})
+
+describe('dateOfWeekday', () => {
+  it('finds the date of a weekday within the week', () => {
+    expect(dateOfWeekday(WEEK, 'monday')).toBe(MONDAY)
+    expect(dateOfWeekday(WEEK, 'friday')).toBe(FRIDAY)
+    expect(dateOfWeekday(WEEK, 'sunday')).toBe(SUNDAY)
+  })
+})
+
+describe('weekPlanFromWeekdays', () => {
+  it('lays a plan of weekdays onto the dates of the week', () => {
+    const empty = { breakfast: null, lunch: null, snack: null, dinner: null }
+    const plan = weekPlanFromWeekdays(
+      {
+        monday: { ...empty, breakfast: 'soup' },
+        tuesday: empty,
+        wednesday: empty,
+        thursday: empty,
+        friday: { ...empty, lunch: 'pizza' },
+        saturday: empty,
+        sunday: { ...empty, dinner: 'bolognese' },
+      },
+      WEEK,
+    )
+
+    expect(plan.period).toEqual(WEEK)
+    expect(mealIn(plan, slot(MONDAY, 'breakfast'))).toBe('soup')
+    expect(mealIn(plan, slot(FRIDAY, 'lunch'))).toBe('pizza')
+    expect(mealIn(plan, slot(SUNDAY, 'dinner'))).toBe('bolognese')
+    expect(filledSlots(plan)).toHaveLength(3)
   })
 })
 
 describe('withMealIn', () => {
   it('replaces exactly one slot', () => {
-    const plan = withMealIn(
-      EMPTY_WEEK_PLAN,
-      slot('wednesday', 'lunch'),
-      'pizza',
-    )
+    const plan = withMealIn(EMPTY_PLAN, slot(WEDNESDAY, 'lunch'), 'pizza')
 
-    expect(mealIn(plan, slot('wednesday', 'lunch'))).toBe('pizza')
-    expect(filledSlots(plan)).toEqual([slot('wednesday', 'lunch')])
+    expect(mealIn(plan, slot(WEDNESDAY, 'lunch'))).toBe('pizza')
+    expect(filledSlots(plan)).toEqual([slot(WEDNESDAY, 'lunch')])
   })
 
   it('empties a slot again', () => {
     const plan = withMealIn(
-      planWith([slot('wednesday', 'lunch'), 'pizza']),
-      slot('wednesday', 'lunch'),
+      planWith([slot(WEDNESDAY, 'lunch'), 'pizza']),
+      slot(WEDNESDAY, 'lunch'),
       null,
     )
 
-    expect(mealIn(plan, slot('wednesday', 'lunch'))).toBeNull()
+    expect(mealIn(plan, slot(WEDNESDAY, 'lunch'))).toBeNull()
   })
 
   it('leaves the plan it was given untouched', () => {
-    withMealIn(EMPTY_WEEK_PLAN, slot('monday', 'lunch'), 'pizza')
+    withMealIn(EMPTY_PLAN, slot(MONDAY, 'lunch'), 'pizza')
 
-    expect(mealIn(EMPTY_WEEK_PLAN, slot('monday', 'lunch'))).toBeNull()
+    expect(mealIn(EMPTY_PLAN, slot(MONDAY, 'lunch'))).toBeNull()
   })
 })
 
 describe('sameSlot', () => {
   it('holds for the same day and time', () => {
-    expect(sameSlot(slot('friday', 'snack'), slot('friday', 'snack'))).toBe(
-      true,
-    )
+    expect(sameSlot(slot(FRIDAY, 'snack'), slot(FRIDAY, 'snack'))).toBe(true)
   })
 
   it('fails for another time of the same day', () => {
-    expect(sameSlot(slot('friday', 'snack'), slot('friday', 'dinner'))).toBe(
-      false,
-    )
+    expect(sameSlot(slot(FRIDAY, 'snack'), slot(FRIDAY, 'dinner'))).toBe(false)
   })
 })
 
 describe('shownMealIn', () => {
   it('finds the meal that is planned in a slot', () => {
-    const plan = planWith([slot('friday', 'dinner'), 'pizza'])
+    const plan = planWith([slot(FRIDAY, 'dinner'), 'pizza'])
 
-    expect(shownMealIn(plan, slot('friday', 'dinner'), knownMeals)).toEqual(
-      pizza,
-    )
+    expect(shownMealIn(plan, slot(FRIDAY, 'dinner'), knownMeals)).toEqual(pizza)
   })
 
   it('shows nothing in an empty slot', () => {
     expect(
-      shownMealIn(EMPTY_WEEK_PLAN, slot('friday', 'dinner'), knownMeals),
+      shownMealIn(EMPTY_PLAN, slot(FRIDAY, 'dinner'), knownMeals),
     ).toBeNull()
   })
 
   it('shows nothing for a meal that was deleted meanwhile', () => {
-    const plan = planWith([slot('friday', 'dinner'), 'gone'])
+    const plan = planWith([slot(FRIDAY, 'dinner'), 'gone'])
 
-    expect(shownMealIn(plan, slot('friday', 'dinner'), knownMeals)).toBeNull()
+    expect(shownMealIn(plan, slot(FRIDAY, 'dinner'), knownMeals)).toBeNull()
   })
 })
 
 describe('plannedMeals', () => {
   it('gives the meals in the order of the slots', () => {
     const plan = planWith(
-      [slot('tuesday', 'breakfast'), 'pizza'],
-      [slot('monday', 'dinner'), 'bolognese'],
+      [slot(TUESDAY, 'breakfast'), 'pizza'],
+      [slot(MONDAY, 'dinner'), 'bolognese'],
     )
 
     expect(plannedMeals(plan, knownMeals)).toEqual([bolognese, pizza])
@@ -181,8 +238,8 @@ describe('plannedMeals', () => {
 
   it('keeps a meal that is planned in two slots twice', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('sunday', 'dinner'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(SUNDAY, 'dinner'), 'pizza'],
     )
 
     expect(plannedMeals(plan, knownMeals)).toEqual([pizza, pizza])
@@ -190,8 +247,8 @@ describe('plannedMeals', () => {
 
   it('skips empty slots and meals that were deleted meanwhile', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'gone'],
-      [slot('sunday', 'lunch'), 'soup'],
+      [slot(MONDAY, 'lunch'), 'gone'],
+      [slot(SUNDAY, 'lunch'), 'soup'],
     )
 
     expect(plannedMeals(plan, knownMeals)).toEqual([soup])
@@ -200,13 +257,13 @@ describe('plannedMeals', () => {
 
 describe('plannedMealCount', () => {
   it('counts no slot of an empty plan', () => {
-    expect(plannedMealCount(EMPTY_WEEK_PLAN, knownMeals)).toBe(0)
+    expect(plannedMealCount(EMPTY_PLAN, knownMeals)).toBe(0)
   })
 
   it('counts only the slots that carry a meal that still exists', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'gone'],
-      [slot('sunday', 'lunch'), 'soup'],
+      [slot(MONDAY, 'lunch'), 'gone'],
+      [slot(SUNDAY, 'lunch'), 'soup'],
     )
 
     expect(plannedMealCount(plan, knownMeals)).toBe(1)
@@ -214,8 +271,8 @@ describe('plannedMealCount', () => {
 
   it('counts two slots of the same day twice', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'soup'],
-      [slot('monday', 'dinner'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'soup'],
+      [slot(MONDAY, 'dinner'), 'pizza'],
     )
 
     expect(plannedMealCount(plan, knownMeals)).toBe(2)
@@ -224,20 +281,20 @@ describe('plannedMealCount', () => {
 
 describe('isSuppliedIn', () => {
   it('reports a slot whose meal is kept in store', () => {
-    const plan = planWith([slot('monday', 'lunch'), 'pizza'])
+    const plan = planWith([slot(MONDAY, 'lunch'), 'pizza'])
 
     expect(
-      isSuppliedIn(plan, slot('monday', 'lunch'), knownMeals, [
+      isSuppliedIn(plan, slot(MONDAY, 'lunch'), knownMeals, [
         supply('pizza', 1),
       ]),
     ).toBe(true)
   })
 
   it('reports a planned slot without a supply as not covered', () => {
-    const plan = planWith([slot('monday', 'lunch'), 'pizza'])
+    const plan = planWith([slot(MONDAY, 'lunch'), 'pizza'])
 
     expect(
-      isSuppliedIn(plan, slot('monday', 'lunch'), knownMeals, [
+      isSuppliedIn(plan, slot(MONDAY, 'lunch'), knownMeals, [
         supply('soup', 1),
       ]),
     ).toBe(false)
@@ -245,7 +302,7 @@ describe('isSuppliedIn', () => {
 
   it('reports an empty slot as not covered', () => {
     expect(
-      isSuppliedIn(EMPTY_WEEK_PLAN, slot('monday', 'lunch'), knownMeals, [
+      isSuppliedIn(EMPTY_PLAN, slot(MONDAY, 'lunch'), knownMeals, [
         supply('pizza', 1),
       ]),
     ).toBe(false)
@@ -253,57 +310,73 @@ describe('isSuppliedIn', () => {
 
   it('spends a single portion on the earlier of two days', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('wednesday', 'lunch'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(WEDNESDAY, 'lunch'), 'pizza'],
     )
     const supplies = [supply('pizza', 1)]
 
     expect(
-      isSuppliedIn(plan, slot('monday', 'lunch'), knownMeals, supplies),
+      isSuppliedIn(plan, slot(MONDAY, 'lunch'), knownMeals, supplies),
     ).toBe(true)
     expect(
-      isSuppliedIn(plan, slot('wednesday', 'lunch'), knownMeals, supplies),
+      isSuppliedIn(plan, slot(WEDNESDAY, 'lunch'), knownMeals, supplies),
     ).toBe(false)
   })
 
   it('spends a single portion on the lunch before the dinner of the same day', () => {
     const plan = planWith(
-      [slot('monday', 'dinner'), 'pizza'],
-      [slot('monday', 'lunch'), 'pizza'],
+      [slot(MONDAY, 'dinner'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
     )
     const supplies = [supply('pizza', 1)]
 
     expect(
-      isSuppliedIn(plan, slot('monday', 'lunch'), knownMeals, supplies),
+      isSuppliedIn(plan, slot(MONDAY, 'lunch'), knownMeals, supplies),
     ).toBe(true)
     expect(
-      isSuppliedIn(plan, slot('monday', 'dinner'), knownMeals, supplies),
+      isSuppliedIn(plan, slot(MONDAY, 'dinner'), knownMeals, supplies),
     ).toBe(false)
   })
 
   it('spends two portions on the first two of three days', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('wednesday', 'lunch'), 'pizza'],
-      [slot('friday', 'lunch'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(WEDNESDAY, 'lunch'), 'pizza'],
+      [slot(FRIDAY, 'lunch'), 'pizza'],
     )
     const supplies = [supply('pizza', 2)]
 
     expect(
-      PLAN_SLOTS.filter((each) =>
+      planSlotsOf(WEEK).filter((each) =>
         isSuppliedIn(plan, each, knownMeals, supplies),
       ),
-    ).toEqual([slot('monday', 'lunch'), slot('wednesday', 'lunch')])
+    ).toEqual([slot(MONDAY, 'lunch'), slot(WEDNESDAY, 'lunch')])
+  })
+
+  it('keeps meals planned on Sunday before those planned on the next Monday', () => {
+    const plan = withMealIn(
+      withMealIn(
+        emptyWeekPlan({ start: FRIDAY, days: 5 }),
+        slot(NEXT_MONDAY, 'lunch'),
+        'pizza',
+      ),
+      slot(SUNDAY, 'dinner'),
+      'pizza',
+    )
+
+    expect(coveredSlotsOf(plan, knownMeals, [supply('pizza', 1)])).toEqual([
+      slot(SUNDAY, 'dinner'),
+    ])
   })
 
   it('counts only the slots of the same meal against the supply', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'soup'],
-      [slot('wednesday', 'lunch'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'soup'],
+      [slot(WEDNESDAY, 'lunch'), 'pizza'],
     )
 
     expect(
-      isSuppliedIn(plan, slot('wednesday', 'lunch'), knownMeals, [
+      isSuppliedIn(plan, slot(WEDNESDAY, 'lunch'), knownMeals, [
         supply('pizza', 1),
       ]),
     ).toBe(true)
@@ -311,25 +384,31 @@ describe('isSuppliedIn', () => {
 
   it('covers every slot when the supply outlasts the week', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('sunday', 'dinner'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(SUNDAY, 'dinner'), 'pizza'],
     )
     const supplies = [supply('pizza', 5)]
 
     expect(
-      PLAN_SLOTS.filter((each) =>
+      planSlotsOf(WEEK).filter((each) =>
         isSuppliedIn(plan, each, knownMeals, supplies),
       ),
-    ).toEqual([slot('monday', 'lunch'), slot('sunday', 'dinner')])
+    ).toEqual([slot(MONDAY, 'lunch'), slot(SUNDAY, 'dinner')])
   })
 })
 
 describe('sameWeekPlan', () => {
+  it('fails for two empty plans of different periods', () => {
+    expect(
+      sameWeekPlan(EMPTY_PLAN, emptyWeekPlan({ start: FRIDAY, days: 7 })),
+    ).toBe(false)
+  })
+
   it('holds for two plans with the same meal in every slot', () => {
     expect(
       sameWeekPlan(
-        planWith([slot('monday', 'lunch'), 'soup']),
-        planWith([slot('monday', 'lunch'), 'soup']),
+        planWith([slot(MONDAY, 'lunch'), 'soup']),
+        planWith([slot(MONDAY, 'lunch'), 'soup']),
       ),
     ).toBe(true)
   })
@@ -337,8 +416,8 @@ describe('sameWeekPlan', () => {
   it('fails for two plans that differ on one day', () => {
     expect(
       sameWeekPlan(
-        planWith([slot('monday', 'lunch'), 'soup']),
-        planWith([slot('monday', 'lunch'), 'pizza']),
+        planWith([slot(MONDAY, 'lunch'), 'soup']),
+        planWith([slot(MONDAY, 'lunch'), 'pizza']),
       ),
     ).toBe(false)
   })
@@ -346,8 +425,8 @@ describe('sameWeekPlan', () => {
   it('fails for two plans that differ in one meal time of the same day', () => {
     expect(
       sameWeekPlan(
-        planWith([slot('monday', 'lunch'), 'soup']),
-        planWith([slot('monday', 'dinner'), 'soup']),
+        planWith([slot(MONDAY, 'lunch'), 'soup']),
+        planWith([slot(MONDAY, 'dinner'), 'soup']),
       ),
     ).toBe(false)
   })
@@ -356,9 +435,9 @@ describe('sameWeekPlan', () => {
 describe('coveredSlotsOf', () => {
   it('lists the covered slots in the order of the week', () => {
     const plan = planWith(
-      [slot('friday', 'lunch'), 'soup'],
-      [slot('monday', 'dinner'), 'bolognese'],
-      [slot('wednesday', 'lunch'), 'pizza'],
+      [slot(FRIDAY, 'lunch'), 'soup'],
+      [slot(MONDAY, 'dinner'), 'bolognese'],
+      [slot(WEDNESDAY, 'lunch'), 'pizza'],
     )
 
     expect(
@@ -366,22 +445,22 @@ describe('coveredSlotsOf', () => {
         supply('soup', 1),
         supply('bolognese', 1),
       ]),
-    ).toEqual([slot('monday', 'dinner'), slot('friday', 'lunch')])
+    ).toEqual([slot(MONDAY, 'dinner'), slot(FRIDAY, 'lunch')])
   })
 
   it('leaves out the slot that the supply no longer reaches', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'bolognese'],
-      [slot('monday', 'dinner'), 'bolognese'],
+      [slot(MONDAY, 'lunch'), 'bolognese'],
+      [slot(MONDAY, 'dinner'), 'bolognese'],
     )
 
     expect(coveredSlotsOf(plan, knownMeals, [supply('bolognese', 1)])).toEqual([
-      slot('monday', 'lunch'),
+      slot(MONDAY, 'lunch'),
     ])
   })
 
   it('lists no slot without a supply', () => {
-    const plan = planWith([slot('monday', 'lunch'), 'bolognese'])
+    const plan = planWith([slot(MONDAY, 'lunch'), 'bolognese'])
 
     expect(coveredSlotsOf(plan, knownMeals, [])).toEqual([])
   })
@@ -390,8 +469,8 @@ describe('coveredSlotsOf', () => {
 describe('weekPlanTransfer', () => {
   it('leaves every planned meal to buy while nothing is kept in store', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('monday', 'dinner'), 'bolognese'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(MONDAY, 'dinner'), 'bolognese'],
     )
 
     expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
@@ -402,9 +481,9 @@ describe('weekPlanTransfer', () => {
 
   it('spends two portions on the first two of three slots', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('monday', 'dinner'), 'pizza'],
-      [slot('friday', 'lunch'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(MONDAY, 'dinner'), 'pizza'],
+      [slot(FRIDAY, 'lunch'), 'pizza'],
     )
 
     expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 2)])).toEqual({
@@ -415,8 +494,8 @@ describe('weekPlanTransfer', () => {
 
   it('keeps the meal on the list once when one portion meets two slots', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('wednesday', 'lunch'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(WEDNESDAY, 'lunch'), 'pizza'],
     )
 
     expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 1)])).toEqual({
@@ -427,8 +506,8 @@ describe('weekPlanTransfer', () => {
 
   it('buys nothing when every planned slot is covered', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'pizza'],
-      [slot('tuesday', 'lunch'), 'soup'],
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(TUESDAY, 'lunch'), 'soup'],
     )
 
     expect(
@@ -444,8 +523,8 @@ describe('weekPlanTransfer', () => {
 
   it('follows the slots when several supplies are spent', () => {
     const plan = planWith(
-      [slot('monday', 'dinner'), 'pizza'],
-      [slot('monday', 'lunch'), 'soup'],
+      [slot(MONDAY, 'dinner'), 'pizza'],
+      [slot(MONDAY, 'lunch'), 'soup'],
     )
 
     expect(
@@ -457,7 +536,7 @@ describe('weekPlanTransfer', () => {
   })
 
   it('spends nothing of a supply whose meal is not planned', () => {
-    const plan = planWith([slot('monday', 'lunch'), 'pizza'])
+    const plan = planWith([slot(MONDAY, 'lunch'), 'pizza'])
 
     expect(
       weekPlanTransfer(plan, knownMeals, [supply('bolognese', 3)]),
@@ -466,8 +545,8 @@ describe('weekPlanTransfer', () => {
 
   it('skips a slot whose meal was deleted meanwhile', () => {
     const plan = planWith(
-      [slot('monday', 'lunch'), 'gone'],
-      [slot('sunday', 'lunch'), 'soup'],
+      [slot(MONDAY, 'lunch'), 'gone'],
+      [slot(SUNDAY, 'lunch'), 'soup'],
     )
 
     expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
@@ -508,39 +587,5 @@ describe('mealsWithoutItems', () => {
 
   it('names nothing when every planned meal carries items', () => {
     expect(mealsWithoutItems([bolognese, pizza])).toEqual([])
-  })
-})
-
-describe('weekdayBefore', () => {
-  it('gives the day before Tuesday as Monday', () => {
-    expect(weekdayBefore('tuesday')).toBe('monday')
-  })
-
-  it('has no day before Monday', () => {
-    expect(weekdayBefore('monday')).toBeNull()
-  })
-})
-
-describe('weekdayAfter', () => {
-  it('gives the day after Saturday as Sunday', () => {
-    expect(weekdayAfter('saturday')).toBe('sunday')
-  })
-
-  it('has no day after Sunday', () => {
-    expect(weekdayAfter('sunday')).toBeNull()
-  })
-})
-
-describe('weekdayOf', () => {
-  it('names a Monday as monday', () => {
-    expect(weekdayOf(new Date(2026, 8, 21, 12))).toBe('monday')
-  })
-
-  it('names a Sunday as sunday', () => {
-    expect(weekdayOf(new Date(2026, 8, 27, 12))).toBe('sunday')
-  })
-
-  it('takes the local day shortly after midnight', () => {
-    expect(weekdayOf(new Date(2026, 8, 25, 0, 5))).toBe('friday')
   })
 })

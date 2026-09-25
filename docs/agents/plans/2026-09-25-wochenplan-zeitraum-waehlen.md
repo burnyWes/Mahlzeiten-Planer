@@ -361,7 +361,7 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/planDate.test.ts` / `planDate.ts` anlegen:
+- [x] `src/meals/domain/planDate.test.ts` / `planDate.ts` anlegen:
 
   ```ts
   export type PlanDate = string & { readonly planDate: unique symbol }
@@ -390,7 +390,7 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
     `'2026-10-26'` (über die Zeitumstellung am 25.10.), `daysAfter(…, -1)` rückwärts
   - `weekdayOf('2026-09-21')` ist `'monday'`, `weekdayOf('2026-09-27')` ist `'sunday'`
   - `isPlanDate('2026-09-25')` wahr, `''`, `'25.09.2026'`, `'2026-02-30'` und `42` falsch
-- [ ] `src/meals/domain/planPeriod.test.ts` / `planPeriod.ts` anlegen: `PlanPeriod`,
+- [x] `src/meals/domain/planPeriod.test.ts` / `planPeriod.ts` anlegen: `PlanPeriod`,
   `MIN_PERIOD_DAYS`, `MAX_PERIOD_DAYS`, `weekOf`, `datesOf`, `lastDateOf`,
   `includesDate`, `dateBefore`, `dateAfter`, `samePeriod`, `isPlanPeriod` (Objekt mit
   gültigem `start` und ganzzahligem `days` in 1–10). Tests:
@@ -399,7 +399,7 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
   - `datesOf({ start: '2026-09-25', days: 10 })` endet mit `'2026-10-04'`
   - `dateBefore` am Start und `dateAfter` am letzten Tag sind `null`
   - `includesDate` für den Tag vor dem Start und nach dem Ende ist falsch
-- [ ] `src/meals/domain/weekPlan.test.ts` / `weekPlan.ts` auf Datum umstellen (siehe
+- [x] `src/meals/domain/weekPlan.test.ts` / `weekPlan.ts` auf Datum umstellen (siehe
   *Abstraktionen*):
 
   ```ts
@@ -432,10 +432,10 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
     Vorrat mit `count: 1`, dasselbe Gericht am So. 27.09. und am Mo. 28.09. im
     Zeitraum ab 25.09. Nur der Sonntag ist gedeckt, `slotsBefore` folgt dem Kalender.
   - `it('lays a plan of weekdays onto the dates of the week')`
-- [ ] `src/meals/domain/weekPlanView.test.ts` / `weekPlanView.ts`:
+- [x] `src/meals/domain/weekPlanView.test.ts` / `weekPlanView.ts`:
   `shownSlots(view, period, day, time)`. Die Wochenansicht liefert
   `datesOf(period).map((date) => ({ date, time }))`. Test mit 10 Tagen.
-- [ ] `src/meals/domain/randomPlanning.test.ts` / `randomPlanning.ts` umstellen:
+- [x] `src/meals/domain/randomPlanning.test.ts` / `randomPlanning.ts` umstellen:
   - `filledWeekPlan(meals, period, random, rule)` läuft über `datesOf(period)` ab
     `emptyWeekPlan(period)`
   - `filledDay`, `kindsBesideTheOtherMainMealTime`: `day: PlanDate`
@@ -448,7 +448,7 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
   - `it('keeps the same category apart across a Sunday')`: Zeitraum ab Sa. 26.09., drei
     Tage. Die Kategorie vom So. 27.09. sperrt den Mo. 28.09.
   - `it('fills every day of a ten day period')`
-- [ ] `src/meals/domain/announcements.test.ts` / `announcements.ts` umstellen:
+- [x] `src/meals/domain/announcements.test.ts` / `announcements.ts` umstellen:
   - `planDateName(date)` → `'Freitag, 25. September'` (Monatsnamen Januar–Dezember)
   - `planDateHeading(date)` → `'Fr. 25.09.'`
   - `planDateMark(date)` → `'Fr. 25.'`
@@ -461,7 +461,7 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
     `planFixedAnnouncement` und `weekPlanShuffledAnnouncement` bekommen `slotCount` als
     zusätzlichen Parameter.
   - `weekdayAbbreviation` bleibt als Baustein, `weekdayName` bleibt.
-- [ ] `src/meals/api/firestoreWeekPlanClient.ts` umstellen:
+- [x] `src/meals/api/firestoreWeekPlanClient.ts` umstellen:
   - Konstante `DATED_MEALS = 'datedMeals'`. `MEALS` bleibt für den Umzug, als
     `WEEKDAY_MEALS` umbenannt.
   - `createFirestoreWeekPlanClient(firestore, onWriteFailure, clock: Clock)`
@@ -479,13 +479,13 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
   - `toCoveredSlots(stored, week)`: Einträge mit `date` (per `isPlanDate`) werden
     übernommen, Einträge mit altem `day` (per `isWeekday`) werden über
     `dateOfWeekday(week, day)` umgelegt. `fromWeekPlanStage` schreibt `{ date, time }`.
-- [ ] `src/main.tsx`: `createFirestoreWeekPlanClient(firestore, onWriteFailure, () => new Date())`.
-- [ ] `src/meals/api/inMemoryWeekPlanClient.ts`: `initialPlan: WeekPlan` wird ein
+- [x] `src/main.tsx`: `createFirestoreWeekPlanClient(firestore, onWriteFailure, () => new Date())`.
+- [x] `src/meals/api/inMemoryWeekPlanClient.ts`: `initialPlan: WeekPlan` wird ein
   Pflichtparameter ohne Standard. Die Aufrufer in den Tests übergeben
   `emptyWeekPlan(weekOf(MONDAY))` oder ihren vorbereiteten Plan.
-- [ ] `src/meals/ui/useWeekPlan.ts`: `useWeekPlan(client, initialPeriod: PlanPeriod)`,
+- [x] `src/meals/ui/useWeekPlan.ts`: `useWeekPlan(client, initialPeriod: PlanPeriod)`,
   Startzustand `emptyWeekPlan(initialPeriod)`. `useWeekPlan.test.tsx` anpassen.
-- [ ] `src/SignedInApp.tsx`:
+- [x] `src/SignedInApp.tsx`:
   - `today = planDateOf(clock())` bei jedem Rendern
   - `useWeekPlan(weekPlanClient, weekOf(today))` (nur der Startwert zählt)
   - `chosenDay: PlanDate | null` statt `shownDay: Weekday`, Startwert `null`
@@ -495,22 +495,22 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
   `shownDayIn` entsteht schon in dieser Phase in `planPeriod.ts` (test-getrieben:
   gewählter Tag im Zeitraum, außerhalb mit heute im Zeitraum, außerhalb ohne heute,
   `null`).
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `shownDay: PlanDate`, `onShowDay(date)`,
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `shownDay: PlanDate`, `onShowDay(date)`,
   `clearPlan` mit `replacePlan(emptied(plan))`, `shuffleWeek` mit
   `filledWeekPlan(meals, plan.period, random, mainMealTimeRule)`, Ansagen mit
   `slotCountOf(plan)`.
-- [ ] `src/meals/ui/WeekPlanPage.tsx`: `DayNavigation` bekommt `period` und nutzt
+- [x] `src/meals/ui/WeekPlanPage.tsx`: `DayNavigation` bekommt `period` und nutzt
   `dateBefore/dateAfter(period, shownDay)`. Die Überschrift zeigt
   `planDateHeading(shownDay)` (`aria-hidden`) und `planDateName(shownDay)`
   (`visuallyHidden`). `shownSlots(shownView, plan.period, shownDay, shownTime)`. Der
   React-`key` der Zeilen wird `${shownView}-${slot.date}-${slot.time}`.
   `weekPlanHeading(plannedMeals, slotCountOf(plan), stage)`.
-- [ ] `src/meals/ui/WeekPlanRow.tsx`: `planDateMark(slot.date)` statt
+- [x] `src/meals/ui/WeekPlanRow.tsx`: `planDateMark(slot.date)` statt
   `weekdayAbbreviation(slot.day)`.
-- [ ] `src/index.css`: `.weekdayMark` so verbreitern, dass `Fr. 25.` in einer Zeile
+- [x] `src/index.css`: `.weekdayMark` so verbreitern, dass `Fr. 25.` in einer Zeile
   steht (`white-space: nowrap` und eine passende `min-width` in `ch`). Die Felder
   der Wochenansicht stehen weiterhin bündig untereinander.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`, `src/SignedInApp.test.tsx`: auf Datum
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`, `src/SignedInApp.test.tsx`: auf Datum
   umstellen. `renderWeekPlan(initialDay: Weekday)` wird zu `initialDay: PlanDate`, die
   erwarteten Namen werden `'Montag, 21. September'` usw., die Überschriften
   `… von 28` bleiben bei der Standardwoche. Neu:
@@ -518,11 +518,11 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
     Name `Freitag, 25. September`
   - `it('marks each row of the week view with weekday and day of month')`: erste Zeile
     beginnt mit `Mo. 21.`
-- [ ] `e2e/emulatorHousehold.ts`: `weekPlanOnServer` liest `weekPlan/datedMeals` und
+- [x] `e2e/emulatorHousehold.ts`: `weekPlanOnServer` liest `weekPlan/datedMeals` und
   liefert Schlüssel `'2026-09-21.lunch'`. `storedPlanSlot`/`storedSlotName` lesen
   `date`. Neu: `storeWeekdayPlanOnServer(plan)` schreibt das alte Format nach
   `weekPlan/meals`, für den Umzugstest.
-- [ ] `e2e/weekPlan.spec.ts`: die Tages- und Feldnamen auf Datum umstellen
+- [x] `e2e/weekPlan.spec.ts`: die Tages- und Feldnamen auf Datum umstellen
   (`stepToDay(page, 'Freitag, 25. September')`, `getByLabel('Montag, 21. September')`).
   Neu: `test('shows a plan of weekdays on the dates of this week')`. Der Test legt mit
   `storeWeekdayPlanOnServer` am `friday.lunch` ein Gericht an, öffnet den Wochenplan an
@@ -530,18 +530,18 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
 
 **Automatisierte Verifikation**:
 
-- [ ] `planDate.test.ts`, `planPeriod.test.ts` laufen grün, einschließlich
+- [x] `planDate.test.ts`, `planPeriod.test.ts` laufen grün, einschließlich
   Zeitumstellung und Monatswechsel.
-- [ ] Die umgestellten Tests in `weekPlan.test.ts`, `weekPlanView.test.ts`,
+- [x] Die umgestellten Tests in `weekPlan.test.ts`, `weekPlanView.test.ts`,
   `weekPlanStage.test.ts`, `randomPlanning.test.ts`, `announcements.test.ts` laufen grün,
   auch die neuen Tests für „über den Sonntag hinweg“.
-- [ ] `WeekPlanArea.test.tsx`, `SignedInApp.test.tsx`, `useWeekPlan.test.tsx` laufen
+- [x] `WeekPlanArea.test.tsx`, `SignedInApp.test.tsx`, `useWeekPlan.test.tsx` laufen
   grün, einschließlich axe.
-- [ ] `npm run test` läuft vollständig grün, auch `test/domainLayerBoundary.test.ts`
+- [x] `npm run test` läuft vollständig grün, auch `test/domainLayerBoundary.test.ts`
   (die neuen Domänendateien importieren nichts von außen).
-- [ ] `npm run lint` meldet nichts.
-- [ ] `npm run build` läuft durch (Typprüfung).
-- [ ] `npx playwright test e2e/weekPlan.spec.ts` läuft grün, auch der Umzugstest.
+- [x] `npm run lint` meldet nichts.
+- [x] `npm run build` läuft durch (Typprüfung).
+- [x] `npx playwright test e2e/weekPlan.spec.ts` läuft grün, auch der Umzugstest.
 
 **Manuelle Verifikation**:
 
@@ -724,6 +724,16 @@ zeigt der Wochenplan die gewählten Tage.
   auch mit invertierten Farben.
 
 ## Notizen zur Umsetzung
+
+- Phase 1: `SignedInApp.test.tsx` „keeps the stepped day although the clock moves on“
+  verließ sich darauf, dass die Uhr nur einmal gelesen wird. Da `today` jetzt bei jedem
+  Rendern gelesen wird (Entscheidung 10), läuft die Uhr im Test erst nach dem Blättern
+  weiter. Die Absicht des Tests bleibt gleich.
+- Phase 1: `.weekdayMark` bekommt `width: 7ch` statt einer `min-width`. So stehen die
+  Felder sicher bündig, auch wenn `Mo. 21.` breiter läuft als `Mi. 07.`.
+- Phase 1: `emptyWeekPlan` legt für jeden Tag des Zeitraums einen leeren Tagesplan an.
+  `withMealIn` ignoriert Plätze außerhalb des Zeitraums, damit `days` nur Tage im
+  Zeitraum enthält.
 
 ## Verweise
 

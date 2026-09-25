@@ -7,6 +7,9 @@ import { createInMemoryAppUpdateClient } from './shared/appUpdate/inMemoryAppUpd
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
+import { planDateOf } from './meals/domain/planDate'
+import { weekOf } from './meals/domain/planPeriod'
+import { emptyWeekPlan } from './meals/domain/weekPlan'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
 import { createInMemoryKnownUnitsClient } from './shopping/api/inMemoryKnownUnitsClient'
@@ -29,7 +32,11 @@ function renderApp(
       authClient={createInMemoryAuthClient(household)}
       createShoppingListClient={() => createInMemoryShoppingListClient()}
       createMealsClient={() => createInMemoryMealsClient()}
-      createWeekPlanClient={() => createInMemoryWeekPlanClient()}
+      createWeekPlanClient={() =>
+        createInMemoryWeekPlanClient(
+          emptyWeekPlan(weekOf(planDateOf(new Date()))),
+        )
+      }
       createSuppliesClient={() => createInMemorySuppliesClient()}
       createKnownItemsClient={() => createInMemoryKnownItemsClient()}
       createKnownUnitsClient={() =>

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Meal } from './meal'
 import type { Supply } from './supply'
+import { toPlanDate, type PlanDate } from './planDate'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   withMealIn,
   type MealTime,
   type PlanSlot,
-  type Weekday,
 } from './weekPlan'
 import {
   canClear,
@@ -42,17 +42,25 @@ function supply(mealId: string, count: number): Supply {
   return { mealId, count }
 }
 
-function slot(day: Weekday, time: MealTime): PlanSlot {
-  return { day, time }
+const MONDAY = toPlanDate('2026-09-21')
+const TUESDAY = toPlanDate('2026-09-22')
+const FRIDAY = toPlanDate('2026-09-25')
+
+function slot(date: PlanDate, time: MealTime): PlanSlot {
+  return { date, time }
 }
 
-const mondayLunch = slot('monday', 'lunch')
-const mondayDinner = slot('monday', 'dinner')
-const tuesdayLunch = slot('tuesday', 'lunch')
+const mondayLunch = slot(MONDAY, 'lunch')
+const mondayDinner = slot(MONDAY, 'dinner')
+const tuesdayLunch = slot(TUESDAY, 'lunch')
 
 const plan = withMealIn(
   withMealIn(
-    withMealIn(EMPTY_WEEK_PLAN, mondayLunch, 'bolognese'),
+    withMealIn(
+      emptyWeekPlan({ start: MONDAY, days: 7 }),
+      mondayLunch,
+      'bolognese',
+    ),
     mondayDinner,
     'bolognese',
   ),
@@ -227,8 +235,8 @@ describe('sameStage', () => {
   it('holds for two transfers of the same slots', () => {
     expect(
       sameStage(
-        transferredStage([mondayLunch, slot('friday', 'dinner')]),
-        transferredStage([mondayLunch, slot('friday', 'dinner')]),
+        transferredStage([mondayLunch, slot(FRIDAY, 'dinner')]),
+        transferredStage([mondayLunch, slot(FRIDAY, 'dinner')]),
       ),
     ).toBe(true)
   })
@@ -237,7 +245,7 @@ describe('sameStage', () => {
     expect(
       sameStage(
         transferredStage([mondayLunch]),
-        transferredStage([slot('friday', 'lunch')]),
+        transferredStage([slot(FRIDAY, 'lunch')]),
       ),
     ).toBe(false)
   })

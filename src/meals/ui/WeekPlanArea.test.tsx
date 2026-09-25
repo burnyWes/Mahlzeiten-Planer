@@ -13,18 +13,18 @@ import { mealTimeName } from '../domain/announcements'
 import type { Meal, MealKind } from '../domain/meal'
 import type { MainMealTimeRule, RandomSource } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
+import { toPlanDate, type PlanDate } from '../domain/planDate'
+import { datesOf, type PlanPeriod } from '../domain/planPeriod'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   MEAL_TIMES,
   mealIn,
-  PLAN_SLOTS,
-  WEEKDAYS,
+  planSlotsOf,
   withMealIn,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
   type WeekPlanTransfer,
-  type Weekday,
 } from '../domain/weekPlan'
 import {
   FIXED_STAGE,
@@ -85,22 +85,34 @@ const apple = snackMeal('apple', 'Apfel')
 const bread = sideMeal('bread', 'Brot')
 const everyKind = [muesli, bolognese, apple, bread]
 
+const MONDAY = toPlanDate('2026-09-21')
+const TUESDAY = toPlanDate('2026-09-22')
+const WEDNESDAY = toPlanDate('2026-09-23')
+const THURSDAY = toPlanDate('2026-09-24')
+const FRIDAY = toPlanDate('2026-09-25')
+const SUNDAY = toPlanDate('2026-09-27')
+
+const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
+const WEEK_DATES = datesOf(WEEK)
+const WEEK_SLOTS = planSlotsOf(WEEK)
+const EMPTY_PLAN = emptyWeekPlan(WEEK)
+
 const WEEKDAY_NAMES = [
-  'Montag',
-  'Dienstag',
-  'Mittwoch',
-  'Donnerstag',
-  'Freitag',
-  'Samstag',
-  'Sonntag',
+  'Montag, 21. September',
+  'Dienstag, 22. September',
+  'Mittwoch, 23. September',
+  'Donnerstag, 24. September',
+  'Freitag, 25. September',
+  'Samstag, 26. September',
+  'Sonntag, 27. September',
 ]
 
 function supply(mealId: string, count: number): Supply {
   return { mealId, count }
 }
 
-function slot(day: Weekday, time: MealTime): PlanSlot {
-  return { day, time }
+function slot(date: PlanDate, time: MealTime): PlanSlot {
+  return { date, time }
 }
 
 function planWith(
@@ -108,23 +120,23 @@ function planWith(
 ): WeekPlan {
   return planned.reduce<WeekPlan>(
     (plan, [plannedSlot, id]) => withMealIn(plan, plannedSlot, id),
-    EMPTY_WEEK_PLAN,
+    EMPTY_PLAN,
   )
 }
 
 function mealsOf(plan: WeekPlan): readonly (string | null)[] {
-  return PLAN_SLOTS.map((each) => mealIn(plan, each))
+  return WEEK_SLOTS.map((each) => mealIn(plan, each))
 }
 
 function filledSlots(plan: WeekPlan): readonly PlanSlot[] {
-  return PLAN_SLOTS.filter((each) => mealIn(plan, each) !== null)
+  return WEEK_SLOTS.filter((each) => mealIn(plan, each) !== null)
 }
 
 type WeekPlanAreaUnderTestProps = {
   mealsClient: MealsClient
   weekPlanClient: InMemoryWeekPlanClient
   supplies: readonly Supply[]
-  initialDay: Weekday
+  initialDay: PlanDate
   initialView: WeekPlanView
   initialTime: MealTime
   announce: (text: string) => void
@@ -149,7 +161,7 @@ function WeekPlanAreaUnderTest({
   return (
     <WeekPlanArea
       meals={useMeals(mealsClient).meals}
-      weekPlanning={useWeekPlan(weekPlanClient)}
+      weekPlanning={useWeekPlan(weekPlanClient, WEEK)}
       supplies={supplies}
       shownDay={shownDay}
       onShowDay={setShownDay}
@@ -171,11 +183,11 @@ function alwaysFirst(): number {
 
 function renderWeekPlanArea(
   initialMeals: readonly Meal[] = [],
-  initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  initialPlan: WeekPlan = EMPTY_PLAN,
   supplies: readonly Supply[] = [],
   random: RandomSource = alwaysFirst,
   initialStage?: WeekPlanStage,
-  initialDay: Weekday = 'monday',
+  initialDay: PlanDate = MONDAY,
   initialView: WeekPlanView = 'day',
   initialTime: MealTime = 'lunch',
   initialMainMealTimeRule?: MainMealTimeRule,
@@ -223,7 +235,7 @@ function renderWeekPlanArea(
 function renderWeekPlanAreaRolling(
   rule: MainMealTimeRule,
   initialMeals: readonly Meal[],
-  initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  initialPlan: WeekPlan = EMPTY_PLAN,
 ) {
   return renderWeekPlanArea(
     initialMeals,
@@ -231,7 +243,7 @@ function renderWeekPlanAreaRolling(
     [],
     alwaysFirst,
     undefined,
-    'monday',
+    MONDAY,
     'day',
     'lunch',
     rule,
@@ -239,9 +251,9 @@ function renderWeekPlanAreaRolling(
 }
 
 function renderWeekPlanAreaOn(
-  initialDay: Weekday,
+  initialDay: PlanDate,
   initialMeals: readonly Meal[] = [],
-  initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  initialPlan: WeekPlan = EMPTY_PLAN,
   supplies: readonly Supply[] = [],
 ) {
   return renderWeekPlanArea(
@@ -256,7 +268,7 @@ function renderWeekPlanAreaOn(
 
 function renderWeekView(
   initialMeals: readonly Meal[] = [],
-  initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  initialPlan: WeekPlan = EMPTY_PLAN,
   supplies: readonly Supply[] = [],
 ) {
   return renderWeekPlanArea(
@@ -265,7 +277,7 @@ function renderWeekView(
     supplies,
     alwaysFirst,
     undefined,
-    'monday',
+    MONDAY,
     'week',
     'lunch',
   )
@@ -382,7 +394,7 @@ describe('WeekPlanArea', () => {
       mealTimes.map(() => 'INPUT'),
     )
     expect(mealTimeRows()).toHaveLength(4)
-    expect(shownDayHeading()).toHaveAccessibleName('Montag')
+    expect(shownDayHeading()).toHaveAccessibleName('Montag, 21. September')
     expect(
       screen.getByRole('heading', { name: 'Wochenplan, keine von 28' }),
     ).toHaveFocus()
@@ -403,13 +415,13 @@ describe('WeekPlanArea', () => {
     )
   })
 
-  it('shows the day as its abbreviation and names it in full', () => {
-    renderWeekPlanAreaOn('friday')
+  it('names the shown day with its date', () => {
+    renderWeekPlanAreaOn(FRIDAY)
 
-    expect(shownDayHeading()).toHaveAccessibleName('Freitag')
+    expect(shownDayHeading()).toHaveAccessibleName('Freitag, 25. September')
     expect(
       shownDayHeading().querySelector('[aria-hidden="true"]')?.textContent,
-    ).toBe('Fr.')
+    ).toBe('Fr. 25.09.')
   })
 
   it('steps to the next day and says which it is', async () => {
@@ -417,18 +429,18 @@ describe('WeekPlanArea', () => {
 
     await userEvent.click(nextDayButton())
 
-    expect(shownDayHeading()).toHaveAccessibleName('Dienstag')
-    expect(announcements).toEqual(['Dienstag.'])
+    expect(shownDayHeading()).toHaveAccessibleName('Dienstag, 22. September')
+    expect(announcements).toEqual(['Dienstag, 22. September.'])
     expect(nextDayButton()).toHaveFocus()
   })
 
   it('steps back to the day before', async () => {
-    const { announcements } = renderWeekPlanAreaOn('wednesday', [bolognese])
+    const { announcements } = renderWeekPlanAreaOn(WEDNESDAY, [bolognese])
 
     await userEvent.click(previousDayButton())
 
-    expect(shownDayHeading()).toHaveAccessibleName('Dienstag')
-    expect(announcements).toEqual(['Dienstag.'])
+    expect(shownDayHeading()).toHaveAccessibleName('Dienstag, 22. September')
+    expect(announcements).toEqual(['Dienstag, 22. September.'])
     expect(previousDayButton()).toHaveFocus()
   })
 
@@ -440,20 +452,20 @@ describe('WeekPlanArea', () => {
 
     await userEvent.click(previousDayButton())
 
-    expect(shownDayHeading()).toHaveAccessibleName('Montag')
+    expect(shownDayHeading()).toHaveAccessibleName('Montag, 21. September')
     expect(announcements).toEqual([])
     expect(previousDayButton()).toHaveFocus()
   })
 
   it('locks the step forward on Sunday', async () => {
-    const { announcements } = renderWeekPlanAreaOn('sunday', [bolognese])
+    const { announcements } = renderWeekPlanAreaOn(SUNDAY, [bolognese])
 
     expect(nextDayButton()).toHaveAttribute('aria-disabled', 'true')
     expect(previousDayButton()).toHaveAttribute('aria-disabled', 'false')
 
     await userEvent.click(nextDayButton())
 
-    expect(shownDayHeading()).toHaveAccessibleName('Sonntag')
+    expect(shownDayHeading()).toHaveAccessibleName('Sonntag, 27. September')
     expect(announcements).toEqual([])
     expect(nextDayButton()).toHaveFocus()
   })
@@ -461,7 +473,7 @@ describe('WeekPlanArea', () => {
   it('shows the meals of the day that was stepped to', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('tuesday', 'lunch'), 'bolognese']),
+      planWith([slot(TUESDAY, 'lunch'), 'bolognese']),
     )
 
     expect(mealTimeField('Mittagessen')).toHaveValue('')
@@ -485,9 +497,9 @@ describe('WeekPlanArea', () => {
     renderWeekPlanArea(
       [bolognese, pizza],
       planWith(
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('monday', 'snack'), 'pizza'],
-        [slot('monday', 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(MONDAY, 'snack'), 'pizza'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
       ),
       [supply('bolognese', 2)],
     )
@@ -498,7 +510,7 @@ describe('WeekPlanArea', () => {
   it('names the field of a covered meal time after the supply', () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -509,7 +521,7 @@ describe('WeekPlanArea', () => {
   it('keeps the room for the mark in every row', () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -521,7 +533,7 @@ describe('WeekPlanArea', () => {
   it('drops the mark when the meal time turns to a meal without a supply', async () => {
     renderWeekPlanArea(
       [bolognese, pizza],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -537,8 +549,8 @@ describe('WeekPlanArea', () => {
     renderWeekPlanArea(
       [bolognese],
       planWith(
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('monday', 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
       ),
       [supply('bolognese', 1)],
     )
@@ -550,11 +562,11 @@ describe('WeekPlanArea', () => {
 
   it('spends the supply on an earlier day before the shown one', () => {
     renderWeekPlanAreaOn(
-      'tuesday',
+      TUESDAY,
       [bolognese],
       planWith(
-        [slot('monday', 'dinner'), 'bolognese'],
-        [slot('tuesday', 'breakfast'), 'bolognese'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(TUESDAY, 'breakfast'), 'bolognese'],
       ),
       [supply('bolognese', 1)],
     )
@@ -567,9 +579,9 @@ describe('WeekPlanArea', () => {
     renderWeekPlanArea(
       [bolognese],
       planWith(
-        [slot('monday', 'breakfast'), 'bolognese'],
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('monday', 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'breakfast'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
       ),
       [supply('bolognese', 1)],
     )
@@ -602,9 +614,9 @@ describe('WeekPlanArea', () => {
     await typeIntoMealTime('Snack', 'pi')
     await userEvent.click(suggestionsFor('Snack')[0])
 
-    expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'snack')),
-    ).toBe('pizza')
+    expect(mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'snack'))).toBe(
+      'pizza',
+    )
     expect(mealTimeField('Snack')).toHaveValue('Pizza')
     expect(noSuggestionsFor('Snack')).toBeNull()
     expect(
@@ -615,13 +627,13 @@ describe('WeekPlanArea', () => {
   it('empties a meal time when the field is cleared', async () => {
     const { weekPlanClient } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await userEvent.clear(mealTimeField('Mittagessen'))
 
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'lunch')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'lunch')),
     ).toBeNull()
     expect(mealTimeField('Mittagessen')).toHaveValue('')
     expect(
@@ -632,7 +644,7 @@ describe('WeekPlanArea', () => {
   it('returns to the planned meal when typing led nowhere', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await userEvent.type(mealTimeField('Mittagessen'), 'quark')
@@ -644,14 +656,11 @@ describe('WeekPlanArea', () => {
   })
 
   it('shows the plan that the other device wrote', async () => {
-    const { weekPlanClient } = renderWeekPlanAreaOn('sunday', [
-      bolognese,
-      pizza,
-    ])
+    const { weekPlanClient } = renderWeekPlanAreaOn(SUNDAY, [bolognese, pizza])
 
     await act(async () => {
       weekPlanClient.weekPlanArrivesFromElsewhere(
-        planWith([slot('sunday', 'dinner'), 'bolognese']),
+        planWith([slot(SUNDAY, 'dinner'), 'bolognese']),
       )
     })
 
@@ -659,10 +668,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('shows no meal in a meal time whose meal was deleted meanwhile', () => {
-    renderWeekPlanArea(
-      [bolognese],
-      planWith([slot('monday', 'dinner'), 'gone']),
-    )
+    renderWeekPlanArea([bolognese], planWith([slot(MONDAY, 'dinner'), 'gone']))
 
     expect(mealTimeField('Abendessen')).toHaveValue('')
     expect(
@@ -692,8 +698,8 @@ describe('WeekPlanArea', () => {
     renderWeekPlanArea(
       [bolognese, pizza],
       planWith(
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('thursday', 'dinner'), 'pizza'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(THURSDAY, 'dinner'), 'pizza'],
       ),
     )
 
@@ -708,14 +714,14 @@ describe('WeekPlanArea', () => {
     await shuffleSlot('Frühstück')
 
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('muesli')
     expect(mealTimeField('Frühstück')).toHaveValue('Müsli')
     expect(announcements).toEqual(['Frühstück, Müsli.'])
   })
 
   it('says that the rolled meal of the meal time is kept in store', async () => {
-    const { announcements } = renderWeekPlanArea([pizza], EMPTY_WEEK_PLAN, [
+    const { announcements } = renderWeekPlanArea([pizza], EMPTY_PLAN, [
       supply('pizza', 1),
     ])
 
@@ -727,9 +733,9 @@ describe('WeekPlanArea', () => {
 
   it('says nothing of a supply that an earlier day already spent', async () => {
     const { announcements } = renderWeekPlanAreaOn(
-      'wednesday',
+      WEDNESDAY,
       [pizza],
-      planWith([slot('monday', 'lunch'), 'pizza']),
+      planWith([slot(MONDAY, 'lunch'), 'pizza']),
       [supply('pizza', 1)],
     )
 
@@ -751,7 +757,7 @@ describe('WeekPlanArea', () => {
   it('says that the meal of a suggestion is kept in store', async () => {
     const { announcements } = renderWeekPlanArea(
       [bolognese, pizza],
-      EMPTY_WEEK_PLAN,
+      EMPTY_PLAN,
       [supply('pizza', 3)],
     )
 
@@ -764,7 +770,7 @@ describe('WeekPlanArea', () => {
   it('says nothing when a field is emptied', async () => {
     const { announcements } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -780,7 +786,7 @@ describe('WeekPlanArea', () => {
     await shuffleSlot('Snack')
 
     expect(filledSlots(weekPlanClient.storedWeekPlan())).toEqual([
-      slot('monday', 'snack'),
+      slot(MONDAY, 'snack'),
     ])
   })
 
@@ -789,26 +795,26 @@ describe('WeekPlanArea', () => {
 
     await shuffleSlot('Frühstück')
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('muesli')
 
     await shuffleSlot('Frühstück')
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('porridge')
   })
 
   it('rolls the whole week over a meal time that was chosen by hand', async () => {
     const { weekPlanClient, announcements } = renderWeekPlanArea(
       everyKind,
-      planWith([slot('monday', 'breakfast'), 'bolognese']),
+      planWith([slot(MONDAY, 'breakfast'), 'bolognese']),
     )
 
     await shuffleWeek()
 
     const rolledEachDay = ['apple', 'bolognese', 'apple', 'bread']
     expect(mealsOf(weekPlanClient.storedWeekPlan())).toEqual(
-      PLAN_SLOTS.map((_, position) => rolledEachDay[position % 4]),
+      WEEK_SLOTS.map((_, position) => rolledEachDay[position % 4]),
     )
     expect(announcements).toEqual([
       'Wochenplan neu gewürfelt, 28 von 28 Gerichten.',
@@ -819,11 +825,11 @@ describe('WeekPlanArea', () => {
   })
 
   it('rolls the whole week and not only the shown day', async () => {
-    const { weekPlanClient } = renderWeekPlanAreaOn('wednesday', everyKind)
+    const { weekPlanClient } = renderWeekPlanAreaOn(WEDNESDAY, everyKind)
 
     await shuffleWeek()
 
-    expect(filledSlots(weekPlanClient.storedWeekPlan())).toEqual(PLAN_SLOTS)
+    expect(filledSlots(weekPlanClient.storedWeekPlan())).toEqual(WEEK_SLOTS)
   })
 
   it('never rolls a hidden meal for a meal time', async () => {
@@ -836,7 +842,7 @@ describe('WeekPlanArea', () => {
         hiddenMeal('nuts', 'Nüsse', 'snack'),
         apple,
       ],
-      EMPTY_WEEK_PLAN,
+      EMPTY_PLAN,
       [],
       () => {
         const value = values[rolled % values.length]
@@ -894,14 +900,14 @@ describe('WeekPlanArea', () => {
   it('says that no meal suits the meal time and keeps what was planned', async () => {
     const { weekPlanClient, announcements } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'breakfast'), 'bolognese']),
+      planWith([slot(MONDAY, 'breakfast'), 'bolognese']),
     )
 
     await shuffleSlot('Frühstück')
 
     expect(announcements).toEqual(['Frühstück, kein passendes Gericht.'])
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('bolognese')
     expect(mealTimeField('Frühstück')).toHaveValue('Bolognese')
   })
@@ -909,9 +915,11 @@ describe('WeekPlanArea', () => {
   it('says that no meal suits the day of the week', async () => {
     const { weekPlanClient, announcements } = renderWeekView([muesli])
 
-    await shuffleSlot('Montag')
+    await shuffleSlot('Montag, 21. September')
 
-    expect(announcements).toEqual(['Montag, kein passendes Gericht.'])
+    expect(announcements).toEqual([
+      'Montag, 21. September, kein passendes Gericht.',
+    ])
     expect(filledSlots(weekPlanClient.storedWeekPlan())).toEqual([])
   })
 
@@ -925,7 +933,7 @@ describe('WeekPlanArea', () => {
     await userEvent.click(suggestionsFor('Frühstück')[0])
 
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('bolognese')
     expect(announcements).toEqual(['Frühstück, Bolognese.'])
   })
@@ -933,13 +941,13 @@ describe('WeekPlanArea', () => {
   it('rolls a side for the dinner beside a main meal at lunch', async () => {
     const { weekPlanClient } = renderWeekPlanArea(
       [bolognese, pizza, bread],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await shuffleSlot('Abendessen')
 
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'dinner')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'dinner')),
     ).toBe('bread')
   })
 
@@ -953,11 +961,11 @@ describe('WeekPlanArea', () => {
 
     const rolled = weekPlanClient.storedWeekPlan()
     expect(
-      WEEKDAYS.map((day) => [
+      WEEK_DATES.map((day) => [
         mealIn(rolled, slot(day, 'lunch')),
         mealIn(rolled, slot(day, 'dinner')),
       ]),
-    ).toEqual(WEEKDAYS.map(() => ['bread', 'bolognese']))
+    ).toEqual(WEEK_DATES.map(() => ['bread', 'bolognese']))
   })
 
   it('says that no meal suits the dinner when the main meal is rolled only at lunch', async () => {
@@ -973,7 +981,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('leaves the plan alone when the rule for the main meal changes', async () => {
-    const planned = planWith([slot('monday', 'dinner'), 'bolognese'])
+    const planned = planWith([slot(MONDAY, 'dinner'), 'bolognese'])
     const { weekPlanClient } = renderWeekPlanArea([bolognese, bread], planned)
 
     act(() => weekPlanClient.mainMealTimeRuleArrivesFromElsewhere('lunch'))
@@ -991,7 +999,7 @@ describe('WeekPlanArea', () => {
     const breadOfItsOwn = { ...bread, categories: ['Brot'] }
     const { weekPlanClient } = renderWeekPlanArea(
       [lasagne, carbonara, breadOfItsOwn],
-      planWith([slot('monday', 'lunch'), 'lasagne']),
+      planWith([slot(MONDAY, 'lunch'), 'lasagne']),
       [],
       () => 0.99,
     )
@@ -999,7 +1007,7 @@ describe('WeekPlanArea', () => {
     await shuffleSlot('Abendessen')
 
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'dinner')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'dinner')),
     ).toBe('bread')
   })
 
@@ -1029,7 +1037,7 @@ describe('WeekPlanArea', () => {
     await userEvent.click(suggestionsFor('Frühstück')[0])
 
     expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('bolognese')
     expect(mealTimeField('Frühstück')).toHaveValue('Bolognese')
     expect(announcements).toEqual(['Frühstück, Bolognese.'])
@@ -1038,7 +1046,7 @@ describe('WeekPlanArea', () => {
   it('leaves a hidden meal standing where it was planned', () => {
     renderWeekPlanArea(
       [hiddenMeal('bolognese', 'Bolognese')],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     expect(mealTimeField('Mittagessen')).toHaveValue('Bolognese')
@@ -1091,7 +1099,7 @@ describe('WeekPlanArea', () => {
   it('offers no transfer while the plan is being edited', () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     expect(transferButton()).toHaveAttribute('aria-disabled', 'true')
@@ -1100,7 +1108,7 @@ describe('WeekPlanArea', () => {
   it('hands nothing over when the locked transfer is pressed', async () => {
     const { transferred } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await addToShoppingList()
@@ -1112,8 +1120,8 @@ describe('WeekPlanArea', () => {
     const { transferred } = renderWeekPlanArea(
       [bolognese, pizza],
       planWith(
-        [slot('monday', 'dinner'), 'bolognese'],
-        [slot('monday', 'lunch'), 'pizza'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'pizza'],
       ),
     )
 
@@ -1127,12 +1135,12 @@ describe('WeekPlanArea', () => {
 
   it('hands over the meals of every day, not only of the shown one', async () => {
     const { transferred } = renderWeekPlanAreaOn(
-      'friday',
+      FRIDAY,
       [bolognese, pizza, soup],
       planWith(
-        [slot('sunday', 'snack'), 'soup'],
-        [slot('friday', 'dinner'), 'bolognese'],
-        [slot('monday', 'lunch'), 'pizza'],
+        [slot(SUNDAY, 'snack'), 'soup'],
+        [slot(FRIDAY, 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'pizza'],
       ),
     )
 
@@ -1148,8 +1156,8 @@ describe('WeekPlanArea', () => {
     const { transferred, weekPlanClient } = renderWeekPlanArea(
       [bolognese],
       planWith(
-        [slot('monday', 'lunch'), 'gone'],
-        [slot('sunday', 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'gone'],
+        [slot(SUNDAY, 'dinner'), 'bolognese'],
       ),
     )
 
@@ -1159,18 +1167,18 @@ describe('WeekPlanArea', () => {
     expect(transferred).toEqual([
       { mealsToBuy: [bolognese], spentSupplies: [] },
     ])
-    expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'lunch')),
-    ).toBe('gone')
+    expect(mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'lunch'))).toBe(
+      'gone',
+    )
   })
 
   it('leaves the covered meal times out of the transfer', async () => {
     const { transferred } = renderWeekPlanArea(
       [bolognese, pizza],
       planWith(
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('monday', 'snack'), 'pizza'],
-        [slot('monday', 'dinner'), 'bolognese'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(MONDAY, 'snack'), 'pizza'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
       ),
       [supply('bolognese', 1)],
     )
@@ -1189,7 +1197,7 @@ describe('WeekPlanArea', () => {
   it('keeps the transfer within reach when every meal time is covered', async () => {
     const { transferred } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1205,7 +1213,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('leaves the plan standing after the transfer', async () => {
-    const plan = planWith([slot('monday', 'lunch'), 'bolognese'])
+    const plan = planWith([slot(MONDAY, 'lunch'), 'bolognese'])
     const { weekPlanClient } = renderWeekPlanArea([bolognese], plan)
 
     await fixPlan()
@@ -1218,7 +1226,7 @@ describe('WeekPlanArea', () => {
   it('switches to reading and says how many meals are planned', async () => {
     const { weekPlanClient, announcements } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1278,7 +1286,7 @@ describe('WeekPlanArea', () => {
   it('shows each meal time as text while the plan is fixed', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1295,7 +1303,7 @@ describe('WeekPlanArea', () => {
   it('keeps stepping through the days while the plan is fixed', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('tuesday', 'snack'), 'bolognese']),
+      planWith([slot(TUESDAY, 'snack'), 'bolognese']),
       [],
       alwaysFirst,
       FIXED_STAGE,
@@ -1322,7 +1330,7 @@ describe('WeekPlanArea', () => {
   it('names the heading after the fixed plan', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1370,13 +1378,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('starts fixed when the stored stage says so', () => {
-    renderWeekPlanArea(
-      [bolognese],
-      EMPTY_WEEK_PLAN,
-      [],
-      alwaysFirst,
-      FIXED_STAGE,
-    )
+    renderWeekPlanArea([bolognese], EMPTY_PLAN, [], alwaysFirst, FIXED_STAGE)
 
     expect(
       screen.getByRole('heading', {
@@ -1407,7 +1409,7 @@ describe('WeekPlanArea', () => {
   it('has no accessibility violations on the plan', async () => {
     const { rendered } = renderWeekPlanArea(
       [bolognese, pizza],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
@@ -1415,9 +1417,9 @@ describe('WeekPlanArea', () => {
 
   it('has no accessibility violations on a day in the middle of the week', async () => {
     const { rendered } = renderWeekPlanAreaOn(
-      'wednesday',
+      WEDNESDAY,
       [bolognese, pizza],
-      planWith([slot('wednesday', 'lunch'), 'bolognese']),
+      planWith([slot(WEDNESDAY, 'lunch'), 'bolognese']),
     )
 
     expect(previousDayButton()).toHaveAttribute('aria-disabled', 'false')
@@ -1426,7 +1428,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('has no accessibility violations on Sunday', async () => {
-    const { rendered } = renderWeekPlanAreaOn('sunday', [bolognese, pizza])
+    const { rendered } = renderWeekPlanAreaOn(SUNDAY, [bolognese, pizza])
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
@@ -1434,7 +1436,7 @@ describe('WeekPlanArea', () => {
   it('has no accessibility violations on a plan with a supply', async () => {
     const { rendered } = renderWeekPlanArea(
       [bolognese, pizza],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1445,7 +1447,7 @@ describe('WeekPlanArea', () => {
   it('locks the transfer after it was pressed once', async () => {
     const { transferred } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1464,7 +1466,7 @@ describe('WeekPlanArea', () => {
   it('keeps the transfer button focused after the transfer', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1477,8 +1479,8 @@ describe('WeekPlanArea', () => {
     const { weekPlanClient } = renderWeekPlanArea(
       [bolognese, pizza],
       planWith(
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('monday', 'dinner'), 'pizza'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(MONDAY, 'dinner'), 'pizza'],
       ),
       [supply('bolognese', 1)],
     )
@@ -1488,14 +1490,14 @@ describe('WeekPlanArea', () => {
 
     expect(weekPlanClient.storedStage()).toEqual({
       mode: 'reading',
-      coveredSlots: [slot('monday', 'lunch')],
+      coveredSlots: [slot(MONDAY, 'lunch')],
     })
   })
 
   it('keeps the marks of the transfer when the supply is spent', async () => {
     const { changeSupplies } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1512,7 +1514,7 @@ describe('WeekPlanArea', () => {
   it('shows the live supply again once the plan is edited', async () => {
     const { changeSupplies, weekPlanClient } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1529,7 +1531,7 @@ describe('WeekPlanArea', () => {
   it('offers the transfer again after the plan was fixed anew', async () => {
     const { transferred } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1547,7 +1549,7 @@ describe('WeekPlanArea', () => {
   it('names the heading after the transfer', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1563,12 +1565,12 @@ describe('WeekPlanArea', () => {
   it('shows the transfer that the other device made', async () => {
     const { weekPlanClient } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await act(async () => {
       weekPlanClient.stageArrivesFromElsewhere(
-        transferredStage([slot('monday', 'lunch')]),
+        transferredStage([slot(MONDAY, 'lunch')]),
       )
     })
 
@@ -1579,7 +1581,7 @@ describe('WeekPlanArea', () => {
   it('has no accessibility violations after the transfer', async () => {
     const { rendered } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1592,7 +1594,7 @@ describe('WeekPlanArea', () => {
   it('has no accessibility violations on a fixed plan', async () => {
     const { rendered } = renderWeekPlanArea(
       [bolognese, pizza],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
@@ -1605,15 +1607,15 @@ describe('WeekPlanArea', () => {
     const { weekPlanClient, announcements } = renderWeekPlanArea(
       [bolognese, pizza],
       planWith(
-        [slot('monday', 'lunch'), 'bolognese'],
-        [slot('sunday', 'dinner'), 'pizza'],
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(SUNDAY, 'dinner'), 'pizza'],
       ),
     )
 
     await clearPlan()
 
     expect(mealsOf(weekPlanClient.storedWeekPlan())).toEqual(
-      mealsOf(EMPTY_WEEK_PLAN),
+      mealsOf(EMPTY_PLAN),
     )
     expect(announcements.at(-1)).toBe('Wochenplan geleert.')
   })
@@ -1621,7 +1623,7 @@ describe('WeekPlanArea', () => {
   it('names the heading after the cleared plan', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await clearPlan()
@@ -1634,7 +1636,7 @@ describe('WeekPlanArea', () => {
   it('keeps the clear button focused after clearing', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await clearPlan()
@@ -1650,7 +1652,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('offers no clearing while the plan is fixed', async () => {
-    const planned = planWith([slot('monday', 'lunch'), 'bolognese'])
+    const planned = planWith([slot(MONDAY, 'lunch'), 'bolognese'])
     const { weekPlanClient, announcements } = renderWeekPlanArea(
       [bolognese],
       planned,
@@ -1668,7 +1670,7 @@ describe('WeekPlanArea', () => {
   it('offers no clearing after the transfer', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await fixPlan()
@@ -1680,7 +1682,7 @@ describe('WeekPlanArea', () => {
   it('has no accessibility violations after the plan was cleared', async () => {
     const { rendered } = renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await clearPlan()
@@ -1715,13 +1717,13 @@ describe('WeekPlanArea', () => {
   })
 
   it('switches back to the day that was shown before', async () => {
-    const { announcements } = renderWeekPlanAreaOn('wednesday', [bolognese])
+    const { announcements } = renderWeekPlanAreaOn(WEDNESDAY, [bolognese])
 
     await userEvent.click(weekViewButton())
     await userEvent.click(dayViewButton())
 
-    expect(shownDayHeading()).toHaveAccessibleName('Mittwoch')
-    expect(announcements.at(-1)).toBe('Tagesansicht, Mittwoch.')
+    expect(shownDayHeading()).toHaveAccessibleName('Mittwoch, 23. September')
+    expect(announcements.at(-1)).toBe('Tagesansicht, Mittwoch, 23. September.')
     expect(weekViewButton()).toHaveFocus()
   })
 
@@ -1729,27 +1731,27 @@ describe('WeekPlanArea', () => {
     renderWeekView(
       [bolognese, chili],
       planWith(
-        [slot('tuesday', 'lunch'), 'bolognese'],
-        [slot('tuesday', 'dinner'), 'chili'],
+        [slot(TUESDAY, 'lunch'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'chili'],
       ),
     )
 
-    expect(mealTimeField('Dienstag')).toHaveValue('Bolognese')
+    expect(mealTimeField('Dienstag, 22. September')).toHaveValue('Bolognese')
   })
 
-  it('shows the weekday in front of every row of the week', () => {
+  it('marks each row of the week view with weekday and day of month', () => {
     renderWeekView([bolognese])
 
     const marks = mealTimeRows().map((row) => row.querySelector('.weekdayMark'))
 
     expect(marks.map((mark) => mark?.textContent)).toEqual([
-      'Mo.',
-      'Di.',
-      'Mi.',
-      'Do.',
-      'Fr.',
-      'Sa.',
-      'So.',
+      'Mo. 21.',
+      'Di. 22.',
+      'Mi. 23.',
+      'Do. 24.',
+      'Fr. 25.',
+      'Sa. 26.',
+      'So. 27.',
     ])
     expect(marks.map((mark) => mark?.getAttribute('aria-hidden'))).toEqual(
       WEEKDAY_NAMES.map(() => 'true'),
@@ -1759,64 +1761,67 @@ describe('WeekPlanArea', () => {
   it('names the rolling of a row after its day', async () => {
     const { weekPlanClient, announcements } = renderWeekView([pizza])
 
-    await shuffleSlot('Montag')
+    await shuffleSlot('Montag, 21. September')
 
-    expect(
-      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'lunch')),
-    ).toBe('pizza')
-    expect(announcements).toEqual(['Montag, Pizza.'])
+    expect(mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'lunch'))).toBe(
+      'pizza',
+    )
+    expect(announcements).toEqual(['Montag, 21. September, Pizza.'])
   })
 
   it('says which meal a suggestion put on a day of the week', async () => {
     const { announcements } = renderWeekView([bolognese, pizza])
 
-    await typeIntoMealTime('Montag', 'bo')
-    await userEvent.click(suggestionsFor('Montag')[0])
+    await typeIntoMealTime('Montag, 21. September', 'bo')
+    await userEvent.click(suggestionsFor('Montag, 21. September')[0])
 
-    expect(announcements).toEqual(['Montag, Bolognese.'])
+    expect(announcements).toEqual(['Montag, 21. September, Bolognese.'])
   })
 
   it('says that the meal of a day of the week is kept in store', async () => {
-    const { announcements } = renderWeekView(
-      [bolognese, pizza],
-      EMPTY_WEEK_PLAN,
-      [supply('bolognese', 1)],
-    )
+    const { announcements } = renderWeekView([bolognese, pizza], EMPTY_PLAN, [
+      supply('bolognese', 1),
+    ])
 
-    await typeIntoMealTime('Montag', 'bo')
-    await userEvent.click(suggestionsFor('Montag')[0])
+    await typeIntoMealTime('Montag, 21. September', 'bo')
+    await userEvent.click(suggestionsFor('Montag, 21. September')[0])
 
-    expect(announcements).toEqual(['Montag, Bolognese, im Vorrat.'])
+    expect(announcements).toEqual([
+      'Montag, 21. September, Bolognese, im Vorrat.',
+    ])
   })
 
   it('names the field of a covered day after the supply', () => {
     renderWeekView(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
-    expect(mealTimeField('Montag, im Vorrat')).toHaveValue('Bolognese')
-    expect(mealTimeField('Dienstag')).toHaveValue('')
+    expect(mealTimeField('Montag, 21. September, im Vorrat')).toHaveValue(
+      'Bolognese',
+    )
+    expect(mealTimeField('Dienstag, 22. September')).toHaveValue('')
   })
 
   it('shows each day as text while the plan is fixed', async () => {
-    renderWeekView(
-      [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
-    )
+    renderWeekView([bolognese], planWith([slot(MONDAY, 'lunch'), 'bolognese']))
 
     await fixPlan()
 
-    expect(screen.getByText('Montag, Bolognese')).toBeInTheDocument()
-    expect(screen.getByText('Dienstag, nichts geplant')).toBeInTheDocument()
+    expect(
+      screen.getByText('Montag, 21. September, Bolognese'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Dienstag, 22. September, nichts geplant'),
+    ).toBeInTheDocument()
     expect(screen.queryByRole('textbox')).toBeNull()
   })
 
   it('forgets what was typed when the view changes', async () => {
     renderWeekPlanArea(
       [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
     )
 
     await userEvent.type(mealTimeField('Mittagessen'), 'quark')
@@ -1842,14 +1847,16 @@ describe('WeekPlanArea', () => {
   it('has no accessibility violations in the week view', async () => {
     const { rendered } = renderWeekView(
       [bolognese, pizza],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
-    await typeIntoMealTime('Dienstag', 'pi')
+    await typeIntoMealTime('Dienstag, 22. September', 'pi')
 
     expect(
-      screen.getByRole('list', { name: 'Vorschläge für Dienstag' }),
+      screen.getByRole('list', {
+        name: 'Vorschläge für Dienstag, 22. September',
+      }),
     ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
@@ -1889,14 +1896,14 @@ describe('WeekPlanArea', () => {
     const { announcements } = renderWeekView(
       [bolognese, chili],
       planWith(
-        [slot('tuesday', 'lunch'), 'bolognese'],
-        [slot('tuesday', 'dinner'), 'chili'],
+        [slot(TUESDAY, 'lunch'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'chili'],
       ),
     )
 
     await userEvent.click(mealTimeButton('Abendessen'))
 
-    expect(mealTimeField('Dienstag')).toHaveValue('Chili')
+    expect(mealTimeField('Dienstag, 22. September')).toHaveValue('Chili')
     expect(mealTimeButton('Abendessen')).toHaveAttribute('aria-pressed', 'true')
     expect(mealTimeButton('Mittagessen')).toHaveAttribute(
       'aria-pressed',
@@ -1932,11 +1939,11 @@ describe('WeekPlanArea', () => {
   it('names the meal time that was chosen when switching to the week', async () => {
     const { announcements } = renderWeekPlanArea(
       [bolognese],
-      EMPTY_WEEK_PLAN,
+      EMPTY_PLAN,
       [],
       alwaysFirst,
       undefined,
-      'monday',
+      MONDAY,
       'day',
       'snack',
     )
@@ -1947,45 +1954,44 @@ describe('WeekPlanArea', () => {
   })
 
   it('keeps the shown day when the meal time changes', async () => {
-    renderWeekPlanAreaOn('friday', [bolognese])
+    renderWeekPlanAreaOn(FRIDAY, [bolognese])
 
     await userEvent.click(weekViewButton())
     await userEvent.click(mealTimeButton('Abendessen'))
     await userEvent.click(dayViewButton())
 
-    expect(shownDayHeading()).toHaveAccessibleName('Freitag')
+    expect(shownDayHeading()).toHaveAccessibleName('Freitag, 25. September')
   })
 
   it('forgets what was typed when the meal time changes', async () => {
-    renderWeekView(
-      [bolognese],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
-    )
+    renderWeekView([bolognese], planWith([slot(MONDAY, 'lunch'), 'bolognese']))
 
-    await userEvent.type(mealTimeField('Montag'), 'quark')
+    await userEvent.type(mealTimeField('Montag, 21. September'), 'quark')
     await userEvent.click(mealTimeButton('Abendessen'))
     await userEvent.click(mealTimeButton('Mittagessen'))
 
-    expect(mealTimeField('Montag')).toHaveValue('Bolognese')
+    expect(mealTimeField('Montag, 21. September')).toHaveValue('Bolognese')
   })
 
   it('has no accessibility violations with another meal time chosen', async () => {
     const { rendered } = renderWeekView(
       [bolognese, pizza],
-      planWith([slot('monday', 'dinner'), 'bolognese']),
+      planWith([slot(MONDAY, 'dinner'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 
     await userEvent.click(mealTimeButton('Abendessen'))
 
-    expect(mealTimeField('Montag, im Vorrat')).toHaveValue('Bolognese')
+    expect(mealTimeField('Montag, 21. September, im Vorrat')).toHaveValue(
+      'Bolognese',
+    )
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations in the week view of a fixed plan', async () => {
     const { rendered } = renderWeekView(
       [bolognese, pizza],
-      planWith([slot('monday', 'lunch'), 'bolognese']),
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
       [supply('bolognese', 1)],
     )
 

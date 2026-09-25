@@ -456,7 +456,8 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
 
 .weekdayMark {
   flex: none;
-  width: 2.5rem;
+  width: 7ch;
+  white-space: nowrap;
 }
 
 .dayNavigation h2 {

@@ -4,22 +4,22 @@ import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import {
   mealTimeName,
   stageButtonLabel,
+  planDateHeading,
+  planDateName,
   transferButtonLabel,
-  weekdayAbbreviation,
-  weekdayName,
   weekPlanHeading,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
+import type { PlanDate } from '../domain/planDate'
+import { dateAfter, dateBefore, type PlanPeriod } from '../domain/planPeriod'
 import type { Supply } from '../domain/supply'
 import {
   MEAL_TIMES,
   plannedMealCount,
-  weekdayAfter,
-  weekdayBefore,
+  slotCountOf,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from '../domain/weekPlan'
 import {
   shownSlots,
@@ -51,8 +51,8 @@ type WeekPlanPageProps = {
   randomCandidateCount: number
   plan: WeekPlan
   supplies: readonly Supply[]
-  shownDay: Weekday
-  onShowDay: (day: Weekday) => void
+  shownDay: PlanDate
+  onShowDay: (day: PlanDate) => void
   shownView: WeekPlanView
   onShowView: (view: WeekPlanView) => void
   shownTime: MealTime
@@ -68,8 +68,8 @@ type WeekPlanPageProps = {
 
 type DayStepButtonProps = {
   label: string
-  target: Weekday | null
-  onShowDay: (day: Weekday) => void
+  target: PlanDate | null
+  onShowDay: (day: PlanDate) => void
   children: ReactNode
 }
 
@@ -95,28 +95,30 @@ function DayStepButton({
 }
 
 function DayNavigation({
+  period,
   shownDay,
   onShowDay,
 }: {
-  shownDay: Weekday
-  onShowDay: (day: Weekday) => void
+  period: PlanPeriod
+  shownDay: PlanDate
+  onShowDay: (day: PlanDate) => void
 }) {
   return (
     <div className="dayNavigation">
       <DayStepButton
         label="Vorheriger Tag"
-        target={weekdayBefore(shownDay)}
+        target={dateBefore(period, shownDay)}
         onShowDay={onShowDay}
       >
         <ChevronLeftIcon />
       </DayStepButton>
       <h2>
-        <span aria-hidden="true">{weekdayAbbreviation(shownDay)}</span>
-        <span className="visuallyHidden">{weekdayName(shownDay)}</span>
+        <span aria-hidden="true">{planDateHeading(shownDay)}</span>
+        <span className="visuallyHidden">{planDateName(shownDay)}</span>
       </h2>
       <DayStepButton
         label="Nächster Tag"
-        target={weekdayAfter(shownDay)}
+        target={dateAfter(period, shownDay)}
         onShowDay={onShowDay}
       >
         <ChevronRightIcon />
@@ -207,12 +209,16 @@ export function WeekPlanPage({
       <main className="page pageBelowNavigation">
         <div className="pageHeader">
           <h1 ref={heading} tabIndex={-1}>
-            {weekPlanHeading(plannedMeals, stage)}
+            {weekPlanHeading(plannedMeals, slotCountOf(plan), stage)}
           </h1>
         </div>
         <div className="planNavigation">
           {shownView === 'day' ? (
-            <DayNavigation shownDay={shownDay} onShowDay={onShowDay} />
+            <DayNavigation
+              period={plan.period}
+              shownDay={shownDay}
+              onShowDay={onShowDay}
+            />
           ) : (
             <MealTimeNavigation shownTime={shownTime} onShowTime={onShowTime} />
           )}
@@ -223,20 +229,22 @@ export function WeekPlanPage({
         )}
         {meals.length === 0 && <p>Noch keine Gerichte gespeichert.</p>}
         <ul className="itemList">
-          {shownSlots(shownView, shownDay, shownTime).map((slot) => (
-            <WeekPlanRow
-              key={`${shownView}-${slot.day}-${slot.time}`}
-              slot={slot}
-              naming={slotNamingIn(shownView)}
-              plan={plan}
-              meals={meals}
-              randomCandidateCount={randomCandidateCount}
-              supplies={supplies}
-              stage={stage}
-              onChooseMeal={onChooseMeal}
-              onShuffleSlot={onShuffleSlot}
-            />
-          ))}
+          {shownSlots(shownView, plan.period, shownDay, shownTime).map(
+            (slot) => (
+              <WeekPlanRow
+                key={`${shownView}-${slot.date}-${slot.time}`}
+                slot={slot}
+                naming={slotNamingIn(shownView)}
+                plan={plan}
+                meals={meals}
+                randomCandidateCount={randomCandidateCount}
+                supplies={supplies}
+                stage={stage}
+                onChooseMeal={onChooseMeal}
+                onShuffleSlot={onShuffleSlot}
+              />
+            ),
+          )}
         </ul>
         <BottomBar>
           <button

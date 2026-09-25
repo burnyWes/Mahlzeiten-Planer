@@ -153,36 +153,81 @@ export async function itemQuantitiesOnServer(): Promise<readonly string[]> {
   )
 }
 
+type StoredDayPlans = Record<
+  string,
+  { mapValue?: { fields?: Record<string, { stringValue?: string }> } }
+>
+
 type StoredWeekPlan = {
-  fields?: Record<
-    string,
-    { mapValue?: { fields?: Record<string, { stringValue?: string }> } }
-  >
+  fields?: { plan?: { mapValue?: { fields?: StoredDayPlans } } }
 }
 
 export async function weekPlanOnServer(): Promise<
   Record<string, string | null>
 > {
-  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/meals`
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/datedMeals`
   const response = await fetch(url, {
     headers: { Authorization: 'Bearer owner' },
   })
   if (!response.ok) return {}
   const stored = (await response.json()) as StoredWeekPlan
   return Object.fromEntries(
-    Object.entries(stored.fields ?? {}).flatMap(([day, dayPlan]) =>
-      Object.entries(dayPlan.mapValue?.fields ?? {}).map(([time, value]) => [
-        `${day}.${time}`,
-        value.stringValue ?? null,
-      ]),
+    Object.entries(stored.fields?.plan?.mapValue?.fields ?? {}).flatMap(
+      ([date, dayPlan]) =>
+        Object.entries(dayPlan.mapValue?.fields ?? {}).map(([time, value]) => [
+          `${date}.${time}`,
+          value.stringValue ?? null,
+        ]),
     ),
   )
+}
+
+export async function storeWeekdayPlanOnServer(
+  plan: Record<string, Record<string, string>>,
+): Promise<void> {
+  await callEmulator(
+    `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/meals`,
+    'PATCH',
+    {
+      fields: Object.fromEntries(
+        Object.entries(plan).map(([day, dayPlan]) => [
+          day,
+          {
+            mapValue: {
+              fields: Object.fromEntries(
+                Object.entries(dayPlan).map(([time, id]) => [
+                  time,
+                  { stringValue: id },
+                ]),
+              ),
+            },
+          },
+        ]),
+      ),
+    },
+  )
+}
+
+export async function mealIdOnServer(name: string): Promise<string> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedMeals
+  const stored = (listed.documents ?? []).find(
+    (document) => document.fields.name.stringValue === name,
+  )
+  if (stored === undefined) throw new Error(`${name} is not on the server`)
+  return stored.name.split('/').at(-1)!
 }
 
 type StoredPlanSlot = {
   mapValue?: {
     fields?: {
-      day?: { stringValue?: string }
+      date?: { stringValue?: string }
       time?: { stringValue?: string }
     }
   }
@@ -205,7 +250,7 @@ export type WeekPlanStageOnServer = {
 
 function storedSlotName(slot: StoredPlanSlot): string {
   const fields = slot.mapValue?.fields
-  return `${fields?.day?.stringValue}.${fields?.time?.stringValue}`
+  return `${fields?.date?.stringValue}.${fields?.time?.stringValue}`
 }
 
 export async function weekPlanStageOnServer(): Promise<WeekPlanStageOnServer> {

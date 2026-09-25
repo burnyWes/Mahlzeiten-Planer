@@ -2,7 +2,7 @@ import {
   DEFAULT_MAIN_MEAL_TIME_RULE,
   type MainMealTimeRule,
 } from '../domain/randomPlanning'
-import { EMPTY_WEEK_PLAN, type WeekPlan } from '../domain/weekPlan'
+import type { WeekPlan } from '../domain/weekPlan'
 import { EDITING_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
 import type { WeekPlanClient } from './weekPlanClient'
 
@@ -16,7 +16,7 @@ export type InMemoryWeekPlanClient = WeekPlanClient & {
 }
 
 export function createInMemoryWeekPlanClient(
-  initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+  initialPlan: WeekPlan,
   initialStage: WeekPlanStage = EDITING_STAGE,
   initialMainMealTimeRule: MainMealTimeRule = DEFAULT_MAIN_MEAL_TIME_RULE,
 ): InMemoryWeekPlanClient {

@@ -23,6 +23,9 @@ import {
   mealFilterAnnouncement,
   mealFilterName,
   mainMealTimeRuleName,
+  planDateHeading,
+  planDateMark,
+  planDateName,
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   fixedSlotText,
@@ -59,7 +62,8 @@ import {
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
-import { MEAL_TIMES, WEEKDAYS, type PlanSlot } from './weekPlan'
+import { toPlanDate, WEEKDAYS } from './planDate'
+import { MEAL_TIMES, type PlanSlot } from './weekPlan'
 import { EDITING_STAGE, FIXED_STAGE, transferredStage } from './weekPlanStage'
 
 const mincedMeat: MealItem = {
@@ -67,10 +71,13 @@ const mincedMeat: MealItem = {
   quantity: { amount: 500, unit: 'g' },
 }
 
-const mondayBreakfast: PlanSlot = { day: 'monday', time: 'breakfast' }
-const mondayLunch: PlanSlot = { day: 'monday', time: 'lunch' }
-const mondaySnack: PlanSlot = { day: 'monday', time: 'snack' }
-const mondayDinner: PlanSlot = { day: 'monday', time: 'dinner' }
+const MONDAY = toPlanDate('2026-09-21')
+const FRIDAY = toPlanDate('2026-09-25')
+
+const mondayBreakfast: PlanSlot = { date: MONDAY, time: 'breakfast' }
+const mondayLunch: PlanSlot = { date: MONDAY, time: 'lunch' }
+const mondaySnack: PlanSlot = { date: MONDAY, time: 'snack' }
+const mondayDinner: PlanSlot = { date: MONDAY, time: 'dinner' }
 
 const bolognese: NewMeal = {
   name: 'Spaghetti Bolognese',
@@ -582,35 +589,92 @@ describe('mealTimeName', () => {
   })
 })
 
+describe('planDateName', () => {
+  it('names the weekday, the day and the month in full', () => {
+    expect(planDateName(FRIDAY)).toBe('Freitag, 25. September')
+  })
+
+  it('names every month', () => {
+    expect(
+      Array.from(
+        { length: 12 },
+        (_, month) =>
+          planDateName(
+            toPlanDate(`2026-${String(month + 1).padStart(2, '0')}-01`),
+          ).split(' ')[2],
+      ),
+    ).toEqual([
+      'Januar',
+      'Februar',
+      'März',
+      'April',
+      'Mai',
+      'Juni',
+      'Juli',
+      'August',
+      'September',
+      'Oktober',
+      'November',
+      'Dezember',
+    ])
+  })
+
+  it('writes a day of the month without a leading zero', () => {
+    expect(planDateName(toPlanDate('2026-10-04'))).toBe('Sonntag, 4. Oktober')
+  })
+})
+
+describe('planDateHeading', () => {
+  it('shortens the weekday and writes day and month with two digits', () => {
+    expect(planDateHeading(FRIDAY)).toBe('Fr. 25.09.')
+    expect(planDateHeading(toPlanDate('2026-10-04'))).toBe('So. 04.10.')
+  })
+})
+
+describe('planDateMark', () => {
+  it('shortens the weekday and writes the day of the month with two digits', () => {
+    expect(planDateMark(FRIDAY)).toBe('Fr. 25.')
+    expect(planDateMark(toPlanDate('2026-10-04'))).toBe('So. 04.')
+  })
+})
+
 describe('dayShownAnnouncement', () => {
   it('names the day that is shown now', () => {
-    expect(dayShownAnnouncement('saturday')).toBe('Samstag.')
+    expect(dayShownAnnouncement(toPlanDate('2026-09-26'))).toBe(
+      'Samstag, 26. September.',
+    )
   })
 })
 
 describe('weekPlanHeading', () => {
   it('says that no meal is planned yet', () => {
-    expect(weekPlanHeading(0, EDITING_STAGE)).toBe('Wochenplan, keine von 28')
+    expect(weekPlanHeading(0, 28, EDITING_STAGE)).toBe(
+      'Wochenplan, keine von 28',
+    )
   })
 
   it('counts the slots that carry a meal', () => {
-    expect(weekPlanHeading(12, EDITING_STAGE)).toBe('Wochenplan, 12 von 28')
+    expect(weekPlanHeading(12, 28, EDITING_STAGE)).toBe('Wochenplan, 12 von 28')
   })
 
   it('adds that the plan is fixed', () => {
-    expect(weekPlanHeading(12, FIXED_STAGE)).toBe(
+    expect(weekPlanHeading(12, 28, FIXED_STAGE)).toBe(
       'Wochenplan, 12 von 28, festgelegt',
     )
   })
 
   it('adds that the fixed plan was transferred', () => {
-    expect(
-      weekPlanHeading(12, transferredStage([{ day: 'monday', time: 'lunch' }])),
-    ).toBe('Wochenplan, 12 von 28, festgelegt, übertragen')
+    expect(weekPlanHeading(12, 28, transferredStage([mondayLunch]))).toBe(
+      'Wochenplan, 12 von 28, festgelegt, übertragen',
+    )
+  })
+
+  it('counts the slots of the period', () => {
+    expect(weekPlanHeading(5, 40, EDITING_STAGE)).toBe('Wochenplan, 5 von 40')
   })
 
   it('adds that an empty plan is fixed', () => {
-    expect(weekPlanHeading(0, FIXED_STAGE)).toBe(
+    expect(weekPlanHeading(0, 28, FIXED_STAGE)).toBe(
       'Wochenplan, keine von 28, festgelegt',
     )
   })
@@ -618,13 +682,13 @@ describe('weekPlanHeading', () => {
 
 describe('planFixedAnnouncement', () => {
   it('says how many meals are planned', () => {
-    expect(planFixedAnnouncement(12)).toBe(
+    expect(planFixedAnnouncement(12, 28)).toBe(
       'Plan festgelegt, 12 von 28 Gerichten geplant.',
     )
   })
 
   it('says that no meal is planned', () => {
-    expect(planFixedAnnouncement(0)).toBe(
+    expect(planFixedAnnouncement(0, 28)).toBe(
       'Plan festgelegt, keine von 28 Gerichten geplant.',
     )
   })
@@ -665,7 +729,7 @@ describe('slotName', () => {
   })
 
   it('names the day', () => {
-    expect(slotName(mondayBreakfast, 'day')).toBe('Montag')
+    expect(slotName(mondayBreakfast, 'day')).toBe('Montag, 21. September')
   })
 })
 
@@ -690,13 +754,13 @@ describe('fixedSlotText', () => {
 
   it('says that nothing is planned for the day', () => {
     expect(fixedSlotText(mondaySnack, 'day', null, false)).toBe(
-      'Montag, nichts geplant',
+      'Montag, 21. September, nichts geplant',
     )
   })
 
   it('names the day, the meal and the supply', () => {
     expect(fixedSlotText(mondayLunch, 'day', bolognese, true)).toBe(
-      'Montag, Spaghetti Bolognese, im Vorrat',
+      'Montag, 21. September, Spaghetti Bolognese, im Vorrat',
     )
   })
 })
@@ -710,7 +774,7 @@ describe('randomMealLabel', () => {
 
   it('names the day the button rolls for', () => {
     expect(randomMealLabel(mondayBreakfast, 'day')).toBe(
-      'Zufallsgericht für Montag',
+      'Zufallsgericht für Montag, 21. September',
     )
   })
 })
@@ -727,11 +791,15 @@ describe('slotFieldLabel', () => {
   })
 
   it('names the day of a slot without a supply', () => {
-    expect(slotFieldLabel(mondayDinner, 'day', false)).toBe('Montag')
+    expect(slotFieldLabel(mondayDinner, 'day', false)).toBe(
+      'Montag, 21. September',
+    )
   })
 
   it('adds the supply to the day of a covered slot', () => {
-    expect(slotFieldLabel(mondayDinner, 'day', true)).toBe('Montag, im Vorrat')
+    expect(slotFieldLabel(mondayDinner, 'day', true)).toBe(
+      'Montag, 21. September, im Vorrat',
+    )
   })
 })
 
@@ -750,13 +818,13 @@ describe('slotPlannedAnnouncement', () => {
 
   it('says which meal landed on which day', () => {
     expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, false)).toBe(
-      'Montag, Spaghetti Bolognese.',
+      'Montag, 21. September, Spaghetti Bolognese.',
     )
   })
 
   it('says that the meal of the day is kept in store', () => {
     expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, true)).toBe(
-      'Montag, Spaghetti Bolognese, im Vorrat.',
+      'Montag, 21. September, Spaghetti Bolognese, im Vorrat.',
     )
   })
 })
@@ -777,25 +845,27 @@ describe('mealTimeShownAnnouncement', () => {
 
 describe('dayViewShownAnnouncement', () => {
   it('names the view and the day it shows', () => {
-    expect(dayViewShownAnnouncement('friday')).toBe('Tagesansicht, Freitag.')
+    expect(dayViewShownAnnouncement(FRIDAY)).toBe(
+      'Tagesansicht, Freitag, 25. September.',
+    )
   })
 })
 
 describe('weekPlanShuffledAnnouncement', () => {
   it('counts the slots that were filled', () => {
-    expect(weekPlanShuffledAnnouncement(21)).toBe(
+    expect(weekPlanShuffledAnnouncement(21, 28)).toBe(
       'Wochenplan neu gewürfelt, 21 von 28 Gerichten.',
     )
   })
 
   it('counts every slot when all were filled', () => {
-    expect(weekPlanShuffledAnnouncement(28)).toBe(
+    expect(weekPlanShuffledAnnouncement(28, 28)).toBe(
       'Wochenplan neu gewürfelt, 28 von 28 Gerichten.',
     )
   })
 
   it('says that no slot was filled', () => {
-    expect(weekPlanShuffledAnnouncement(0)).toBe(
+    expect(weekPlanShuffledAnnouncement(0, 28)).toBe(
       'Wochenplan neu gewürfelt, keine von 28 Gerichten.',
     )
   })
@@ -810,7 +880,7 @@ describe('noMatchingMealAnnouncement', () => {
 
   it('names the day that no meal suits', () => {
     expect(noMatchingMealAnnouncement(mondayBreakfast, 'day')).toBe(
-      'Montag, kein passendes Gericht.',
+      'Montag, 21. September, kein passendes Gericht.',
     )
   })
 })
@@ -928,7 +998,7 @@ describe('mealSuggestionsLabel', () => {
 
   it('names the day the suggestions belong to', () => {
     expect(mealSuggestionsLabel(mondaySnack, 'day')).toBe(
-      'Vorschläge für Montag',
+      'Vorschläge für Montag, 21. September',
     )
   })
 })

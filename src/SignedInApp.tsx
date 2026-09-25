@@ -14,13 +14,13 @@ import {
   type RandomSource,
 } from './meals/domain/randomPlanning'
 import { withoutPortions } from './meals/domain/supply'
+import { planDateOf, type PlanDate } from './meals/domain/planDate'
+import { shownDayIn, weekOf } from './meals/domain/planPeriod'
 import {
   mealsWithoutItems,
   suppliedMealCount,
-  weekdayOf,
   type MealTime,
   type WeekPlanTransfer,
-  type Weekday,
 } from './meals/domain/weekPlan'
 import type { WeekPlanView } from './meals/domain/weekPlanView'
 import { CategoriesArea } from './meals/ui/CategoriesArea'
@@ -135,10 +135,11 @@ export function SignedInApp({
     knownUnits.knownUnits,
   )
   const meals = useMeals(mealsClient)
-  const weekPlanning = useWeekPlan(weekPlanClient)
+  const today = planDateOf(clock())
+  const weekPlanning = useWeekPlan(weekPlanClient, weekOf(today))
   const supplies = useSupplies(suppliesClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
-  const [shownDay, setShownDay] = useState<Weekday>(() => weekdayOf(clock()))
+  const [chosenDay, setChosenDay] = useState<PlanDate | null>(null)
   const [shownView, setShownView] = useState<WeekPlanView>('day')
   const [shownTime, setShownTime] = useState<MealTime>('lunch')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
@@ -281,8 +282,8 @@ export function SignedInApp({
         meals={meals.meals}
         weekPlanning={weekPlanning}
         supplies={supplies.supplies}
-        shownDay={shownDay}
-        onShowDay={setShownDay}
+        shownDay={shownDayIn(weekPlanning.plan.period, chosenDay, today)}
+        onShowDay={setChosenDay}
         shownView={shownView}
         onShowView={setShownView}
         shownTime={shownTime}

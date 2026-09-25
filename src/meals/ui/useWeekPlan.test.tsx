@@ -5,8 +5,10 @@ import {
   DEFAULT_MAIN_MEAL_TIME_RULE,
   type MainMealTimeRule,
 } from '../domain/randomPlanning'
+import { toPlanDate } from '../domain/planDate'
+import type { PlanPeriod } from '../domain/planPeriod'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   withMealIn,
   type PlanSlot,
   type WeekPlan,
@@ -18,6 +20,10 @@ import {
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
 import { useWeekPlan } from './useWeekPlan'
+
+const MONDAY = toPlanDate('2026-09-21')
+const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
+const EMPTY_PLAN = emptyWeekPlan(WEEK)
 
 type LaggingWeekPlanClient = WeekPlanClient & {
   deliverNextSnapshot(): void
@@ -31,7 +37,7 @@ type LaggingWeekPlanClient = WeekPlanClient & {
 function createLaggingWeekPlanClient(
   initialRule: MainMealTimeRule = DEFAULT_MAIN_MEAL_TIME_RULE,
 ): LaggingWeekPlanClient {
-  let plan = EMPTY_WEEK_PLAN
+  let plan = EMPTY_PLAN
   let stage: WeekPlanStage = EDITING_STAGE
   const heldBackPlans: WeekPlan[] = []
   const heldBackStages: WeekPlanStage[] = []
@@ -89,15 +95,27 @@ function createLaggingWeekPlanClient(
   }
 }
 
-const mondayLunch: PlanSlot = { day: 'monday', time: 'lunch' }
-const mondayDinner: PlanSlot = { day: 'monday', time: 'dinner' }
-const tuesdayLunch: PlanSlot = { day: 'tuesday', time: 'lunch' }
+const mondayLunch: PlanSlot = { date: MONDAY, time: 'lunch' }
+const mondayDinner: PlanSlot = { date: MONDAY, time: 'dinner' }
+const tuesdayLunch: PlanSlot = { date: toPlanDate('2026-09-22'), time: 'lunch' }
 
 function weekPlanOf(client: WeekPlanClient) {
-  return renderHook(() => useWeekPlan(client)).result
+  return renderHook(() => useWeekPlan(client, WEEK)).result
 }
 
 describe('useWeekPlan', () => {
+  it('starts with an empty plan of the given period before the server answers', () => {
+    const silentClient: WeekPlanClient = {
+      ...createLaggingWeekPlanClient(),
+      observeWeekPlan: () => () => {},
+    }
+    const period = { start: toPlanDate('2026-09-25'), days: 10 }
+
+    const weekPlan = renderHook(() => useWeekPlan(silentClient, period)).result
+
+    expect(weekPlan.current.plan).toEqual(emptyWeekPlan(period))
+  })
+
   it('keeps a later choice when the snapshot of an earlier one arrives late', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
@@ -109,7 +127,7 @@ describe('useWeekPlan', () => {
 
     const expected = withMealIn(
       withMealIn(
-        withMealIn(EMPTY_WEEK_PLAN, mondayLunch, 'bolognese'),
+        withMealIn(EMPTY_PLAN, mondayLunch, 'bolognese'),
         mondayDinner,
         'chili',
       ),
@@ -124,8 +142,8 @@ describe('useWeekPlan', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
     const fromElsewhere = withMealIn(
-      EMPTY_WEEK_PLAN,
-      { day: 'sunday', time: 'dinner' },
+      EMPTY_PLAN,
+      { date: toPlanDate('2026-09-27'), time: 'dinner' },
       'soup',
     )
 

@@ -17,11 +17,13 @@ import type { MealFilter } from './mealFilter'
 import type { MainMealTimeRule } from './randomPlanning'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import {
-  PLAN_SLOTS,
-  type MealTime,
-  type PlanSlot,
+  dayOfMonth,
+  monthOf,
+  weekdayOf,
+  type PlanDate,
   type Weekday,
-} from './weekPlan'
+} from './planDate'
+import type { MealTime, PlanSlot } from './weekPlan'
 import type { SlotNaming } from './weekPlanView'
 import { isFixed, isTransferred, type WeekPlanStage } from './weekPlanStage'
 
@@ -252,8 +254,39 @@ export function weekdayAbbreviation(day: Weekday): string {
   return `${weekdayName(day).slice(0, 2)}.`
 }
 
-export function dayShownAnnouncement(day: Weekday): string {
-  return `${weekdayName(day)}.`
+const monthNames: readonly string[] = [
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
+]
+
+function twoDigits(value: number): string {
+  return String(value).padStart(2, '0')
+}
+
+export function planDateName(date: PlanDate): string {
+  return `${weekdayName(weekdayOf(date))}, ${dayOfMonth(date)}. ${monthNames[monthOf(date) - 1]}`
+}
+
+export function planDateMark(date: PlanDate): string {
+  return `${weekdayAbbreviation(weekdayOf(date))} ${twoDigits(dayOfMonth(date))}.`
+}
+
+export function planDateHeading(date: PlanDate): string {
+  return `${planDateMark(date)}${twoDigits(monthOf(date))}.`
+}
+
+export function dayShownAnnouncement(date: PlanDate): string {
+  return `${planDateName(date)}.`
 }
 
 const mealTimeNames: Record<MealTime, string> = {
@@ -267,23 +300,27 @@ export function mealTimeName(time: MealTime): string {
   return mealTimeNames[time]
 }
 
-function plannedMealsPhrase(plannedMeals: number): string {
+function plannedMealsPhrase(plannedMeals: number, slotCount: number): string {
   return plannedMeals === 0
-    ? `keine von ${PLAN_SLOTS.length}`
-    : `${plannedMeals} von ${PLAN_SLOTS.length}`
+    ? `keine von ${slotCount}`
+    : `${plannedMeals} von ${slotCount}`
 }
 
 export function weekPlanHeading(
   plannedMeals: number,
+  slotCount: number,
   stage: WeekPlanStage,
 ): string {
-  const heading = `Wochenplan, ${plannedMealsPhrase(plannedMeals)}`
+  const heading = `Wochenplan, ${plannedMealsPhrase(plannedMeals, slotCount)}`
   if (isTransferred(stage)) return `${heading}, festgelegt, übertragen`
   return isFixed(stage) ? `${heading}, festgelegt` : heading
 }
 
-export function planFixedAnnouncement(plannedMeals: number): string {
-  return `Plan festgelegt, ${plannedMealsPhrase(plannedMeals)} Gerichten geplant.`
+export function planFixedAnnouncement(
+  plannedMeals: number,
+  slotCount: number,
+): string {
+  return `Plan festgelegt, ${plannedMealsPhrase(plannedMeals, slotCount)} Gerichten geplant.`
 }
 
 export function planEditableAnnouncement(): string {
@@ -301,7 +338,7 @@ export function transferButtonLabel(stage: WeekPlanStage): string {
 }
 
 export function slotName(slot: PlanSlot, naming: SlotNaming): string {
-  return naming === 'time' ? mealTimeName(slot.time) : weekdayName(slot.day)
+  return naming === 'time' ? mealTimeName(slot.time) : planDateName(slot.date)
 }
 
 export function fixedSlotText(
@@ -346,12 +383,15 @@ export function mealTimeShownAnnouncement(time: MealTime): string {
   return `${mealTimeName(time)}.`
 }
 
-export function dayViewShownAnnouncement(day: Weekday): string {
-  return `Tagesansicht, ${weekdayName(day)}.`
+export function dayViewShownAnnouncement(date: PlanDate): string {
+  return `Tagesansicht, ${planDateName(date)}.`
 }
 
-export function weekPlanShuffledAnnouncement(plannedMeals: number): string {
-  return `Wochenplan neu gewürfelt, ${plannedMealsPhrase(plannedMeals)} Gerichten.`
+export function weekPlanShuffledAnnouncement(
+  plannedMeals: number,
+  slotCount: number,
+): string {
+  return `Wochenplan neu gewürfelt, ${plannedMealsPhrase(plannedMeals, slotCount)} Gerichten.`
 }
 
 export function noMatchingMealAnnouncement(

@@ -5,10 +5,12 @@ import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
+import { toPlanDate } from './meals/domain/planDate'
+import type { PlanPeriod } from './meals/domain/planPeriod'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   mealIn,
-  PLAN_SLOTS,
+  planSlotsOf,
   withMealIn,
   type WeekPlan,
 } from './meals/domain/weekPlan'
@@ -48,6 +50,11 @@ const aMonday = new Date(2026, 8, 21, 12)
 const aFriday = new Date(2026, 8, 25, 12)
 const aSaturday = new Date(2026, 8, 26, 12)
 
+const MONDAY = toPlanDate('2026-09-21')
+const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
+const WEEK_SLOTS = planSlotsOf(WEEK)
+const EMPTY_PLAN = emptyWeekPlan(WEEK)
+
 function stoppedAt(date: Date): Clock {
   return () => date
 }
@@ -57,7 +64,7 @@ function renderSignedInApp(
   initialMeals: readonly Meal[] = [],
   knownItemsClient = createInMemoryKnownItemsClient(),
   appearanceClient = createInMemoryAppearanceClient(),
-  weekPlanClient = createInMemoryWeekPlanClient(),
+  weekPlanClient = createInMemoryWeekPlanClient(EMPTY_PLAN),
   suppliesClient = createInMemorySuppliesClient(),
   clock: Clock = stoppedAt(aMonday),
   knownUnitsClient = createInMemoryKnownUnitsClient(
@@ -182,8 +189,8 @@ function mainMealTimeChoice() {
 
 function planOf(...ids: readonly string[]): WeekPlan {
   return ids.reduce<WeekPlan>(
-    (plan, id, position) => withMealIn(plan, PLAN_SLOTS[position], id),
-    EMPTY_WEEK_PLAN,
+    (plan, id, position) => withMealIn(plan, WEEK_SLOTS[position], id),
+    EMPTY_PLAN,
   )
 }
 
@@ -329,7 +336,7 @@ describe('SignedInApp', () => {
       [meal('bolognese', 'Bolognese')],
       createInMemoryKnownItemsClient(),
       createInMemoryAppearanceClient(true),
-      createInMemoryWeekPlanClient(),
+      createInMemoryWeekPlanClient(EMPTY_PLAN),
       createInMemorySuppliesClient([{ mealId: 'bolognese', count: 3 }]),
     )
 
@@ -361,7 +368,7 @@ describe('SignedInApp', () => {
       [],
       createInMemoryKnownItemsClient(),
       createInMemoryAppearanceClient(),
-      createInMemoryWeekPlanClient(),
+      createInMemoryWeekPlanClient(EMPTY_PLAN),
       createInMemorySuppliesClient(),
       stoppedAt(aFriday),
     )
@@ -369,32 +376,32 @@ describe('SignedInApp', () => {
     await goToArea('Wochenplan')
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
-      'Freitag',
+      'Freitag, 25. September',
     )
   })
 
   it('keeps the stepped day although the clock moves on', async () => {
-    const readings = [aFriday, aSaturday]
-    let reading = 0
+    let now = aFriday
     renderSignedInApp(
       [],
       [],
       createInMemoryKnownItemsClient(),
       createInMemoryAppearanceClient(),
-      createInMemoryWeekPlanClient(),
+      createInMemoryWeekPlanClient(EMPTY_PLAN),
       createInMemorySuppliesClient(),
-      () => readings[Math.min(reading++, readings.length - 1)],
+      () => now,
     )
 
     await goToArea('Wochenplan')
     await userEvent.click(
       screen.getByRole('button', { name: 'Vorheriger Tag' }),
     )
+    now = aSaturday
     await goToArea('Gerichte')
     await goToArea('Wochenplan')
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
-      'Donnerstag',
+      'Donnerstag, 24. September',
     )
   })
 
@@ -407,7 +414,7 @@ describe('SignedInApp', () => {
     await goToArea('Wochenplan')
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
-      'Dienstag',
+      'Dienstag, 22. September',
     )
   })
 
@@ -419,7 +426,9 @@ describe('SignedInApp', () => {
     expect(
       screen.getByRole('button', { name: 'Wochenansicht' }),
     ).toBeInTheDocument()
-    expect(screen.queryByRole('textbox', { name: 'Dienstag' })).toBeNull()
+    expect(
+      screen.queryByRole('textbox', { name: 'Dienstag, 22. September' }),
+    ).toBeNull()
   })
 
   it('keeps the week view after a visit to the meals area', async () => {
@@ -430,7 +439,9 @@ describe('SignedInApp', () => {
     await goToArea('Gerichte')
     await goToArea('Wochenplan')
 
-    expect(screen.getByRole('textbox', { name: 'Montag' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('textbox', { name: 'Montag, 21. September' }),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Tagesansicht' }),
     ).toBeInTheDocument()
@@ -462,7 +473,7 @@ describe('SignedInApp', () => {
 
     expect(
       mealIn(weekPlanClient.storedWeekPlan(), {
-        day: 'monday',
+        date: MONDAY,
         time: 'breakfast',
       }),
     ).toBe('bolognese')
@@ -486,7 +497,7 @@ describe('SignedInApp', () => {
       [meal('bolognese', 'Bolognese')],
       createInMemoryKnownItemsClient(),
       createInMemoryAppearanceClient(),
-      createInMemoryWeekPlanClient(),
+      createInMemoryWeekPlanClient(EMPTY_PLAN),
       createInMemorySuppliesClient([{ mealId: 'bolognese', count: 2 }]),
     )
 
@@ -830,7 +841,7 @@ describe('SignedInApp', () => {
       ],
       createInMemoryKnownItemsClient(),
       createInMemoryAppearanceClient(),
-      createInMemoryWeekPlanClient(),
+      createInMemoryWeekPlanClient(EMPTY_PLAN),
       createInMemorySuppliesClient([{ mealId: 'bolognese', count: 2 }]),
     )
 
@@ -1464,7 +1475,7 @@ describe('SignedInApp', () => {
 
     const rolled = weekPlanClient.storedWeekPlan()
     expect(
-      PLAN_SLOTS.filter((slot) => mealIn(rolled, slot) === 'bolognese').map(
+      WEEK_SLOTS.filter((slot) => mealIn(rolled, slot) === 'bolognese').map(
         (slot) => slot.time,
       ),
     ).toEqual(Array.from({ length: 7 }, () => 'dinner'))

@@ -6,8 +6,9 @@ import {
   type MainMealTimeRule,
 } from '../domain/randomPlanning'
 import { isStaleSnapshot } from '../domain/unconfirmedWrite'
+import type { PlanPeriod } from '../domain/planPeriod'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   sameWeekPlan,
   withMealIn,
   type PlanSlot,
@@ -29,8 +30,11 @@ export type WeekPlanning = {
   changeMainMealTimeRule: (rule: MainMealTimeRule) => void
 }
 
-export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
-  const [plan, setPlan] = useState<WeekPlan>(EMPTY_WEEK_PLAN)
+export function useWeekPlan(
+  client: WeekPlanClient,
+  initialPeriod: PlanPeriod,
+): WeekPlanning {
+  const [plan, setPlan] = useState<WeekPlan>(() => emptyWeekPlan(initialPeriod))
   const [stage, setStage] = useState<WeekPlanStage>(EDITING_STAGE)
   const unconfirmedPlan = useRef<WeekPlan | null>(null)
   const unconfirmedStage = useRef<WeekPlanStage | null>(null)

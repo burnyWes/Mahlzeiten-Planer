@@ -22,7 +22,7 @@ const openMeals = (onWriteFailure: (message: string) => void) =>
   createFirestoreMealsClient(firestore, onWriteFailure)
 
 const openWeekPlan = (onWriteFailure: (message: string) => void) =>
-  createFirestoreWeekPlanClient(firestore, onWriteFailure)
+  createFirestoreWeekPlanClient(firestore, onWriteFailure, () => new Date())
 
 const openSupplies = (onWriteFailure: (message: string) => void) =>
   createFirestoreSuppliesClient(firestore, onWriteFailure)

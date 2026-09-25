@@ -18,18 +18,19 @@ import {
   randomCandidates,
   type RandomSource,
 } from '../domain/randomPlanning'
+import type { PlanDate } from '../domain/planDate'
 import type { Supply } from '../domain/supply'
 import {
   coveredSlotsOf,
-  EMPTY_WEEK_PLAN,
+  emptied,
   isSuppliedIn,
   plannedMealCount,
+  slotCountOf,
   weekPlanTransfer,
   withMealIn,
   type MealTime,
   type PlanSlot,
   type WeekPlanTransfer,
-  type Weekday,
 } from '../domain/weekPlan'
 import {
   canClear,
@@ -47,8 +48,8 @@ type WeekPlanAreaProps = {
   meals: readonly Meal[]
   weekPlanning: WeekPlanning
   supplies: readonly Supply[]
-  shownDay: Weekday
-  onShowDay: (day: Weekday) => void
+  shownDay: PlanDate
+  onShowDay: (day: PlanDate) => void
   shownView: WeekPlanView
   onShowView: (view: WeekPlanView) => void
   shownTime: MealTime
@@ -78,7 +79,7 @@ export function WeekPlanArea({
   const { plan, stage, mainMealTimeRule } = weekPlanning
   const plannedMeals = plannedMealCount(plan, meals)
 
-  function showDay(day: Weekday) {
+  function showDay(day: PlanDate) {
     onShowDay(day)
     announce(dayShownAnnouncement(day))
   }
@@ -129,14 +130,19 @@ export function WeekPlanArea({
   }
 
   function shuffleWeek() {
-    const rolled = filledWeekPlan(meals, random, mainMealTimeRule)
+    const rolled = filledWeekPlan(meals, plan.period, random, mainMealTimeRule)
     weekPlanning.replacePlan(rolled)
-    announce(weekPlanShuffledAnnouncement(plannedMealCount(rolled, meals)))
+    announce(
+      weekPlanShuffledAnnouncement(
+        plannedMealCount(rolled, meals),
+        slotCountOf(rolled),
+      ),
+    )
   }
 
   function clearPlan() {
     if (!canClear(stage, plannedMeals)) return
-    weekPlanning.replacePlan(EMPTY_WEEK_PLAN)
+    weekPlanning.replacePlan(emptied(plan))
     announce(weekPlanClearedAnnouncement())
   }
 
@@ -147,7 +153,7 @@ export function WeekPlanArea({
       return
     }
     weekPlanning.changeStage(FIXED_STAGE)
-    announce(planFixedAnnouncement(plannedMeals))
+    announce(planFixedAnnouncement(plannedMeals, slotCountOf(plan)))
   }
 
   function addToShoppingList() {

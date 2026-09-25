@@ -77,13 +77,13 @@ export async function signIn(page: Page) {
 }
 
 const WEEKDAY_NAMES = [
-  'Montag',
-  'Dienstag',
-  'Mittwoch',
-  'Donnerstag',
-  'Freitag',
-  'Samstag',
-  'Sonntag',
+  'Montag, 21. September',
+  'Dienstag, 22. September',
+  'Mittwoch, 23. September',
+  'Donnerstag, 24. September',
+  'Freitag, 25. September',
+  'Samstag, 26. September',
+  'Sonntag, 27. September',
 ]
 
 export async function stepToDay(page: Page, dayName: string) {

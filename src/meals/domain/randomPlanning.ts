@@ -1,20 +1,18 @@
 import type { Meal, MealKind } from './meal'
 import { sameCategory } from './mealCategory'
+import type { PlanDate } from './planDate'
+import { dateAfter, dateBefore, datesOf, type PlanPeriod } from './planPeriod'
 import {
-  EMPTY_WEEK_PLAN,
+  emptyWeekPlan,
   MEAL_TIMES,
   mealIn,
-  PLAN_SLOTS,
+  planSlotsOf,
   sameSlot,
   shownMealIn,
-  weekdayAfter,
-  weekdayBefore,
-  WEEKDAYS,
   withMealIn,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from './weekPlan'
 
 export type RandomSource = () => number
@@ -95,7 +93,7 @@ function mainMealTimeFor(
 function kindsBesideTheOtherMainMealTime(
   meals: readonly Meal[],
   plan: WeekPlan,
-  day: Weekday,
+  date: PlanDate,
   time: MainMealTime,
   random: RandomSource,
   rule: MainMealTimeRule,
@@ -103,7 +101,11 @@ function kindsBesideTheOtherMainMealTime(
 ): readonly MealKind[] {
   const fixed = fixedMainMealTime(rule)
   if (fixed !== null && fixed !== time) return KINDS_BESIDE_THE_MAIN_MEAL
-  const other = shownMealIn(plan, { day, time: otherMainMealTime(time) }, meals)
+  const other = shownMealIn(
+    plan,
+    { date, time: otherMainMealTime(time) },
+    meals,
+  )
   if (other !== null) {
     return other.kind === 'mainMeal'
       ? KINDS_BESIDE_THE_MAIN_MEAL
@@ -129,7 +131,7 @@ function allowedFor(
   const kindsOfTheDay = kindsBesideTheOtherMainMealTime(
     meals,
     plan,
-    slot.day,
+    slot.date,
     slot.time,
     random,
     rule,
@@ -139,7 +141,9 @@ function allowedFor(
 }
 
 function timesPlanned(plan: WeekPlan, meal: Meal): number {
-  return PLAN_SLOTS.filter((slot) => mealIn(plan, slot) === meal.id).length
+  return planSlotsOf(plan.period).filter(
+    (slot) => mealIn(plan, slot) === meal.id,
+  ).length
 }
 
 export const rarestInThePlan: PlanningRule = (candidates, plan) => {
@@ -154,10 +158,17 @@ function isKeptApart(meal: Meal): boolean {
   return KINDS_KEPT_APART.includes(meal.kind)
 }
 
-function neighbouringMainMealSlots(slot: PlanSlot): readonly PlanSlot[] {
-  return [weekdayBefore(slot.day), slot.day, weekdayAfter(slot.day)]
-    .filter((day) => day !== null)
-    .flatMap((day) => MAIN_MEAL_TIMES.map((time) => ({ day, time })))
+function neighbouringMainMealSlots(
+  plan: WeekPlan,
+  slot: PlanSlot,
+): readonly PlanSlot[] {
+  return [
+    dateBefore(plan.period, slot.date),
+    slot.date,
+    dateAfter(plan.period, slot.date),
+  ]
+    .filter((date) => date !== null)
+    .flatMap((date) => MAIN_MEAL_TIMES.map((time) => ({ date, time })))
     .filter((neighbour) => !sameSlot(neighbour, slot))
 }
 
@@ -166,7 +177,7 @@ function neighbouringCategories(
   slot: PlanSlot,
   meals: readonly Meal[],
 ): readonly string[] {
-  return neighbouringMainMealSlots(slot).flatMap((neighbour) => {
+  return neighbouringMainMealSlots(plan, slot).flatMap((neighbour) => {
     const planned = shownMealIn(plan, neighbour, meals)
     return planned !== null && isKeptApart(planned) ? planned.categories : []
   })
@@ -196,9 +207,9 @@ function mealOfTheDayBefore(
   plan: WeekPlan,
   slot: PlanSlot,
 ): Meal | null {
-  const dayBefore = weekdayBefore(slot.day)
+  const dayBefore = dateBefore(plan.period, slot.date)
   if (dayBefore === null) return null
-  const planned = mealIn(plan, { day: dayBefore, time: slot.time })
+  const planned = mealIn(plan, { date: dayBefore, time: slot.time })
   return candidates.find((meal) => meal.id === planned) ?? null
 }
 
@@ -254,13 +265,13 @@ export function pickMealFor(
 function filledDay(
   meals: readonly Meal[],
   plan: WeekPlan,
-  day: Weekday,
+  date: PlanDate,
   random: RandomSource,
   rule: MainMealTimeRule,
 ): WeekPlan {
   const mainMealTime = fixedMainMealTime(rule) ?? mainMealTimeOf(random)
   return MEAL_TIMES.reduce((filled, time) => {
-    const slot = { day, time }
+    const slot = { date, time }
     const picked = pickMealFor(meals, filled, slot, random, rule, mainMealTime)
     return picked === null ? filled : withMealIn(filled, slot, picked.id)
   }, plan)
@@ -268,11 +279,12 @@ function filledDay(
 
 export function filledWeekPlan(
   meals: readonly Meal[],
+  period: PlanPeriod,
   random: RandomSource,
   rule: MainMealTimeRule,
 ): WeekPlan {
-  return WEEKDAYS.reduce(
-    (plan, day) => filledDay(meals, plan, day, random, rule),
-    EMPTY_WEEK_PLAN,
+  return datesOf(period).reduce(
+    (plan, date) => filledDay(meals, plan, date, random, rule),
+    emptyWeekPlan(period),
   )
 }

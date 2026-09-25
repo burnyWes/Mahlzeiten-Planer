@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test'
 import {
   hiddenMealNamesOnServer,
+  mealIdOnServer,
   prepareEmulators,
   settleWrites,
   storeMealOnServer,
+  storeWeekdayPlanOnServer,
   supplyCountsOnServer,
   weekPlanMealNamesOnServer,
   weekPlanOnServer,
@@ -22,19 +24,19 @@ import {
 const A_MONDAY = new Date('2026-09-21T12:00:00')
 const A_FRIDAY = new Date('2026-09-25T12:00:00')
 
-const WEEKDAYS = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
+const WEEK_DATES = [
+  '2026-09-21',
+  '2026-09-22',
+  '2026-09-23',
+  '2026-09-24',
+  '2026-09-25',
+  '2026-09-26',
+  '2026-09-27',
 ]
 
 async function mainMealsOnServer() {
   const planned = await weekPlanMealNamesOnServer()
-  return WEEKDAYS.map((day) =>
+  return WEEK_DATES.map((day) =>
     [planned[`${day}.lunch`], planned[`${day}.dinner`]].filter(Boolean),
   )
 }
@@ -122,7 +124,7 @@ test('buys only the meal that the supply no longer covers', async ({
   await pressButton(page, 'Wochenplan')
   await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
   await chooseSuggestion(page, 'Abendessen', 'chi', 'Chili')
-  await stepToDay(page, 'Dienstag')
+  await stepToDay(page, 'Dienstag, 22. September')
   await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
 
   await expect(page.getByLabel('Mittagessen', { exact: true })).toHaveValue(
@@ -161,18 +163,35 @@ test('keeps the week plan after a reload', async ({ page }) => {
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Wochenplan')
-  await stepToDay(page, 'Freitag')
+  await stepToDay(page, 'Freitag, 25. September')
   await chooseSuggestion(page, 'Abendessen', 'linsen', 'Linsensuppe')
 
   await expect
-    .poll(async () => (await weekPlanOnServer())['friday.dinner'])
+    .poll(async () => (await weekPlanOnServer())['2026-09-25.dinner'])
     .toEqual(expect.any(String))
 
   await page.reload()
   await pressButton(page, 'Wochenplan')
-  await stepToDay(page, 'Freitag')
+  await stepToDay(page, 'Freitag, 25. September')
 
   await expect(page.getByLabel('Abendessen', { exact: true })).toHaveValue(
+    'Linsensuppe',
+  )
+})
+
+test('shows a plan of weekdays on the dates of this week', async ({ page }) => {
+  await storeMealOnServer('Linsensuppe')
+  await storeWeekdayPlanOnServer({
+    friday: { lunch: await mealIdOnServer('Linsensuppe') },
+  })
+
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Wochenplan')
+  await stepToDay(page, 'Freitag, 25. September')
+
+  await expect(page.getByLabel('Mittagessen', { exact: true })).toHaveValue(
     'Linsensuppe',
   )
 })
@@ -241,7 +260,7 @@ test('transfers a fixed plan only once', async ({ page }) => {
   )
   await expect
     .poll(async () => (await weekPlanStageOnServer()).coveredSlots)
-    .toEqual(['monday.lunch'])
+    .toEqual(['2026-09-21.lunch'])
   await expect.poll(supplyCountsOnServer).toEqual([])
 
   await page.reload()
@@ -294,7 +313,7 @@ test('never rolls a hidden meal into the week', async ({ page }) => {
     .toBe(1)
   await expect
     .poll(mainMealsOnServer)
-    .toEqual(WEEKDAYS.map(() => ['Bolognese']))
+    .toEqual(WEEK_DATES.map(() => ['Bolognese']))
 })
 
 test('rolls every meal into a slot that suits it', async ({ page }) => {
@@ -321,7 +340,7 @@ test('rolls every meal into a slot that suits it', async ({ page }) => {
   await expect
     .poll(async () => {
       const planned = await weekPlanMealNamesOnServer()
-      return WEEKDAYS.map((day) => ({
+      return WEEK_DATES.map((day) => ({
         breakfast: ['Müsli', 'Apfel'].includes(
           planned[`${day}.breakfast`] ?? '',
         ),
@@ -336,7 +355,7 @@ test('rolls every meal into a slot that suits it', async ({ page }) => {
       }))
     })
     .toEqual(
-      WEEKDAYS.map(() => ({
+      WEEK_DATES.map(() => ({
         breakfast: true,
         snack: 'Apfel',
         mainMeals: 1,
@@ -370,12 +389,12 @@ test('rolls the main meal only in the evening when the household wants it so', a
   await expect
     .poll(async () => {
       const planned = await weekPlanMealNamesOnServer()
-      return WEEKDAYS.map((day) => [
+      return WEEK_DATES.map((day) => [
         planned[`${day}.lunch`],
         planned[`${day}.dinner`],
       ])
     })
-    .toEqual(WEEKDAYS.map(() => ['Brot', 'Bolognese']))
+    .toEqual(WEEK_DATES.map(() => ['Brot', 'Bolognese']))
 })
 
 test('lines the meal time field up with its shuffle button', async ({
@@ -413,13 +432,15 @@ test('steps through the week with the arrows', async ({ page }) => {
   })
 
   await expect(page.getByRole('heading', { level: 2 })).toHaveAccessibleName(
-    'Montag',
+    'Montag, 21. September',
   )
   await expect(previousDay).toHaveAttribute('aria-disabled', 'true')
 
-  await stepToDay(page, 'Sonntag')
+  await stepToDay(page, 'Sonntag, 27. September')
 
-  await expect(page.getByRole('status')).toContainText('Sonntag.')
+  await expect(page.getByRole('status')).toContainText(
+    'Sonntag, 27. September.',
+  )
   await expect(nextDay).toHaveAttribute('aria-disabled', 'true')
   await expect(nextDay).toBeFocused()
   await expect(previousDay).toHaveAttribute('aria-disabled', 'false')
@@ -433,7 +454,7 @@ test('opens the week plan on the day of today', async ({ page }) => {
   await pressButton(page, 'Wochenplan')
 
   await expect(page.getByRole('heading', { level: 2 })).toHaveAccessibleName(
-    'Freitag',
+    'Freitag, 25. September',
   )
   await expect(
     page.getByRole('button', { name: 'Vorheriger Tag', exact: true }),
@@ -460,14 +481,14 @@ test('plans a day of the week in the week view', async ({ page }) => {
     'Wochenansicht, Mittagessen.',
   )
 
-  await chooseSuggestion(page, 'Donnerstag', 'bolo', 'Bolognese')
+  await chooseSuggestion(page, 'Donnerstag, 24. September', 'bolo', 'Bolognese')
 
   await expect
-    .poll(async () => (await weekPlanOnServer())['thursday.lunch'])
+    .poll(async () => (await weekPlanOnServer())['2026-09-24.lunch'])
     .toEqual(expect.any(String))
 
   await pressButton(page, 'Tagesansicht')
-  await stepToDay(page, 'Donnerstag')
+  await stepToDay(page, 'Donnerstag, 24. September')
 
   await expect(page.getByLabel('Mittagessen', { exact: true })).toHaveValue(
     'Bolognese',
@@ -488,14 +509,16 @@ test('shows the dinner of the whole week', async ({ page }) => {
   await chooseSuggestion(page, 'Abendessen', 'chi', 'Chili')
 
   await expect
-    .poll(async () => (await weekPlanOnServer())['monday.dinner'])
+    .poll(async () => (await weekPlanOnServer())['2026-09-21.dinner'])
     .toEqual(expect.any(String))
 
   await pressButton(page, 'Wochenansicht')
   await pressButton(page, 'Abendessen')
 
   await expect(page.getByRole('status')).toContainText('Abendessen.')
-  await expect(page.getByLabel('Montag', { exact: true })).toHaveValue('Chili')
+  await expect(
+    page.getByLabel('Montag, 21. September', { exact: true }),
+  ).toHaveValue('Chili')
   await expect(
     page.getByRole('button', { name: 'Abendessen', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
