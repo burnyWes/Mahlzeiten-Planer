@@ -80,21 +80,36 @@ function otherMainMealTime(time: MainMealTime): MainMealTime {
   return time === 'lunch' ? 'dinner' : 'lunch'
 }
 
+function fixedMainMealTime(rule: MainMealTimeRule): MainMealTime | null {
+  return rule === 'lunchOrDinner' ? null : rule
+}
+
+function mainMealTimeFor(
+  rule: MainMealTimeRule,
+  mainMealTime: MainMealTime | null,
+  random: RandomSource,
+): MainMealTime {
+  return fixedMainMealTime(rule) ?? mainMealTime ?? mainMealTimeOf(random)
+}
+
 function kindsBesideTheOtherMainMealTime(
   meals: readonly Meal[],
   plan: WeekPlan,
   day: Weekday,
   time: MainMealTime,
   random: RandomSource,
+  rule: MainMealTimeRule,
   mainMealTime: MainMealTime | null,
 ): readonly MealKind[] {
+  const fixed = fixedMainMealTime(rule)
+  if (fixed !== null && fixed !== time) return KINDS_BESIDE_THE_MAIN_MEAL
   const other = shownMealIn(plan, { day, time: otherMainMealTime(time) }, meals)
   if (other !== null) {
     return other.kind === 'mainMeal'
       ? KINDS_BESIDE_THE_MAIN_MEAL
       : MAIN_MEAL_KINDS
   }
-  return (mainMealTime ?? mainMealTimeOf(random)) === time
+  return mainMealTimeFor(rule, mainMealTime, random) === time
     ? MAIN_MEAL_KINDS
     : KINDS_BESIDE_THE_MAIN_MEAL
 }
@@ -104,6 +119,7 @@ function allowedFor(
   plan: WeekPlan,
   slot: PlanSlot,
   random: RandomSource,
+  rule: MainMealTimeRule,
   mainMealTime: MainMealTime | null,
 ): readonly Meal[] {
   const suitingTheTime = randomCandidates(meals).filter((meal) =>
@@ -116,6 +132,7 @@ function allowedFor(
     slot.day,
     slot.time,
     random,
+    rule,
     mainMealTime,
   )
   return suitingTheTime.filter((meal) => kindsOfTheDay.includes(meal.kind))
@@ -225,9 +242,10 @@ export function pickMealFor(
   plan: WeekPlan,
   slot: PlanSlot,
   random: RandomSource,
+  rule: MainMealTimeRule,
   mainMealTime: MainMealTime | null = null,
 ): Meal | null {
-  const allowed = allowedFor(meals, plan, slot, random, mainMealTime)
+  const allowed = allowedFor(meals, plan, slot, random, rule, mainMealTime)
   if (allowed.length === 0) return null
   const left = narrowedBy(PLANNING_RULES, allowed, plan, slot, random, meals)
   return left[Math.min(Math.floor(random() * left.length), left.length - 1)]
@@ -238,11 +256,12 @@ function filledDay(
   plan: WeekPlan,
   day: Weekday,
   random: RandomSource,
+  rule: MainMealTimeRule,
 ): WeekPlan {
-  const mainMealTime = mainMealTimeOf(random)
+  const mainMealTime = fixedMainMealTime(rule) ?? mainMealTimeOf(random)
   return MEAL_TIMES.reduce((filled, time) => {
     const slot = { day, time }
-    const picked = pickMealFor(meals, filled, slot, random, mainMealTime)
+    const picked = pickMealFor(meals, filled, slot, random, rule, mainMealTime)
     return picked === null ? filled : withMealIn(filled, slot, picked.id)
   }, plan)
 }
@@ -250,9 +269,10 @@ function filledDay(
 export function filledWeekPlan(
   meals: readonly Meal[],
   random: RandomSource,
+  rule: MainMealTimeRule,
 ): WeekPlan {
   return WEEKDAYS.reduce(
-    (plan, day) => filledDay(meals, plan, day, random),
+    (plan, day) => filledDay(meals, plan, day, random, rule),
     EMPTY_WEEK_PLAN,
   )
 }

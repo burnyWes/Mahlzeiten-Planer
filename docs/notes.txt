@@ -142,6 +142,7 @@ x Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
   Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
 x ausgegraute buttons heller zeichnen
 x Hauptgericht, Frühstück und Snack in den Filter mit aufnehmen
+x Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -165,7 +166,6 @@ TODO
   MZP-006 sichtbar, weil die Zeile sofort erscheint und nicht erst nach der
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
-- Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 - Wochenplan erweitern
   - oben Date-Picker für Startdatum
   - daneben Anzahl-Tage-Selector

@@ -11,13 +11,14 @@ import {
 import type { MealsClient } from '../api/mealsClient'
 import { mealTimeName } from '../domain/announcements'
 import type { Meal, MealKind } from '../domain/meal'
-import type { RandomSource } from '../domain/randomPlanning'
+import type { MainMealTimeRule, RandomSource } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
 import {
   EMPTY_WEEK_PLAN,
   MEAL_TIMES,
   mealIn,
   PLAN_SLOTS,
+  WEEKDAYS,
   withMealIn,
   type MealTime,
   type PlanSlot,
@@ -177,8 +178,13 @@ function renderWeekPlanArea(
   initialDay: Weekday = 'monday',
   initialView: WeekPlanView = 'day',
   initialTime: MealTime = 'lunch',
+  initialMainMealTimeRule?: MainMealTimeRule,
 ) {
-  const weekPlanClient = createInMemoryWeekPlanClient(initialPlan, initialStage)
+  const weekPlanClient = createInMemoryWeekPlanClient(
+    initialPlan,
+    initialStage,
+    initialMainMealTimeRule,
+  )
   const mealsClient = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
   const transferred: WeekPlanTransfer[] = []
@@ -212,6 +218,24 @@ function renderWeekPlanArea(
     rendered,
     changeSupplies,
   }
+}
+
+function renderWeekPlanAreaRolling(
+  rule: MainMealTimeRule,
+  initialMeals: readonly Meal[],
+  initialPlan: WeekPlan = EMPTY_WEEK_PLAN,
+) {
+  return renderWeekPlanArea(
+    initialMeals,
+    initialPlan,
+    [],
+    alwaysFirst,
+    undefined,
+    'monday',
+    'day',
+    'lunch',
+    rule,
+  )
 }
 
 function renderWeekPlanAreaOn(
@@ -917,6 +941,45 @@ describe('WeekPlanArea', () => {
     expect(
       mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'dinner')),
     ).toBe('bread')
+  })
+
+  it('rolls the main meal of the week in the evening when the household wants it so', async () => {
+    const { weekPlanClient } = renderWeekPlanAreaRolling('dinner', [
+      bolognese,
+      bread,
+    ])
+
+    await shuffleWeek()
+
+    const rolled = weekPlanClient.storedWeekPlan()
+    expect(
+      WEEKDAYS.map((day) => [
+        mealIn(rolled, slot(day, 'lunch')),
+        mealIn(rolled, slot(day, 'dinner')),
+      ]),
+    ).toEqual(WEEKDAYS.map(() => ['bread', 'bolognese']))
+  })
+
+  it('says that no meal suits the dinner when the main meal is rolled only at lunch', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanAreaRolling(
+      'lunch',
+      [bolognese, pizza],
+    )
+
+    await shuffleSlot('Abendessen')
+
+    expect(announcements).toEqual(['Abendessen, kein passendes Gericht.'])
+    expect(filledSlots(weekPlanClient.storedWeekPlan())).toEqual([])
+  })
+
+  it('leaves the plan alone when the rule for the main meal changes', async () => {
+    const planned = planWith([slot('monday', 'dinner'), 'bolognese'])
+    const { weekPlanClient } = renderWeekPlanArea([bolognese, bread], planned)
+
+    act(() => weekPlanClient.mainMealTimeRuleArrivesFromElsewhere('lunch'))
+
+    expect(weekPlanClient.storedWeekPlan()).toEqual(planned)
+    expect(mealTimeField('Abendessen')).toHaveValue('Bolognese')
   })
 
   it('rolls no side of the same category beside the main meal', async () => {

@@ -75,7 +75,7 @@ export function WeekPlanArea({
   onAddToShoppingList,
 }: WeekPlanAreaProps) {
   const randomCandidateCount = randomCandidates(meals).length
-  const { plan, stage } = weekPlanning
+  const { plan, stage, mainMealTimeRule } = weekPlanning
   const plannedMeals = plannedMealCount(plan, meals)
 
   function showDay(day: Weekday) {
@@ -114,7 +114,13 @@ export function WeekPlanArea({
   }
 
   function shuffleSlot(slot: PlanSlot) {
-    const picked = pickMealFor(meals, weekPlanning.plan, slot, random)
+    const picked = pickMealFor(
+      meals,
+      weekPlanning.plan,
+      slot,
+      random,
+      mainMealTimeRule,
+    )
     if (picked === null) {
       announce(noMatchingMealAnnouncement(slot, slotNamingIn(shownView)))
       return
@@ -123,7 +129,7 @@ export function WeekPlanArea({
   }
 
   function shuffleWeek() {
-    const rolled = filledWeekPlan(meals, random)
+    const rolled = filledWeekPlan(meals, random, mainMealTimeRule)
     weekPlanning.replacePlan(rolled)
     announce(weekPlanShuffledAnnouncement(plannedMealCount(rolled, meals)))
   }

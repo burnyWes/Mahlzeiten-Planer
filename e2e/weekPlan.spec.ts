@@ -345,6 +345,39 @@ test('rolls every meal into a slot that suits it', async ({ page }) => {
     )
 })
 
+test('rolls the main meal only in the evening when the household wants it so', async ({
+  page,
+}) => {
+  await storeMealOnServer('Bolognese')
+  await storeMealOnServer('Brot', { mainMeal: false })
+
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Einstellungen')
+  await page
+    .getByRole('combobox', { name: 'Hauptgericht würfeln' })
+    .selectOption({ label: 'Nur abends' })
+  await pressButton(page, 'Wochenplan')
+  await expect(
+    page.getByRole('button', {
+      name: 'Zufallsauswahl generieren',
+      exact: true,
+    }),
+  ).toBeEnabled()
+  await pressButton(page, 'Zufallsauswahl generieren')
+
+  await expect
+    .poll(async () => {
+      const planned = await weekPlanMealNamesOnServer()
+      return WEEKDAYS.map((day) => [
+        planned[`${day}.lunch`],
+        planned[`${day}.dinner`],
+      ])
+    })
+    .toEqual(WEEKDAYS.map(() => ['Brot', 'Bolognese']))
+})
+
 test('lines the meal time field up with its shuffle button', async ({
   page,
 }) => {

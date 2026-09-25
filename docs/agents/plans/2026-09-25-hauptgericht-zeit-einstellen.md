@@ -316,7 +316,7 @@ Nach dieser Phase steht das Hauptgericht beim Würfeln zur eingestellten Zeit.
 
 **Aufgaben**:
 
-- [ ] `randomPlanning.test.ts`: zuerst die fehlschlagenden Tests.
+- [x] `randomPlanning.test.ts`: zuerst die fehlschlagenden Tests.
   - `filledWeekPlan(meals, random, 'lunch')` mit je einem Gericht jeder Art: an jedem
     Tag mittags das Hauptgericht, abends `none` oder Snack. Mit `'dinner'` gespiegelt.
   - `filledWeekPlan(…, 'dinner')` mit einer Zufallsfolge, die bei `'lunchOrDinner'`
@@ -338,7 +338,7 @@ Nach dieser Phase steht das Hauptgericht beim Würfeln zur eingestellten Zeit.
     leerem Gegenplatz → `none`/Snack und Abend mit Hauptgericht am Mittag →
     `none`/Snack.
   - Frühstück und Snack-Spalte sind von der Regel unberührt.
-- [ ] `randomPlanning.ts`: `kindsBesideTheOtherMainMealTime(meals, plan, day, time,
+- [x] `randomPlanning.ts`: `kindsBesideTheOtherMainMealTime(meals, plan, day, time,
   random, rule, mainMealTime)`.
   ```ts
   if (rule !== 'lunchOrDinner' && time !== rule) return KINDS_BESIDE_THE_MAIN_MEAL
@@ -348,14 +348,14 @@ Nach dieser Phase steht das Hauptgericht beim Würfeln zur eingestellten Zeit.
   ```
   `mainMealTimeFor` ergibt die feste Zeit, sonst `mainMealTime ?? mainMealTimeOf(random)`.
   Die Namen dürfen sich beim Umsetzen ändern, solange sie sprechend bleiben.
-- [ ] `randomPlanning.ts`: `pickMealFor(meals, plan, slot, random, rule, mainMealTime =
+- [x] `randomPlanning.ts`: `pickMealFor(meals, plan, slot, random, rule, mainMealTime =
   null)` und `filledWeekPlan(meals, random, rule)`. `filledDay` wirft
   `mainMealTimeOf(random)` nur bei `'lunchOrDinner'`, sonst gilt die feste Zeit.
   `rule` ist ein Pflichtparameter, damit kein Aufrufer die Einstellung vergisst. Die
   bestehenden Tests übergeben `'lunchOrDinner'`.
-- [ ] `WeekPlanArea.tsx`: `shuffleSlot` und `shuffleWeek` übergeben
+- [x] `WeekPlanArea.tsx`: `shuffleSlot` und `shuffleWeek` übergeben
   `weekPlanning.mainMealTimeRule`.
-- [ ] `WeekPlanArea.test.tsx`: bestehende Aufrufe laufen über den In-Memory-Client mit
+- [x] `WeekPlanArea.test.tsx`: bestehende Aufrufe laufen über den In-Memory-Client mit
   dem Standard `'lunchOrDinner'` weiter. Neue Tests:
   - Regel `'dinner'` (die Fixture in `WeekPlanArea.test.tsx:181` reicht einen dritten
     Wert an `createInMemoryWeekPlanClient` durch), Woche würfeln mit `alwaysFirst` → das Hauptgericht steht
@@ -363,24 +363,24 @@ Nach dieser Phase steht das Hauptgericht beim Würfeln zur eingestellten Zeit.
   - Regel `'lunch'`, Würfel am Abendessen bei nur Hauptgerichten → Ansage
     „Abendessen, kein passendes Gericht.“ (`announcements.ts:252`)
   - Umstellen der Regel ändert den bestehenden Plan nicht.
-- [ ] `SignedInApp.test.tsx`: ein durchgehender Test. „Nur abends“ in den Einstellungen
+- [x] `SignedInApp.test.tsx`: ein durchgehender Test. „Nur abends“ in den Einstellungen
   wählen, zum Wochenplan wechseln, die Woche würfeln → das Hauptgericht steht abends.
-- [ ] `e2e/weekPlan.spec.ts`: neuer Test `rolls the main meal only in the evening when
+- [x] `e2e/weekPlan.spec.ts`: neuer Test `rolls the main meal only in the evening when
   the household wants it so`. Bolognese (`mainMeal`) und Brot (`{ mainMeal: false }`,
   also `none`) über `storeMealOnServer` anlegen, in den Einstellungen „Nur abends“
   wählen, die Woche würfeln. Laut `weekPlanMealNamesOnServer()` steht danach an jedem
   Tag Bolognese abends und nie mittags.
-- [ ] `docs/notes.txt`: den Eintrag „Dropdown in Einstellungen: Hauptmahlzeit …“ auf
+- [x] `docs/notes.txt`: den Eintrag „Dropdown in Einstellungen: Hauptmahlzeit …“ auf
   `x` setzen und nach DONE verschieben.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
-- [ ] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` grün
-- [ ] `npx vitest run src/SignedInApp.test.tsx` grün
-- [ ] `npm run test` grün (inkl. Architekturtest `domainLayerBoundary`)
-- [ ] `npm run lint`, `npm run build` fehlerfrei
-- [ ] E2E `e2e/weekPlan.spec.ts` grün
+- [x] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
+- [x] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` grün
+- [x] `npx vitest run src/SignedInApp.test.tsx` grün
+- [x] `npm run test` grün (inkl. Architekturtest `domainLayerBoundary`)
+- [x] `npm run lint`, `npm run build` fehlerfrei
+- [x] E2E `e2e/weekPlan.spec.ts` grün
 
 **Manuelle Verifikation**:
 

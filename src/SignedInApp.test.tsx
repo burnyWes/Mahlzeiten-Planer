@@ -1225,6 +1225,30 @@ describe('SignedInApp', () => {
     expect(mainMealTimeChoice()).toHaveDisplayValue('Nur mittags')
   })
 
+  it('rolls the main meal of the week at the time chosen in the settings', async () => {
+    const { weekPlanClient } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese'),
+        { ...meal('bread', 'Brot'), kind: 'none' },
+      ],
+    )
+
+    await goToArea('Einstellungen')
+    await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
+    await goToArea('Wochenplan')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
+    )
+
+    const rolled = weekPlanClient.storedWeekPlan()
+    expect(
+      PLAN_SLOTS.filter((slot) => mealIn(rolled, slot) === 'bolognese').map(
+        (slot) => slot.time,
+      ),
+    ).toEqual(Array.from({ length: 7 }, () => 'dinner'))
+  })
+
   it('says nothing of its own when the main meal time changes', async () => {
     const { announcements } = renderSignedInApp()
 
