@@ -3,11 +3,16 @@ import type { MealsClient } from './meals/api/mealsClient'
 import type { SuppliesClient } from './meals/api/suppliesClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
 import {
+  mainMealTimeRuleName,
   mealWithoutItemsAnnouncement,
   weekPlanTransferAnnouncement,
 } from './meals/domain/announcements'
 import type { Meal } from './meals/domain/meal'
-import type { RandomSource } from './meals/domain/randomPlanning'
+import {
+  isMainMealTimeRule,
+  MAIN_MEAL_TIME_RULES,
+  type RandomSource,
+} from './meals/domain/randomPlanning'
 import { withoutPortions } from './meals/domain/supply'
 import {
   mealsWithoutItems,
@@ -164,6 +169,20 @@ export function SignedInApp({
       label: 'Farben invertieren',
       enabled: appearance.invertedColors,
       onToggle: appearance.toggleInvertedColors,
+    },
+    {
+      kind: 'choice',
+      id: 'mainMealTimeRule',
+      label: 'Hauptgericht würfeln',
+      options: MAIN_MEAL_TIME_RULES.map((rule) => ({
+        value: rule,
+        label: mainMealTimeRuleName(rule),
+      })),
+      chosen: weekPlanning.mainMealTimeRule,
+      onChoose: (value) => {
+        if (isMainMealTimeRule(value))
+          weekPlanning.changeMainMealTimeRule(value)
+      },
     },
     { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel-Verwaltung' },
     { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },

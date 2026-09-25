@@ -227,6 +227,18 @@ button[aria-disabled='true'] {
   justify-content: space-between;
 }
 
+.settingsChoice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.5rem;
+}
+
+.settingsChoice select {
+  width: 100%;
+  min-width: 0;
+}
+
 .toggleField {
   display: flex;
   align-items: center;

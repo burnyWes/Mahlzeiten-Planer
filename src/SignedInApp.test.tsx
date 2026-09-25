@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
@@ -115,6 +115,10 @@ function shownShoppingItemNames() {
   return within(screen.getByRole('main'))
     .getAllByRole('checkbox')
     .map((box) => box.getAttribute('aria-label'))
+}
+
+function mainMealTimeChoice() {
+  return screen.getByRole('combobox', { name: 'Hauptgericht würfeln' })
 }
 
 function planOf(...ids: readonly string[]): WeekPlan {
@@ -1176,12 +1180,58 @@ describe('SignedInApp', () => {
 
     expect(shownItemNames()).toEqual([
       'Farben invertieren',
+      expect.stringMatching(/^Hauptgericht würfeln/),
       'Artikel-Verwaltung',
       'Kategorie-Verwaltung',
     ])
     expect(
       screen.getByRole('switch', { name: 'Farben invertieren' }),
     ).not.toBeChecked()
+  })
+
+  it('offers the main meal time below the inverted colours', async () => {
+    renderSignedInApp()
+
+    await goToArea('Einstellungen')
+
+    const rows = within(screen.getByRole('main')).getAllByRole('listitem')
+    const mainMealTime = within(rows[1]).getByRole('combobox', {
+      name: 'Hauptgericht würfeln',
+    })
+    expect(mainMealTime).toHaveDisplayValue('Mittags oder abends')
+    expect(
+      within(mainMealTime)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Mittags oder abends', 'Nur mittags', 'Nur abends'])
+  })
+
+  it('remembers the main meal time for the household', async () => {
+    const { weekPlanClient } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+    await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
+
+    expect(mainMealTimeChoice()).toHaveDisplayValue('Nur abends')
+    expect(weekPlanClient.storedMainMealTimeRule()).toBe('dinner')
+  })
+
+  it('shows the main meal time chosen on the other device', async () => {
+    const { weekPlanClient } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+    act(() => weekPlanClient.mainMealTimeRuleArrivesFromElsewhere('lunch'))
+
+    expect(mainMealTimeChoice()).toHaveDisplayValue('Nur mittags')
+  })
+
+  it('says nothing of its own when the main meal time changes', async () => {
+    const { announcements } = renderSignedInApp()
+
+    await goToArea('Einstellungen')
+    await userEvent.selectOptions(mainMealTimeChoice(), 'Nur mittags')
+
+    expect(announcements).toEqual([])
   })
 
   it('remembers the inverted colours on this device', async () => {

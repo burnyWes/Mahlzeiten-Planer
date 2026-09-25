@@ -6,6 +6,11 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import {
+  DEFAULT_MAIN_MEAL_TIME_RULE,
+  isMainMealTimeRule,
+  type MainMealTimeRule,
+} from '../domain/randomPlanning'
+import {
   EMPTY_WEEK_PLAN,
   MEAL_TIMES,
   PLAN_SLOTS,
@@ -22,6 +27,7 @@ import type { WeekPlanClient } from './weekPlanClient'
 const WEEK_PLAN = 'weekPlan'
 const MEALS = 'meals'
 const MEAL_STAGE = 'mealStage'
+const ROLLING_RULES = 'rollingRules'
 
 const WRITE_FAILED = 'Konnte nicht gespeichert werden.'
 
@@ -79,12 +85,22 @@ function fromWeekPlanStage(stage: WeekPlanStage): DocumentData {
     : { mode: stage.mode }
 }
 
+function toMainMealTimeRule(
+  stored: DocumentData | undefined,
+): MainMealTimeRule {
+  const storedRule: unknown = stored?.mainMealTime
+  return isMainMealTimeRule(storedRule)
+    ? storedRule
+    : DEFAULT_MAIN_MEAL_TIME_RULE
+}
+
 export function createFirestoreWeekPlanClient(
   firestore: Firestore,
   onWriteFailure: (message: string) => void,
 ): WeekPlanClient {
   const weekPlan = doc(firestore, WEEK_PLAN, MEALS)
   const stage = doc(firestore, WEEK_PLAN, MEAL_STAGE)
+  const rollingRules = doc(firestore, WEEK_PLAN, ROLLING_RULES)
 
   return {
     observeWeekPlan(onWeekPlan) {
@@ -107,6 +123,18 @@ export function createFirestoreWeekPlanClient(
 
     writeStage(written) {
       setDoc(stage, fromWeekPlanStage(written)).catch(() =>
+        onWriteFailure(WRITE_FAILED),
+      )
+    },
+
+    observeMainMealTimeRule(onRule) {
+      return onSnapshot(rollingRules, (snapshot) => {
+        onRule(toMainMealTimeRule(snapshot.data()))
+      })
+    },
+
+    writeMainMealTimeRule(rule) {
+      setDoc(rollingRules, { mainMealTime: rule }).catch(() =>
         onWriteFailure(WRITE_FAILED),
       )
     },

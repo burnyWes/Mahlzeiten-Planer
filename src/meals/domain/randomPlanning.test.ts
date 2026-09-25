@@ -3,6 +3,8 @@ import type { Meal, MealKind } from './meal'
 import {
   apartFromSameCategory,
   filledWeekPlan,
+  isMainMealTimeRule,
+  MAIN_MEAL_TIME_RULES,
   mainMealTimeOf,
   narrowedBy,
   otherThanPlanned,
@@ -644,6 +646,19 @@ describe('mainMealTimeOf', () => {
 
   it('puts the main meal at dinner from an even chance on', () => {
     expect(mainMealTimeOf(sequence([0.5]))).toBe('dinner')
+  })
+})
+
+describe('isMainMealTimeRule', () => {
+  it('accepts every rule for the time of the main meal', () => {
+    expect(MAIN_MEAL_TIME_RULES.every(isMainMealTimeRule)).toBe(true)
+    expect(MAIN_MEAL_TIME_RULES).toEqual(['lunchOrDinner', 'lunch', 'dinner'])
+  })
+
+  it('rejects anything else', () => {
+    expect(isMainMealTimeRule('breakfast')).toBe(false)
+    expect(isMainMealTimeRule(undefined)).toBe(false)
+    expect(isMainMealTimeRule(42)).toBe(false)
   })
 })
 

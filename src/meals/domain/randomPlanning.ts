@@ -21,6 +21,20 @@ export type RandomSource = () => number
 
 export type MainMealTime = Extract<MealTime, 'lunch' | 'dinner'>
 
+export type MainMealTimeRule = MainMealTime | 'lunchOrDinner'
+
+export const MAIN_MEAL_TIME_RULES: readonly MainMealTimeRule[] = [
+  'lunchOrDinner',
+  'lunch',
+  'dinner',
+]
+
+export const DEFAULT_MAIN_MEAL_TIME_RULE: MainMealTimeRule = 'lunchOrDinner'
+
+export function isMainMealTimeRule(value: unknown): value is MainMealTimeRule {
+  return MAIN_MEAL_TIME_RULES.some((rule) => rule === value)
+}
+
 export type PlanningRule = (
   candidates: readonly Meal[],
   plan: WeekPlan,

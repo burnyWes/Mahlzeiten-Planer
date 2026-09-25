@@ -2,6 +2,10 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { WeekPlanClient } from '../api/weekPlanClient'
 import {
+  DEFAULT_MAIN_MEAL_TIME_RULE,
+  type MainMealTimeRule,
+} from '../domain/randomPlanning'
+import {
   EMPTY_WEEK_PLAN,
   withMealIn,
   type PlanSlot,
@@ -18,17 +22,23 @@ import { useWeekPlan } from './useWeekPlan'
 type LaggingWeekPlanClient = WeekPlanClient & {
   deliverNextSnapshot(): void
   deliverNextStageSnapshot(): void
+  deliverNextRuleSnapshot(): void
   weekPlanArrivesFromElsewhere(plan: WeekPlan): void
+  ruleArrivesFromElsewhere(rule: MainMealTimeRule): void
   storedWeekPlan(): WeekPlan
 }
 
-function createLaggingWeekPlanClient(): LaggingWeekPlanClient {
+function createLaggingWeekPlanClient(
+  initialRule: MainMealTimeRule = DEFAULT_MAIN_MEAL_TIME_RULE,
+): LaggingWeekPlanClient {
   let plan = EMPTY_WEEK_PLAN
   let stage: WeekPlanStage = EDITING_STAGE
   const heldBackPlans: WeekPlan[] = []
   const heldBackStages: WeekPlanStage[] = []
+  const heldBackRules: MainMealTimeRule[] = []
   let onPlan: (plan: WeekPlan) => void = () => {}
   let onStage: (stage: WeekPlanStage) => void = () => {}
+  let onRule: (rule: MainMealTimeRule) => void = () => {}
 
   return {
     observeWeekPlan(onWeekPlan) {
@@ -49,15 +59,29 @@ function createLaggingWeekPlanClient(): LaggingWeekPlanClient {
       stage = written
       heldBackStages.push(written)
     },
+    observeMainMealTimeRule(onRuleArriving) {
+      onRule = onRuleArriving
+      onRuleArriving(initialRule)
+      return () => {}
+    },
+    writeMainMealTimeRule(written) {
+      heldBackRules.push(written)
+    },
     deliverNextSnapshot() {
       onPlan(heldBackPlans.shift()!)
     },
     deliverNextStageSnapshot() {
       onStage(heldBackStages.shift()!)
     },
+    deliverNextRuleSnapshot() {
+      onRule(heldBackRules.shift()!)
+    },
     weekPlanArrivesFromElsewhere(arriving) {
       plan = arriving
       onPlan(arriving)
+    },
+    ruleArrivesFromElsewhere(arriving) {
+      onRule(arriving)
     },
     storedWeekPlan() {
       return plan
@@ -125,5 +149,32 @@ describe('useWeekPlan', () => {
     act(() => client.deliverNextStageSnapshot())
 
     expect(weekPlan.current.stage).toEqual(transferredStage([mondayLunch]))
+  })
+
+  it('takes the rule for the main meal time from the server', () => {
+    const weekPlan = weekPlanOf(createLaggingWeekPlanClient('dinner'))
+
+    expect(weekPlan.current.mainMealTimeRule).toBe('dinner')
+  })
+
+  it('keeps its own rule when a late snapshot of the old one arrives', () => {
+    const client = createLaggingWeekPlanClient()
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.changeMainMealTimeRule('lunch'))
+    act(() => client.ruleArrivesFromElsewhere('lunchOrDinner'))
+
+    expect(weekPlan.current.mainMealTimeRule).toBe('lunch')
+  })
+
+  it('takes the rule of the other device once its own is confirmed', () => {
+    const client = createLaggingWeekPlanClient()
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.changeMainMealTimeRule('lunch'))
+    act(() => client.deliverNextRuleSnapshot())
+    act(() => client.ruleArrivesFromElsewhere('dinner'))
+
+    expect(weekPlan.current.mainMealTimeRule).toBe('dinner')
   })
 })

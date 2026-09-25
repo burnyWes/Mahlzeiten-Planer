@@ -14,6 +14,7 @@ import {
 } from './meal'
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import type { MealFilter } from './mealFilter'
+import type { MainMealTimeRule } from './randomPlanning'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import {
   PLAN_SLOTS,
@@ -82,6 +83,16 @@ export function shownMealsCount(
 
 export function mealFilterName(filter: MealFilter): string {
   return filter.by === 'kind' ? mealKindNames[filter.kind] : filter.category
+}
+
+const mainMealTimeRuleNames: Record<MainMealTimeRule, string> = {
+  lunchOrDinner: 'Mittags oder abends',
+  lunch: 'Nur mittags',
+  dinner: 'Nur abends',
+}
+
+export function mainMealTimeRuleName(rule: MainMealTimeRule): string {
+  return mainMealTimeRuleNames[rule]
 }
 
 export function mealFilterAnnouncement(

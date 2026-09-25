@@ -207,6 +207,20 @@ export async function weekPlanStageOnServer(): Promise<WeekPlanStageOnServer> {
   }
 }
 
+type StoredRollingRules = {
+  fields?: { mainMealTime?: { stringValue?: string } }
+}
+
+export async function mainMealTimeRuleOnServer(): Promise<string | null> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/rollingRules`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) return null
+  const stored = (await response.json()) as StoredRollingRules
+  return stored.fields?.mainMealTime?.stringValue ?? null
+}
+
 export async function storeItemOnServer(
   name: string,
   createdAt: number,

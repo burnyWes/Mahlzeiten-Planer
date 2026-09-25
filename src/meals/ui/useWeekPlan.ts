@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WeekPlanClient } from '../api/weekPlanClient'
 import type { MealId } from '../domain/meal'
+import {
+  DEFAULT_MAIN_MEAL_TIME_RULE,
+  type MainMealTimeRule,
+} from '../domain/randomPlanning'
 import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import {
   EMPTY_WEEK_PLAN,
@@ -18,9 +22,11 @@ import {
 export type WeekPlanning = {
   plan: WeekPlan
   stage: WeekPlanStage
+  mainMealTimeRule: MainMealTimeRule
   chooseMeal: (slot: PlanSlot, id: MealId | null) => void
   replacePlan: (plan: WeekPlan) => void
   changeStage: (stage: WeekPlanStage) => void
+  changeMainMealTimeRule: (rule: MainMealTimeRule) => void
 }
 
 export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
@@ -28,6 +34,10 @@ export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
   const [stage, setStage] = useState<WeekPlanStage>(EDITING_STAGE)
   const unconfirmedPlan = useRef<WeekPlan | null>(null)
   const unconfirmedStage = useRef<WeekPlanStage | null>(null)
+  const [mainMealTimeRule, setMainMealTimeRule] = useState<MainMealTimeRule>(
+    DEFAULT_MAIN_MEAL_TIME_RULE,
+  )
+  const unconfirmedMainMealTimeRule = useRef<MainMealTimeRule | null>(null)
 
   useEffect(
     () =>
@@ -47,6 +57,23 @@ export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
           return
         unconfirmedStage.current = null
         setStage(arriving)
+      }),
+    [client],
+  )
+
+  useEffect(
+    () =>
+      client.observeMainMealTimeRule((arriving) => {
+        if (
+          isStaleSnapshot(
+            unconfirmedMainMealTimeRule.current,
+            arriving,
+            (one, other) => one === other,
+          )
+        )
+          return
+        unconfirmedMainMealTimeRule.current = null
+        setMainMealTimeRule(arriving)
       }),
     [client],
   )
@@ -76,5 +103,22 @@ export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
     [client],
   )
 
-  return { plan, stage, chooseMeal, replacePlan, changeStage }
+  const changeMainMealTimeRule = useCallback(
+    (written: MainMealTimeRule) => {
+      unconfirmedMainMealTimeRule.current = written
+      setMainMealTimeRule(written)
+      client.writeMainMealTimeRule(written)
+    },
+    [client],
+  )
+
+  return {
+    plan,
+    stage,
+    mainMealTimeRule,
+    chooseMeal,
+    replacePlan,
+    changeStage,
+    changeMainMealTimeRule,
+  }
 }

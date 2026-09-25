@@ -22,6 +22,7 @@ import {
   mealsHeading,
   mealFilterAnnouncement,
   mealFilterName,
+  mainMealTimeRuleName,
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   fixedSlotText,
@@ -140,6 +141,14 @@ describe('mealFilterName', () => {
 
   it('names the category', () => {
     expect(mealFilterName({ by: 'category', category: 'Suppe' })).toBe('Suppe')
+  })
+})
+
+describe('mainMealTimeRuleName', () => {
+  it('names each rule for the time of the main meal', () => {
+    expect(mainMealTimeRuleName('lunchOrDinner')).toBe('Mittags oder abends')
+    expect(mainMealTimeRuleName('lunch')).toBe('Nur mittags')
+    expect(mainMealTimeRuleName('dinner')).toBe('Nur abends')
   })
 })
 
