@@ -5,7 +5,7 @@ branch: main
 story: MZP-033
 topic: "Einstellung, wann das Hauptgericht gewürfelt wird"
 tags: [plan, meals, weekPlan, randomPlanning, settings, firestore, ui, e2e]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-033 — Einstellung, wann das Hauptgericht gewürfelt wird
@@ -384,10 +384,10 @@ Nach dieser Phase steht das Hauptgericht beim Würfeln zur eingestellten Zeit.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät „Nur mittags“ einstellen und die Woche würfeln: Jeder Tag hat das
+- [x] Auf dem Gerät „Nur mittags“ einstellen und die Woche würfeln: Jeder Tag hat das
   Hauptgericht mittags. Dasselbe mit „Nur abends“. Mit „Mittags oder abends“ wechselt
   es wie bisher.
-- [ ] Bei „Nur mittags“ den Würfel am Abendessen drücken: Es kommt nie ein
+- [x] Bei „Nur mittags“ den Würfel am Abendessen drücken: Es kommt nie ein
   Hauptgericht.
 
 ## Notizen zur Umsetzung
