@@ -15,7 +15,7 @@ export class CategoryAlreadyTaken extends Error {
   }
 }
 
-function sameCategory(one: string, other: string): boolean {
+export function sameCategory(one: string, other: string): boolean {
   return normalizeMealName(one) === normalizeMealName(other)
 }
 

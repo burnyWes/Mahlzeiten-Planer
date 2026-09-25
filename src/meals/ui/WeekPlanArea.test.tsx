@@ -10,7 +10,7 @@ import {
 } from '../api/inMemoryWeekPlanClient'
 import type { MealsClient } from '../api/mealsClient'
 import { mealTimeName } from '../domain/announcements'
-import type { Meal } from '../domain/meal'
+import type { Meal, MealKind } from '../domain/meal'
 import type { RandomSource } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
 import {
@@ -35,7 +35,12 @@ import { useMeals } from './useMeals'
 import { useWeekPlan } from './useWeekPlan'
 import { WeekPlanArea } from './WeekPlanArea'
 
-function meal(id: string, name: string, items: Meal['items'] = []): Meal {
+function meal(
+  id: string,
+  name: string,
+  items: Meal['items'] = [],
+  kind: MealKind = 'mainMeal',
+): Meal {
   return {
     id,
     name,
@@ -44,12 +49,28 @@ function meal(id: string, name: string, items: Meal['items'] = []): Meal {
     recipe: '',
     categories: [],
     hidden: false,
-    kind: 'mainMeal',
+    kind,
   }
 }
 
-function hiddenMeal(id: string, name: string): Meal {
-  return { ...meal(id, name), hidden: true }
+function hiddenMeal(
+  id: string,
+  name: string,
+  kind: MealKind = 'mainMeal',
+): Meal {
+  return { ...meal(id, name, [], kind), hidden: true }
+}
+
+function breakfastMeal(id: string, name: string): Meal {
+  return meal(id, name, [], 'breakfast')
+}
+
+function snackMeal(id: string, name: string): Meal {
+  return meal(id, name, [], 'snack')
+}
+
+function sideMeal(id: string, name: string): Meal {
+  return meal(id, name, [], 'none')
 }
 
 const bolognese = meal('bolognese', 'Bolognese')
@@ -57,6 +78,11 @@ const pizza = meal('pizza', 'Pizza')
 const soup = meal('soup', 'Ährensuppe')
 const mushrooms = meal('mushrooms', 'Crispy Pilz')
 const chili = meal('chili', 'Chili')
+const muesli = breakfastMeal('muesli', 'Müsli')
+const porridge = breakfastMeal('porridge', 'Porridge')
+const apple = snackMeal('apple', 'Apfel')
+const bread = sideMeal('bread', 'Brot')
+const everyKind = [muesli, bolognese, apple, bread]
 
 const WEEKDAY_NAMES = [
   'Montag',
@@ -653,15 +679,15 @@ describe('WeekPlanArea', () => {
   })
 
   it('rolls a meal for one meal time and says which one it is', async () => {
-    const { weekPlanClient, announcements } = renderWeekPlanArea([pizza])
+    const { weekPlanClient, announcements } = renderWeekPlanArea([muesli])
 
     await shuffleSlot('Frühstück')
 
     expect(
       mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
-    ).toBe('pizza')
-    expect(mealTimeField('Frühstück')).toHaveValue('Pizza')
-    expect(announcements).toEqual(['Frühstück, Pizza.'])
+    ).toBe('muesli')
+    expect(mealTimeField('Frühstück')).toHaveValue('Müsli')
+    expect(announcements).toEqual(['Frühstück, Müsli.'])
   })
 
   it('says that the rolled meal of the meal time is kept in store', async () => {
@@ -725,7 +751,7 @@ describe('WeekPlanArea', () => {
   })
 
   it('leaves the other meal times alone while it rolls one', async () => {
-    const { weekPlanClient } = renderWeekPlanArea([pizza])
+    const { weekPlanClient } = renderWeekPlanArea([apple])
 
     await shuffleSlot('Snack')
 
@@ -735,42 +761,41 @@ describe('WeekPlanArea', () => {
   })
 
   it('rolls the other meal on the second press', async () => {
-    const { weekPlanClient } = renderWeekPlanArea([bolognese, pizza])
+    const { weekPlanClient } = renderWeekPlanArea([muesli, porridge])
 
     await shuffleSlot('Frühstück')
     expect(
       mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
-    ).toBe('bolognese')
+    ).toBe('muesli')
 
     await shuffleSlot('Frühstück')
     expect(
       mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
-    ).toBe('pizza')
+    ).toBe('porridge')
   })
 
   it('rolls the whole week over a meal time that was chosen by hand', async () => {
     const { weekPlanClient, announcements } = renderWeekPlanArea(
-      [bolognese, pizza, soup],
-      planWith([slot('monday', 'breakfast'), 'pizza']),
+      everyKind,
+      planWith([slot('monday', 'breakfast'), 'bolognese']),
     )
 
     await shuffleWeek()
 
-    const rolledInTurn = ['soup', 'bolognese', 'pizza']
+    const rolledEachDay = ['apple', 'bolognese', 'apple', 'bread']
     expect(mealsOf(weekPlanClient.storedWeekPlan())).toEqual(
-      PLAN_SLOTS.map((_, position) => rolledInTurn[position % 3]),
+      PLAN_SLOTS.map((_, position) => rolledEachDay[position % 4]),
     )
-    expect(announcements).toEqual(['Wochenplan neu gewürfelt, 28 Gerichte.'])
+    expect(announcements).toEqual([
+      'Wochenplan neu gewürfelt, 28 von 28 Gerichten.',
+    ])
     expect(
       screen.getByRole('heading', { name: 'Wochenplan, 28 von 28' }),
     ).toBeInTheDocument()
   })
 
   it('rolls the whole week and not only the shown day', async () => {
-    const { weekPlanClient } = renderWeekPlanAreaOn('wednesday', [
-      bolognese,
-      pizza,
-    ])
+    const { weekPlanClient } = renderWeekPlanAreaOn('wednesday', everyKind)
 
     await shuffleWeek()
 
@@ -781,7 +806,12 @@ describe('WeekPlanArea', () => {
     const values = [0, 0.5, 0.999]
     let rolled = 0
     const { weekPlanClient } = renderWeekPlanArea(
-      [hiddenMeal('bolognese', 'Bolognese'), pizza],
+      [
+        hiddenMeal('bolognese', 'Bolognese'),
+        pizza,
+        hiddenMeal('nuts', 'Nüsse', 'snack'),
+        apple,
+      ],
       EMPTY_WEEK_PLAN,
       [],
       () => {
@@ -794,18 +824,20 @@ describe('WeekPlanArea', () => {
     await shuffleSlot('Frühstück')
     await shuffleSlot('Mittagessen')
     await shuffleSlot('Snack')
+    await shuffleSlot('Abendessen')
 
-    expect(filledSlots(weekPlanClient.storedWeekPlan())).toHaveLength(3)
     expect(
       mealsOf(weekPlanClient.storedWeekPlan()).filter((id) => id !== null),
-    ).toEqual(['pizza', 'pizza', 'pizza'])
+    ).toEqual(['apple', 'apple', 'apple', 'pizza'])
   })
 
   it('never rolls a hidden meal into the week', async () => {
     const { weekPlanClient } = renderWeekPlanArea([
       hiddenMeal('bolognese', 'Bolognese'),
       pizza,
-      soup,
+      muesli,
+      apple,
+      bread,
     ])
 
     await shuffleWeek()
@@ -816,6 +848,96 @@ describe('WeekPlanArea', () => {
     expect(
       screen.getByRole('heading', { name: 'Wochenplan, 28 von 28' }),
     ).toBeInTheDocument()
+  })
+
+  it('leaves the slots empty that no meal suits and counts the rolled ones', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([
+      bolognese,
+      pizza,
+    ])
+
+    await shuffleWeek()
+
+    expect(filledSlots(weekPlanClient.storedWeekPlan())).toHaveLength(7)
+    expect(announcements).toEqual([
+      'Wochenplan neu gewürfelt, 7 von 28 Gerichten.',
+    ])
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, 7 von 28' }),
+    ).toBeInTheDocument()
+  })
+
+  it('says that no meal suits the meal time and keeps what was planned', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea(
+      [bolognese],
+      planWith([slot('monday', 'breakfast'), 'bolognese']),
+    )
+
+    await shuffleSlot('Frühstück')
+
+    expect(announcements).toEqual(['Frühstück, kein passendes Gericht.'])
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+    ).toBe('bolognese')
+    expect(mealTimeField('Frühstück')).toHaveValue('Bolognese')
+  })
+
+  it('says that no meal suits the day of the week', async () => {
+    const { weekPlanClient, announcements } = renderWeekView([muesli])
+
+    await shuffleSlot('Montag')
+
+    expect(announcements).toEqual(['Montag, kein passendes Gericht.'])
+    expect(filledSlots(weekPlanClient.storedWeekPlan())).toEqual([])
+  })
+
+  it('puts a main meal into the breakfast by hand', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([
+      bolognese,
+      muesli,
+    ])
+
+    await typeIntoMealTime('Frühstück', 'bol')
+    await userEvent.click(suggestionsFor('Frühstück')[0])
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'breakfast')),
+    ).toBe('bolognese')
+    expect(announcements).toEqual(['Frühstück, Bolognese.'])
+  })
+
+  it('rolls a side for the dinner beside a main meal at lunch', async () => {
+    const { weekPlanClient } = renderWeekPlanArea(
+      [bolognese, pizza, bread],
+      planWith([slot('monday', 'lunch'), 'bolognese']),
+    )
+
+    await shuffleSlot('Abendessen')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'dinner')),
+    ).toBe('bread')
+  })
+
+  it('rolls no side of the same category beside the main meal', async () => {
+    const lasagne = { ...meal('lasagne', 'Lasagne'), categories: ['Nudeln'] }
+    const carbonara = {
+      ...sideMeal('carbonara', 'Carbonara'),
+      categories: ['Nudeln'],
+    }
+    const breadOfItsOwn = { ...bread, categories: ['Brot'] }
+    const { weekPlanClient } = renderWeekPlanArea(
+      [lasagne, carbonara, breadOfItsOwn],
+      planWith([slot('monday', 'lunch'), 'lasagne']),
+      [],
+      () => 0.99,
+    )
+
+    await shuffleSlot('Abendessen')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot('monday', 'dinner')),
+    ).toBe('bread')
   })
 
   it('offers no rolling when every meal is hidden', () => {

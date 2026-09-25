@@ -115,6 +115,29 @@ x 3 Zeilen pro Tag im Wochenplan
   x 4 Zeilen mit passenden Icons: Morgens, Mittags, Snack, Abends
 x reset-button auf Wochenplan-Seite
 x Wochenansicht auf Wochenplan-Seite
+x Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
+  Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)
+x Zufallsregeln: das Feld mainMeal heisst seit MZP-019 kind und traegt
+  'mainMeal' | 'breakfast' | 'none'; der Punkt weiter oben meint dieses Feld.
+  Die Zeile im Formular heisst seitdem Hauptgericht
+x Regeln für die Zufallsauswahl
+  x Hauptgericht darf nur Mittags oder Abends gewürfelt werden.
+    x Wenn mittags für den gleichen tag schon Haupgericht gewürfelt wurde, dann darf abends nicht nochmal Hauptgericht
+    gewürfelt werden und umgekehrt.
+    x Es muss ein Hauptgericht pro Tag da sein.
+  x Frühstück darf nur morgens gewürfelt werden.
+    x Frühstück darf auch mehrere Tage hintereinander das selbe gericht gewürfelt werden
+  x Snack muss in Schnackspalte gewürfelt werden
+    x mehrere Tage hintereinander der selbe Snack ist möglich
+    x snack darf auch zu jeder anderen Tageszeit gewürfelt werden
+  x nichts angehakt darf nur mittags und abends gewürfelt werden
+  x Kategorien: Ist ein Gericht ein Hauptgericht oder ist nichts angehakt, dann dürfen 2 Gerichte mit einer gleichen
+  Kategorie nicht an 2 Tagen hintereinander gewürfelt werden.
+x Zufallsregeln: kind traegt seit MZP-026 auch 'snack' (Firestore-Feld snack);
+  die Snack-Regeln weiter oben koennen darauf aufsetzen
+x Zufallsregeln: der Wochenplan hat seit MZP-028 vier Plaetze pro Tag
+  (MealTime 'breakfast' | 'lunch' | 'snack' | 'dinner'); PlanningRule bekommt den
+  PlanSlot, die Regeln oben koennen slot.time mit meal.kind vergleichen
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -139,11 +162,6 @@ TODO
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
-- Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
-  Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)
-- Zufallsregeln: das Feld mainMeal heisst seit MZP-019 kind und traegt
-  'mainMeal' | 'breakfast' | 'none'; der Punkt weiter oben meint dieses Feld.
-  Die Zeile im Formular heisst seitdem Hauptgericht
 - Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
   Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
 - ausgegraute buttons heller zeichnen
@@ -152,21 +170,6 @@ TODO
   - daneben Anzahl-Tage-Selector
   - Ab dem Datepickertag und für anzahl tage wird geplant
   n Links in der Tageszeile steht der richtige Wochentag
-- Regeln für die Zufallsauswahl
-  - Hauptgericht darf nur Mittags oder Abends gewürfelt werden.
-    - Wenn mittags für den gleichen tag schon Haupgericht gewürfelt wurde, dann darf abends nicht nochmal Hauptgericht
-    gewürfelt werden und umgekehrt.
-    - Es muss ein Hauptgericht pro Tag da sein.
-  - Frühstück darf nur morgens gewürfelt werden.
-    - Frühstück darf auch mehrere Tage hintereinander das selbe gericht gewürfelt werden
-  - Snack muss in Schnackspalte gewürfelt werden
-    - mehrere Tage hintereinander der selbe Snack ist möglich
-    - snack darf auch zu jeder anderen Tageszeit gewürfelt werden
-  - nichts angehakt darf nur mittags und abends gewürfelt werden
-  - Kategorien: Ist ein Gericht ein Hauptgericht oder ist nichts angehakt, dann dürfen 2 Gerichte mit einer gleichen
-  Kategorie nicht an 2 Tagen hintereinander gewürfelt werden.
-- Zufallsregeln: kind traegt seit MZP-026 auch 'snack' (Firestore-Feld snack);
-  die Snack-Regeln weiter oben koennen darauf aufsetzen
 b Vorraete: Wird ein Vorrat angelegt und sofort wieder entfernt, kann eine sehr alte
   Momentaufnahme ohne ihn das Entfernen zu frueh bestaetigen (dropConfirmedSupplies),
   und eine spaetere verspaetete mit ihm laesst ihn kurz wieder erscheinen (MZP-027,
@@ -181,8 +184,6 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   am selben Gericht bis zum Neuladen; einen Ausweg wie isStaleSnapshot gibt es nicht
   (MZP-027, Entscheidung 1).
 - Einheit ebenfalls merken und Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung
-- Zufallsregeln: der Wochenplan hat seit MZP-028 vier Plaetze pro Tag
-  (MealTime 'breakfast' | 'lunch' | 'snack' | 'dinner'); PlanningRule bekommt den
-  PlanSlot, die Regeln oben koennen slot.time mit meal.kind vergleichen
 - Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
   gelesen und koennen von Hand geloescht werden
+- Hauptgericht, Frühstück und Snack in den Filter mit aufnehmen

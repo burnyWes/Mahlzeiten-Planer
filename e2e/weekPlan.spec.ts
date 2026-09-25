@@ -3,7 +3,9 @@ import {
   hiddenMealNamesOnServer,
   prepareEmulators,
   settleWrites,
+  storeMealOnServer,
   supplyCountsOnServer,
+  weekPlanMealNamesOnServer,
   weekPlanOnServer,
   weekPlanStageOnServer,
 } from './emulatorHousehold.ts'
@@ -19,6 +21,23 @@ import {
 
 const A_MONDAY = new Date('2026-09-21T12:00:00')
 const A_FRIDAY = new Date('2026-09-25T12:00:00')
+
+const WEEKDAYS = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+]
+
+async function mainMealsOnServer() {
+  const planned = await weekPlanMealNamesOnServer()
+  return WEEKDAYS.map((day) =>
+    [planned[`${day}.lunch`], planned[`${day}.dinner`]].filter(Boolean),
+  )
+}
 
 test.beforeEach(async ({ page }) => {
   await prepareEmulators()
@@ -53,14 +72,14 @@ test('plans a week and puts its items on the shopping list', async ({
   await pressButton(page, 'Zufallsauswahl generieren')
 
   await expect(page.getByRole('status')).toContainText(
-    'Wochenplan neu gewürfelt, 28 Gerichte.',
+    'Wochenplan neu gewürfelt, 7 von 28 Gerichten.',
   )
   await expect(
-    page.getByRole('heading', { name: 'Wochenplan, 28 von 28' }),
+    page.getByRole('heading', { name: 'Wochenplan, 7 von 28' }),
   ).toBeVisible()
   await expect
     .poll(async () => Object.values(await weekPlanOnServer()).filter(Boolean))
-    .toHaveLength(28)
+    .toHaveLength(7)
 
   await pressButton(page, 'Plan festlegen')
   await pressButton(page, 'Auf die Einkaufsliste')
@@ -73,7 +92,7 @@ test('plans a week and puts its items on the shopping list', async ({
 
   await expect
     .poll(() => shownShoppingItems(page))
-    .toEqual(['Hackfleisch, 14000 g', 'Spaghetti, 28'])
+    .toEqual(['Hackfleisch, 3500 g', 'Spaghetti, 7'])
 })
 
 test('buys only the meal that the supply no longer covers', async ({
@@ -266,19 +285,64 @@ test('never rolls a hidden meal into the week', async ({ page }) => {
 
   await expect
     .poll(async () => Object.values(await weekPlanOnServer()).filter(Boolean))
-    .toHaveLength(28)
+    .toHaveLength(7)
   await expect
-    .poll(async () => new Set(Object.values(await weekPlanOnServer())).size)
+    .poll(async () => {
+      const planned = Object.values(await weekPlanOnServer()).filter(Boolean)
+      return new Set(planned).size
+    })
     .toBe(1)
-  await expect(page.getByLabel('Frühstück', { exact: true })).toHaveValue(
-    'Bolognese',
-  )
+  await expect
+    .poll(mainMealsOnServer)
+    .toEqual(WEEKDAYS.map(() => ['Bolognese']))
+})
 
-  await stepToDay(page, 'Sonntag')
+test('rolls every meal into a slot that suits it', async ({ page }) => {
+  await storeMealOnServer('Müsli', { breakfast: true })
+  await storeMealOnServer('Apfel', { snack: true })
+  await storeMealOnServer('Brot', { mainMeal: false })
+  await storeMealOnServer('Bolognese')
 
-  await expect(page.getByLabel('Abendessen', { exact: true })).toHaveValue(
-    'Bolognese',
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Wochenplan')
+  await expect(
+    page.getByRole('button', {
+      name: 'Zufallsauswahl generieren',
+      exact: true,
+    }),
+  ).toBeEnabled()
+  await pressButton(page, 'Zufallsauswahl generieren')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Wochenplan neu gewürfelt, 28 von 28 Gerichten.',
   )
+  await expect
+    .poll(async () => {
+      const planned = await weekPlanMealNamesOnServer()
+      return WEEKDAYS.map((day) => ({
+        breakfast: ['Müsli', 'Apfel'].includes(
+          planned[`${day}.breakfast`] ?? '',
+        ),
+        snack: planned[`${day}.snack`],
+        mainMeals: [planned[`${day}.lunch`], planned[`${day}.dinner`]].filter(
+          (name) => name === 'Bolognese',
+        ).length,
+        besideTheMainMeal: [
+          planned[`${day}.lunch`],
+          planned[`${day}.dinner`],
+        ].some((name) => name === 'Brot' || name === 'Apfel'),
+      }))
+    })
+    .toEqual(
+      WEEKDAYS.map(() => ({
+        breakfast: true,
+        snack: 'Apfel',
+        mainMeals: 1,
+        besideTheMainMeal: true,
+      })),
+    )
 })
 
 test('lines the meal time field up with its shuffle button', async ({

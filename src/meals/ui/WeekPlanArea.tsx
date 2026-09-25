@@ -3,6 +3,7 @@ import {
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   mealTimeShownAnnouncement,
+  noMatchingMealAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   slotPlannedAnnouncement,
@@ -73,7 +74,7 @@ export function WeekPlanArea({
   random,
   onAddToShoppingList,
 }: WeekPlanAreaProps) {
-  const candidates = randomCandidates(meals)
+  const randomCandidateCount = randomCandidates(meals).length
   const { plan, stage } = weekPlanning
   const plannedMeals = plannedMealCount(plan, meals)
 
@@ -113,14 +114,18 @@ export function WeekPlanArea({
   }
 
   function shuffleSlot(slot: PlanSlot) {
-    const picked = pickMealFor(candidates, weekPlanning.plan, slot, random)
-    if (picked === null) return
+    const picked = pickMealFor(meals, weekPlanning.plan, slot, random)
+    if (picked === null) {
+      announce(noMatchingMealAnnouncement(slot, slotNamingIn(shownView)))
+      return
+    }
     chooseMeal(slot, picked.id)
   }
 
   function shuffleWeek() {
-    weekPlanning.replacePlan(filledWeekPlan(candidates, random))
-    announce(weekPlanShuffledAnnouncement())
+    const rolled = filledWeekPlan(meals, random)
+    weekPlanning.replacePlan(rolled)
+    announce(weekPlanShuffledAnnouncement(plannedMealCount(rolled, meals)))
   }
 
   function clearPlan() {
@@ -151,7 +156,7 @@ export function WeekPlanArea({
     <WeekPlanPage
       navigation={navigation}
       meals={meals}
-      randomCandidateCount={candidates.length}
+      randomCandidateCount={randomCandidateCount}
       plan={plan}
       supplies={supplies}
       shownDay={shownDay}

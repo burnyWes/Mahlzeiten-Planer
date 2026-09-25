@@ -32,6 +32,7 @@ import {
   mealWithoutItemsAnnouncement,
   lessSupplyLabel,
   moreSupplyLabel,
+  noMatchingMealAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   randomMealLabel,
@@ -751,9 +752,35 @@ describe('dayViewShownAnnouncement', () => {
 })
 
 describe('weekPlanShuffledAnnouncement', () => {
-  it('counts the slots that were rolled', () => {
-    expect(weekPlanShuffledAnnouncement()).toBe(
-      'Wochenplan neu gewürfelt, 28 Gerichte.',
+  it('counts the slots that were filled', () => {
+    expect(weekPlanShuffledAnnouncement(21)).toBe(
+      'Wochenplan neu gewürfelt, 21 von 28 Gerichten.',
+    )
+  })
+
+  it('counts every slot when all were filled', () => {
+    expect(weekPlanShuffledAnnouncement(28)).toBe(
+      'Wochenplan neu gewürfelt, 28 von 28 Gerichten.',
+    )
+  })
+
+  it('says that no slot was filled', () => {
+    expect(weekPlanShuffledAnnouncement(0)).toBe(
+      'Wochenplan neu gewürfelt, keine von 28 Gerichten.',
+    )
+  })
+})
+
+describe('noMatchingMealAnnouncement', () => {
+  it('names the meal time that no meal suits', () => {
+    expect(noMatchingMealAnnouncement(mondayBreakfast, 'time')).toBe(
+      'Frühstück, kein passendes Gericht.',
+    )
+  })
+
+  it('names the day that no meal suits', () => {
+    expect(noMatchingMealAnnouncement(mondayBreakfast, 'day')).toBe(
+      'Montag, kein passendes Gericht.',
     )
   })
 })

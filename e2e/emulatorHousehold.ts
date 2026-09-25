@@ -250,6 +250,7 @@ export async function removeItemOnServer(name: string): Promise<void> {
 
 type ListedMeals = {
   documents?: readonly {
+    name: string
     fields: {
       name: { stringValue: string }
       hidden?: { booleanValue?: boolean }
@@ -344,6 +345,32 @@ type StoredMealFlags = {
   mainMeal?: boolean
   breakfast?: boolean
   snack?: boolean
+}
+
+export async function weekPlanMealNamesOnServer(): Promise<
+  Record<string, string | null>
+> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedMeals
+  const namesById = new Map(
+    (listed.documents ?? []).map((document) => [
+      document.name.split('/').at(-1),
+      document.fields.name.stringValue,
+    ]),
+  )
+  const plan = await weekPlanOnServer()
+  return Object.fromEntries(
+    Object.entries(plan).map(([slot, id]) => [
+      slot,
+      id === null ? null : (namesById.get(id) ?? null),
+    ]),
+  )
 }
 
 export async function storeMealOnServer(

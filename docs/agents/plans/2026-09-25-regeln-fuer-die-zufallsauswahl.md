@@ -199,10 +199,10 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
 
 **Aufgaben**:
 
-- [ ] `randomPlanning.test.ts`: Die Hilfsfunktion `meal(id)` bekommt einen optionalen
+- [x] `randomPlanning.test.ts`: Die Hilfsfunktion `meal(id)` bekommt einen optionalen
   Parameter `kind` (Standard `'mainMeal'`) und `categories`. Zuerst die fehlschlagenden
   Tests für die folgenden Punkte schreiben.
-- [ ] `randomPlanning.ts`: `MainMealTime` und `mainMealTimeOf` einführen.
+- [x] `randomPlanning.ts`: `MainMealTime` und `mainMealTimeOf` einführen.
   ```ts
   export type MainMealTime = 'lunch' | 'dinner'
 
@@ -211,7 +211,7 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
   }
   ```
   Die 0,5 bekommt einen sprechenden Namen (`EVEN_CHANCE`).
-- [ ] `randomPlanning.ts`: harte Filter nach Platz und Art.
+- [x] `randomPlanning.ts`: harte Filter nach Platz und Art.
   ```ts
   const KINDS_ROLLED_AT: Record<MealTime, readonly MealKind[]> = {
     breakfast: ['breakfast', 'snack'],
@@ -226,13 +226,13 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
   - Gegenplatz belegt, aber kein `mainMeal` → nur `mainMeal`
   - Gegenplatz leer → `slot.time === (mainMealTime ?? mainMealTimeOf(random))`
     ? nur `mainMeal` : nur `none`/`snack`
-- [ ] `randomPlanning.ts`: `pickMealFor(meals, plan, slot, random, mainMealTime = null)`
+- [x] `randomPlanning.ts`: `pickMealFor(meals, plan, slot, random, mainMealTime = null)`
   bildet `randomCandidates(meals)`, wendet die harten Filter an und gibt bei leerer Menge
   `null` zurück. Danach folgen `narrowedBy` und die Auswahl wie heute.
-- [ ] `randomPlanning.ts`: `filledWeekPlan(meals, random)` wirft pro Tag einmal
+- [x] `randomPlanning.ts`: `filledWeekPlan(meals, random)` wirft pro Tag einmal
   `mainMealTimeOf(random)` (vor dem Frühstück des Tages) und reicht den Wert an jedes
   `pickMealFor` des Tages weiter. Plätze ohne passendes Gericht bleiben `null`.
-- [ ] `randomPlanning.test.ts`: neue Tests, u. a.:
+- [x] `randomPlanning.test.ts`: neue Tests, u. a.:
   - Frühstück würfelt nur `breakfast`/`snack`, Snack-Spalte nur `snack`
   - mittags/abends nie `breakfast`
   - Gegenplatz Hauptgericht → `none`/`snack`; Gegenplatz `none`, Snack oder von Hand
@@ -246,24 +246,24 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
   - `filledWeekPlan` nur mit Hauptgerichten: 7 belegte Plätze, Frühstück, Snack und der
     jeweils andere Platz leer
   - `mainMealTimeOf`: `0` → `lunch`, `0.49` → `lunch`, `0.5` → `dinner`
-- [ ] `randomPlanning.test.ts`: bestehende Tests der neuen Signatur anpassen. Die
+- [x] `randomPlanning.test.ts`: bestehende Tests der neuen Signatur anpassen. Die
   Verteilungstests (`fills 28 slots with 28 meals …`, `spreads three meals …`,
   `walks through the candidates …`) so umbauen, dass sie mit passenden Arten dieselbe
   Aussage treffen, also keine Wiederholung bei genug Gerichten und gleichmäßige
   Verteilung innerhalb einer Art.
-- [ ] `announcements.ts`: `weekPlanShuffledAnnouncement(plannedMeals: number)` →
+- [x] `announcements.ts`: `weekPlanShuffledAnnouncement(plannedMeals: number)` →
   `Wochenplan neu gewürfelt, ${plannedMealsPhrase(plannedMeals)} Gerichten.`
   Neu `noMatchingMealAnnouncement(slot, naming)` →
   `${slotName(slot, naming)}, kein passendes Gericht.` Dazu die Tests in
   `announcements.test.ts` (21, 28, 0 → `keine von 28`, Tages- und Wochenansicht).
-- [ ] `WeekPlanArea.tsx`:
+- [x] `WeekPlanArea.tsx`:
   - `shuffleSlot` ruft `pickMealFor(meals, weekPlanning.plan, slot, random)`. Bei `null`
     folgt `announce(noMatchingMealAnnouncement(slot, slotNamingIn(shownView)))`, der
     Plan bleibt unverändert.
   - `shuffleWeek` berechnet den Plan einmal, schreibt ihn und sagt
     `weekPlanShuffledAnnouncement(plannedMealCount(rolled, meals))` an.
   - `randomCandidateCount` bleibt `randomCandidates(meals).length`.
-- [ ] `WeekPlanArea.test.tsx`: Fixtures ergänzen (`meal(id, name, items, kind)` oder
+- [x] `WeekPlanArea.test.tsx`: Fixtures ergänzen (`meal(id, name, items, kind)` oder
   eigene Helfer `breakfastMeal`, `snackMeal`, `sideMeal` für `none`). Diese Tests auf
   passende Arten umstellen:
   - `rolls a meal for one meal time and says which one it is` (Frühstück → Frühstücksgericht)
@@ -275,7 +275,7 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
     Belegung durch Gerichte aller Arten)
   - `rolls the whole week and not only the shown day`
   - `never rolls a hidden meal for a meal time`, `never rolls a hidden meal into the week`
-- [ ] `WeekPlanArea.test.tsx`: neue Tests:
+- [x] `WeekPlanArea.test.tsx`: neue Tests:
   - nur Hauptgerichte → Woche würfeln → `Wochenplan, 7 von 28` und Ansage
     `Wochenplan neu gewürfelt, 7 von 28 Gerichten.`
   - Würfel an Frühstück bei nur Hauptgerichten → Ansage
@@ -283,14 +283,14 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
   - dasselbe in der Wochenansicht → `Montag, kein passendes Gericht.`
   - von Hand lässt sich ein Hauptgericht ins Frühstück setzen (Vorschlag), Ansage wie heute
   - Mittag hat von Hand ein Hauptgericht → Würfel an Abendessen bringt `none`/Snack
-- [ ] `e2e/weekPlan.spec.ts`, `plans a week and puts its items on the shopping list`:
+- [x] `e2e/weekPlan.spec.ts`, `plans a week and puts its items on the shopping list`:
   Nach dem Wochenwurf mit der einzigen Bolognese (Hauptgericht) ergibt sich
   `Wochenplan, 7 von 28`, die Ansage `…, 7 von 28 Gerichten.`, 7 belegte Plätze auf dem
   Server und auf der Einkaufsliste `Hackfleisch, 3500 g` und `Spaghetti, 7`.
-- [ ] `e2e/weekPlan.spec.ts`, `never rolls a hidden meal into the week`: 7 statt 28
+- [x] `e2e/weekPlan.spec.ts`, `never rolls a hidden meal into the week`: 7 statt 28
   Einträge, weiterhin nur Bolognese. Die Frühstücks- und Sonntagsprüfung ersetzen durch:
   Jeder Tag hat Bolognese entweder mittags oder abends (über `weekPlanOnServer`).
-- [ ] `e2e/weekPlan.spec.ts`: neuer Test `rolls every meal into a slot that suits it`.
+- [x] `e2e/weekPlan.spec.ts`: neuer Test `rolls every meal into a slot that suits it`.
   Über `storeMealOnServer` werden Müsli (`breakfast`), Apfel (`snack`), Brot (ohne
   Flags → `none`) und Bolognese (`mainMeal`) angelegt, dann wird die Woche gewürfelt.
   Auf dem Server liegt danach in jeder Frühstücks-Spalte Müsli oder Apfel, in jeder
@@ -300,12 +300,12 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
-- [ ] `npx vitest run src/meals/domain/announcements.test.ts` grün
-- [ ] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` grün
-- [ ] `npm run test` grün (inkl. Architekturtest `domainLayerBoundary`)
-- [ ] `npm run lint` und `npm run build` fehlerfrei
-- [ ] E2E `e2e/weekPlan.spec.ts` grün
+- [x] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
+- [x] `npx vitest run src/meals/domain/announcements.test.ts` grün
+- [x] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` grün
+- [x] `npm run test` grün (inkl. Architekturtest `domainLayerBoundary`)
+- [x] `npm run lint` und `npm run build` fehlerfrei
+- [x] E2E `e2e/weekPlan.spec.ts` grün
 
 **Manuelle Verifikation**:
 
@@ -321,13 +321,13 @@ Abhängigkeiten: Phase 1
 
 **Aufgaben**:
 
-- [ ] `randomPlanning.ts`: `PlanningRule` auf
+- [x] `randomPlanning.ts`: `PlanningRule` auf
   `(candidates, plan, slot, random, meals) => readonly Meal[]` erweitern. `narrowedBy`
   reicht beides durch, `rarestInThePlan` ignoriert die neuen Argumente.
-- [ ] `randomPlanning.ts`: `otherThanPlanned` entfernt das Gericht, das gerade in
+- [x] `randomPlanning.ts`: `otherThanPlanned` entfernt das Gericht, das gerade in
   `slot` steht. Auf einem leeren Platz ändert die Regel nichts.
-- [ ] `mealCategory.ts`: `sameCategory` exportieren.
-- [ ] `randomPlanning.ts`: `apartFromSameCategory`
+- [x] `mealCategory.ts`: `sameCategory` exportieren.
+- [x] `randomPlanning.ts`: `apartFromSameCategory`
   - greift nur für Kandidaten der Art `mainMeal`/`none`. Frühstück und Snack lässt sie
     durch.
   - Nachbarn sind `lunch` und `dinner` von Vortag, selbem Tag und Folgetag
@@ -335,8 +335,8 @@ Abhängigkeiten: Phase 1
     Art `mainMeal`/`none` (über `shownMealIn` mit allen `meals`).
   - Sie entfernt Kandidaten, die mit einem Nachbarn eine Kategorie teilen
     (`sameCategory`).
-- [ ] `PLANNING_RULES = [otherThanPlanned, apartFromSameCategory, rarestInThePlan]`
-- [ ] `randomPlanning.test.ts`: Tests für
+- [x] `PLANNING_RULES = [otherThanPlanned, apartFromSameCategory, rarestInThePlan]`
+- [x] `randomPlanning.test.ts`: Tests für
   - `otherThanPlanned`: entfernt das eingetragene Gericht, lässt einen leeren Platz in
     Ruhe, wird bei einem einzigen passenden Gericht übersprungen (also wieder dasselbe)
   - `apartFromSameCategory`: Vortag, Folgetag, selber Tag (Mittag ↔ Abend), Groß-/
@@ -347,15 +347,15 @@ Abhängigkeiten: Phase 1
     entscheidet `rarestInThePlan` allein.
   - `filledWeekPlan` mit zwei Kategorien im Wechsel: keine zwei Tage hintereinander
     mit derselben Kategorie bei Hauptgerichten
-- [ ] `WeekPlanArea.test.tsx`: `rolls the other meal on the second press` hält jetzt über
+- [x] `WeekPlanArea.test.tsx`: `rolls the other meal on the second press` hält jetzt über
   `otherThanPlanned`. Neuer Test: Mittag Lasagne [Nudeln] von Hand, Würfel an
   Abendessen mit Carbonara [Nudeln] (`none`) und Brot [Brot] (`none`) → Brot.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
-- [ ] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` grün
-- [ ] `npm run test`, `npm run lint`, `npm run build` fehlerfrei
+- [x] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
+- [x] `npx vitest run src/meals/ui/WeekPlanArea.test.tsx` grün
+- [x] `npm run test`, `npm run lint`, `npm run build` fehlerfrei
 
 **Manuelle Verifikation**:
 
@@ -370,16 +370,16 @@ Abhängigkeiten: Phase 2
 
 **Aufgaben**:
 
-- [ ] `randomPlanning.ts`: `STAYING_CHANCE = 0.5` und `stayingLikeTheDayBefore`
+- [x] `randomPlanning.ts`: `STAYING_CHANCE = 0.5` und `stayingLikeTheDayBefore`
   - greift nur für `slot.time` `breakfast` oder `snack` und nur, wenn am Vortag
     (`weekdayBefore`) auf derselben Zeit ein Gericht steht, das unter den Kandidaten ist.
     Sonst lässt sie alles durch und verbraucht **keinen** Zufallswert.
   - `random() < STAYING_CHANCE` → nur das Vortagsgericht
   - sonst → alle Kandidaten ohne das Vortagsgericht (lässt das nichts übrig, wird die
     Regel übersprungen, und das Vortagsgericht bleibt möglich)
-- [ ] `PLANNING_RULES = [otherThanPlanned, apartFromSameCategory,
+- [x] `PLANNING_RULES = [otherThanPlanned, apartFromSameCategory,
   stayingLikeTheDayBefore, rarestInThePlan]`
-- [ ] `randomPlanning.test.ts`: Tests für
+- [x] `randomPlanning.test.ts`: Tests für
   - bleiben bei `0`, wechseln bei `0.5` und `0.99`
   - Montag: keine Münze, kein Verbrauch eines Zufallswerts
   - Vortag leer oder mit einem hier nicht erlaubten Gericht (von Hand gesetzte
@@ -390,18 +390,18 @@ Abhängigkeiten: Phase 2
   - `filledWeekPlan` mit `sequence([0])` und drei Frühstücksgerichten: alle 7
     Frühstücke gleich. Mit einer Folge, die ab Dienstag ≥ 0.5 an der Bleiben-Stelle
     liefert, wechselt das Frühstück jeden Tag.
-- [ ] Bestehende Tests, deren feste Zufallsfolgen durch die zusätzliche Münze
+- [x] Bestehende Tests, deren feste Zufallsfolgen durch die zusätzliche Münze
   verschoben werden, anpassen (vor allem die Verteilungstests aus Phase 1 und
   `WeekPlanArea.test.tsx` mit `alwaysFirst`).
-- [ ] `docs/notes.txt`: die erledigten Einträge „Regeln für die Zufallsauswahl“ und
+- [x] `docs/notes.txt`: die erledigten Einträge „Regeln für die Zufallsauswahl“ und
   die zugehörigen „Zufallsregeln …“-Punkte auf `x` setzen und nach DONE verschieben.
   „Kategorien nutzen“ und das Dropdown „Hauptmahlzeit“ bleiben offen.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
-- [ ] `npm run test`, `npm run lint`, `npm run build` fehlerfrei
-- [ ] E2E `e2e/weekPlan.spec.ts` grün
+- [x] `npx vitest run src/meals/domain/randomPlanning.test.ts` grün
+- [x] `npm run test`, `npm run lint`, `npm run build` fehlerfrei
+- [x] E2E `e2e/weekPlan.spec.ts` grün
 
 **Manuelle Verifikation**:
 
@@ -412,6 +412,27 @@ Abhängigkeiten: Phase 2
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1: `useMeals` liefert die Gerichte nach Namen sortiert. In
+  `rolls the whole week over a meal time that was chosen by hand` steht deshalb am
+  Montag früh der Apfel (vor Müsli), ab Dienstag das seltenere Müsli.
+- Phase 1: Ein Gericht ohne Flags gilt laut `toKind` (`firestoreMealsClient.ts`) als
+  `mainMeal`, nicht als `none`. Im E2E-Test wird Brot deshalb mit
+  `{ mainMeal: false }` angelegt.
+- Phase 1: Neuer E2E-Helfer `weekPlanMealNamesOnServer` (Plan mit Gerichtnamen statt
+  IDs). Der neue E2E-Test wartet vor dem Würfeln, bis der Knopf freigegeben ist, weil
+  die direkt auf dem Server angelegten Gerichte erst geladen sein müssen.
+- Phase 2: `may pick the same meal again …` würfelte den Platz, auf dem das Müsli
+  selbst steht; `otherThanPlanned` nimmt es dort jetzt heraus. Der Test belegt
+  stattdessen Dienstag und würfelt den leeren Montag.
+- Phase 2: Der Kategorie-Abstand zählt nur Nachbarn mittags/abends der Art
+  `mainMeal`/`none`; ein Frühstück oder Snack dort zählt nicht, auch von Hand gesetzt.
+- Phase 3: Mit `alwaysFirst` bleibt jetzt jedes Frühstück und jeder Snack wie am
+  Vortag. `rolls the whole week over a meal time that was chosen by hand` erwartet
+  deshalb an jedem Tag Apfel, Bolognese, Apfel, Brot.
+- Phase 3: Die Verteilungstests (`fills every slot …`, `spreads the meals …`) laufen
+  mit `sequence([0.99])`, also ohne Bleiben; sonst widerspräche das Bleiben ihrer
+  Aussage.
 
 ## Verweise
 

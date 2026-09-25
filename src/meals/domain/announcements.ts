@@ -334,8 +334,15 @@ export function dayViewShownAnnouncement(day: Weekday): string {
   return `Tagesansicht, ${weekdayName(day)}.`
 }
 
-export function weekPlanShuffledAnnouncement(): string {
-  return `Wochenplan neu gewürfelt, ${PLAN_SLOTS.length} Gerichte.`
+export function weekPlanShuffledAnnouncement(plannedMeals: number): string {
+  return `Wochenplan neu gewürfelt, ${plannedMealsPhrase(plannedMeals)} Gerichten.`
+}
+
+export function noMatchingMealAnnouncement(
+  slot: PlanSlot,
+  naming: SlotNaming,
+): string {
+  return `${slotName(slot, naming)}, kein passendes Gericht.`
 }
 
 export function weekPlanClearedAnnouncement(): string {
