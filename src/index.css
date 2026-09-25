@@ -167,6 +167,7 @@ button[aria-disabled='true'] {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .pageHeader h1 {
@@ -426,7 +427,7 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin: 1rem 0;
+  margin: 1rem 0 1.5rem;
 }
 
 .dayNavigation {
@@ -514,7 +515,7 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 1rem 0 0;
+  margin: 1rem 0 1.5rem;
 }
 
 .mealFilter select {
