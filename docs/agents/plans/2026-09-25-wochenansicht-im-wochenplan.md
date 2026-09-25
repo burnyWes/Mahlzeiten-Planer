@@ -5,7 +5,7 @@ branch: main
 story: MZP-030
 topic: "Wochenansicht im Wochenplan"
 tags: [plan, meals, weekPlan, ui, accessibility]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-030 — Wochenansicht im Wochenplan
@@ -583,13 +583,13 @@ unsichtbare `<h2>` nennt die gezeigte Tageszeit.
 
 **Manuelle Verifikation**:
 
-- [ ] Mit VoiceOver in der Wochenansicht über die Knöpfe wischen: Man hört
+- [x] Mit VoiceOver in der Wochenansicht über die Knöpfe wischen: Man hört
   `Frühstück, Taste, Tageszeit, Gruppe` (die Reihenfolge der Teile kann je nach
   iOS-Version abweichen), dann `Mittagessen, ausgewählt` und so weiter.
-- [ ] `Abendessen` doppeltippen: Man hört `Abendessen.`, der Fokus bleibt, und die
+- [x] `Abendessen` doppeltippen: Man hört `Abendessen.`, der Fokus bleibt, und die
   sieben Felder zeigen das Abendessen der Woche.
-- [ ] Per Rotor „Überschriften“ springt man von `Wochenplan, …` zu `Abendessen`.
-- [ ] Der gewählte Knopf ist auf dem Handy klar vom Rest zu unterscheiden, auch bei
+- [x] Per Rotor „Überschriften“ springt man von `Wochenplan, …` zu `Abendessen`.
+- [x] Der gewählte Knopf ist auf dem Handy klar vom Rest zu unterscheiden, auch bei
   eingeschalteter Farbumkehr. Die vier Knöpfe und der Umschalter passen auf 360 px
   nebeneinander.
 
