@@ -141,6 +141,6 @@ b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbest
   - oben Date-Picker für Startdatum
   - daneben Anzahl-Tage-Selector
   - Ab dem Datepickertag und für anzahl tage wird geplant
-  - Links in der Tageszeile steht der richtige Wochentag
+  n Links in der Tageszeile steht der richtige Wochentag
   - Tag steht oben, links und rechts buttons, um zum voherigen, nächsten tag zu kommen
   - 4 Zeilen mit passenden Icons: Morgens, Mittags, Snack, Abends

@@ -843,7 +843,7 @@ describe('WeekPlanArea', () => {
     expect(markedWeekdays()).toEqual(['Mo.'])
   })
 
-  it('locks every rolling button while the plan is fixed', async () => {
+  it('locks the week rolling and hides the day rolling while the plan is fixed', async () => {
     renderWeekPlanArea([bolognese])
 
     await fixPlan()
@@ -851,11 +851,9 @@ describe('WeekPlanArea', () => {
     expect(
       screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
     ).toBeDisabled()
-    screen
-      .getAllByRole('button', { name: /^Zufallsgericht für/ })
-      .forEach((button) => {
-        expect(button).toBeDisabled()
-      })
+    expect(
+      screen.queryAllByRole('button', { name: /^Zufallsgericht für/ }),
+    ).toEqual([])
   })
 
   it('names the heading after the fixed plan', async () => {

@@ -12,7 +12,6 @@ import { suggestMeals } from '../domain/mealSuggestions'
 import type { Supply } from '../domain/supply'
 import { shownMealOn, type WeekPlan, type Weekday } from '../domain/weekPlan'
 import {
-  canShuffle,
   isCoveredOn,
   isFixed,
   type WeekPlanStage,
@@ -59,7 +58,6 @@ function DayMarks({ day, inSupply }: { day: Weekday; inSupply: boolean }) {
 function ShuffleDayButton({
   day,
   randomCandidateCount,
-  stage,
   onShuffleDay,
 }: WeekPlanRowProps) {
   return (
@@ -67,7 +65,7 @@ function ShuffleDayButton({
       type="button"
       className="iconButton"
       aria-label={randomMealLabel(day)}
-      disabled={!canShuffle(stage) || randomCandidateCount === 0}
+      disabled={randomCandidateCount === 0}
       onClick={() => onShuffleDay(day)}
     >
       <ShuffleIcon />
@@ -89,7 +87,6 @@ function FixedDay(props: WeekPlanRowProps) {
       <span className="visuallyHidden">
         {fixedDayText(day, planned, inSupply)}
       </span>
-      <ShuffleDayButton {...props} />
     </div>
   )
 }
