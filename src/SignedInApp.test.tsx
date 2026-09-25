@@ -7,8 +7,9 @@ import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
 import {
   EMPTY_WEEK_PLAN,
-  WEEKDAYS,
-  withMealOnDay,
+  mealIn,
+  PLAN_SLOTS,
+  withMealIn,
   type WeekPlan,
 } from './meals/domain/weekPlan'
 import type { Meal } from './meals/domain/meal'
@@ -107,16 +108,19 @@ function shownShoppingItemNames() {
 
 function planOf(...ids: readonly string[]): WeekPlan {
   return ids.reduce<WeekPlan>(
-    (plan, id, position) => withMealOnDay(plan, WEEKDAYS[position], id),
+    (plan, id, position) => withMealIn(plan, PLAN_SLOTS[position], id),
     EMPTY_WEEK_PLAN,
   )
 }
 
-async function planBologneseOnMonday() {
-  await userEvent.type(screen.getByRole('textbox', { name: 'Montag' }), 'bolo')
+async function planBologneseForBreakfast() {
+  await userEvent.type(
+    screen.getByRole('textbox', { name: 'Frühstück' }),
+    'bolo',
+  )
   await userEvent.click(
     within(
-      screen.getByRole('list', { name: 'Vorschläge für Montag' }),
+      screen.getByRole('list', { name: 'Vorschläge für Frühstück' }),
     ).getByRole('button', { name: 'Bolognese' }),
   )
 }
@@ -269,7 +273,7 @@ describe('SignedInApp', () => {
     await goToArea('Wochenplan')
 
     expect(
-      screen.getByRole('heading', { name: 'Wochenplan, keine von 7' }),
+      screen.getByRole('heading', { name: 'Wochenplan, keine von 28' }),
     ).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Wochenplan' })).toHaveAttribute(
       'aria-current',
@@ -277,28 +281,46 @@ describe('SignedInApp', () => {
     )
   })
 
-  it('keeps a planned day for the whole household', async () => {
+  it('keeps the shown day after a visit to the meals area', async () => {
+    renderSignedInApp()
+
+    await goToArea('Wochenplan')
+    await userEvent.click(screen.getByRole('button', { name: 'Nächster Tag' }))
+    await goToArea('Gerichte')
+    await goToArea('Wochenplan')
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+      'Dienstag',
+    )
+  })
+
+  it('keeps a planned meal for the whole household', async () => {
     const { weekPlanClient } = renderSignedInApp(
       [],
       [meal('bolognese', 'Bolognese')],
     )
 
     await goToArea('Wochenplan')
-    await planBologneseOnMonday()
+    await planBologneseForBreakfast()
 
-    expect(weekPlanClient.storedWeekPlan().monday).toBe('bolognese')
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), {
+        day: 'monday',
+        time: 'breakfast',
+      }),
+    ).toBe('bolognese')
   })
 
-  it('says which meal was planned by hand on which day', async () => {
+  it('says which meal was planned by hand for which meal time', async () => {
     const { announcements } = renderSignedInApp(
       [],
       [meal('bolognese', 'Bolognese')],
     )
 
     await goToArea('Wochenplan')
-    await planBologneseOnMonday()
+    await planBologneseForBreakfast()
 
-    expect(announcements).toEqual(['Montag, Bolognese.'])
+    expect(announcements).toEqual(['Frühstück, Bolognese.'])
   })
 
   it('says that the meal planned by hand is kept in store', async () => {
@@ -312,15 +334,15 @@ describe('SignedInApp', () => {
     )
 
     await goToArea('Wochenplan')
-    await planBologneseOnMonday()
+    await planBologneseForBreakfast()
 
-    expect(announcements).toEqual(['Montag, Bolognese, im Vorrat.'])
+    expect(announcements).toEqual(['Frühstück, Bolognese, im Vorrat.'])
     expect(
-      screen.getByRole('textbox', { name: 'Montag, im Vorrat' }),
+      screen.getByRole('textbox', { name: 'Frühstück, im Vorrat' }),
     ).toHaveValue('Bolognese')
   })
 
-  it('says nothing of a supply that a further day has used up', async () => {
+  it('says nothing of a supply that an earlier meal time has used up', async () => {
     const { announcements } = renderSignedInApp(
       [],
       [meal('bolognese', 'Bolognese')],
@@ -332,18 +354,18 @@ describe('SignedInApp', () => {
 
     await goToArea('Wochenplan')
     await userEvent.type(
-      screen.getByRole('textbox', { name: 'Mittwoch' }),
+      screen.getByRole('textbox', { name: 'Abendessen' }),
       'bolo',
     )
     await userEvent.click(
       within(
-        screen.getByRole('list', { name: 'Vorschläge für Mittwoch' }),
+        screen.getByRole('list', { name: 'Vorschläge für Abendessen' }),
       ).getByRole('button', { name: 'Bolognese' }),
     )
 
-    expect(announcements).toEqual(['Mittwoch, Bolognese.'])
+    expect(announcements).toEqual(['Abendessen, Bolognese.'])
     expect(
-      screen.getByRole('textbox', { name: 'Montag, im Vorrat' }),
+      screen.getByRole('textbox', { name: 'Frühstück, im Vorrat' }),
     ).toHaveValue('Bolognese')
   })
 
@@ -403,7 +425,7 @@ describe('SignedInApp', () => {
     )
   })
 
-  it('leaves the items of a covered day off the shopping list', async () => {
+  it('leaves the items of a covered meal off the shopping list', async () => {
     const { announcements, suppliesClient } = renderSignedInApp(
       [],
       [
@@ -422,7 +444,7 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(announcements).toContain(
-      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
     )
     expect(suppliesClient.storedSupplies()).toEqual([])
 
@@ -431,7 +453,7 @@ describe('SignedInApp', () => {
     expect(shownShoppingItemNames()).toEqual(['Bohnen'])
   })
 
-  it('buys the day that the supply no longer reaches', async () => {
+  it('buys the meal that the supply no longer reaches', async () => {
     const { announcements } = renderSignedInApp(
       [],
       [
@@ -449,7 +471,7 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(announcements).toContain(
-      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
     )
 
     await goToArea('Einkaufsliste')
@@ -499,10 +521,10 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(announcements).toContain(
-      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
     )
     expect(announcements).not.toContain(
-      'Wochenplan, 1 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
     )
   })
 
@@ -516,13 +538,7 @@ describe('SignedInApp', () => {
       ],
       createInMemoryKnownItemsClient(),
       createInMemoryAppearanceClient(),
-      createInMemoryWeekPlanClient(
-        withMealOnDay(
-          withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
-          'wednesday',
-          'bolognese',
-        ),
-      ),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'bolognese')),
       createInMemorySuppliesClient([{ mealId: 'bolognese', count: 3 }]),
     )
 
@@ -532,7 +548,9 @@ describe('SignedInApp', () => {
     expect(suppliesClient.storedSupplies()).toEqual([
       { mealId: 'bolognese', count: 1 },
     ])
-    expect(screen.getByText('Montag, Bolognese, im Vorrat')).toBeInTheDocument()
+    expect(
+      screen.getByText('Frühstück, Bolognese, im Vorrat'),
+    ).toBeInTheDocument()
   })
 
   it('leaves a supply alone that the week plan does not touch', async () => {
@@ -587,7 +605,7 @@ describe('SignedInApp', () => {
     expect(shownShoppingItemNames()).toEqual(['Bohnen'])
   })
 
-  it('buys the covered day once the plan is fixed anew', async () => {
+  it('buys the covered meal once the plan is fixed anew', async () => {
     const { suppliesClient } = renderSignedInApp(
       [],
       [
@@ -634,16 +652,18 @@ describe('SignedInApp', () => {
     await goToArea('Wochenplan')
     await transferTheWeekPlan()
 
-    expect(screen.getByText('Montag, Bolognese, im Vorrat')).toBeInTheDocument()
+    expect(
+      screen.getByText('Frühstück, Bolognese, im Vorrat'),
+    ).toBeInTheDocument()
 
     await editThePlan()
 
-    expect(screen.getByRole('textbox', { name: 'Montag' })).toHaveValue(
+    expect(screen.getByRole('textbox', { name: 'Frühstück' })).toHaveValue(
       'Bolognese',
     )
   })
 
-  it('spends nothing of the supply while a day is being planned', async () => {
+  it('spends nothing of the supply while a meal is being planned', async () => {
     const { suppliesClient } = renderSignedInApp(
       [],
       [
@@ -658,10 +678,10 @@ describe('SignedInApp', () => {
     )
 
     await goToArea('Wochenplan')
-    await planBologneseOnMonday()
+    await planBologneseForBreakfast()
 
     expect(
-      screen.getByRole('textbox', { name: 'Montag, im Vorrat' }),
+      screen.getByRole('textbox', { name: 'Frühstück, im Vorrat' }),
     ).toHaveValue('Bolognese')
     expect(suppliesClient.storedSupplies()).toEqual([
       { mealId: 'bolognese', count: 2 },
@@ -686,7 +706,7 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(weekPlanClient.storedWeekPlan()).toEqual(planOf('bolognese'))
-    expect(screen.getByText('Montag, Bolognese')).toBeInTheDocument()
+    expect(screen.getByText('Frühstück, Bolognese')).toBeInTheDocument()
   })
 
   it('counts an item of the week plan once per transfer', async () => {

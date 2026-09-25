@@ -12,6 +12,7 @@ import {
   pressButton,
   shownShoppingItems,
   signIn,
+  stepToDay,
   takeOverItem,
   typeInto,
 } from './keyboard.ts'
@@ -39,23 +40,23 @@ test('plans a week and puts its items on the shopping list', async ({
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Wochenplan')
-  await chooseSuggestion(page, 'Montag', 'bolo', 'Bolognese')
+  await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
 
   await expect(
-    page.getByRole('heading', { name: 'Wochenplan, 1 von 7' }),
+    page.getByRole('heading', { name: 'Wochenplan, 1 von 28' }),
   ).toBeVisible()
 
   await pressButton(page, 'Zufallsauswahl generieren')
 
   await expect(page.getByRole('status')).toContainText(
-    'Wochenplan neu gewürfelt, 7 Gerichte.',
+    'Wochenplan neu gewürfelt, 28 Gerichte.',
   )
   await expect(
-    page.getByRole('heading', { name: 'Wochenplan, 7 von 7' }),
+    page.getByRole('heading', { name: 'Wochenplan, 28 von 28' }),
   ).toBeVisible()
   await expect
     .poll(async () => Object.values(await weekPlanOnServer()).filter(Boolean))
-    .toHaveLength(7)
+    .toHaveLength(28)
 
   await pressButton(page, 'Plan festlegen')
   await pressButton(page, 'Auf die Einkaufsliste')
@@ -68,10 +69,12 @@ test('plans a week and puts its items on the shopping list', async ({
 
   await expect
     .poll(() => shownShoppingItems(page))
-    .toEqual(['Hackfleisch, 3500 g', 'Spaghetti, 7'])
+    .toEqual(['Hackfleisch, 14000 g', 'Spaghetti, 28'])
 })
 
-test('buys only the day that the supply no longer covers', async ({ page }) => {
+test('buys only the meal that the supply no longer covers', async ({
+  page,
+}) => {
   await page.goto('/')
   await signIn(page)
 
@@ -94,22 +97,26 @@ test('buys only the day that the supply no longer covers', async ({ page }) => {
   await pressButton(page, 'Speichern')
 
   await pressButton(page, 'Wochenplan')
-  await chooseSuggestion(page, 'Montag', 'bolo', 'Bolognese')
-  await chooseSuggestion(page, 'Dienstag', 'chi', 'Chili')
-  await chooseSuggestion(page, 'Mittwoch', 'bolo', 'Bolognese')
+  await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
+  await chooseSuggestion(page, 'Abendessen', 'chi', 'Chili')
+  await stepToDay(page, 'Dienstag')
+  await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
 
-  await expect(
-    page.getByLabel('Montag, im Vorrat', { exact: true }),
-  ).toHaveValue('Bolognese')
-  await expect(page.getByLabel('Mittwoch', { exact: true })).toHaveValue(
+  await expect(page.getByLabel('Mittagessen', { exact: true })).toHaveValue(
     'Bolognese',
   )
+
+  await pressButton(page, 'Vorheriger Tag')
+
+  await expect(
+    page.getByLabel('Mittagessen, im Vorrat', { exact: true }),
+  ).toHaveValue('Bolognese')
 
   await pressButton(page, 'Plan festlegen')
   await pressButton(page, 'Auf die Einkaufsliste')
 
   await expect(page.getByRole('status')).toContainText(
-    'Wochenplan, 2 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
+    'Wochenplan, 2 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
   )
   await expect.poll(supplyCountsOnServer).toEqual([])
 
@@ -131,16 +138,18 @@ test('keeps the week plan after a reload', async ({ page }) => {
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Wochenplan')
-  await chooseSuggestion(page, 'Freitag', 'linsen', 'Linsensuppe')
+  await stepToDay(page, 'Freitag')
+  await chooseSuggestion(page, 'Abendessen', 'linsen', 'Linsensuppe')
 
   await expect
-    .poll(async () => (await weekPlanOnServer()).friday)
+    .poll(async () => (await weekPlanOnServer())['friday.dinner'])
     .toEqual(expect.any(String))
 
   await page.reload()
   await pressButton(page, 'Wochenplan')
+  await stepToDay(page, 'Freitag')
 
-  await expect(page.getByLabel('Freitag', { exact: true })).toHaveValue(
+  await expect(page.getByLabel('Abendessen', { exact: true })).toHaveValue(
     'Linsensuppe',
   )
 })
@@ -156,11 +165,11 @@ test('keeps the fixed plan after a reload', async ({ page }) => {
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Wochenplan')
-  await chooseSuggestion(page, 'Montag', 'linsen', 'Linsensuppe')
+  await chooseSuggestion(page, 'Mittagessen', 'linsen', 'Linsensuppe')
   await pressButton(page, 'Plan festlegen')
 
   await expect(page.getByRole('status')).toContainText(
-    'Plan festgelegt, 1 von 7 Tagen geplant.',
+    'Plan festgelegt, 1 von 28 Gerichten geplant.',
   )
   await expect
     .poll(async () => (await weekPlanStageOnServer()).mode)
@@ -170,9 +179,11 @@ test('keeps the fixed plan after a reload', async ({ page }) => {
   await pressButton(page, 'Wochenplan')
 
   await expect(
-    page.getByRole('heading', { name: 'Wochenplan, 1 von 7, festgelegt' }),
+    page.getByRole('heading', { name: 'Wochenplan, 1 von 28, festgelegt' }),
   ).toBeVisible()
-  await expect(page.getByRole('textbox', { name: 'Montag' })).toHaveCount(0)
+  await expect(page.getByRole('textbox', { name: 'Mittagessen' })).toHaveCount(
+    0,
+  )
 })
 
 test('transfers a fixed plan only once', async ({ page }) => {
@@ -193,10 +204,10 @@ test('transfers a fixed plan only once', async ({ page }) => {
   await pressButton(page, 'Speichern')
 
   await pressButton(page, 'Wochenplan')
-  await chooseSuggestion(page, 'Montag', 'bolo', 'Bolognese')
+  await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
 
   await expect(
-    page.getByLabel('Montag, im Vorrat', { exact: true }),
+    page.getByLabel('Mittagessen, im Vorrat', { exact: true }),
   ).toHaveValue('Bolognese')
 
   await pressButton(page, 'Plan festlegen')
@@ -206,8 +217,8 @@ test('transfers a fixed plan only once', async ({ page }) => {
     'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.',
   )
   await expect
-    .poll(async () => (await weekPlanStageOnServer()).coveredDays)
-    .toEqual(['monday'])
+    .poll(async () => (await weekPlanStageOnServer()).coveredSlots)
+    .toEqual(['monday.lunch'])
   await expect.poll(supplyCountsOnServer).toEqual([])
 
   await page.reload()
@@ -215,7 +226,7 @@ test('transfers a fixed plan only once', async ({ page }) => {
 
   await expect(
     page.getByRole('heading', {
-      name: 'Wochenplan, 1 von 7, festgelegt, übertragen',
+      name: 'Wochenplan, 1 von 28, festgelegt, übertragen',
     }),
   ).toBeVisible()
   await expect(
@@ -224,7 +235,9 @@ test('transfers a fixed plan only once', async ({ page }) => {
       exact: true,
     }),
   ).toHaveAttribute('aria-disabled', 'true')
-  await expect(page.getByText('Montag, Bolognese, im Vorrat')).toHaveCount(1)
+  await expect(page.getByText('Mittagessen, Bolognese, im Vorrat')).toHaveCount(
+    1,
+  )
 })
 
 test('never rolls a hidden meal into the week', async ({ page }) => {
@@ -248,27 +261,65 @@ test('never rolls a hidden meal into the week', async ({ page }) => {
   await pressButton(page, 'Zufallsauswahl generieren')
 
   await expect
+    .poll(async () => Object.values(await weekPlanOnServer()).filter(Boolean))
+    .toHaveLength(28)
+  await expect
     .poll(async () => new Set(Object.values(await weekPlanOnServer())).size)
     .toBe(1)
-  await expect(page.getByLabel('Montag', { exact: true })).toHaveValue(
+  await expect(page.getByLabel('Frühstück', { exact: true })).toHaveValue(
     'Bolognese',
   )
-  await expect(page.getByLabel('Sonntag', { exact: true })).toHaveValue(
+
+  await stepToDay(page, 'Sonntag')
+
+  await expect(page.getByLabel('Abendessen', { exact: true })).toHaveValue(
     'Bolognese',
   )
 })
 
-test('lines the weekday field up with its shuffle button', async ({ page }) => {
+test('lines the meal time field up with its shuffle button', async ({
+  page,
+}) => {
   await page.goto('/')
   await signIn(page)
 
   await pressButton(page, 'Wochenplan')
 
-  const field = await page.getByLabel('Montag', { exact: true }).boundingBox()
+  const field = await page
+    .getByLabel('Frühstück', { exact: true })
+    .boundingBox()
   const shuffle = await page
-    .getByRole('button', { name: 'Zufallsgericht für Montag', exact: true })
+    .getByRole('button', { name: 'Zufallsgericht für Frühstück', exact: true })
     .boundingBox()
 
   expect(field!.height).toBeCloseTo(shuffle!.height, 0)
   expect(field!.y).toBeCloseTo(shuffle!.y, 0)
+})
+
+test('steps through the week with the arrows', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Wochenplan')
+
+  const previousDay = page.getByRole('button', {
+    name: 'Vorheriger Tag',
+    exact: true,
+  })
+  const nextDay = page.getByRole('button', {
+    name: 'Nächster Tag',
+    exact: true,
+  })
+
+  await expect(page.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+    'Montag',
+  )
+  await expect(previousDay).toHaveAttribute('aria-disabled', 'true')
+
+  await stepToDay(page, 'Sonntag')
+
+  await expect(page.getByRole('status')).toContainText('Sonntag.')
+  await expect(nextDay).toHaveAttribute('aria-disabled', 'true')
+  await expect(nextDay).toBeFocused()
+  await expect(previousDay).toHaveAttribute('aria-disabled', 'false')
 })

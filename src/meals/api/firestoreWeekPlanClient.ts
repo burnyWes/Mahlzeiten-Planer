@@ -7,7 +7,12 @@ import {
 } from 'firebase/firestore'
 import {
   EMPTY_WEEK_PLAN,
+  MEAL_TIMES,
+  PLAN_SLOTS,
   WEEKDAYS,
+  withMealIn,
+  type MealTime,
+  type PlanSlot,
   type WeekPlan,
   type Weekday,
 } from '../domain/weekPlan'
@@ -15,38 +20,62 @@ import { EDITING_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
 import type { WeekPlanClient } from './weekPlanClient'
 
 const WEEK_PLAN = 'weekPlan'
-const CURRENT = 'current'
-const STAGE = 'stage'
+const MEALS = 'meals'
+const MEAL_STAGE = 'mealStage'
 
 const WRITE_FAILED = 'Konnte nicht gespeichert werden.'
 
 function toWeekPlan(stored: DocumentData | undefined): WeekPlan {
-  return WEEKDAYS.reduce(
-    (plan, day) => ({
-      ...plan,
-      [day]: typeof stored?.[day] === 'string' ? stored[day] : null,
-    }),
-    EMPTY_WEEK_PLAN,
-  )
+  return PLAN_SLOTS.reduce((plan, { day, time }) => {
+    const storedId: unknown = stored?.[day]?.[time]
+    return typeof storedId === 'string'
+      ? withMealIn(plan, { day, time }, storedId)
+      : plan
+  }, EMPTY_WEEK_PLAN)
+}
+
+function fromWeekPlan(plan: WeekPlan): DocumentData {
+  return Object.fromEntries(WEEKDAYS.map((day) => [day, { ...plan[day] }]))
 }
 
 function isWeekday(value: unknown): value is Weekday {
   return WEEKDAYS.some((day) => day === value)
 }
 
-function toCoveredDays(stored: unknown): readonly Weekday[] | null {
-  return Array.isArray(stored) ? stored.filter(isWeekday) : null
+function isMealTime(value: unknown): value is MealTime {
+  return MEAL_TIMES.some((time) => time === value)
+}
+
+function isPlanSlot(value: unknown): value is PlanSlot {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'day' in value &&
+    'time' in value &&
+    isWeekday(value.day) &&
+    isMealTime(value.time)
+  )
+}
+
+function toCoveredSlots(stored: unknown): readonly PlanSlot[] | null {
+  return Array.isArray(stored)
+    ? stored.filter(isPlanSlot).map(({ day, time }) => ({ day, time }))
+    : null
 }
 
 function toWeekPlanStage(stored: DocumentData | undefined): WeekPlanStage {
   return stored?.mode === 'reading'
-    ? { mode: 'reading', coveredDays: toCoveredDays(stored.coveredDays) }
+    ? { mode: 'reading', coveredSlots: toCoveredSlots(stored.coveredSlots) }
     : EDITING_STAGE
 }
 
 function fromWeekPlanStage(stage: WeekPlanStage): DocumentData {
   return stage.mode === 'reading'
-    ? { mode: stage.mode, coveredDays: stage.coveredDays }
+    ? {
+        mode: stage.mode,
+        coveredSlots:
+          stage.coveredSlots?.map(({ day, time }) => ({ day, time })) ?? null,
+      }
     : { mode: stage.mode }
 }
 
@@ -54,8 +83,8 @@ export function createFirestoreWeekPlanClient(
   firestore: Firestore,
   onWriteFailure: (message: string) => void,
 ): WeekPlanClient {
-  const weekPlan = doc(firestore, WEEK_PLAN, CURRENT)
-  const stage = doc(firestore, WEEK_PLAN, STAGE)
+  const weekPlan = doc(firestore, WEEK_PLAN, MEALS)
+  const stage = doc(firestore, WEEK_PLAN, MEAL_STAGE)
 
   return {
     observeWeekPlan(onWeekPlan) {
@@ -65,7 +94,9 @@ export function createFirestoreWeekPlanClient(
     },
 
     writeWeekPlan(plan) {
-      setDoc(weekPlan, { ...plan }).catch(() => onWriteFailure(WRITE_FAILED))
+      setDoc(weekPlan, fromWeekPlan(plan)).catch(() =>
+        onWriteFailure(WRITE_FAILED),
+      )
     },
 
     observeStage(onStage) {

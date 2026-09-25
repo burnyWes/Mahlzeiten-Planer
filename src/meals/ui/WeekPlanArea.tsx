@@ -1,24 +1,26 @@
 import type { ReactNode } from 'react'
 import {
-  dayPlannedAnnouncement,
+  dayShownAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
+  slotPlannedAnnouncement,
   weekPlanShuffledAnnouncement,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import {
   filledWeekPlan,
-  pickMealForDay,
+  pickMealFor,
   randomCandidates,
   type RandomSource,
 } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
 import {
-  coveredDaysOf,
-  isSuppliedOn,
-  plannedDayCount,
+  coveredSlotsOf,
+  isSuppliedIn,
+  plannedMealCount,
   weekPlanTransfer,
-  withMealOnDay,
+  withMealIn,
+  type PlanSlot,
   type WeekPlanTransfer,
   type Weekday,
 } from '../domain/weekPlan'
@@ -36,6 +38,8 @@ type WeekPlanAreaProps = {
   meals: readonly Meal[]
   weekPlanning: WeekPlanning
   supplies: readonly Supply[]
+  shownDay: Weekday
+  onShowDay: (day: Weekday) => void
   navigation: ReactNode
   announce: (text: string) => void
   random: RandomSource
@@ -46,6 +50,8 @@ export function WeekPlanArea({
   meals,
   weekPlanning,
   supplies,
+  shownDay,
+  onShowDay,
   navigation,
   announce,
   random,
@@ -53,26 +59,31 @@ export function WeekPlanArea({
 }: WeekPlanAreaProps) {
   const candidates = randomCandidates(meals)
   const { plan, stage } = weekPlanning
-  const plannedDays = plannedDayCount(plan, meals)
+  const plannedMeals = plannedMealCount(plan, meals)
 
-  function chooseMeal(day: Weekday, id: MealId | null) {
-    weekPlanning.chooseMeal(day, id)
+  function showDay(day: Weekday) {
+    onShowDay(day)
+    announce(dayShownAnnouncement(day))
+  }
+
+  function chooseMeal(slot: PlanSlot, id: MealId | null) {
+    weekPlanning.chooseMeal(slot, id)
     const chosen = meals.find((meal) => meal.id === id)
     if (chosen === undefined) return
-    const planned = withMealOnDay(weekPlanning.plan, day, id)
+    const planned = withMealIn(weekPlanning.plan, slot, id)
     announce(
-      dayPlannedAnnouncement(
-        day,
+      slotPlannedAnnouncement(
+        slot.time,
         chosen,
-        isSuppliedOn(planned, day, meals, supplies),
+        isSuppliedIn(planned, slot, meals, supplies),
       ),
     )
   }
 
-  function shuffleDay(day: Weekday) {
-    const picked = pickMealForDay(candidates, weekPlanning.plan, day, random)
+  function shuffleSlot(slot: PlanSlot) {
+    const picked = pickMealFor(candidates, weekPlanning.plan, slot, random)
     if (picked === null) return
-    chooseMeal(day, picked.id)
+    chooseMeal(slot, picked.id)
   }
 
   function shuffleWeek() {
@@ -87,13 +98,13 @@ export function WeekPlanArea({
       return
     }
     weekPlanning.changeStage(FIXED_STAGE)
-    announce(planFixedAnnouncement(plannedDays))
+    announce(planFixedAnnouncement(plannedMeals))
   }
 
   function addToShoppingList() {
-    if (!canTransfer(stage, plannedDays)) return
+    if (!canTransfer(stage, plannedMeals)) return
     weekPlanning.changeStage(
-      transferredStage(coveredDaysOf(plan, meals, supplies)),
+      transferredStage(coveredSlotsOf(plan, meals, supplies)),
     )
     onAddToShoppingList(weekPlanTransfer(plan, meals, supplies))
   }
@@ -105,8 +116,10 @@ export function WeekPlanArea({
       randomCandidateCount={candidates.length}
       plan={plan}
       supplies={supplies}
+      shownDay={shownDay}
+      onShowDay={showDay}
       onChooseMeal={chooseMeal}
-      onShuffleDay={shuffleDay}
+      onShuffleSlot={shuffleSlot}
       onShuffleWeek={shuffleWeek}
       stage={stage}
       onToggleStage={toggleStage}

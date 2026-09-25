@@ -13,84 +13,122 @@ export const WEEKDAYS = [
 
 export type Weekday = (typeof WEEKDAYS)[number]
 
-export type WeekPlan = Readonly<Record<Weekday, MealId | null>>
+export const MEAL_TIMES = ['breakfast', 'lunch', 'snack', 'dinner'] as const
+
+export type MealTime = (typeof MEAL_TIMES)[number]
+
+export type PlanSlot = { day: Weekday; time: MealTime }
+
+export const PLAN_SLOTS: readonly PlanSlot[] = WEEKDAYS.flatMap((day) =>
+  MEAL_TIMES.map((time) => ({ day, time })),
+)
+
+export type DayPlan = Readonly<Record<MealTime, MealId | null>>
+
+export type WeekPlan = Readonly<Record<Weekday, DayPlan>>
+
+const EMPTY_DAY_PLAN: DayPlan = Object.fromEntries(
+  MEAL_TIMES.map((time) => [time, null]),
+) as DayPlan
 
 export const EMPTY_WEEK_PLAN: WeekPlan = Object.fromEntries(
-  WEEKDAYS.map((day) => [day, null]),
+  WEEKDAYS.map((day) => [day, EMPTY_DAY_PLAN]),
 ) as WeekPlan
 
-export function withMealOnDay(
+export function weekdayBefore(day: Weekday): Weekday | null {
+  return WEEKDAYS[WEEKDAYS.indexOf(day) - 1] ?? null
+}
+
+export function weekdayAfter(day: Weekday): Weekday | null {
+  return WEEKDAYS[WEEKDAYS.indexOf(day) + 1] ?? null
+}
+
+export function sameSlot(one: PlanSlot, other: PlanSlot): boolean {
+  return one.day === other.day && one.time === other.time
+}
+
+export function mealIn(plan: WeekPlan, slot: PlanSlot): MealId | null {
+  return plan[slot.day][slot.time]
+}
+
+export function withMealIn(
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
   id: MealId | null,
 ): WeekPlan {
-  return { ...plan, [day]: id }
+  return { ...plan, [slot.day]: { ...plan[slot.day], [slot.time]: id } }
 }
 
 export function sameWeekPlan(one: WeekPlan, other: WeekPlan): boolean {
-  return WEEKDAYS.every((day) => one[day] === other[day])
+  return PLAN_SLOTS.every((slot) => mealIn(one, slot) === mealIn(other, slot))
 }
 
-export function shownMealOn(
+export function shownMealIn(
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
   meals: readonly Meal[],
 ): Meal | null {
-  return meals.find((meal) => meal.id === plan[day]) ?? null
+  return meals.find((meal) => meal.id === mealIn(plan, slot)) ?? null
+}
+
+function slotsBefore(slot: PlanSlot): readonly PlanSlot[] {
+  return PLAN_SLOTS.slice(
+    0,
+    PLAN_SLOTS.findIndex((each) => sameSlot(each, slot)),
+  )
 }
 
 function timesPlannedBefore(
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
   mealId: MealId,
 ): number {
-  return WEEKDAYS.slice(0, WEEKDAYS.indexOf(day)).filter(
-    (earlier) => plan[earlier] === mealId,
-  ).length
+  return slotsBefore(slot).filter((earlier) => mealIn(plan, earlier) === mealId)
+    .length
 }
 
-export function isSuppliedOn(
+export function isSuppliedIn(
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
   meals: readonly Meal[],
   supplies: readonly Supply[],
 ): boolean {
-  const planned = shownMealOn(plan, day, meals)
+  const planned = shownMealIn(plan, slot, meals)
   if (planned === null) return false
   const supply = supplyOf(supplies, planned.id)
   return (
-    supply !== null && timesPlannedBefore(plan, day, planned.id) < supply.count
+    supply !== null && timesPlannedBefore(plan, slot, planned.id) < supply.count
   )
 }
 
-type PlannedDay = {
-  day: Weekday
+type PlannedSlot = {
+  slot: PlanSlot
   meal: Meal
 }
 
-function plannedDays(
+function plannedSlots(
   plan: WeekPlan,
   meals: readonly Meal[],
-): readonly PlannedDay[] {
-  return WEEKDAYS.flatMap((day) => {
-    const meal = shownMealOn(plan, day, meals)
-    return meal === null ? [] : [{ day, meal }]
+): readonly PlannedSlot[] {
+  return PLAN_SLOTS.flatMap((slot) => {
+    const meal = shownMealIn(plan, slot, meals)
+    return meal === null ? [] : [{ slot, meal }]
   })
 }
 
-export function coveredDaysOf(
+export function coveredSlotsOf(
   plan: WeekPlan,
   meals: readonly Meal[],
   supplies: readonly Supply[],
-): readonly Weekday[] {
-  return WEEKDAYS.filter((day) => isSuppliedOn(plan, day, meals, supplies))
+): readonly PlanSlot[] {
+  return PLAN_SLOTS.filter((slot) => isSuppliedIn(plan, slot, meals, supplies))
 }
 
 export function plannedMeals(
   plan: WeekPlan,
   meals: readonly Meal[],
 ): readonly Meal[] {
-  return plannedDays(plan, meals).map(({ meal }) => meal)
+  return plannedSlots(plan, meals).map(({ meal }) => meal)
 }
 
 export type WeekPlanTransfer = {
@@ -98,8 +136,8 @@ export type WeekPlanTransfer = {
   spentSupplies: readonly Supply[]
 }
 
-function portionsPerMeal(days: readonly PlannedDay[]): readonly Supply[] {
-  return days.reduce<readonly Supply[]>((spent, { meal }) => {
+function portionsPerMeal(planned: readonly PlannedSlot[]): readonly Supply[] {
+  return planned.reduce<readonly Supply[]>((spent, { meal }) => {
     const counted = supplyOf(spent, meal.id)
     return counted === null
       ? [...spent, { mealId: meal.id, count: 1 }]
@@ -112,21 +150,26 @@ export function weekPlanTransfer(
   meals: readonly Meal[],
   supplies: readonly Supply[],
 ): WeekPlanTransfer {
-  const days = plannedDays(plan, meals)
-  const coveredDays = coveredDaysOf(plan, meals, supplies)
-  const covered = days.filter(({ day }) => coveredDays.includes(day))
-  const toBuy = days.filter(({ day }) => !coveredDays.includes(day))
+  const planned = plannedSlots(plan, meals)
+  const coveredSlots = coveredSlotsOf(plan, meals, supplies)
+  const isCovered = ({ slot }: PlannedSlot) =>
+    coveredSlots.some((covered) => sameSlot(covered, slot))
   return {
-    mealsToBuy: toBuy.map(({ meal }) => meal),
-    spentSupplies: portionsPerMeal(covered),
+    mealsToBuy: planned
+      .filter((each) => !isCovered(each))
+      .map(({ meal }) => meal),
+    spentSupplies: portionsPerMeal(planned.filter(isCovered)),
   }
 }
 
-export function suppliedDayCount(transfer: WeekPlanTransfer): number {
-  return transfer.spentSupplies.reduce((days, spent) => days + spent.count, 0)
+export function suppliedMealCount(transfer: WeekPlanTransfer): number {
+  return transfer.spentSupplies.reduce(
+    (suppliedMeals, spent) => suppliedMeals + spent.count,
+    0,
+  )
 }
 
-export function plannedDayCount(
+export function plannedMealCount(
   plan: WeekPlan,
   meals: readonly Meal[],
 ): number {

@@ -5,9 +5,9 @@ import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import {
   EMPTY_WEEK_PLAN,
   sameWeekPlan,
-  withMealOnDay,
+  withMealIn,
+  type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from '../domain/weekPlan'
 import {
   EDITING_STAGE,
@@ -18,7 +18,7 @@ import {
 export type WeekPlanning = {
   plan: WeekPlan
   stage: WeekPlanStage
-  chooseMeal: (day: Weekday, id: MealId | null) => void
+  chooseMeal: (slot: PlanSlot, id: MealId | null) => void
   replacePlan: (plan: WeekPlan) => void
   changeStage: (stage: WeekPlanStage) => void
 }
@@ -61,8 +61,8 @@ export function useWeekPlan(client: WeekPlanClient): WeekPlanning {
   )
 
   const chooseMeal = useCallback(
-    (day: Weekday, id: MealId | null) => {
-      replacePlan(withMealOnDay(plan, day, id))
+    (slot: PlanSlot, id: MealId | null) => {
+      replacePlan(withMealIn(plan, slot, id))
     },
     [plan, replacePlan],
   )

@@ -55,17 +55,22 @@ const weekPlanOf = collectionOf('weekPlan')
 
 const milk = { name: 'Milch', lastUsedAt: 1, timesUsed: 1 }
 
+const emptyDay = { breakfast: null, lunch: null, snack: null, dinner: null }
+
 const weekPlan = {
-  monday: 'bolognese',
-  tuesday: null,
-  wednesday: null,
-  thursday: null,
-  friday: null,
-  saturday: null,
-  sunday: null,
+  monday: { ...emptyDay, lunch: 'bolognese' },
+  tuesday: emptyDay,
+  wednesday: emptyDay,
+  thursday: emptyDay,
+  friday: emptyDay,
+  saturday: emptyDay,
+  sunday: emptyDay,
 }
 
-const weekPlanStage = { mode: 'reading', coveredDays: ['monday'] }
+const weekPlanStage = {
+  mode: 'reading',
+  coveredSlots: [{ day: 'monday', time: 'lunch' }],
+}
 
 const bolognese = {
   name: 'Spaghetti Bolognese',
@@ -120,36 +125,38 @@ describe('firestore security rules', () => {
   })
 
   it('lets the household write the week plan', async () => {
-    await assertSucceeds(setDoc(weekPlanOf(householdUid)('current'), weekPlan))
+    await assertSucceeds(setDoc(weekPlanOf(householdUid)('meals'), weekPlan))
   })
 
   it('lets the household read the week plan', async () => {
-    await assertSucceeds(getDoc(weekPlanOf(householdUid)('current')))
+    await assertSucceeds(getDoc(weekPlanOf(householdUid)('meals')))
   })
 
   it('refuses another account on the week plan', async () => {
-    await assertFails(getDoc(weekPlanOf(strangerUid)('current')))
-    await assertFails(setDoc(weekPlanOf(strangerUid)('current'), weekPlan))
+    await assertFails(getDoc(weekPlanOf(strangerUid)('meals')))
+    await assertFails(setDoc(weekPlanOf(strangerUid)('meals'), weekPlan))
   })
 
   it('refuses an unauthenticated visitor on the week plan', async () => {
-    await assertFails(getDoc(weekPlanOf(null)('current')))
-    await assertFails(setDoc(weekPlanOf(null)('current'), weekPlan))
+    await assertFails(getDoc(weekPlanOf(null)('meals')))
+    await assertFails(setDoc(weekPlanOf(null)('meals'), weekPlan))
   })
 
   it('lets the household write the stage of the week plan', async () => {
     await assertSucceeds(
-      setDoc(weekPlanOf(householdUid)('stage'), weekPlanStage),
+      setDoc(weekPlanOf(householdUid)('mealStage'), weekPlanStage),
     )
   })
 
   it('lets the household read the stage of the week plan', async () => {
-    await assertSucceeds(getDoc(weekPlanOf(householdUid)('stage')))
+    await assertSucceeds(getDoc(weekPlanOf(householdUid)('mealStage')))
   })
 
   it('refuses another account on the stage of the week plan', async () => {
-    await assertFails(getDoc(weekPlanOf(strangerUid)('stage')))
-    await assertFails(setDoc(weekPlanOf(strangerUid)('stage'), weekPlanStage))
+    await assertFails(getDoc(weekPlanOf(strangerUid)('mealStage')))
+    await assertFails(
+      setDoc(weekPlanOf(strangerUid)('mealStage'), weekPlanStage),
+    )
   })
 
   it('lets the household write a known item', async () => {

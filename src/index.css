@@ -340,6 +340,7 @@ h2 {
 }
 
 .hiddenMark,
+.mealTimeMark,
 .supplyMark {
   flex: none;
   width: 24px;
@@ -409,9 +410,17 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   gap: 0.75rem;
 }
 
-.weekday {
-  flex: none;
-  min-width: 2.5rem;
+.dayNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.dayNavigation h2 {
+  margin: 0;
+  font-size: 1.25rem;
 }
 
 .weekPlanChoice input {

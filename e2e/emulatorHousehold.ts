@@ -136,55 +136,74 @@ export async function itemQuantitiesOnServer(): Promise<readonly string[]> {
 }
 
 type StoredWeekPlan = {
-  fields?: Record<string, { stringValue?: string }>
+  fields?: Record<
+    string,
+    { mapValue?: { fields?: Record<string, { stringValue?: string }> } }
+  >
 }
 
 export async function weekPlanOnServer(): Promise<
   Record<string, string | null>
 > {
-  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/current`
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/meals`
   const response = await fetch(url, {
     headers: { Authorization: 'Bearer owner' },
   })
   if (!response.ok) return {}
   const stored = (await response.json()) as StoredWeekPlan
   return Object.fromEntries(
-    Object.entries(stored.fields ?? {}).map(([day, value]) => [
-      day,
-      value.stringValue ?? null,
-    ]),
+    Object.entries(stored.fields ?? {}).flatMap(([day, dayPlan]) =>
+      Object.entries(dayPlan.mapValue?.fields ?? {}).map(([time, value]) => [
+        `${day}.${time}`,
+        value.stringValue ?? null,
+      ]),
+    ),
   )
+}
+
+type StoredPlanSlot = {
+  mapValue?: {
+    fields?: {
+      day?: { stringValue?: string }
+      time?: { stringValue?: string }
+    }
+  }
 }
 
 type StoredWeekPlanStage = {
   fields?: {
     mode?: { stringValue?: string }
-    coveredDays?: {
+    coveredSlots?: {
       nullValue?: null
-      arrayValue?: { values?: readonly { stringValue: string }[] }
+      arrayValue?: { values?: readonly StoredPlanSlot[] }
     }
   }
 }
 
 export type WeekPlanStageOnServer = {
   mode: string | null
-  coveredDays: readonly string[] | null
+  coveredSlots: readonly string[] | null
+}
+
+function storedSlotName(slot: StoredPlanSlot): string {
+  const fields = slot.mapValue?.fields
+  return `${fields?.day?.stringValue}.${fields?.time?.stringValue}`
 }
 
 export async function weekPlanStageOnServer(): Promise<WeekPlanStageOnServer> {
-  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/stage`
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/mealStage`
   const response = await fetch(url, {
     headers: { Authorization: 'Bearer owner' },
   })
-  if (!response.ok) return { mode: null, coveredDays: null }
+  if (!response.ok) return { mode: null, coveredSlots: null }
   const stored = (await response.json()) as StoredWeekPlanStage
-  const coveredDays = stored.fields?.coveredDays?.arrayValue
+  const coveredSlots = stored.fields?.coveredSlots?.arrayValue
   return {
     mode: stored.fields?.mode?.stringValue ?? null,
-    coveredDays:
-      coveredDays === undefined
+    coveredSlots:
+      coveredSlots === undefined
         ? null
-        : (coveredDays.values ?? []).map((value) => value.stringValue),
+        : (coveredSlots.values ?? []).map(storedSlotName),
   }
 }
 

@@ -3,7 +3,7 @@ import type { Meal } from './meal'
 import {
   filledWeekPlan,
   narrowedBy,
-  pickMealForDay,
+  pickMealFor,
   randomCandidates,
   rarestInThePlan,
   type PlanningRule,
@@ -11,9 +11,13 @@ import {
 } from './randomPlanning'
 import {
   EMPTY_WEEK_PLAN,
-  WEEKDAYS,
-  withMealOnDay,
+  mealIn,
+  PLAN_SLOTS,
+  withMealIn,
+  type MealTime,
+  type PlanSlot,
   type WeekPlan,
+  type Weekday,
 } from './weekPlan'
 
 function meal(id: string): Meal {
@@ -47,13 +51,21 @@ function sequence(values: readonly number[]): RandomSource {
 function planOf(...ids: readonly (string | null)[]): WeekPlan {
   return ids.reduce<WeekPlan>(
     (plan, id, position) =>
-      id === null ? plan : withMealOnDay(plan, WEEKDAYS[position], id),
+      id === null ? plan : withMealIn(plan, PLAN_SLOTS[position], id),
     EMPTY_WEEK_PLAN,
   )
 }
 
+function slot(day: Weekday, time: MealTime): PlanSlot {
+  return { day, time }
+}
+
+function mealsOf(plan: WeekPlan): readonly (string | null)[] {
+  return PLAN_SLOTS.map((each) => mealIn(plan, each))
+}
+
 function timesPlannedIn(plan: WeekPlan): readonly number[] {
-  const planned = WEEKDAYS.map((day) => plan[day])
+  const planned = mealsOf(plan)
   return [...new Set(planned)].map(
     (id) => planned.filter((other) => other === id).length,
   )
@@ -90,21 +102,39 @@ describe('rarestInThePlan', () => {
   it('keeps only the meals that stand in the plan least often', () => {
     const plan = planOf('bolognese', 'bolognese', 'pizza')
 
-    expect(rarestInThePlan([bolognese, pizza, soup], plan, 'thursday')).toEqual(
-      [soup],
-    )
+    expect(
+      rarestInThePlan([bolognese, pizza, soup], plan, slot('monday', 'dinner')),
+    ).toEqual([soup])
   })
 
   it('keeps every meal while the plan is empty', () => {
     expect(
-      rarestInThePlan([bolognese, pizza], EMPTY_WEEK_PLAN, 'monday'),
+      rarestInThePlan(
+        [bolognese, pizza],
+        EMPTY_WEEK_PLAN,
+        slot('monday', 'lunch'),
+      ),
     ).toEqual([bolognese, pizza])
   })
 
-  it('counts the day that is being rolled as well', () => {
+  it('counts the slot that is being rolled as well', () => {
     const plan = planOf('bolognese')
 
-    expect(rarestInThePlan([bolognese, pizza], plan, 'monday')).toEqual([pizza])
+    expect(
+      rarestInThePlan([bolognese, pizza], plan, slot('monday', 'breakfast')),
+    ).toEqual([pizza])
+  })
+
+  it('counts the meals of every meal time of the week', () => {
+    const plan = withMealIn(
+      withMealIn(EMPTY_WEEK_PLAN, slot('tuesday', 'snack'), 'bolognese'),
+      slot('sunday', 'dinner'),
+      'pizza',
+    )
+
+    expect(
+      rarestInThePlan([bolognese, pizza, soup], plan, slot('friday', 'lunch')),
+    ).toEqual([soup])
   })
 })
 
@@ -113,7 +143,12 @@ describe('narrowedBy', () => {
 
   it('skips a rule that would leave nothing', () => {
     expect(
-      narrowedBy([nothingLeft], [bolognese, pizza], EMPTY_WEEK_PLAN, 'monday'),
+      narrowedBy(
+        [nothingLeft],
+        [bolognese, pizza],
+        EMPTY_WEEK_PLAN,
+        slot('monday', 'lunch'),
+      ),
     ).toEqual([bolognese, pizza])
   })
 
@@ -126,30 +161,40 @@ describe('narrowedBy', () => {
         [withoutPizza, rarestInThePlan],
         [bolognese, pizza, soup],
         planOf('bolognese'),
-        'tuesday',
+        slot('monday', 'lunch'),
       ),
     ).toEqual([soup])
   })
 })
 
-describe('pickMealForDay', () => {
+describe('pickMealFor', () => {
   it('picks nothing when no meal is stored', () => {
     expect(
-      pickMealForDay([], EMPTY_WEEK_PLAN, 'monday', sequence([0])),
+      pickMealFor([], EMPTY_WEEK_PLAN, slot('monday', 'lunch'), sequence([0])),
     ).toBeNull()
   })
 
   it('picks the only meal there is', () => {
     expect(
-      pickMealForDay([bolognese], EMPTY_WEEK_PLAN, 'monday', sequence([0.5])),
+      pickMealFor(
+        [bolognese],
+        EMPTY_WEEK_PLAN,
+        slot('monday', 'lunch'),
+        sequence([0.5]),
+      ),
     ).toEqual(bolognese)
   })
 
-  it('avoids the meal of that day while another one is rarer in the plan', () => {
+  it('avoids the meal of that slot while another one is rarer in the plan', () => {
     const plan = planOf('bolognese')
 
     expect(
-      pickMealForDay([bolognese, pizza], plan, 'monday', sequence([0.9])),
+      pickMealFor(
+        [bolognese, pizza],
+        plan,
+        slot('monday', 'breakfast'),
+        sequence([0.9]),
+      ),
     ).toEqual(pizza)
   })
 
@@ -157,7 +202,12 @@ describe('pickMealForDay', () => {
     const plan = planOf('bolognese', 'pizza')
 
     expect(
-      pickMealForDay([bolognese, pizza], plan, 'monday', sequence([0])),
+      pickMealFor(
+        [bolognese, pizza],
+        plan,
+        slot('monday', 'breakfast'),
+        sequence([0]),
+      ),
     ).toEqual(bolognese)
   })
 
@@ -165,18 +215,28 @@ describe('pickMealForDay', () => {
     const candidates = [bolognese, pizza, soup]
 
     expect(
-      pickMealForDay(candidates, EMPTY_WEEK_PLAN, 'monday', sequence([0])),
-    ).toEqual(bolognese)
-    expect(
-      pickMealForDay(
+      pickMealFor(
         candidates,
         EMPTY_WEEK_PLAN,
-        'monday',
+        slot('monday', 'lunch'),
+        sequence([0]),
+      ),
+    ).toEqual(bolognese)
+    expect(
+      pickMealFor(
+        candidates,
+        EMPTY_WEEK_PLAN,
+        slot('monday', 'lunch'),
         sequence([0.999999]),
       ),
     ).toEqual(soup)
     expect(
-      pickMealForDay(candidates, EMPTY_WEEK_PLAN, 'monday', sequence([1])),
+      pickMealFor(
+        candidates,
+        EMPTY_WEEK_PLAN,
+        slot('monday', 'lunch'),
+        sequence([1]),
+      ),
     ).toEqual(soup)
   })
 })
@@ -186,32 +246,28 @@ describe('filledWeekPlan', () => {
     expect(filledWeekPlan([], sequence([0.3]))).toEqual(EMPTY_WEEK_PLAN)
   })
 
-  it('fills seven days with seven meals without repeating one', () => {
-    const plan = filledWeekPlan(meals(7), sequence([0.7, 0.1, 0.9, 0.4]))
-    const planned = WEEKDAYS.map((day) => plan[day])
+  it('fills 28 slots with 28 meals without repeating one', () => {
+    const plan = filledWeekPlan(meals(28), sequence([0.7, 0.1, 0.9, 0.4]))
+    const planned = mealsOf(plan)
 
-    expect(new Set(planned).size).toBe(7)
+    expect(new Set(planned).size).toBe(28)
     expect(planned).not.toContain(null)
   })
 
-  it('spreads three meals over the week as evenly as it can', () => {
+  it('spreads three meals over the 28 slots as evenly as it can', () => {
     const plan = filledWeekPlan(meals(3), sequence([0.7, 0.1, 0.9, 0.4]))
-    const timesPlanned = [...timesPlannedIn(plan)].sort()
+    const timesPlanned = [...timesPlannedIn(plan)].sort(
+      (fewer, more) => fewer - more,
+    )
 
-    expect(timesPlanned).toEqual([2, 2, 3])
+    expect(timesPlanned).toEqual([9, 9, 10])
   })
 
   it('walks through the candidates when the random source always gives zero', () => {
-    const plan = filledWeekPlan(meals(7), sequence([0]))
+    const plan = filledWeekPlan(meals(28), sequence([0]))
 
-    expect(WEEKDAYS.map((day) => plan[day])).toEqual([
-      'meal-1',
-      'meal-2',
-      'meal-3',
-      'meal-4',
-      'meal-5',
-      'meal-6',
-      'meal-7',
-    ])
+    expect(mealsOf(plan)).toEqual(
+      Array.from({ length: 28 }, (_, position) => `meal-${position + 1}`),
+    )
   })
 })

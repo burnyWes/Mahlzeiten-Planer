@@ -11,8 +11,9 @@ import type { RandomSource } from './meals/domain/randomPlanning'
 import { withoutPortions } from './meals/domain/supply'
 import {
   mealsWithoutItems,
-  suppliedDayCount,
+  suppliedMealCount,
   type WeekPlanTransfer,
+  type Weekday,
 } from './meals/domain/weekPlan'
 import { CategoriesArea } from './meals/ui/CategoriesArea'
 import { MealsArea } from './meals/ui/MealsArea'
@@ -107,6 +108,7 @@ export function SignedInApp({
   const weekPlanning = useWeekPlan(weekPlanClient)
   const supplies = useSupplies(suppliesClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
+  const [shownDay, setShownDay] = useState<Weekday>('monday')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
   function addMealToShoppingList(meal: Meal) {
@@ -132,7 +134,7 @@ export function SignedInApp({
       weekPlanTransferAnnouncement(
         additions,
         mealsWithoutItems(transfer.mealsToBuy),
-        suppliedDayCount(transfer),
+        suppliedMealCount(transfer),
       ),
     )
   }
@@ -200,6 +202,8 @@ export function SignedInApp({
         meals={meals.meals}
         weekPlanning={weekPlanning}
         supplies={supplies.supplies}
+        shownDay={shownDay}
+        onShowDay={setShownDay}
         navigation={navigation}
         announce={announce}
         random={random}

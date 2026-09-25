@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 import { household } from './emulatorHousehold.ts'
 
 export async function typeInto(page: Page, label: string, text: string) {
@@ -53,4 +53,27 @@ export async function signIn(page: Page) {
   await typeInto(page, 'E-Mail', household.email)
   await typeInto(page, 'Passwort', household.password)
   await pressButton(page, 'Anmelden')
+}
+
+const WEEKDAY_NAMES = [
+  'Montag',
+  'Dienstag',
+  'Mittwoch',
+  'Donnerstag',
+  'Freitag',
+  'Samstag',
+  'Sonntag',
+]
+
+export async function stepToDay(page: Page, dayName: string) {
+  const daysUpToTarget = WEEKDAY_NAMES.slice(
+    1,
+    WEEKDAY_NAMES.indexOf(dayName) + 1,
+  )
+  for (const nextDay of daysUpToTarget) {
+    await pressButton(page, 'Nächster Tag')
+    await expect(page.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+      nextDay,
+    )
+  }
 }

@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import type { WeekPlanClient } from '../api/weekPlanClient'
 import {
   EMPTY_WEEK_PLAN,
-  withMealOnDay,
+  withMealIn,
+  type PlanSlot,
   type WeekPlan,
 } from '../domain/weekPlan'
 import {
@@ -64,6 +65,10 @@ function createLaggingWeekPlanClient(): LaggingWeekPlanClient {
   }
 }
 
+const mondayLunch: PlanSlot = { day: 'monday', time: 'lunch' }
+const mondayDinner: PlanSlot = { day: 'monday', time: 'dinner' }
+const tuesdayLunch: PlanSlot = { day: 'tuesday', time: 'lunch' }
+
 function weekPlanOf(client: WeekPlanClient) {
   return renderHook(() => useWeekPlan(client)).result
 }
@@ -73,18 +78,18 @@ describe('useWeekPlan', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
 
-    act(() => weekPlan.current.chooseMeal('monday', 'bolognese'))
-    act(() => weekPlan.current.chooseMeal('tuesday', 'chili'))
+    act(() => weekPlan.current.chooseMeal(mondayLunch, 'bolognese'))
+    act(() => weekPlan.current.chooseMeal(mondayDinner, 'chili'))
     act(() => client.deliverNextSnapshot())
-    act(() => weekPlan.current.chooseMeal('wednesday', 'bolognese'))
+    act(() => weekPlan.current.chooseMeal(tuesdayLunch, 'bolognese'))
 
-    const expected = withMealOnDay(
-      withMealOnDay(
-        withMealOnDay(EMPTY_WEEK_PLAN, 'monday', 'bolognese'),
-        'tuesday',
+    const expected = withMealIn(
+      withMealIn(
+        withMealIn(EMPTY_WEEK_PLAN, mondayLunch, 'bolognese'),
+        mondayDinner,
         'chili',
       ),
-      'wednesday',
+      tuesdayLunch,
       'bolognese',
     )
     expect(weekPlan.current.plan).toEqual(expected)
@@ -94,9 +99,13 @@ describe('useWeekPlan', () => {
   it('takes the plan of the other device once its own write is confirmed', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
-    const fromElsewhere = withMealOnDay(EMPTY_WEEK_PLAN, 'sunday', 'soup')
+    const fromElsewhere = withMealIn(
+      EMPTY_WEEK_PLAN,
+      { day: 'sunday', time: 'dinner' },
+      'soup',
+    )
 
-    act(() => weekPlan.current.chooseMeal('monday', 'bolognese'))
+    act(() => weekPlan.current.chooseMeal(mondayLunch, 'bolognese'))
     act(() => client.deliverNextSnapshot())
     act(() => client.weekPlanArrivesFromElsewhere(fromElsewhere))
 
@@ -108,13 +117,13 @@ describe('useWeekPlan', () => {
     const weekPlan = weekPlanOf(client)
 
     act(() => weekPlan.current.changeStage(FIXED_STAGE))
-    act(() => weekPlan.current.changeStage(transferredStage(['monday'])))
+    act(() => weekPlan.current.changeStage(transferredStage([mondayLunch])))
     act(() => client.deliverNextStageSnapshot())
 
-    expect(weekPlan.current.stage).toEqual(transferredStage(['monday']))
+    expect(weekPlan.current.stage).toEqual(transferredStage([mondayLunch]))
 
     act(() => client.deliverNextStageSnapshot())
 
-    expect(weekPlan.current.stage).toEqual(transferredStage(['monday']))
+    expect(weekPlan.current.stage).toEqual(transferredStage([mondayLunch]))
   })
 })

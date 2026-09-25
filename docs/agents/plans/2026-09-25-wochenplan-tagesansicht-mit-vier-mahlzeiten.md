@@ -327,7 +327,7 @@ neuen Modell.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/weekPlan.test.ts` zuerst umschreiben (roter Schritt). Die
+- [x] `src/meals/domain/weekPlan.test.ts` zuerst umschreiben (roter Schritt). Die
   vorhandenen Blöcke bleiben inhaltlich erhalten und rechnen über Plätze.
   Die Hilfsfunktion im Test baut Pläne über `withMealIn`, zum Beispiel
   `planWith([{ day: 'monday', time: 'lunch' }, 'bolognese'], …)`.
@@ -359,7 +359,7 @@ neuen Modell.
   - `weekdayBefore` / `weekdayAfter`: `gives the day before Tuesday as Monday`, `has no
     day before Monday`, `gives the day after Saturday as Sunday`, `has no day after
     Sunday`.
-- [ ] `src/meals/domain/weekPlan.ts` auf Plätze umbauen:
+- [x] `src/meals/domain/weekPlan.ts` auf Plätze umbauen:
   ```ts
   export const MEAL_TIMES = ['breakfast', 'lunch', 'snack', 'dinner'] as const
   export type MealTime = (typeof MEAL_TIMES)[number]
@@ -392,15 +392,15 @@ neuen Modell.
   ```
   `PlannedDay` wird zu `PlannedSlot = { slot, meal }`. Die übrigen Funktionen folgen
   den Umbenennungen aus „Abstraktionen und Wiederverwendung“.
-- [ ] `src/meals/domain/weekPlanStage.test.ts` zuerst umschreiben: alle Fälle mit
+- [x] `src/meals/domain/weekPlanStage.test.ts` zuerst umschreiben: alle Fälle mit
   `coveredSlots`, dazu in `sameStage` `fails for two transfers that cover different
   meal times of the same day` und in `isCoveredIn` `keeps the covered lunch of the
   transfer but not the dinner of that day`.
-- [ ] `src/meals/domain/weekPlanStage.ts` umbauen: `coveredSlots: readonly PlanSlot[] |
+- [x] `src/meals/domain/weekPlanStage.ts` umbauen: `coveredSlots: readonly PlanSlot[] |
   null`, `transferredStage(coveredSlots)`, `sameSlots` über `sameSlot`,
   `isCoveredIn(stage, plan, slot, meals, supplies)`, `canTransfer(stage,
   plannedMeals)`.
-- [ ] `src/meals/domain/randomPlanning.test.ts` zuerst umschreiben:
+- [x] `src/meals/domain/randomPlanning.test.ts` zuerst umschreiben:
   - `rarestInThePlan`: `counts the slot that is being rolled as well`, dazu `counts
     the meals of every meal time of the week`.
   - `pickMealFor`: die vorhandenen Fälle, pro Platz.
@@ -408,7 +408,7 @@ neuen Modell.
     three meals over the 28 slots as evenly as it can` (10/9/9), `walks through the
     candidates when the random source always gives zero`, `leaves the plan empty
     without a stored meal`.
-- [ ] `src/meals/domain/randomPlanning.ts` umbauen:
+- [x] `src/meals/domain/randomPlanning.ts` umbauen:
   ```ts
   export type PlanningRule = (
     candidates: readonly Meal[],
@@ -427,7 +427,7 @@ neuen Modell.
     }, EMPTY_WEEK_PLAN)
   }
   ```
-- [ ] `src/meals/domain/announcements.test.ts` zuerst anpassen (Blöcke ab Zeile 503):
+- [x] `src/meals/domain/announcements.test.ts` zuerst anpassen (Blöcke ab Zeile 503):
   - `mealTimeName`: alle vier Namen.
   - `weekPlanHeading`: `Wochenplan, keine von 28`, `Wochenplan, 12 von 28`,
     `…, festgelegt`, `…, festgelegt, übertragen`.
@@ -446,7 +446,7 @@ neuen Modell.
   - `mealSuggestionsLabel('snack')`: `Vorschläge für Snack`.
   - `dayShownAnnouncement('saturday')`: `Samstag.`
   - `weekdayName` und `weekdayAbbreviation` bleiben unverändert.
-- [ ] `src/meals/domain/announcements.ts` anpassen:
+- [x] `src/meals/domain/announcements.ts` anpassen:
   ```ts
   const mealTimeNames: Record<MealTime, string> = {
     breakfast: 'Frühstück',
@@ -462,7 +462,7 @@ neuen Modell.
   }
   ```
   Die übrigen Funktionen folgen den Umbenennungen, der Import von `WEEKDAYS` entfällt.
-- [ ] `src/meals/api/firestoreWeekPlanClient.ts` umbauen:
+- [x] `src/meals/api/firestoreWeekPlanClient.ts` umbauen:
   - `const MEALS = 'meals'` und `const MEAL_STAGE = 'mealStage'` ersetzen `CURRENT`
     und `STAGE`.
   - `toWeekPlan` liest `stored?.[day]?.[time]` und nimmt nur Strings, sonst `null`.
@@ -472,12 +472,12 @@ neuen Modell.
     `coveredSlots: stage.coveredSlots?.map(({ day, time }) => ({ day, time })) ?? null`.
   - `writeWeekPlan` schreibt den Plan als verschachtelte Map
     (`Object.fromEntries(WEEKDAYS.map((day) => [day, { ...plan[day] }]))`).
-- [ ] `src/meals/api/inMemoryWeekPlanClient.ts` und `weekPlanClient.ts`: übersetzen
+- [x] `src/meals/api/inMemoryWeekPlanClient.ts` und `weekPlanClient.ts`: übersetzen
   mit den neuen Typen, ohne Logikänderung.
-- [ ] `src/meals/ui/useWeekPlan.test.tsx` auf Plätze umstellen, die drei Tests
+- [x] `src/meals/ui/useWeekPlan.test.tsx` auf Plätze umstellen, die drei Tests
   bleiben inhaltlich gleich. `useWeekPlan.ts`: `chooseMeal(slot, id)` über
   `withMealIn`.
-- [ ] Die Icons anlegen, jeweils im Aufbau von `SnowflakeIcon.tsx`
+- [x] Die Icons anlegen, jeweils im Aufbau von `SnowflakeIcon.tsx`
   (`className="buttonIcon"`, `viewBox="0 0 24 24"`, `stroke="currentColor"`,
   `strokeWidth="2"`, `aria-hidden="true"`, `focusable="false"`), mit Lucide-Pfaden:
   - `src/meals/ui/SunriseIcon.tsx`: `M12 2v8`, `m4.93 10.93 1.41 1.41`, `M2 18h2`,
@@ -494,7 +494,7 @@ neuen Modell.
   - `src/meals/ui/ChevronRightIcon.tsx`: `m9 18 6-6-6-6`
   - `src/meals/ui/MealTimeIcon.tsx`: `({ time }: { time: MealTime })`, wählt über eine
     `Record<MealTime, ComponentType>` (aus `react`) das passende Icon.
-- [ ] `src/meals/ui/WeekPlanRow.tsx` umbauen:
+- [x] `src/meals/ui/WeekPlanRow.tsx` umbauen:
   - Props: `slot: PlanSlot` statt `day`, `onChooseMeal(slot, id)`,
     `onShuffleSlot(slot)`.
   - `DayMarks` wird zu `MealTimeMarks({ time, inSupply })`:
@@ -503,7 +503,7 @@ neuen Modell.
   - Beschriftungen: `mealTimeFieldLabel`, `randomMealLabel(time)`,
     `mealSuggestionsLabel(time)`, `fixedSlotText(time, planned, inSupply)`.
   - `shownMealIn` und `isCoveredIn` pro Platz.
-- [ ] `src/meals/ui/WeekPlanPage.tsx` umbauen:
+- [x] `src/meals/ui/WeekPlanPage.tsx` umbauen:
   - Neue Props `shownDay: Weekday` und `onShowDay: (day: Weekday) => void`.
   - Zwischen `.pageHeader` und der Meldung „Noch keine Gerichte gespeichert.“ die
     Tageszeile:
@@ -528,17 +528,17 @@ neuen Modell.
     `MEAL_TIMES.map((time) => <WeekPlanRow key={`${shownDay}-${time}`} slot={{ day: shownDay, time }} … />)`.
     Der Schlüssel enthält den Tag, damit beim Blättern halb Getipptes verworfen wird.
   - `plannedDayCount` wird zu `plannedMealCount`.
-- [ ] `src/meals/ui/WeekPlanArea.tsx` umbauen:
+- [x] `src/meals/ui/WeekPlanArea.tsx` umbauen:
   - Neue Props `shownDay` und `onShowDay`.
   - `chooseMeal(slot, id)` sagt `slotPlannedAnnouncement(slot.time, chosen,
     isSuppliedIn(planned, slot, meals, supplies))` an.
   - `shuffleSlot(slot)` nutzt `pickMealFor`.
   - `addToShoppingList` nutzt `transferredStage(coveredSlotsOf(…))`.
   - `showDay(day)` ruft `onShowDay(day)` auf und sagt `dayShownAnnouncement(day)` an.
-- [ ] `src/SignedInApp.tsx`: `const [shownDay, setShownDay] = useState<Weekday>('monday')`
+- [x] `src/SignedInApp.tsx`: `const [shownDay, setShownDay] = useState<Weekday>('monday')`
   neben `activeArea` anlegen und an `WeekPlanArea` durchreichen. Beim Übertragen wird
   `suppliedMealCount` statt `suppliedDayCount` genutzt.
-- [ ] `src/index.css`:
+- [x] `src/index.css`:
   - `.weekday` wird zu `.mealTimeMark` (`flex: none; width: 24px; display: flex;
     align-items: center; justify-content: center;`).
   - Neu ist `.dayNavigation`
@@ -546,7 +546,7 @@ neuen Modell.
     mit `.dayNavigation h2 { margin: 0; font-size: 1.25rem; }`.
   - Die Pfeile nutzen das vorhandene `.iconButton` und das Grau aus
     `button[aria-disabled='true']`.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx` umschreiben. `WeekPlanAreaUnderTest` hält
+- [x] `src/meals/ui/WeekPlanArea.test.tsx` umschreiben. `WeekPlanAreaUnderTest` hält
   `shownDay` selbst in `useState`, Start ist ein Parameter von `renderWeekPlanArea`
   mit dem Standard `'monday'`. Die Hilfen `dayField(name)` und `weekdayRows()` werden
   zu `mealTimeField(name)` und `mealTimeRows()`, und `markedWeekdays()` wird zu
@@ -576,22 +576,22 @@ neuen Modell.
     beide Pfeile bedienbar) und `has no accessibility violations on Sunday`.
   - Entfallen: `shows a row for every weekday of an empty plan` und `names every
     field after the full weekday`, beide ersetzt durch den ersten neuen Test.
-- [ ] `src/SignedInApp.test.tsx`: Die Tests zum Wochenplan (Zeile 266-714) nutzen
+- [x] `src/SignedInApp.test.tsx`: Die Tests zum Wochenplan (Zeile 266-714) nutzen
   Plätze und die neuen Beschriftungen. `says which meal was planned by hand on which
   day` wird zu `says which meal was planned by hand for which meal time`. Neu ist
   `keeps the shown day after a visit to the meals area`: `Nächster Tag`, dann
   `Gerichte`, dann `Wochenplan`, die `<h2>` heißt `Dienstag`.
-- [ ] `firestore.rules.test.ts`: Die Dokumente heißen `meals` und `mealStage`. Die
+- [x] `firestore.rules.test.ts`: Die Dokumente heißen `meals` und `mealStage`. Die
   Testdaten `weekPlan` und `weekPlanStage` (Zeile 58-68) bekommen die neue Form.
-- [ ] `e2e/emulatorHousehold.ts`:
+- [x] `e2e/emulatorHousehold.ts`:
   - `weekPlanOnServer` liest `weekPlan/meals` und gibt
     `Record<string, string | null>` mit Schlüsseln wie `monday.lunch` zurück
     (`fields[day].mapValue.fields[time].stringValue`).
   - `weekPlanStageOnServer` liest `weekPlan/mealStage` und gibt
     `coveredSlots: readonly string[] | null` im selben Format `monday.lunch` zurück.
-- [ ] `e2e/keyboard.ts`: `stepToDay(page, dayName)` drückt `Nächster Tag`, bis die
+- [x] `e2e/keyboard.ts`: `stepToDay(page, dayName)` drückt `Nächster Tag`, bis die
   `<h2>` `dayName` heißt. Das geht höchstens sechsmal, der Test startet am Montag.
-- [ ] `e2e/weekPlan.spec.ts` umschreiben:
+- [x] `e2e/weekPlan.spec.ts` umschreiben:
   - `plans a week and puts its items on the shopping list`: `Mittagessen` statt
     `Montag`, Überschrift `Wochenplan, 1 von 28`, danach `28 Gerichte` und
     `28 von 28`, 28 belegte Plätze auf dem Server. Die Einkaufsliste zeigt
@@ -616,20 +616,20 @@ neuen Modell.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch.
-- [ ] `PLAN_SLOTS` hat 28 Einträge in der Reihenfolge Mo-Frühstück … So-Abendessen.
-- [ ] `filledWeekPlan` belegt alle 28 Plätze, und `rarestInThePlan` zählt über alle
+- [x] `npm run test` läuft durch.
+- [x] `PLAN_SLOTS` hat 28 Einträge in der Reihenfolge Mo-Frühstück … So-Abendessen.
+- [x] `filledWeekPlan` belegt alle 28 Plätze, und `rarestInThePlan` zählt über alle
   Tageszeiten.
-- [ ] `isSuppliedIn` verbraucht eine Portion am Mittagessen vor dem Abendessen
+- [x] `isSuppliedIn` verbraucht eine Portion am Mittagessen vor dem Abendessen
   desselben Tages.
-- [ ] `locks the step back on Monday` und `locks the step forward on Sunday` sind grün,
+- [x] `locks the step back on Monday` und `locks the step forward on Sunday` sind grün,
   der Fokus bleibt auf dem Pfeil.
-- [ ] `keeps the shown day after a visit to the meals area` ist grün.
-- [ ] Alle `has no accessibility violations …`-Tests des Wochenplans sind grün.
-- [ ] `npm run test:rules` läuft durch.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `steps through the week with the
+- [x] `keeps the shown day after a visit to the meals area` ist grün.
+- [x] Alle `has no accessibility violations …`-Tests des Wochenplans sind grün.
+- [x] `npm run test:rules` läuft durch.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch, einschließlich `steps through the week with the
   arrows`.
 
 **Manuelle Verifikation**:
@@ -724,6 +724,16 @@ Die Uhr wird eingespeist.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1: `.mealTimeMark` hängt an der vorhandenen Regel für `.hiddenMark` und
+  `.supplyMark`, weil die Maße gleich sind. Eine eigene Regel wäre eine Kopie.
+- Phase 1: `stepToDay` in `e2e/keyboard.ts` wartet nach jedem Druck, bis die `<h2>`
+  den nächsten Tag nennt. So wird kein Tag übersprungen, falls die Oberfläche einen
+  Druck später zeigt.
+- Phase 1: Über den Plan hinaus gibt es in `WeekPlanArea.test.tsx` drei weitere Tests:
+  `shows the day as its abbreviation and names it in full`, `spends the supply on an
+  earlier day before the shown one` und `keeps stepping through the days while the plan
+  is fixed`.
 
 ## Verweise
 

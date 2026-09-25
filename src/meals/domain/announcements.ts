@@ -14,7 +14,7 @@ import {
 } from './meal'
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
-import { WEEKDAYS, type Weekday } from './weekPlan'
+import { PLAN_SLOTS, type MealTime, type Weekday } from './weekPlan'
 import { isFixed, isTransferred, type WeekPlanStage } from './weekPlanStage'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
@@ -230,23 +230,38 @@ export function weekdayAbbreviation(day: Weekday): string {
   return `${weekdayName(day).slice(0, 2)}.`
 }
 
-function plannedDaysPhrase(plannedDays: number): string {
-  return plannedDays === 0
-    ? `keine von ${WEEKDAYS.length}`
-    : `${plannedDays} von ${WEEKDAYS.length}`
+export function dayShownAnnouncement(day: Weekday): string {
+  return `${weekdayName(day)}.`
+}
+
+const mealTimeNames: Record<MealTime, string> = {
+  breakfast: 'Frühstück',
+  lunch: 'Mittagessen',
+  snack: 'Snack',
+  dinner: 'Abendessen',
+}
+
+export function mealTimeName(time: MealTime): string {
+  return mealTimeNames[time]
+}
+
+function plannedMealsPhrase(plannedMeals: number): string {
+  return plannedMeals === 0
+    ? `keine von ${PLAN_SLOTS.length}`
+    : `${plannedMeals} von ${PLAN_SLOTS.length}`
 }
 
 export function weekPlanHeading(
-  plannedDays: number,
+  plannedMeals: number,
   stage: WeekPlanStage,
 ): string {
-  const heading = `Wochenplan, ${plannedDaysPhrase(plannedDays)}`
+  const heading = `Wochenplan, ${plannedMealsPhrase(plannedMeals)}`
   if (isTransferred(stage)) return `${heading}, festgelegt, übertragen`
   return isFixed(stage) ? `${heading}, festgelegt` : heading
 }
 
-export function planFixedAnnouncement(plannedDays: number): string {
-  return `Plan festgelegt, ${plannedDaysPhrase(plannedDays)} Tagen geplant.`
+export function planFixedAnnouncement(plannedMeals: number): string {
+  return `Plan festgelegt, ${plannedMealsPhrase(plannedMeals)} Gerichten geplant.`
 }
 
 export function planEditableAnnouncement(): string {
@@ -263,41 +278,39 @@ export function transferButtonLabel(stage: WeekPlanStage): string {
     : 'Auf die Einkaufsliste'
 }
 
-export function fixedDayText(
-  day: Weekday,
+export function fixedSlotText(
+  time: MealTime,
   meal: NewMeal | null,
   inSupply: boolean,
 ): string {
-  if (meal === null) return `${weekdayName(day)}, nichts geplant`
-  const planned = `${weekdayName(day)}, ${meal.name}`
+  if (meal === null) return `${mealTimeName(time)}, nichts geplant`
+  const planned = `${mealTimeName(time)}, ${meal.name}`
   return inSupply ? `${planned}, im Vorrat` : planned
 }
 
-export function randomMealLabel(day: Weekday): string {
-  return `Zufallsgericht für ${weekdayName(day)}`
+export function randomMealLabel(time: MealTime): string {
+  return `Zufallsgericht für ${mealTimeName(time)}`
 }
 
-export function weekdayFieldLabel(day: Weekday, inSupply: boolean): string {
-  return inSupply ? `${weekdayName(day)}, im Vorrat` : weekdayName(day)
+export function mealTimeFieldLabel(time: MealTime, inSupply: boolean): string {
+  return inSupply ? `${mealTimeName(time)}, im Vorrat` : mealTimeName(time)
 }
 
-export function dayPlannedAnnouncement(
-  day: Weekday,
+export function slotPlannedAnnouncement(
+  time: MealTime,
   meal: NewMeal,
   inSupply: boolean,
 ): string {
-  const planned = `${weekdayName(day)}, ${meal.name}`
+  const planned = `${mealTimeName(time)}, ${meal.name}`
   return inSupply ? `${planned}, im Vorrat.` : `${planned}.`
 }
 
 export function weekPlanShuffledAnnouncement(): string {
-  return `Wochenplan neu gewürfelt, ${WEEKDAYS.length} Gerichte.`
+  return `Wochenplan neu gewürfelt, ${PLAN_SLOTS.length} Gerichte.`
 }
 
-function suppliedDayPhrase(suppliedDays: number): string {
-  return suppliedDays === 1
-    ? '1 Tag aus dem Vorrat entnommen.'
-    : `${suppliedDays} Tage aus dem Vorrat entnommen.`
+function suppliedMealPhrase(suppliedMeals: number): string {
+  return `${mealTotalPhrase(suppliedMeals)} aus dem Vorrat entnommen.`
 }
 
 function additionsPhrase(additions: string): string {
@@ -307,10 +320,10 @@ function additionsPhrase(additions: string): string {
 export function weekPlanTransferAnnouncement(
   additions: string,
   mealsWithoutItems: readonly NewMeal[],
-  suppliedDays: number,
+  suppliedMeals: number,
 ): string {
   const hints = mealsWithoutItems.map(mealWithoutItemsAnnouncement)
-  if (suppliedDays === 0)
+  if (suppliedMeals === 0)
     return additions === ''
       ? hints.join(' ')
       : [`Wochenplan, ${additions}`, ...hints].join(' ')
@@ -318,13 +331,13 @@ export function weekPlanTransferAnnouncement(
     return 'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.'
   return [
     `Wochenplan, ${additionsPhrase(additions)}`,
-    suppliedDayPhrase(suppliedDays),
+    suppliedMealPhrase(suppliedMeals),
     ...hints,
   ].join(' ')
 }
 
-export function mealSuggestionsLabel(day: Weekday): string {
-  return `Vorschläge für ${weekdayName(day)}`
+export function mealSuggestionsLabel(time: MealTime): string {
+  return `Vorschläge für ${mealTimeName(time)}`
 }
 
 export function suppliesHeading(supplyCount: number): string {

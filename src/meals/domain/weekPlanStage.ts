@@ -1,23 +1,27 @@
 import type { Meal } from './meal'
 import type { Supply } from './supply'
 import {
-  isSuppliedOn,
-  shownMealOn,
+  isSuppliedIn,
+  sameSlot,
+  shownMealIn,
+  type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from './weekPlan'
 
 export type WeekPlanStage =
   | { mode: 'editing' }
-  | { mode: 'reading'; coveredDays: readonly Weekday[] | null }
+  | { mode: 'reading'; coveredSlots: readonly PlanSlot[] | null }
 
 export const EDITING_STAGE: WeekPlanStage = { mode: 'editing' }
-export const FIXED_STAGE: WeekPlanStage = { mode: 'reading', coveredDays: null }
+export const FIXED_STAGE: WeekPlanStage = {
+  mode: 'reading',
+  coveredSlots: null,
+}
 
 export function transferredStage(
-  coveredDays: readonly Weekday[],
+  coveredSlots: readonly PlanSlot[],
 ): WeekPlanStage {
-  return { mode: 'reading', coveredDays }
+  return { mode: 'reading', coveredSlots }
 }
 
 export function isFixed(stage: WeekPlanStage): boolean {
@@ -25,21 +29,28 @@ export function isFixed(stage: WeekPlanStage): boolean {
 }
 
 export function isTransferred(stage: WeekPlanStage): boolean {
-  return stage.mode === 'reading' && stage.coveredDays !== null
+  return stage.mode === 'reading' && stage.coveredSlots !== null
 }
 
-function sameDays(
-  one: readonly Weekday[] | null,
-  other: readonly Weekday[] | null,
+function includesSlot(slots: readonly PlanSlot[], slot: PlanSlot): boolean {
+  return slots.some((each) => sameSlot(each, slot))
+}
+
+function sameSlots(
+  one: readonly PlanSlot[] | null,
+  other: readonly PlanSlot[] | null,
 ): boolean {
   if (one === null || other === null) return one === other
-  return one.length === other.length && one.every((day) => other.includes(day))
+  return (
+    one.length === other.length &&
+    one.every((slot) => includesSlot(other, slot))
+  )
 }
 
 export function sameStage(one: WeekPlanStage, other: WeekPlanStage): boolean {
   if (one.mode === 'editing' || other.mode === 'editing')
     return one.mode === other.mode
-  return sameDays(one.coveredDays, other.coveredDays)
+  return sameSlots(one.coveredSlots, other.coveredSlots)
 }
 
 export function canShuffle(stage: WeekPlanStage): boolean {
@@ -48,21 +59,22 @@ export function canShuffle(stage: WeekPlanStage): boolean {
 
 export function canTransfer(
   stage: WeekPlanStage,
-  plannedDays: number,
+  plannedMeals: number,
 ): boolean {
-  return isFixed(stage) && !isTransferred(stage) && plannedDays > 0
+  return isFixed(stage) && !isTransferred(stage) && plannedMeals > 0
 }
 
-export function isCoveredOn(
+export function isCoveredIn(
   stage: WeekPlanStage,
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
   meals: readonly Meal[],
   supplies: readonly Supply[],
 ): boolean {
-  if (stage.mode === 'reading' && stage.coveredDays !== null)
+  if (stage.mode === 'reading' && stage.coveredSlots !== null)
     return (
-      stage.coveredDays.includes(day) && shownMealOn(plan, day, meals) !== null
+      includesSlot(stage.coveredSlots, slot) &&
+      shownMealIn(plan, slot, meals) !== null
     )
-  return isSuppliedOn(plan, day, meals, supplies)
+  return isSuppliedIn(plan, slot, meals, supplies)
 }

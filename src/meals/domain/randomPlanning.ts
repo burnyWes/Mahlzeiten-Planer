@@ -1,10 +1,11 @@
 import type { Meal } from './meal'
 import {
   EMPTY_WEEK_PLAN,
-  WEEKDAYS,
-  withMealOnDay,
+  mealIn,
+  PLAN_SLOTS,
+  withMealIn,
+  type PlanSlot,
   type WeekPlan,
-  type Weekday,
 } from './weekPlan'
 
 export type RandomSource = () => number
@@ -12,7 +13,7 @@ export type RandomSource = () => number
 export type PlanningRule = (
   candidates: readonly Meal[],
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
 ) => readonly Meal[]
 
 export function randomCandidates(meals: readonly Meal[]): readonly Meal[] {
@@ -20,7 +21,7 @@ export function randomCandidates(meals: readonly Meal[]): readonly Meal[] {
 }
 
 function timesPlanned(plan: WeekPlan, meal: Meal): number {
-  return WEEKDAYS.filter((day) => plan[day] === meal.id).length
+  return PLAN_SLOTS.filter((slot) => mealIn(plan, slot) === meal.id).length
 }
 
 export const rarestInThePlan: PlanningRule = (candidates, plan) => {
@@ -34,22 +35,22 @@ export function narrowedBy(
   rules: readonly PlanningRule[],
   candidates: readonly Meal[],
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
 ): readonly Meal[] {
   return rules.reduce((left, rule) => {
-    const narrowed = rule(left, plan, day)
+    const narrowed = rule(left, plan, slot)
     return narrowed.length === 0 ? left : narrowed
   }, candidates)
 }
 
-export function pickMealForDay(
+export function pickMealFor(
   candidates: readonly Meal[],
   plan: WeekPlan,
-  day: Weekday,
+  slot: PlanSlot,
   random: RandomSource,
 ): Meal | null {
   if (candidates.length === 0) return null
-  const left = narrowedBy(PLANNING_RULES, candidates, plan, day)
+  const left = narrowedBy(PLANNING_RULES, candidates, plan, slot)
   return left[Math.min(Math.floor(random() * left.length), left.length - 1)]
 }
 
@@ -57,8 +58,8 @@ export function filledWeekPlan(
   candidates: readonly Meal[],
   random: RandomSource,
 ): WeekPlan {
-  return WEEKDAYS.reduce((plan, day) => {
-    const picked = pickMealForDay(candidates, plan, day, random)
-    return picked === null ? plan : withMealOnDay(plan, day, picked.id)
+  return PLAN_SLOTS.reduce((plan, slot) => {
+    const picked = pickMealFor(candidates, plan, slot, random)
+    return picked === null ? plan : withMealIn(plan, slot, picked.id)
   }, EMPTY_WEEK_PLAN)
 }

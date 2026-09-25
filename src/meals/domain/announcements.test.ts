@@ -21,11 +21,13 @@ import {
   mealItemRemovedAnnouncement,
   mealSavedAnnouncement,
   mealsHeading,
-  dayPlannedAnnouncement,
-  fixedDayText,
+  dayShownAnnouncement,
+  fixedSlotText,
   filterResetAnnouncement,
   shownMealsCount,
   mealSuggestionsLabel,
+  mealTimeFieldLabel,
+  mealTimeName,
   mealWithoutItemsAnnouncement,
   lessSupplyLabel,
   moreSupplyLabel,
@@ -33,6 +35,7 @@ import {
   planFixedAnnouncement,
   randomMealLabel,
   replacedKindAnnouncement,
+  slotPlannedAnnouncement,
   stageButtonLabel,
   transferButtonLabel,
   suppliesHeading,
@@ -40,7 +43,6 @@ import {
   supplyChangedAnnouncement,
   supplyRemovedAnnouncement,
   weekdayAbbreviation,
-  weekdayFieldLabel,
   weekdayName,
   weekPlanHeading,
   weekPlanShuffledAnnouncement,
@@ -49,7 +51,7 @@ import {
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
-import { WEEKDAYS } from './weekPlan'
+import { MEAL_TIMES, WEEKDAYS } from './weekPlan'
 import { EDITING_STAGE, FIXED_STAGE, transferredStage } from './weekPlanStage'
 
 const mincedMeat: MealItem = {
@@ -528,44 +530,61 @@ describe('weekdayAbbreviation', () => {
   })
 })
 
+describe('mealTimeName', () => {
+  it('names every meal time', () => {
+    expect(MEAL_TIMES.map(mealTimeName)).toEqual([
+      'Frühstück',
+      'Mittagessen',
+      'Snack',
+      'Abendessen',
+    ])
+  })
+})
+
+describe('dayShownAnnouncement', () => {
+  it('names the day that is shown now', () => {
+    expect(dayShownAnnouncement('saturday')).toBe('Samstag.')
+  })
+})
+
 describe('weekPlanHeading', () => {
-  it('says that no day is planned yet', () => {
-    expect(weekPlanHeading(0, EDITING_STAGE)).toBe('Wochenplan, keine von 7')
+  it('says that no meal is planned yet', () => {
+    expect(weekPlanHeading(0, EDITING_STAGE)).toBe('Wochenplan, keine von 28')
   })
 
-  it('counts the days that carry a meal', () => {
-    expect(weekPlanHeading(5, EDITING_STAGE)).toBe('Wochenplan, 5 von 7')
+  it('counts the slots that carry a meal', () => {
+    expect(weekPlanHeading(12, EDITING_STAGE)).toBe('Wochenplan, 12 von 28')
   })
 
   it('adds that the plan is fixed', () => {
-    expect(weekPlanHeading(5, FIXED_STAGE)).toBe(
-      'Wochenplan, 5 von 7, festgelegt',
+    expect(weekPlanHeading(12, FIXED_STAGE)).toBe(
+      'Wochenplan, 12 von 28, festgelegt',
     )
   })
 
   it('adds that the fixed plan was transferred', () => {
-    expect(weekPlanHeading(5, transferredStage(['monday']))).toBe(
-      'Wochenplan, 5 von 7, festgelegt, übertragen',
-    )
+    expect(
+      weekPlanHeading(12, transferredStage([{ day: 'monday', time: 'lunch' }])),
+    ).toBe('Wochenplan, 12 von 28, festgelegt, übertragen')
   })
 
   it('adds that an empty plan is fixed', () => {
     expect(weekPlanHeading(0, FIXED_STAGE)).toBe(
-      'Wochenplan, keine von 7, festgelegt',
+      'Wochenplan, keine von 28, festgelegt',
     )
   })
 })
 
 describe('planFixedAnnouncement', () => {
-  it('says how many days are planned', () => {
-    expect(planFixedAnnouncement(5)).toBe(
-      'Plan festgelegt, 5 von 7 Tagen geplant.',
+  it('says how many meals are planned', () => {
+    expect(planFixedAnnouncement(12)).toBe(
+      'Plan festgelegt, 12 von 28 Gerichten geplant.',
     )
   })
 
-  it('says that no day is planned', () => {
+  it('says that no meal is planned', () => {
     expect(planFixedAnnouncement(0)).toBe(
-      'Plan festgelegt, keine von 7 Tagen geplant.',
+      'Plan festgelegt, keine von 28 Gerichten geplant.',
     )
   })
 })
@@ -599,58 +618,58 @@ describe('transferButtonLabel', () => {
   })
 })
 
-describe('fixedDayText', () => {
-  it('names the day, the meal and the supply', () => {
-    expect(fixedDayText('monday', bolognese, true)).toBe(
-      'Montag, Spaghetti Bolognese, im Vorrat',
+describe('fixedSlotText', () => {
+  it('names the meal time, the meal and the supply', () => {
+    expect(fixedSlotText('breakfast', bolognese, true)).toBe(
+      'Frühstück, Spaghetti Bolognese, im Vorrat',
     )
   })
 
-  it('names the day and the meal without a supply', () => {
-    expect(fixedDayText('monday', bolognese, false)).toBe(
-      'Montag, Spaghetti Bolognese',
+  it('names the meal time and the meal without a supply', () => {
+    expect(fixedSlotText('breakfast', bolognese, false)).toBe(
+      'Frühstück, Spaghetti Bolognese',
     )
   })
 
-  it('says that nothing is planned on the day', () => {
-    expect(fixedDayText('monday', null, false)).toBe('Montag, nichts geplant')
+  it('says that nothing is planned for the meal time', () => {
+    expect(fixedSlotText('snack', null, false)).toBe('Snack, nichts geplant')
   })
 })
 
 describe('randomMealLabel', () => {
-  it('names the day the button rolls for', () => {
-    expect(randomMealLabel('monday')).toBe('Zufallsgericht für Montag')
+  it('names the meal time the button rolls for', () => {
+    expect(randomMealLabel('breakfast')).toBe('Zufallsgericht für Frühstück')
   })
 })
 
-describe('weekdayFieldLabel', () => {
-  it('names the weekday of a day without a supply', () => {
-    expect(weekdayFieldLabel('monday', false)).toBe('Montag')
+describe('mealTimeFieldLabel', () => {
+  it('names the meal time of a slot without a supply', () => {
+    expect(mealTimeFieldLabel('dinner', false)).toBe('Abendessen')
   })
 
-  it('adds the supply to the weekday of a covered day', () => {
-    expect(weekdayFieldLabel('monday', true)).toBe('Montag, im Vorrat')
+  it('adds the supply to the meal time of a covered slot', () => {
+    expect(mealTimeFieldLabel('dinner', true)).toBe('Abendessen, im Vorrat')
   })
 })
 
-describe('dayPlannedAnnouncement', () => {
-  it('says which meal landed on which day', () => {
-    expect(dayPlannedAnnouncement('monday', bolognese, false)).toBe(
-      'Montag, Spaghetti Bolognese.',
+describe('slotPlannedAnnouncement', () => {
+  it('says which meal landed in which meal time', () => {
+    expect(slotPlannedAnnouncement('lunch', bolognese, false)).toBe(
+      'Mittagessen, Spaghetti Bolognese.',
     )
   })
 
-  it('says that the meal of the day is kept in store', () => {
-    expect(dayPlannedAnnouncement('monday', bolognese, true)).toBe(
-      'Montag, Spaghetti Bolognese, im Vorrat.',
+  it('says that the meal of the slot is kept in store', () => {
+    expect(slotPlannedAnnouncement('lunch', bolognese, true)).toBe(
+      'Mittagessen, Spaghetti Bolognese, im Vorrat.',
     )
   })
 })
 
 describe('weekPlanShuffledAnnouncement', () => {
-  it('counts the days that were rolled', () => {
+  it('counts the slots that were rolled', () => {
     expect(weekPlanShuffledAnnouncement()).toBe(
-      'Wochenplan neu gewürfelt, 7 Gerichte.',
+      'Wochenplan neu gewürfelt, 28 Gerichte.',
     )
   })
 })
@@ -688,15 +707,15 @@ describe('weekPlanTransferAnnouncement', () => {
     )
   })
 
-  it('counts the days that the supply covered', () => {
-    expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 3)).toBe(
-      'Wochenplan, 6 Artikel hinzugefügt. 3 Tage aus dem Vorrat entnommen.',
+  it('counts the meals that the supply covered', () => {
+    expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 2)).toBe(
+      'Wochenplan, 6 Artikel hinzugefügt. 2 Gerichte aus dem Vorrat entnommen.',
     )
   })
 
-  it('speaks of a single covered day in the singular', () => {
+  it('speaks of a single covered meal in the singular', () => {
     expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 1)).toBe(
-      'Wochenplan, 6 Artikel hinzugefügt. 1 Tag aus dem Vorrat entnommen.',
+      'Wochenplan, 6 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
     )
   })
 
@@ -708,7 +727,7 @@ describe('weekPlanTransferAnnouncement', () => {
 
   it('names the week plan first when only a hint is left', () => {
     expect(weekPlanTransferAnnouncement('', [soup], 2)).toBe(
-      'Wochenplan, nichts hinzugefügt. 2 Tage aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
+      'Wochenplan, nichts hinzugefügt. 2 Gerichte aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
     )
   })
 })
@@ -754,7 +773,7 @@ describe('moreSupplyLabel', () => {
 })
 
 describe('mealSuggestionsLabel', () => {
-  it('names the day the suggestions belong to', () => {
-    expect(mealSuggestionsLabel('monday')).toBe('Vorschläge für Montag')
+  it('names the meal time the suggestions belong to', () => {
+    expect(mealSuggestionsLabel('snack')).toBe('Vorschläge für Snack')
   })
 })
