@@ -302,11 +302,11 @@ Haushalt gespeichert, auf das Würfeln wirkt sie noch nicht.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit VoiceOver: In den Einstellungen wird unter „Farben
+- [x] Auf dem Gerät mit VoiceOver: In den Einstellungen wird unter „Farben
   invertieren“ „Hauptgericht würfeln, Mittags oder abends“ vorgelesen. Die Auswahl
   lässt sich über den Picker ändern und steht nach dem Neuladen und auf dem zweiten
   Gerät genauso da.
-- [ ] Die Zeile ist in normalen und invertierten Farben gut lesbar.
+- [x] Die Zeile ist in normalen und invertierten Farben gut lesbar.
 
 ### Phase 2: Würfeln hält sich an die Einstellung
 
