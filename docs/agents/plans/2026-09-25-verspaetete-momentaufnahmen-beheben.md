@@ -346,10 +346,10 @@ anderen Gerät gelöschten Artikel erkennen (Bug 5, TODO `or()`-Abfrage).
   grün (`--repeat-each=10`)
 
 **Manuelle Verifikation**:
-- [ ] Auf dem Gerät gegen die echte Datenbank: Die Einkaufsliste lädt ohne Fehlermeldung
+- [x] Auf dem Gerät gegen die echte Datenbank: Die Einkaufsliste lädt ohne Fehlermeldung
   (kein fehlender Index). Abhaken und Wieder-Öffnen lassen die Zeile stehen, und
   VoiceOver behält den Fokus.
-- [ ] Zwei Geräte: Gerät B schaltet in den Flugmodus und drückt „Mehr“ an Milch, Gerät A
+- [x] Zwei Geräte: Gerät B schaltet in den Flugmodus und drückt „Mehr“ an Milch, Gerät A
   löscht Milch, Gerät B geht wieder online. Die Zeile verschwindet ohne die Ansage
   „Konnte nicht gespeichert werden.“.
 
@@ -361,13 +361,13 @@ Ein Artikel, der entfernt wurde, bevor er je in einer Momentaufnahme stand, kehr
 zurück (Bug 6).
 
 **Aufgaben**:
-- [ ] Test-first in `unconfirmedWrites.test.ts` (`describe('unconfirmed removals')`):
+- [x] Test-first in `unconfirmedWrites.test.ts` (`describe('unconfirmed removals')`):
   - `keeps the removal of an item never seen while the snapshot lacks it`
   - `marks a removal as seen once the snapshot carries the item`
   - `drops a seen removal once the snapshot no longer carries the item`
   - `hides a removed item never seen once a late snapshot carries it`
   - bestehende Tests auf `{ id, seen }` umstellen
-- [ ] `src/shopping/domain/unconfirmedWrites.ts`:
+- [x] `src/shopping/domain/unconfirmedWrites.ts`:
   ```ts
   export type UnconfirmedRemoval = { id: ItemId; seen: boolean }
   export type UnconfirmedRemovals = readonly UnconfirmedRemoval[]
@@ -376,15 +376,15 @@ zurück (Bug 6).
   `dropConfirmedRemovals` setzt `seen`, wenn der Artikel in `liveItems` steht, und
   verwirft ein gesichtetes Entfernen, sobald er fehlt. `withoutUnconfirmedRemovals`
   filtert über `removal.id`.
-- [ ] `src/shopping/ui/useShoppingList.ts` `removeItem`: `rememberRemoval(removals, item.id, liveItems)`
+- [x] `src/shopping/ui/useShoppingList.ts` `removeItem`: `rememberRemoval(removals, item.id, liveItems)`
   statt `[...removals, item.id]`, `liveItems` in die Abhängigkeiten aufnehmen.
-- [ ] `docs/notes.txt`: den `b`-Eintrag „wird ein Artikel per "Weniger" entfernt, der selbst
+- [x] `docs/notes.txt`: den `b`-Eintrag „wird ein Artikel per "Weniger" entfernt, der selbst
   noch unbestaetigt ist …“ auf `x` setzen und nach DONE verschieben.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`, `npm run lint`, `npm run build` grün
-- [ ] `npm run test:e2e` grün
-- [ ] In `docs/notes.txt` steht unter TODO kein `b`-Eintrag mehr außer dem neu
+- [x] `npm run test`, `npm run lint`, `npm run build` grün
+- [x] `npm run test:e2e` grün
+- [x] In `docs/notes.txt` steht unter TODO kein `b`-Eintrag mehr außer dem neu
   angehängten aus Phase 1
 
 ## Notizen zur Umsetzung

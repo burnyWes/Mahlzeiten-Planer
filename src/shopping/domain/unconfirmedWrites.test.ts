@@ -5,6 +5,7 @@ import {
   dropConfirmedRemovals,
   dropConfirmedWrites,
   forgetWritesOf,
+  rememberRemoval,
   rememberWrite,
   withoutUnconfirmedRemovals,
   withUnconfirmedWrites,
@@ -274,16 +275,58 @@ describe('dropConfirmedWrites', () => {
 describe('unconfirmed removals', () => {
   it('hides a removed item while the snapshot still carries it', () => {
     expect(
-      withoutUnconfirmedRemovals([item('bread'), item('milk')], ['milk']),
+      withoutUnconfirmedRemovals(
+        [item('bread'), item('milk')],
+        [{ id: 'milk', seen: true }],
+      ),
     ).toEqual([item('bread')])
   })
 
-  it('keeps a removal while the snapshot still carries the item', () => {
-    expect(dropConfirmedRemovals(['milk'], [item('milk')])).toEqual(['milk'])
+  it('remembers a removal as seen when the snapshot carries the item', () => {
+    expect(rememberRemoval([], 'milk', [item('milk')])).toEqual([
+      { id: 'milk', seen: true },
+    ])
   })
 
-  it('drops a removal once the snapshot no longer carries the item', () => {
-    expect(dropConfirmedRemovals(['milk'], [item('bread')])).toEqual([])
+  it('remembers a removal as never seen when the snapshot lacks the item', () => {
+    expect(rememberRemoval([], 'milk', [item('bread')])).toEqual([
+      { id: 'milk', seen: false },
+    ])
+  })
+
+  it('keeps a removal while the snapshot still carries the item', () => {
+    expect(
+      dropConfirmedRemovals([{ id: 'milk', seen: true }], [item('milk')]),
+    ).toEqual([{ id: 'milk', seen: true }])
+  })
+
+  it('keeps the removal of an item never seen while the snapshot lacks it', () => {
+    expect(
+      dropConfirmedRemovals([{ id: 'milk', seen: false }], [item('bread')]),
+    ).toEqual([{ id: 'milk', seen: false }])
+  })
+
+  it('marks a removal as seen once the snapshot carries the item', () => {
+    expect(
+      dropConfirmedRemovals([{ id: 'milk', seen: false }], [item('milk')]),
+    ).toEqual([{ id: 'milk', seen: true }])
+  })
+
+  it('drops a seen removal once the snapshot no longer carries the item', () => {
+    expect(
+      dropConfirmedRemovals([{ id: 'milk', seen: true }], [item('bread')]),
+    ).toEqual([])
+  })
+
+  it('hides a removed item never seen once a late snapshot carries it', () => {
+    const removals = dropConfirmedRemovals(
+      dropConfirmedRemovals([{ id: 'milk', seen: false }], [item('bread')]),
+      [item('bread'), item('milk')],
+    )
+
+    expect(
+      withoutUnconfirmedRemovals([item('bread'), item('milk')], removals),
+    ).toEqual([item('bread')])
   })
 
   it('forgets the writes of a removed item only', () => {

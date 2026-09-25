@@ -9,7 +9,9 @@ export type UnconfirmedWrite = {
 
 export type UnconfirmedWrites = readonly UnconfirmedWrite[]
 
-export type UnconfirmedRemovals = readonly ItemId[]
+export type UnconfirmedRemoval = { id: ItemId; seen: boolean }
+
+export type UnconfirmedRemovals = readonly UnconfirmedRemoval[]
 
 function sameItemState(one: ShoppingItem, other: ShoppingItem): boolean {
   return (
@@ -86,18 +88,38 @@ export function dropConfirmedWrites(
   })
 }
 
+function carries(liveItems: readonly ShoppingItem[], id: ItemId): boolean {
+  return liveItems.some((item) => item.id === id)
+}
+
+export function rememberRemoval(
+  removals: UnconfirmedRemovals,
+  id: ItemId,
+  liveItems: readonly ShoppingItem[],
+): UnconfirmedRemovals {
+  return [...removals, { id, seen: carries(liveItems, id) }]
+}
+
 export function withoutUnconfirmedRemovals(
   items: readonly ShoppingItem[],
   removals: UnconfirmedRemovals,
 ): readonly ShoppingItem[] {
-  return items.filter((item) => !removals.includes(item.id))
+  return items.filter(
+    (item) => !removals.some((removal) => removal.id === item.id),
+  )
 }
 
 export function dropConfirmedRemovals(
   removals: UnconfirmedRemovals,
   liveItems: readonly ShoppingItem[],
 ): UnconfirmedRemovals {
-  return removals.filter((id) => liveItems.some((item) => item.id === id))
+  return removals
+    .filter((removal) => !removal.seen || carries(liveItems, removal.id))
+    .map((removal) =>
+      removal.seen
+        ? removal
+        : { ...removal, seen: carries(liveItems, removal.id) },
+    )
 }
 
 export function forgetWritesOf(

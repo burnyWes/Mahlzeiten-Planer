@@ -106,6 +106,9 @@ x Einkaufsliste: loescht das andere Geraet einen Artikel, waehrend hier ein eige
   solange das Dokument fehlt (src/shopping/domain/unconfirmedWrites.ts:54). Der Artikel
   bleibt als Geist stehen, und updateDoc meldet "Konnte nicht gespeichert werden."
   (MZP-020, Entscheidung 10).
+x Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbestaetigt
+  ist, wertet dropConfirmedRemovals sein Fehlen im Snapshot schon als Bestaetigung
+  (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -136,9 +139,6 @@ TODO
 - Zufallsregeln: das Feld mainMeal heisst seit MZP-019 kind und traegt
   'mainMeal' | 'breakfast' | 'none'; der Punkt weiter oben meint dieses Feld.
   Die Zeile im Formular heisst seitdem Hauptgericht
-b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbestaetigt
-  ist, wertet dropConfirmedRemovals sein Fehlen im Snapshot schon als Bestaetigung
-  (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).
 - Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
   Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
 - ausgegraute buttons heller zeichnen

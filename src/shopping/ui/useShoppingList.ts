@@ -43,6 +43,7 @@ import {
   dropConfirmedRemovals,
   dropConfirmedWrites,
   forgetWritesOf,
+  rememberRemoval,
   rememberWrite,
   withoutUnconfirmedRemovals,
   withUnconfirmedWrites,
@@ -214,12 +215,14 @@ export function useShoppingList(
   const removeItem = useCallback(
     (item: ShoppingItem) => {
       client.removeItem(item.id)
-      setUnconfirmedRemovals((removals) => [...removals, item.id])
+      setUnconfirmedRemovals((removals) =>
+        rememberRemoval(removals, item.id, liveItems),
+      )
       setUnconfirmedWrites((writes) => forgetWritesOf(writes, item.id))
       setFrozenOrder((order) => withoutFromFrozenOrder(order, item.id))
       return itemRemovedAnnouncement(item, openCount - 1)
     },
-    [client, openCount],
+    [client, liveItems, openCount],
   )
 
   const takeOneLess = useCallback(
