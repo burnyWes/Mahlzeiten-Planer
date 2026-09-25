@@ -5,7 +5,7 @@ branch: main
 story: MZP-036
 topic: "Mehr Abstand auf den Hauptseiten"
 tags: [plan, css, pageHeader, mealFilter, weekPlan]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-036 — Mehr Abstand auf den Hauptseiten
@@ -180,18 +180,20 @@ Abhängigkeiten: keine.
 
 **Manuelle Verifikation**:
 
-- [ ] Einkaufsliste, Vorräte und Einstellungen: Zwischen Überschriftenzeile und erster
+- [x] Einkaufsliste, Vorräte und Einstellungen: Zwischen Überschriftenzeile und erster
       Zeile bzw. Hinweistext ist sichtbar mehr Luft als vorher.
-- [ ] Gerichte mit Filter: Überschrift → Filter und Filter → Liste haben gleich viel
+- [x] Gerichte mit Filter: Überschrift → Filter und Filter → Liste haben gleich viel
       Luft. Mit leerem Filterergebnis gilt das auch für „Noch keine Gerichte.“
-- [ ] Wochenplan in der Tages- und in der Wochenansicht: Unter der Tages- bzw.
+- [x] Wochenplan in der Tages- und in der Wochenansicht: Unter der Tages- bzw.
       Tageszeitauswahl ist gleich viel Luft wie zwischen Überschrift und Auswahl.
-- [ ] Eine Unterseite (z. B. Gericht bearbeiten) sieht unverändert aus.
-- [ ] Beides in beiden Farbstellungen.
+- [x] Eine Unterseite (z. B. Gericht bearbeiten) sieht unverändert aus.
+- [x] Beides in beiden Farbstellungen.
 
 ## Notizen zur Umsetzung
 
-Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+**2026-09-25 — am Gerät geprüft.** Unter Überschrift, Filter sowie Tages- und
+Tageszeitauswahl steht auf allen Hauptseiten gleichmäßig mehr Luft, die Unterseiten sehen
+in beiden Farbstellungen unverändert aus. Der Plan ist abgeschlossen.
 
 ## Verweise
 
