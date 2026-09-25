@@ -5,7 +5,6 @@ import {
   categoryAddedAnnouncement,
   categoryDeletedAnnouncement,
   categoryDeletionNote,
-  categoryFilterAnnouncement,
   categoryRowLabel,
   categorySavedAnnouncement,
   categoryRemovedAnnouncement,
@@ -21,6 +20,8 @@ import {
   mealItemRemovedAnnouncement,
   mealSavedAnnouncement,
   mealsHeading,
+  mealFilterAnnouncement,
+  mealFilterName,
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   fixedSlotText,
@@ -128,17 +129,37 @@ describe('shownMealsCount', () => {
   })
 })
 
-describe('categoryFilterAnnouncement', () => {
+describe('mealFilterName', () => {
+  it('names each kind', () => {
+    expect(mealFilterName({ by: 'kind', kind: 'mainMeal' })).toBe(
+      'Hauptgericht',
+    )
+    expect(mealFilterName({ by: 'kind', kind: 'breakfast' })).toBe('Frühstück')
+    expect(mealFilterName({ by: 'kind', kind: 'snack' })).toBe('Snack')
+  })
+
+  it('names the category', () => {
+    expect(mealFilterName({ by: 'category', category: 'Suppe' })).toBe('Suppe')
+  })
+})
+
+describe('mealFilterAnnouncement', () => {
+  const soups = { by: 'category', category: 'Suppe' } as const
+
   it('names the category with the shown meals out of all meals', () => {
-    expect(categoryFilterAnnouncement('Suppe', 4, 12)).toBe(
+    expect(mealFilterAnnouncement(soups, 4, 12)).toBe(
       'Suppe, 4 von 12 Gerichten.',
     )
   })
 
   it('speaks of a single meal', () => {
-    expect(categoryFilterAnnouncement('Suppe', 1, 1)).toBe(
-      'Suppe, 1 von 1 Gericht.',
-    )
+    expect(mealFilterAnnouncement(soups, 1, 1)).toBe('Suppe, 1 von 1 Gericht.')
+  })
+
+  it('names the kind with the shown meals out of all meals', () => {
+    expect(
+      mealFilterAnnouncement({ by: 'kind', kind: 'breakfast' }, 3, 12),
+    ).toBe('Frühstück, 3 von 12 Gerichten.')
   })
 })
 

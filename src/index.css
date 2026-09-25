@@ -497,14 +497,14 @@ html:has(.bottomBar:not(.bottomBarInFlow)) {
   display: block;
 }
 
-.categoryFilter {
+.mealFilter {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin: 1rem 0 0;
 }
 
-.categoryFilter select {
+.mealFilter select {
   flex: 1;
   min-width: 0;
 }

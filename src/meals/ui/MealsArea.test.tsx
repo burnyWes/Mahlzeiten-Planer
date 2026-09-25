@@ -206,12 +206,22 @@ function shownMealNames() {
   )
 }
 
-function categoryFilter() {
-  return screen.getByRole('combobox', { name: 'Kategorie' })
+function mealFilter() {
+  return screen.getByRole('combobox', { name: 'Filter' })
 }
 
-function chooseCategory(name: string) {
-  return userEvent.selectOptions(categoryFilter(), name)
+function chooseFilter(nameOrValue: string) {
+  return userEvent.selectOptions(mealFilter(), nameOrValue)
+}
+
+function chosenFilterText() {
+  return (mealFilter() as HTMLSelectElement).selectedOptions[0].textContent
+}
+
+function offeredFilters() {
+  return within(mealFilter())
+    .getAllByRole('option')
+    .map((option) => option.textContent)
 }
 
 function mealsWithSoups() {
@@ -219,6 +229,15 @@ function mealsWithSoups() {
     meal('lentils', 'Linsensuppe', { categories: ['Suppe'] }),
     meal('bolognese', 'Bolognese', { categories: ['Nudelgericht'] }),
     meal('onions', 'Zwiebelsuppe', { categories: ['suppe'], hidden: true }),
+  ]
+}
+
+function mealsWithBreakfasts() {
+  return [
+    meal('bolognese', 'Bolognese'),
+    meal('muesli', 'Müsli', { kind: 'breakfast' }),
+    meal('porridge', 'Porridge', { kind: 'breakfast', hidden: true }),
+    meal('apple', 'Apfel', { kind: 'snack' }),
   ]
 }
 
@@ -840,32 +859,30 @@ describe('MealsArea', () => {
     ).toHaveFocus()
   })
 
-  it('offers no category filter without categories', () => {
-    renderMealsArea([meal('soup', 'Suppe')])
+  it('offers no filter without kinds and categories', () => {
+    renderMealsArea([meal('soup', 'Suppe', { kind: 'none' })])
 
     expect(screen.queryByRole('combobox')).toBeNull()
   })
 
   it('offers every category to filter by, hidden meals included', () => {
     renderMealsArea([
-      meal('soup', 'Linsensuppe', { categories: ['Suppe'] }),
-      meal('bake', 'Nudelauflauf', { categories: ['Auflauf'], hidden: true }),
+      meal('soup', 'Linsensuppe', { categories: ['Suppe'], kind: 'none' }),
+      meal('bake', 'Nudelauflauf', {
+        categories: ['Auflauf'],
+        hidden: true,
+        kind: 'none',
+      }),
     ])
 
-    expect(
-      within(categoryFilter())
-        .getAllByRole('option')
-        .map((option) => option.textContent),
-    ).toEqual(['Alle', 'Auflauf', 'Suppe'])
-    expect(
-      (categoryFilter() as HTMLSelectElement).selectedOptions[0].textContent,
-    ).toBe('Alle')
+    expect(offeredFilters()).toEqual(['Alle', 'Auflauf', 'Suppe'])
+    expect(chosenFilterText()).toBe('Alle')
   })
 
   it('shows only the meals of the chosen category', async () => {
     renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
 
     expect(shownMealNames()).toEqual(['Linsensuppe', 'Zwiebelsuppe'])
   })
@@ -873,7 +890,7 @@ describe('MealsArea', () => {
   it('counts the shown meals out of all meals in the heading', async () => {
     renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
 
     const heading = screen.getByRole('heading', {
       name: 'Gerichte, 2 von 3 (1 ausgeblendet)',
@@ -888,7 +905,7 @@ describe('MealsArea', () => {
       meal('onions', 'Zwiebelsuppe', { categories: ['Suppe'] }),
     ])
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
 
     const heading = screen.getByRole('heading', { name: 'Gerichte, 2 von 2' })
     expect(heading.textContent).toBe('Gerichte, 2 / 2')
@@ -897,7 +914,7 @@ describe('MealsArea', () => {
   it('announces the chosen category with the shown meals', async () => {
     const { announcements } = renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
 
     expect(announcements).toEqual(['Suppe, 2 von 3 Gerichten.'])
   })
@@ -905,8 +922,8 @@ describe('MealsArea', () => {
   it('shows every meal again when all are chosen', async () => {
     const { announcements } = renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
-    await chooseCategory('Alle')
+    await chooseFilter('Suppe')
+    await chooseFilter('Alle')
 
     expect(shownMealNames()).toEqual([
       'Bolognese',
@@ -922,11 +939,11 @@ describe('MealsArea', () => {
   it('keeps the filter when returning from a meal', async () => {
     renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
     await openMeal('Linsensuppe')
     await goBackToTheMeals()
 
-    expect(categoryFilter()).toHaveValue('Suppe')
+    expect(chosenFilterText()).toBe('Suppe')
     expect(shownMealNames()).toEqual(['Linsensuppe', 'Zwiebelsuppe'])
     expect(
       screen.getByRole('heading', {
@@ -938,7 +955,7 @@ describe('MealsArea', () => {
   it('shows every meal when the chosen category is gone', async () => {
     const { client, announcements } = renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
     await act(async () => {
       client.changeMeals(
         client
@@ -948,7 +965,7 @@ describe('MealsArea', () => {
       )
     })
 
-    expect(categoryFilter()).toHaveValue('')
+    expect(chosenFilterText()).toBe('Alle')
     expect(shownMealNames()).toEqual([
       'Bolognese',
       'Linsensuppe',
@@ -960,7 +977,7 @@ describe('MealsArea', () => {
   it('keeps the filter when only the spelling of the category changes', async () => {
     const { client } = renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
     await act(async () => {
       client.changeMeals(
         client
@@ -970,7 +987,7 @@ describe('MealsArea', () => {
       )
     })
 
-    expect(categoryFilter()).toHaveValue('suppe')
+    expect(chosenFilterText()).toBe('suppe')
     expect(shownMealNames()).toEqual(['Linsensuppe', 'Zwiebelsuppe'])
   })
 
@@ -985,7 +1002,7 @@ describe('MealsArea', () => {
   it('resets the filter with the cross', async () => {
     const { announcements } = renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
     await userEvent.click(
       screen.getByRole('button', { name: 'Filter zurücksetzen' }),
     )
@@ -995,9 +1012,9 @@ describe('MealsArea', () => {
       'Linsensuppe',
       'Zwiebelsuppe',
     ])
-    expect(categoryFilter()).toHaveValue('')
+    expect(chosenFilterText()).toBe('Alle')
     expect(announcements.at(-1)).toBe('Filter zurückgesetzt, 3 Gerichte.')
-    expect(categoryFilter()).toHaveFocus()
+    expect(mealFilter()).toHaveFocus()
     expect(
       screen.queryByRole('button', { name: 'Filter zurücksetzen' }),
     ).toBeNull()
@@ -1006,7 +1023,7 @@ describe('MealsArea', () => {
   it('shows the reset as an icon only', async () => {
     renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
     const reset = screen.getByRole('button', { name: 'Filter zurücksetzen' })
 
     expect(reset.textContent).toBe('')
@@ -1016,7 +1033,114 @@ describe('MealsArea', () => {
   it('has no accessibility violations with a chosen category', async () => {
     const { rendered } = renderMealsArea(mealsWithSoups())
 
-    await chooseCategory('Suppe')
+    await chooseFilter('Suppe')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('offers the used kinds and the categories in groups', () => {
+    renderMealsArea([
+      meal('apple', 'Apfel', { kind: 'snack' }),
+      meal('lentils', 'Linsensuppe', { categories: ['Suppe'] }),
+      meal('porridge', 'Porridge', { kind: 'breakfast', hidden: true }),
+    ])
+
+    expect(
+      within(mealFilter())
+        .getAllByRole('group')
+        .map((group) => group.getAttribute('label')),
+    ).toEqual(['Art', 'Kategorie'])
+    expect(offeredFilters()).toEqual([
+      'Alle',
+      'Hauptgericht',
+      'Frühstück',
+      'Snack',
+      'Suppe',
+    ])
+  })
+
+  it('offers only the kinds that meals carry', () => {
+    renderMealsArea([meal('bolognese', 'Bolognese'), meal('stew', 'Eintopf')])
+
+    expect(offeredFilters()).toEqual(['Alle', 'Hauptgericht'])
+    expect(
+      within(mealFilter())
+        .getAllByRole('group')
+        .map((group) => group.getAttribute('label')),
+    ).toEqual(['Art'])
+  })
+
+  it('shows only the meals of the chosen kind', async () => {
+    renderMealsArea(mealsWithBreakfasts())
+
+    await chooseFilter('Frühstück')
+
+    expect(shownMealNames()).toEqual(['Müsli', 'Porridge'])
+  })
+
+  it('counts and announces the meals of the chosen kind', async () => {
+    const { announcements } = renderMealsArea(mealsWithBreakfasts())
+
+    await chooseFilter('Frühstück')
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Gerichte, 2 von 4 (1 ausgeblendet)',
+      }),
+    ).toBeInTheDocument()
+    expect(announcements).toEqual(['Frühstück, 2 von 4 Gerichten.'])
+  })
+
+  it('tells the kind from a category of the same name', async () => {
+    renderMealsArea([
+      meal('apple', 'Apfel', { kind: 'snack' }),
+      meal('pretzel', 'Brezel', { categories: ['Snack'] }),
+    ])
+
+    await chooseFilter('kind:snack')
+    expect(shownMealNames()).toEqual(['Apfel'])
+
+    await chooseFilter('category:Snack')
+    expect(shownMealNames()).toEqual(['Brezel'])
+  })
+
+  it('shows every meal when the chosen kind is gone', async () => {
+    const { client } = renderMealsArea([
+      meal('apple', 'Apfel', { kind: 'snack' }),
+      meal('bolognese', 'Bolognese'),
+    ])
+
+    await chooseFilter('Snack')
+    await act(async () => {
+      client.changeMeals(
+        client
+          .storedMeals()
+          .filter((stored) => stored.id === 'apple')
+          .map((stored) => ({ ...stored, kind: 'mainMeal' })),
+      )
+    })
+
+    expect(chosenFilterText()).toBe('Alle')
+    expect(shownMealNames()).toEqual(['Apfel', 'Bolognese'])
+  })
+
+  it('resets a chosen kind with the cross', async () => {
+    const { announcements } = renderMealsArea(mealsWithBreakfasts())
+
+    await chooseFilter('Frühstück')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Filter zurücksetzen' }),
+    )
+
+    expect(announcements.at(-1)).toBe('Filter zurückgesetzt, 4 Gerichte.')
+    expect(chosenFilterText()).toBe('Alle')
+    expect(mealFilter()).toHaveFocus()
+  })
+
+  it('has no accessibility violations with a chosen kind', async () => {
+    const { rendered } = renderMealsArea(mealsWithBreakfasts())
+
+    await chooseFilter('Frühstück')
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

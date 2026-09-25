@@ -138,6 +138,9 @@ x Zufallsregeln: kind traegt seit MZP-026 auch 'snack' (Firestore-Feld snack);
 x Zufallsregeln: der Wochenplan hat seit MZP-028 vier Plaetze pro Tag
   (MealTime 'breakfast' | 'lunch' | 'snack' | 'dinner'); PlanningRule bekommt den
   PlanSlot, die Regeln oben koennen slot.time mit meal.kind vergleichen
+x Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
+  Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
+x ausgegraute buttons heller zeichnen
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -162,9 +165,6 @@ TODO
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
-x Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
-  Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
-x ausgegraute buttons heller zeichnen
 - Wochenplan erweitern
   - oben Date-Picker für Startdatum
   - daneben Anzahl-Tage-Selector

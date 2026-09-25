@@ -13,6 +13,7 @@ import {
   type NewMeal,
 } from './meal'
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
+import type { MealFilter } from './mealFilter'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import {
   PLAN_SLOTS,
@@ -79,12 +80,16 @@ export function shownMealsCount(
     : `${shownCount} / ${filteredFromCount}`
 }
 
-export function categoryFilterAnnouncement(
-  category: string,
+export function mealFilterName(filter: MealFilter): string {
+  return filter.by === 'kind' ? mealKindNames[filter.kind] : filter.category
+}
+
+export function mealFilterAnnouncement(
+  filter: MealFilter,
   shownCount: number,
   totalCount: number,
 ): string {
-  return `${category}, ${shownCount} von ${mealCountPhrase(totalCount)}.`
+  return `${mealFilterName(filter)}, ${shownCount} von ${mealCountPhrase(totalCount)}.`
 }
 
 function mealTotalPhrase(mealCount: number): string {

@@ -1,19 +1,25 @@
 import type { ReactNode } from 'react'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { mealsHeading, shownMealsCount } from '../domain/announcements'
-import { countHiddenMeals, type Meal } from '../domain/meal'
+import {
+  countHiddenMeals,
+  type ChosenMealKind,
+  type Meal,
+} from '../domain/meal'
 import type { CategoryOverview } from '../domain/mealCategory'
+import type { MealFilter } from '../domain/mealFilter'
 import { LightbulbOffIcon } from './LightbulbOffIcon'
-import { MealCategoryFilter } from './MealCategoryFilter'
+import { MealFilterSelect } from './MealFilterSelect'
 import { MealListRow } from './MealListRow'
 
 type MealListPageProps = {
   navigation: ReactNode
   meals: readonly Meal[]
   totalCount: number
+  kinds: readonly ChosenMealKind[]
   categories: readonly CategoryOverview[]
-  activeCategory: string | null
-  onChooseCategory: (category: string | null) => void
+  activeFilter: MealFilter | null
+  onChooseFilter: (filter: MealFilter | null) => void
   onAddMeal: () => void
   onOpenMeal: (meal: Meal) => void
   onAddToShoppingList: (meal: Meal) => void
@@ -23,16 +29,17 @@ export function MealListPage({
   navigation,
   meals,
   totalCount,
+  kinds,
   categories,
-  activeCategory,
-  onChooseCategory,
+  activeFilter,
+  onChooseFilter,
   onAddMeal,
   onOpenMeal,
   onAddToShoppingList,
 }: MealListPageProps) {
   const heading = useHeadingFocus()
   const hiddenCount = countHiddenMeals(meals)
-  const filteredFromCount = activeCategory === null ? null : totalCount
+  const filteredFromCount = activeFilter === null ? null : totalCount
 
   return (
     <>
@@ -67,11 +74,12 @@ export function MealListPage({
             +
           </button>
         </div>
-        {categories.length > 0 && (
-          <MealCategoryFilter
+        {(kinds.length > 0 || categories.length > 0) && (
+          <MealFilterSelect
+            kinds={kinds}
             categories={categories}
-            activeCategory={activeCategory}
-            onChooseCategory={onChooseCategory}
+            activeFilter={activeFilter}
+            onChooseFilter={onChooseFilter}
           />
         )}
         {meals.length === 0 ? (

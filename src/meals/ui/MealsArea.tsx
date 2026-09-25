@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import {
-  categoryFilterAnnouncement,
   filterResetAnnouncement,
   mealDeletedAnnouncement,
+  mealFilterAnnouncement,
   mealHidingAnnouncement,
   mealSavedAnnouncement,
 } from '../domain/announcements'
@@ -12,11 +12,13 @@ import {
   type MealId,
   type NewMeal,
 } from '../domain/meal'
+import { mealCategories } from '../domain/mealCategory'
 import {
-  knownCategory,
-  mealCategories,
-  mealsInCategory,
-} from '../domain/mealCategory'
+  knownFilter,
+  mealsMatching,
+  usedMealKinds,
+  type MealFilter,
+} from '../domain/mealFilter'
 import { DeleteMealPage } from './DeleteMealPage'
 import { MealFormPage } from './MealFormPage'
 import { MealListPage } from './MealListPage'
@@ -47,10 +49,11 @@ export function MealsArea({
   suggestNames,
 }: MealsAreaProps) {
   const [page, setPage] = useState<MealsPage>({ kind: 'list' })
-  const [chosenCategory, setChosenCategory] = useState<string | null>(null)
+  const [chosenFilter, setChosenFilter] = useState<MealFilter | null>(null)
 
   const categories = mealCategories(meals.meals)
-  const activeCategory = knownCategory(categories, chosenCategory)
+  const kinds = usedMealKinds(meals.meals)
+  const activeFilter = knownFilter(kinds, categories, chosenFilter)
 
   const addressedMeal =
     page.kind === 'list' || page.id === null
@@ -61,14 +64,14 @@ export function MealsArea({
     setPage({ kind: 'list' })
   }
 
-  function chooseCategory(category: string | null) {
-    setChosenCategory(category)
+  function chooseFilter(filter: MealFilter | null) {
+    setChosenFilter(filter)
     announce(
-      category === null
+      filter === null
         ? filterResetAnnouncement(meals.meals.length)
-        : categoryFilterAnnouncement(
-            category,
-            mealsInCategory(meals.meals, category).length,
+        : mealFilterAnnouncement(
+            filter,
+            mealsMatching(meals.meals, filter).length,
             meals.meals.length,
           ),
     )
@@ -143,11 +146,12 @@ export function MealsArea({
   return (
     <MealListPage
       navigation={navigation}
-      meals={mealsInCategory(meals.meals, activeCategory)}
+      meals={mealsMatching(meals.meals, activeFilter)}
       totalCount={meals.meals.length}
+      kinds={kinds}
       categories={categories}
-      activeCategory={activeCategory}
-      onChooseCategory={chooseCategory}
+      activeFilter={activeFilter}
+      onChooseFilter={chooseFilter}
       onAddMeal={() => setPage({ kind: 'form', id: null })}
       onOpenMeal={(meal) => setPage({ kind: 'meal', id: meal.id })}
       onAddToShoppingList={onAddToShoppingList}
