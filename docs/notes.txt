@@ -143,6 +143,7 @@ x Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
 x ausgegraute buttons heller zeichnen
 x Hauptgericht, Frühstück und Snack in den Filter mit aufnehmen
 x Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
+x Einheit ebenfalls merken und Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -184,6 +185,5 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   (dropConfirmedSupplies). Bleibt diese aus, verdeckt er Aenderungen des anderen Geraets
   am selben Gericht bis zum Neuladen; einen Ausweg wie isStaleSnapshot gibt es nicht
   (MZP-027, Entscheidung 1).
-- Einheit ebenfalls merken und Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung
 - Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
   gelesen und koennen von Hand geloescht werden

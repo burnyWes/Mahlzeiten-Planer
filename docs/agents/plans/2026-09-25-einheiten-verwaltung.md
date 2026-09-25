@@ -513,7 +513,7 @@ statt der `datalist`. Das Gericht-Formular behält in dieser Phase noch seine
 
 - [x] `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`
       ist ausgeführt, bevor die App ausgerollt wird.
-- [ ] Auf dem iPhone mit VoiceOver: In "Artikel hinzufügen" "k" ins Feld "Einheit"
+- [x] Auf dem iPhone mit VoiceOver: In "Artikel hinzufügen" "k" ins Feld "Einheit"
       tippen. VoiceOver erreicht per Wischen "Einheiten-Vorschläge, Liste", ein
       Doppeltipp auf "kg" setzt den Fokus auf "Hinzufügen".
 
@@ -663,7 +663,7 @@ samt Verschmelzen und Löschen.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: Einstellungen → "Einheiten-Verwaltung". Die Liste
+- [x] Auf dem iPhone mit VoiceOver: Einstellungen → "Einheiten-Verwaltung". Die Liste
       zeigt die übernommenen Einheiten. Eine Einheit umbenennen und eine löschen, die
       Ansagen stimmen, und das zweite Gerät zeigt den neuen Stand.
 
