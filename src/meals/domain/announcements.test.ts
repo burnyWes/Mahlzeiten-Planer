@@ -28,7 +28,6 @@ import {
   planDateName,
   periodAppliedAnnouncement,
   periodDaysPhrase,
-  periodFailureMessage,
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   fixedSlotText,
@@ -66,7 +65,6 @@ import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { toPlanDate, WEEKDAYS } from './planDate'
-import { InvalidPlanPeriod } from './planPeriod'
 import { MEAL_TIMES, type PlanSlot } from './weekPlan'
 import { EDITING_STAGE, FIXED_STAGE, transferredStage } from './weekPlanStage'
 
@@ -1028,20 +1026,5 @@ describe('periodDaysPhrase', () => {
 
   it('speaks of several days in the plural', () => {
     expect(periodDaysPhrase(7)).toBe('7 Tage')
-  })
-})
-
-describe('periodFailureMessage', () => {
-  it('asks for a start date when it is missing', () => {
-    expect(periodFailureMessage(new InvalidPlanPeriod('startMissing'))).toBe(
-      'Bitte ein Startdatum wählen.',
-    )
-  })
-
-  it('has no message for any other failure', () => {
-    expect(periodFailureMessage(new InvalidPlanPeriod('daysOutOfRange'))).toBe(
-      null,
-    )
-    expect(periodFailureMessage(new Error('anything'))).toBeNull()
   })
 })

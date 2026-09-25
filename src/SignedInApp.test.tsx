@@ -1,11 +1,4 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
@@ -213,11 +206,11 @@ function renderSignedInAppOnFriday() {
   )
 }
 
-async function applyPeriod(start: string, days: number) {
+async function applyPeriod(daysAfterMonday: number, days: number) {
   await userEvent.click(screen.getByRole('button', { name: 'Zeitraum wählen' }))
-  fireEvent.change(screen.getByLabelText('Startdatum'), {
-    target: { value: start },
-  })
+  const laterButton = screen.getByRole('button', { name: 'Ein Tag später' })
+  for (let step = 0; step < daysAfterMonday; step++)
+    await userEvent.click(laterButton)
   const stepButton = screen.getByRole('button', {
     name: days > 7 ? 'Ein Tag mehr' : 'Ein Tag weniger',
   })
@@ -446,7 +439,7 @@ describe('SignedInApp', () => {
 
     await goToArea('Wochenplan')
     await userEvent.click(screen.getByRole('button', { name: 'Nächster Tag' }))
-    await applyPeriod('2026-09-24', 7)
+    await applyPeriod(3, 7)
 
     expect(shownDayName()).toHaveAccessibleName('Freitag, 25. September')
   })
@@ -455,7 +448,7 @@ describe('SignedInApp', () => {
     renderSignedInAppOnFriday()
 
     await goToArea('Wochenplan')
-    await applyPeriod('2026-10-01', 3)
+    await applyPeriod(10, 3)
 
     expect(shownDayName()).toHaveAccessibleName('Donnerstag, 1. Oktober')
   })

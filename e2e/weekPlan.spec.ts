@@ -535,7 +535,10 @@ test('plans the chosen period', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Zeitraum' })).toBeFocused()
 
-  await page.getByLabel('Startdatum', { exact: true }).fill('2026-09-28')
+  for (let step = 0; step < 7; step++) await pressButton(page, 'Ein Tag später')
+
+  await expect(page.getByRole('status')).toContainText('Montag, 28. September')
+
   for (let step = 7; step < 10; step++) await pressButton(page, 'Ein Tag mehr')
   await pressButton(page, 'Übernehmen')
 

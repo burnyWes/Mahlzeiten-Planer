@@ -3,17 +3,19 @@ import { toPlanDate } from './planDate'
 import {
   canHaveFewerDays,
   canHaveMoreDays,
-  createPlanPeriod,
   dateAfter,
   dateBefore,
   datesOf,
   includesDate,
-  InvalidPlanPeriod,
   isPlanPeriod,
   lastDateOf,
   samePeriod,
   shownDayIn,
   weekOf,
+  withEarlierStart,
+  withFewerDays,
+  withLaterStart,
+  withMoreDays,
   type PlanPeriod,
 } from './planPeriod'
 
@@ -165,45 +167,6 @@ describe('shownDayIn', () => {
   })
 })
 
-describe('createPlanPeriod', () => {
-  function reasonFor(start: string, days: number) {
-    try {
-      createPlanPeriod({ start, days })
-    } catch (error) {
-      return error instanceof InvalidPlanPeriod ? error.reason : error
-    }
-    return null
-  }
-
-  it('creates a period from a start date and a number of days', () => {
-    expect(createPlanPeriod({ start: '2026-09-25', days: 10 })).toEqual({
-      start: FRIDAY,
-      days: 10,
-    })
-  })
-
-  it('accepts a start date in the past', () => {
-    expect(createPlanPeriod({ start: '2020-01-06', days: 1 })).toEqual({
-      start: '2020-01-06',
-      days: 1,
-    })
-  })
-
-  it('refuses a missing start date', () => {
-    expect(reasonFor('', 7)).toBe('startMissing')
-  })
-
-  it('refuses a start date the calendar does not have', () => {
-    expect(reasonFor('2026-02-30', 7)).toBe('startMissing')
-  })
-
-  it('refuses no day, more than ten days and part of a day', () => {
-    expect(reasonFor('2026-09-25', 0)).toBe('daysOutOfRange')
-    expect(reasonFor('2026-09-25', 11)).toBe('daysOutOfRange')
-    expect(reasonFor('2026-09-25', 2.5)).toBe('daysOutOfRange')
-  })
-})
-
 describe('canHaveFewerDays', () => {
   it('allows fewer days above one', () => {
     expect(canHaveFewerDays(2)).toBe(true)
@@ -221,5 +184,57 @@ describe('canHaveMoreDays', () => {
 
   it('allows no more than ten days', () => {
     expect(canHaveMoreDays(10)).toBe(false)
+  })
+})
+
+describe('withEarlierStart', () => {
+  it('starts the period one day earlier and keeps its length', () => {
+    expect(withEarlierStart(TEN_DAYS_FROM_FRIDAY)).toEqual({
+      start: '2026-09-24',
+      days: 10,
+    })
+  })
+
+  it('starts across the beginning of a month', () => {
+    expect(
+      withEarlierStart({ start: toPlanDate('2026-10-01'), days: 3 }),
+    ).toEqual({ start: '2026-09-30', days: 3 })
+  })
+})
+
+describe('withLaterStart', () => {
+  it('starts the period one day later and keeps its length', () => {
+    expect(withLaterStart(TEN_DAYS_FROM_FRIDAY)).toEqual({
+      start: SATURDAY,
+      days: 10,
+    })
+  })
+})
+
+describe('withFewerDays', () => {
+  it('shortens the period by one day', () => {
+    expect(withFewerDays(TEN_DAYS_FROM_FRIDAY)).toEqual({
+      start: FRIDAY,
+      days: 9,
+    })
+  })
+
+  it('keeps at least one day', () => {
+    const oneDay = { start: FRIDAY, days: 1 }
+
+    expect(withFewerDays(oneDay)).toEqual(oneDay)
+  })
+})
+
+describe('withMoreDays', () => {
+  it('lengthens the period by one day', () => {
+    expect(withMoreDays({ start: FRIDAY, days: 7 })).toEqual({
+      start: FRIDAY,
+      days: 8,
+    })
+  })
+
+  it('keeps at most ten days', () => {
+    expect(withMoreDays(TEN_DAYS_FROM_FRIDAY)).toEqual(TEN_DAYS_FROM_FRIDAY)
   })
 })

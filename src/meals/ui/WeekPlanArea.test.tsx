@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
@@ -381,12 +381,18 @@ function openPeriod() {
   return userEvent.click(periodButton())
 }
 
-function startField() {
-  return screen.getByLabelText('Startdatum')
+function shownStart() {
+  return within(screen.getByRole('group', { name: 'Startdatum' })).getByText(
+    /^\S+, \d+\. \S+$/,
+  )
 }
 
-function chooseStart(date: string) {
-  fireEvent.change(startField(), { target: { value: date } })
+async function moveStart(days: number) {
+  const button = screen.getByRole('button', {
+    name: days > 0 ? 'Ein Tag später' : 'Ein Tag früher',
+  })
+  for (let step = 0; step < Math.abs(days); step++)
+    await userEvent.click(button)
 }
 
 function applyButton() {
@@ -2083,7 +2089,7 @@ describe('WeekPlanArea', () => {
     await openPeriod()
 
     expect(screen.getByRole('heading', { name: 'Zeitraum' })).toHaveFocus()
-    expect(startField()).toHaveValue('2026-09-21')
+    expect(shownStart()).toHaveTextContent('Montag, 21. September')
     expect(shownPeriodDays()).toBe('7')
   })
 
@@ -2109,7 +2115,7 @@ describe('WeekPlanArea', () => {
     const { weekPlanClient, announcements } = renderWeekPlanArea([bolognese])
 
     await openPeriod()
-    chooseStart('2026-09-25')
+    await moveStart(4)
     await stepDaysTo(10)
     await userEvent.click(applyButton())
 
@@ -2136,7 +2142,7 @@ describe('WeekPlanArea', () => {
     )
 
     await openPeriod()
-    chooseStart('2026-09-25')
+    await moveStart(4)
     await userEvent.click(applyButton())
 
     const stored = weekPlanClient.storedWeekPlan()
@@ -2144,28 +2150,30 @@ describe('WeekPlanArea', () => {
     expect(Object.keys(stored.days)).not.toContain(MONDAY)
   })
 
-  it('refuses a period without start date', async () => {
-    const { weekPlanClient, announcements } = renderWeekPlanArea([bolognese])
-    const before = weekPlanClient.storedWeekPlan()
+  it('moves the start by one day and names it', async () => {
+    const { announcements } = renderWeekPlanArea([bolognese])
 
     await openPeriod()
-    chooseStart('')
-    await userEvent.click(applyButton())
+    await moveStart(-1)
 
-    expect(screen.getByText('Bitte ein Startdatum wählen.')).toBeInTheDocument()
-    expect(announcements.at(-1)).toBe('Bitte ein Startdatum wählen.')
-    expect(startField()).toHaveFocus()
-    expect(startField()).toHaveAccessibleDescription(
-      'Bitte ein Startdatum wählen.',
-    )
-    expect(weekPlanClient.storedWeekPlan()).toBe(before)
+    expect(shownStart()).toHaveTextContent('Sonntag, 20. September')
+    expect(
+      within(screen.getByRole('group', { name: 'Startdatum' })).getByText(
+        'So. 20.09.',
+      ),
+    ).toHaveAttribute('aria-hidden', 'true')
+    expect(announcements.at(-1)).toBe('Sonntag, 20. September')
+
+    await moveStart(2)
+
+    expect(announcements.at(-1)).toBe('Dienstag, 22. September')
   })
 
   it('goes back to the plan without applying', async () => {
     const { weekPlanClient } = renderWeekPlanArea([bolognese])
 
     await openPeriod()
-    chooseStart('2026-09-25')
+    await moveStart(4)
     await userEvent.click(
       screen.getByRole('button', { name: 'Zurück zum Wochenplan' }),
     )
@@ -2180,7 +2188,7 @@ describe('WeekPlanArea', () => {
     renderWeekPlanArea([bolognese])
 
     await openPeriod()
-    chooseStart('2026-09-25')
+    await moveStart(4)
     await stepDaysTo(10)
     await userEvent.click(applyButton())
     for (let step = 0; step < 9; step++)
@@ -2198,8 +2206,7 @@ describe('WeekPlanArea', () => {
     const { rendered } = renderWeekPlanArea([bolognese])
 
     await openPeriod()
-    chooseStart('')
-    await userEvent.click(applyButton())
+    await moveStart(1)
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

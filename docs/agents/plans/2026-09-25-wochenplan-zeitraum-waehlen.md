@@ -28,21 +28,20 @@ anzahl tage wird geplant“). Alle Entscheidungen stammen aus der Befragung vom 
 - Im Bearbeitungsmodus öffnet der Knopf die Seite „Zeitraum“:
   - oben der Knopf „Zurück zum Wochenplan“, der ohne Speichern zurückführt
   - die Überschrift `Zeitraum` (h1), die beim Öffnen den Fokus bekommt
-  - das Feld „Startdatum“ (`<input type="date">`), vorbelegt mit dem gespeicherten
-    Start
+  - „Startdatum“ als Stepper („Ein Tag früher“ / „Ein Tag später“), vorbelegt mit dem
+    gespeicherten Start, sichtbar `Fr. 25.09.`, für VoiceOver `Freitag, 25. September`;
+    jeder Schritt sagt den neuen Tag an (Änderung nach der Handprüfung, siehe Notizen)
   - „Anzahl Tage“ als Stepper, vorbelegt mit der gespeicherten Anzahl; „Ein Tag weniger“
     ist bei 1 gesperrt, „Ein Tag mehr“ bei 10
   - in der unteren Leiste der Knopf „Übernehmen“
-- „Übernehmen“ mit gültigem Datum:
+- „Übernehmen“:
   - speichert den Zeitraum für den ganzen Haushalt
   - verwirft die Gerichte aller Tage außerhalb des neuen Zeitraums und behält die Tage
     darin
   - führt zum Wochenplan zurück, dessen Überschrift den Fokus bekommt
   - sagt zum Beispiel `Zeitraum Freitag, 25. September bis Sonntag, 4. Oktober, 10 Tage.`
     an, bei einem Tag `Zeitraum Freitag, 25. September, 1 Tag.`
-- „Übernehmen“ mit leerem Datumsfeld speichert nichts. Unter dem Feld steht dann
-  `Bitte ein Startdatum wählen.`, VoiceOver sagt es an, und der Fokus geht ins Feld.
-- Jedes gültige Datum ist als Start erlaubt, auch eines in der Vergangenheit.
+- Jeder Tag ist als Start erlaubt, auch einer in der Vergangenheit.
 - Der Wochenplan zeigt genau die Tage des Zeitraums:
   - Tagesansicht: Überschrift sichtbar `Fr. 25.09.`, für VoiceOver
     `Freitag, 25. September`
@@ -715,12 +714,15 @@ zeigt der Wochenplan die gewählten Tage.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: Der Knopf rechts neben der Überschrift heißt
-  „Zeitraum wählen, Taste“ und ist im festgelegten Plan abgeblendet. Das Startdatum
-  lässt sich mit dem Datums-Rad wählen, und die Stepper-Ansage „8 Tage“ kommt.
-- [ ] Nach „Übernehmen“ kommt die Zeitraum-Ansage, der Fokus steht auf der
+- [x] Auf dem iPhone mit VoiceOver: Der Knopf rechts neben der Überschrift heißt
+  „Zeitraum wählen, Taste“ und ist im festgelegten Plan abgeblendet, und die
+  Stepper-Ansage „8 Tage“ kommt.
+- [ ] Auf dem iPhone mit VoiceOver: Das Startdatum lässt sich mit „Ein Tag früher“ und
+  „Ein Tag später“ verschieben, sichtbar steht z. B. `Mo. 28.09.`, und VoiceOver sagt
+  den neuen Tag an.
+- [x] Nach „Übernehmen“ kommt die Zeitraum-Ansage, der Fokus steht auf der
   Wochenplan-Überschrift, und das zweite Gerät zeigt sofort denselben Zeitraum.
-- [ ] Das Icon ist neben den übrigen Kalender-Icons klar als eigener Knopf erkennbar,
+- [x] Das Icon ist neben den übrigen Kalender-Icons klar als eigener Knopf erkennbar,
   auch mit invertierten Farben.
 
 ## Notizen zur Umsetzung
@@ -741,6 +743,14 @@ zeigt der Wochenplan die gewählten Tage.
 - Phase 2: „Anzahl Tage“ ist eine Gruppe (`role="group"` mit `aria-labelledby`) um den
   Stepper. Ein `aria-labelledby` direkt auf der Zahl wäre auf einem `span` ohne Rolle
   nicht erlaubt.
+- Phase 2, nach der Handprüfung: Das Datumsfeld `<input type="date">` öffnete auf dem
+  iPhone beim Antippen den Kalender nicht (nur einmal zufällig nach Aus- und
+  Einschalten). Entscheidung des Nutzers am 2026-09-25: Das Startdatum wird wie „Anzahl
+  Tage“ mit einem Stepper gewählt. Damit kann kein leeres Datum mehr entstehen.
+  `createPlanPeriod`, `InvalidPlanPeriod`, `PlanPeriodDraft` und `periodFailureMessage`
+  entfallen, an ihre Stelle treten `withEarlierStart`, `withLaterStart`,
+  `withFewerDays` und `withMoreDays` in `planPeriod.ts`. Der Test „refuses a period
+  without start date“ wird zu „moves the start by one day and names it“.
 - Phase 2: Der Test-Aufbau in `WeekPlanArea.test.tsx` leitet den gezeigten Tag wie
   `SignedInApp` über `shownDayIn` ab, damit das Blättern nach „Übernehmen“ im
   Zeitraum bleibt.
