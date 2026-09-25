@@ -5,7 +5,7 @@ branch: main
 story: MZP-029
 topic: "Wochenplan leeren"
 tags: [plan, meals, weekPlan, domain, ui]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-029 — Wochenplan leeren
@@ -250,7 +250,7 @@ wird test-getrieben entwickelt, erst der fehlschlagende Test, dann der Code.
   </button>
   ```
 
-- [ ] `docs/notes.txt`: erst nach der manuellen Abnahme den Punkt
+- [x] `docs/notes.txt`: erst nach der manuellen Abnahme den Punkt
   `- reset-button auf Wochenplan-Seite` auf `x` setzen und nach DONE verschieben.
 
 **Automatisierte Verifikation**:
@@ -265,13 +265,13 @@ wird test-getrieben entwickelt, erst der fehlschlagende Test, dann der Code.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Handy: Der Wochenplan zeigt vier gleich breite Knöpfe, der Radiergummi
+- [x] Auf dem Handy: Der Wochenplan zeigt vier gleich breite Knöpfe, der Radiergummi
   steht ganz rechts und ist als Radiergummi zu erkennen, auch mit umgekehrten Farben.
-- [ ] Mit VoiceOver: Der letzte Knopf der Leiste heißt „Wochenplan leeren, Taste“. Nach
+- [x] Mit VoiceOver: Der letzte Knopf der Leiste heißt „Wochenplan leeren, Taste“. Nach
   dem Doppeltippen kommt „Wochenplan geleert.“, der Fokus bleibt auf dem Knopf, und der
   Knopf wird als abgeblendet gemeldet.
-- [ ] Nach dem Leeren zeigt ein zweites Gerät den leeren Plan.
-- [ ] Im festgelegten Plan ist der Radiergummi ausgegraut, und ein Tippen bewirkt
+- [x] Nach dem Leeren zeigt ein zweites Gerät den leeren Plan.
+- [x] Im festgelegten Plan ist der Radiergummi ausgegraut, und ein Tippen bewirkt
   nichts.
 
 ## Notizen zur Umsetzung
