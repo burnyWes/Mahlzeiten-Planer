@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react'
 import {
   dayShownAnnouncement,
+  dayViewShownAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   slotPlannedAnnouncement,
   weekPlanClearedAnnouncement,
   weekPlanShuffledAnnouncement,
+  weekViewShownAnnouncement,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import {
@@ -22,6 +24,7 @@ import {
   plannedMealCount,
   weekPlanTransfer,
   withMealIn,
+  type MealTime,
   type PlanSlot,
   type WeekPlanTransfer,
   type Weekday,
@@ -34,6 +37,7 @@ import {
   isFixed,
   transferredStage,
 } from '../domain/weekPlanStage'
+import { slotNamingIn, type WeekPlanView } from '../domain/weekPlanView'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
 
@@ -43,6 +47,9 @@ type WeekPlanAreaProps = {
   supplies: readonly Supply[]
   shownDay: Weekday
   onShowDay: (day: Weekday) => void
+  shownView: WeekPlanView
+  onShowView: (view: WeekPlanView) => void
+  shownTime: MealTime
   navigation: ReactNode
   announce: (text: string) => void
   random: RandomSource
@@ -55,6 +62,9 @@ export function WeekPlanArea({
   supplies,
   shownDay,
   onShowDay,
+  shownView,
+  onShowView,
+  shownTime,
   navigation,
   announce,
   random,
@@ -69,6 +79,15 @@ export function WeekPlanArea({
     announce(dayShownAnnouncement(day))
   }
 
+  function showView(view: WeekPlanView) {
+    onShowView(view)
+    announce(
+      view === 'week'
+        ? weekViewShownAnnouncement(shownTime)
+        : dayViewShownAnnouncement(shownDay),
+    )
+  }
+
   function chooseMeal(slot: PlanSlot, id: MealId | null) {
     weekPlanning.chooseMeal(slot, id)
     const chosen = meals.find((meal) => meal.id === id)
@@ -76,7 +95,8 @@ export function WeekPlanArea({
     const planned = withMealIn(weekPlanning.plan, slot, id)
     announce(
       slotPlannedAnnouncement(
-        slot.time,
+        slot,
+        slotNamingIn(shownView),
         chosen,
         isSuppliedIn(planned, slot, meals, supplies),
       ),
@@ -127,6 +147,9 @@ export function WeekPlanArea({
       supplies={supplies}
       shownDay={shownDay}
       onShowDay={showDay}
+      shownView={shownView}
+      onShowView={showView}
+      shownTime={shownTime}
       onChooseMeal={chooseMeal}
       onShuffleSlot={shuffleSlot}
       onShuffleWeek={shuffleWeek}

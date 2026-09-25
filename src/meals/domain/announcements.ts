@@ -14,7 +14,13 @@ import {
 } from './meal'
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
-import { PLAN_SLOTS, type MealTime, type Weekday } from './weekPlan'
+import {
+  PLAN_SLOTS,
+  type MealTime,
+  type PlanSlot,
+  type Weekday,
+} from './weekPlan'
+import type { SlotNaming } from './weekPlanView'
 import { isFixed, isTransferred, type WeekPlanStage } from './weekPlanStage'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
@@ -278,31 +284,50 @@ export function transferButtonLabel(stage: WeekPlanStage): string {
     : 'Auf die Einkaufsliste'
 }
 
+export function slotName(slot: PlanSlot, naming: SlotNaming): string {
+  return naming === 'time' ? mealTimeName(slot.time) : weekdayName(slot.day)
+}
+
 export function fixedSlotText(
-  time: MealTime,
+  slot: PlanSlot,
+  naming: SlotNaming,
   meal: NewMeal | null,
   inSupply: boolean,
 ): string {
-  if (meal === null) return `${mealTimeName(time)}, nichts geplant`
-  const planned = `${mealTimeName(time)}, ${meal.name}`
+  if (meal === null) return `${slotName(slot, naming)}, nichts geplant`
+  const planned = `${slotName(slot, naming)}, ${meal.name}`
   return inSupply ? `${planned}, im Vorrat` : planned
 }
 
-export function randomMealLabel(time: MealTime): string {
-  return `Zufallsgericht für ${mealTimeName(time)}`
+export function randomMealLabel(slot: PlanSlot, naming: SlotNaming): string {
+  return `Zufallsgericht für ${slotName(slot, naming)}`
 }
 
-export function mealTimeFieldLabel(time: MealTime, inSupply: boolean): string {
-  return inSupply ? `${mealTimeName(time)}, im Vorrat` : mealTimeName(time)
+export function slotFieldLabel(
+  slot: PlanSlot,
+  naming: SlotNaming,
+  inSupply: boolean,
+): string {
+  const name = slotName(slot, naming)
+  return inSupply ? `${name}, im Vorrat` : name
 }
 
 export function slotPlannedAnnouncement(
-  time: MealTime,
+  slot: PlanSlot,
+  naming: SlotNaming,
   meal: NewMeal,
   inSupply: boolean,
 ): string {
-  const planned = `${mealTimeName(time)}, ${meal.name}`
+  const planned = `${slotName(slot, naming)}, ${meal.name}`
   return inSupply ? `${planned}, im Vorrat.` : `${planned}.`
+}
+
+export function weekViewShownAnnouncement(time: MealTime): string {
+  return `Wochenansicht, ${mealTimeName(time)}.`
+}
+
+export function dayViewShownAnnouncement(day: Weekday): string {
+  return `Tagesansicht, ${weekdayName(day)}.`
 }
 
 export function weekPlanShuffledAnnouncement(): string {
@@ -340,8 +365,11 @@ export function weekPlanTransferAnnouncement(
   ].join(' ')
 }
 
-export function mealSuggestionsLabel(time: MealTime): string {
-  return `Vorschläge für ${mealTimeName(time)}`
+export function mealSuggestionsLabel(
+  slot: PlanSlot,
+  naming: SlotNaming,
+): string {
+  return `Vorschläge für ${slotName(slot, naming)}`
 }
 
 export function suppliesHeading(supplyCount: number): string {

@@ -348,6 +348,31 @@ describe('SignedInApp', () => {
     )
   })
 
+  it('opens the week plan in the day view', async () => {
+    renderSignedInApp()
+
+    await goToArea('Wochenplan')
+
+    expect(
+      screen.getByRole('button', { name: 'Wochenansicht' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: 'Dienstag' })).toBeNull()
+  })
+
+  it('keeps the week view after a visit to the meals area', async () => {
+    renderSignedInApp()
+
+    await goToArea('Wochenplan')
+    await userEvent.click(screen.getByRole('button', { name: 'Wochenansicht' }))
+    await goToArea('Gerichte')
+    await goToArea('Wochenplan')
+
+    expect(screen.getByRole('textbox', { name: 'Montag' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Tagesansicht' }),
+    ).toBeInTheDocument()
+  })
+
   it('keeps a planned meal for the whole household', async () => {
     const { weekPlanClient } = renderSignedInApp(
       [],

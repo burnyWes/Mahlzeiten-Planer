@@ -11,14 +11,19 @@ import {
 import type { Meal, MealId } from '../domain/meal'
 import type { Supply } from '../domain/supply'
 import {
-  MEAL_TIMES,
   plannedMealCount,
   weekdayAfter,
   weekdayBefore,
+  type MealTime,
   type PlanSlot,
   type WeekPlan,
   type Weekday,
 } from '../domain/weekPlan'
+import {
+  shownSlots,
+  slotNamingIn,
+  type WeekPlanView,
+} from '../domain/weekPlanView'
 import {
   canClear,
   canShuffle,
@@ -27,6 +32,8 @@ import {
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
 import { AddToShoppingListIcon } from './AddToShoppingListIcon'
+import { CalendarDaysIcon } from './CalendarDaysIcon'
+import { CalendarOneIcon } from './CalendarOneIcon'
 import { ChevronLeftIcon } from './ChevronLeftIcon'
 import { ChevronRightIcon } from './ChevronRightIcon'
 import { EditIcon } from './EditIcon'
@@ -43,6 +50,9 @@ type WeekPlanPageProps = {
   supplies: readonly Supply[]
   shownDay: Weekday
   onShowDay: (day: Weekday) => void
+  shownView: WeekPlanView
+  onShowView: (view: WeekPlanView) => void
+  shownTime: MealTime
   onChooseMeal: (slot: PlanSlot, id: MealId | null) => void
   onShuffleSlot: (slot: PlanSlot) => void
   onShuffleWeek: () => void
@@ -111,6 +121,34 @@ function DayNavigation({
   )
 }
 
+function ViewSwitchButton({
+  shownView,
+  onShowView,
+}: {
+  shownView: WeekPlanView
+  onShowView: (view: WeekPlanView) => void
+}) {
+  return shownView === 'day' ? (
+    <button
+      type="button"
+      className="iconButton"
+      aria-label="Wochenansicht"
+      onClick={() => onShowView('week')}
+    >
+      <CalendarDaysIcon />
+    </button>
+  ) : (
+    <button
+      type="button"
+      className="iconButton"
+      aria-label="Tagesansicht"
+      onClick={() => onShowView('day')}
+    >
+      <CalendarOneIcon />
+    </button>
+  )
+}
+
 export function WeekPlanPage({
   navigation,
   meals,
@@ -119,6 +157,9 @@ export function WeekPlanPage({
   supplies,
   shownDay,
   onShowDay,
+  shownView,
+  onShowView,
+  shownTime,
   onChooseMeal,
   onShuffleSlot,
   onShuffleWeek,
@@ -139,13 +180,21 @@ export function WeekPlanPage({
             {weekPlanHeading(plannedMeals, stage)}
           </h1>
         </div>
-        <DayNavigation shownDay={shownDay} onShowDay={onShowDay} />
+        <div className="planNavigation">
+          {shownView === 'day' ? (
+            <DayNavigation shownDay={shownDay} onShowDay={onShowDay} />
+          ) : (
+            <div className="mealTimeNavigation" />
+          )}
+          <ViewSwitchButton shownView={shownView} onShowView={onShowView} />
+        </div>
         {meals.length === 0 && <p>Noch keine Gerichte gespeichert.</p>}
         <ul className="itemList">
-          {MEAL_TIMES.map((time) => (
+          {shownSlots(shownView, shownDay, shownTime).map((slot) => (
             <WeekPlanRow
-              key={`${shownDay}-${time}`}
-              slot={{ day: shownDay, time }}
+              key={`${shownView}-${slot.day}-${slot.time}`}
+              slot={slot}
+              naming={slotNamingIn(shownView)}
               plan={plan}
               meals={meals}
               randomCandidateCount={randomCandidateCount}

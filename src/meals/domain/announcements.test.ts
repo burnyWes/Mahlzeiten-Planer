@@ -22,11 +22,11 @@ import {
   mealSavedAnnouncement,
   mealsHeading,
   dayShownAnnouncement,
+  dayViewShownAnnouncement,
   fixedSlotText,
   filterResetAnnouncement,
   shownMealsCount,
   mealSuggestionsLabel,
-  mealTimeFieldLabel,
   mealTimeName,
   mealWithoutItemsAnnouncement,
   lessSupplyLabel,
@@ -35,6 +35,8 @@ import {
   planFixedAnnouncement,
   randomMealLabel,
   replacedKindAnnouncement,
+  slotFieldLabel,
+  slotName,
   slotPlannedAnnouncement,
   stageButtonLabel,
   transferButtonLabel,
@@ -48,17 +50,23 @@ import {
   weekPlanClearedAnnouncement,
   weekPlanShuffledAnnouncement,
   weekPlanTransferAnnouncement,
+  weekViewShownAnnouncement,
 } from './announcements'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
-import { MEAL_TIMES, WEEKDAYS } from './weekPlan'
+import { MEAL_TIMES, WEEKDAYS, type PlanSlot } from './weekPlan'
 import { EDITING_STAGE, FIXED_STAGE, transferredStage } from './weekPlanStage'
 
 const mincedMeat: MealItem = {
   name: 'Hackfleisch',
   quantity: { amount: 500, unit: 'g' },
 }
+
+const mondayBreakfast: PlanSlot = { day: 'monday', time: 'breakfast' }
+const mondayLunch: PlanSlot = { day: 'monday', time: 'lunch' }
+const mondaySnack: PlanSlot = { day: 'monday', time: 'snack' }
+const mondayDinner: PlanSlot = { day: 'monday', time: 'dinner' }
 
 const bolognese: NewMeal = {
   name: 'Spaghetti Bolognese',
@@ -619,51 +627,119 @@ describe('transferButtonLabel', () => {
   })
 })
 
+describe('slotName', () => {
+  it('names the meal time', () => {
+    expect(slotName(mondayBreakfast, 'time')).toBe('Frühstück')
+  })
+
+  it('names the day', () => {
+    expect(slotName(mondayBreakfast, 'day')).toBe('Montag')
+  })
+})
+
 describe('fixedSlotText', () => {
   it('names the meal time, the meal and the supply', () => {
-    expect(fixedSlotText('breakfast', bolognese, true)).toBe(
+    expect(fixedSlotText(mondayBreakfast, 'time', bolognese, true)).toBe(
       'Frühstück, Spaghetti Bolognese, im Vorrat',
     )
   })
 
   it('names the meal time and the meal without a supply', () => {
-    expect(fixedSlotText('breakfast', bolognese, false)).toBe(
+    expect(fixedSlotText(mondayBreakfast, 'time', bolognese, false)).toBe(
       'Frühstück, Spaghetti Bolognese',
     )
   })
 
   it('says that nothing is planned for the meal time', () => {
-    expect(fixedSlotText('snack', null, false)).toBe('Snack, nichts geplant')
+    expect(fixedSlotText(mondaySnack, 'time', null, false)).toBe(
+      'Snack, nichts geplant',
+    )
+  })
+
+  it('says that nothing is planned for the day', () => {
+    expect(fixedSlotText(mondaySnack, 'day', null, false)).toBe(
+      'Montag, nichts geplant',
+    )
+  })
+
+  it('names the day, the meal and the supply', () => {
+    expect(fixedSlotText(mondayLunch, 'day', bolognese, true)).toBe(
+      'Montag, Spaghetti Bolognese, im Vorrat',
+    )
   })
 })
 
 describe('randomMealLabel', () => {
   it('names the meal time the button rolls for', () => {
-    expect(randomMealLabel('breakfast')).toBe('Zufallsgericht für Frühstück')
+    expect(randomMealLabel(mondayBreakfast, 'time')).toBe(
+      'Zufallsgericht für Frühstück',
+    )
+  })
+
+  it('names the day the button rolls for', () => {
+    expect(randomMealLabel(mondayBreakfast, 'day')).toBe(
+      'Zufallsgericht für Montag',
+    )
   })
 })
 
-describe('mealTimeFieldLabel', () => {
+describe('slotFieldLabel', () => {
   it('names the meal time of a slot without a supply', () => {
-    expect(mealTimeFieldLabel('dinner', false)).toBe('Abendessen')
+    expect(slotFieldLabel(mondayDinner, 'time', false)).toBe('Abendessen')
   })
 
   it('adds the supply to the meal time of a covered slot', () => {
-    expect(mealTimeFieldLabel('dinner', true)).toBe('Abendessen, im Vorrat')
+    expect(slotFieldLabel(mondayDinner, 'time', true)).toBe(
+      'Abendessen, im Vorrat',
+    )
+  })
+
+  it('names the day of a slot without a supply', () => {
+    expect(slotFieldLabel(mondayDinner, 'day', false)).toBe('Montag')
+  })
+
+  it('adds the supply to the day of a covered slot', () => {
+    expect(slotFieldLabel(mondayDinner, 'day', true)).toBe('Montag, im Vorrat')
   })
 })
 
 describe('slotPlannedAnnouncement', () => {
   it('says which meal landed in which meal time', () => {
-    expect(slotPlannedAnnouncement('lunch', bolognese, false)).toBe(
+    expect(slotPlannedAnnouncement(mondayLunch, 'time', bolognese, false)).toBe(
       'Mittagessen, Spaghetti Bolognese.',
     )
   })
 
   it('says that the meal of the slot is kept in store', () => {
-    expect(slotPlannedAnnouncement('lunch', bolognese, true)).toBe(
+    expect(slotPlannedAnnouncement(mondayLunch, 'time', bolognese, true)).toBe(
       'Mittagessen, Spaghetti Bolognese, im Vorrat.',
     )
+  })
+
+  it('says which meal landed on which day', () => {
+    expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, false)).toBe(
+      'Montag, Spaghetti Bolognese.',
+    )
+  })
+
+  it('says that the meal of the day is kept in store', () => {
+    expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, true)).toBe(
+      'Montag, Spaghetti Bolognese, im Vorrat.',
+    )
+  })
+})
+
+describe('weekViewShownAnnouncement', () => {
+  it('names the view and the meal time it shows', () => {
+    expect(weekViewShownAnnouncement('lunch')).toBe(
+      'Wochenansicht, Mittagessen.',
+    )
+  })
+})
+
+describe('dayViewShownAnnouncement', () => {
+  it('names the view and the day it shows', () => {
+    expect(dayViewShownAnnouncement('friday')).toBe('Tagesansicht, Freitag.')
   })
 })
 
@@ -781,6 +857,14 @@ describe('moreSupplyLabel', () => {
 
 describe('mealSuggestionsLabel', () => {
   it('names the meal time the suggestions belong to', () => {
-    expect(mealSuggestionsLabel('snack')).toBe('Vorschläge für Snack')
+    expect(mealSuggestionsLabel(mondaySnack, 'time')).toBe(
+      'Vorschläge für Snack',
+    )
+  })
+
+  it('names the day the suggestions belong to', () => {
+    expect(mealSuggestionsLabel(mondaySnack, 'day')).toBe(
+      'Vorschläge für Montag',
+    )
   })
 })

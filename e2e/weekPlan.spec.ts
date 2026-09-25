@@ -345,3 +345,34 @@ test('opens the week plan on the day of today', async ({ page }) => {
     page.getByRole('button', { name: 'Nächster Tag', exact: true }),
   ).toHaveAttribute('aria-disabled', 'false')
 })
+
+test('plans a day of the week in the week view', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Wochenplan')
+  await pressButton(page, 'Wochenansicht')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Wochenansicht, Mittagessen.',
+  )
+
+  await chooseSuggestion(page, 'Donnerstag', 'bolo', 'Bolognese')
+
+  await expect
+    .poll(async () => (await weekPlanOnServer())['thursday.lunch'])
+    .toEqual(expect.any(String))
+
+  await pressButton(page, 'Tagesansicht')
+  await stepToDay(page, 'Donnerstag')
+
+  await expect(page.getByLabel('Mittagessen', { exact: true })).toHaveValue(
+    'Bolognese',
+  )
+})

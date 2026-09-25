@@ -294,7 +294,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/weekPlanView.test.ts` zuerst schreiben (roter Schritt):
+- [x] `src/meals/domain/weekPlanView.test.ts` zuerst schreiben (roter Schritt):
   - `slotNamingIn`: `names the meal time in the day view` und `names the day in the
     week view`.
   - `shownSlots`:
@@ -302,7 +302,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
       'lunch')` ergibt Freitag Frühstück, Mittagessen, Snack, Abendessen.
     - `shows the seven days of the meal time in the week view`: `('week', 'friday',
       'dinner')` ergibt Montag- bis Sonntag-Abendessen.
-- [ ] `src/meals/domain/weekPlanView.ts` anlegen:
+- [x] `src/meals/domain/weekPlanView.ts` anlegen:
   ```ts
   import { MEAL_TIMES, WEEKDAYS, type MealTime, type PlanSlot, type Weekday } from './weekPlan'
 
@@ -320,7 +320,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
       : WEEKDAYS.map((each) => ({ day: each, time }))
   }
   ```
-- [ ] `src/meals/domain/announcements.test.ts` zuerst anpassen:
+- [x] `src/meals/domain/announcements.test.ts` zuerst anpassen:
   - `slotName`: `names the meal time` (`Frühstück`) und `names the day` (`Montag`).
   - Die vorhandenen Fälle für `fixedSlotText`, `randomMealLabel`,
     `mealSuggestionsLabel`, `slotPlannedAnnouncement` und `mealTimeFieldLabel` (dann
@@ -331,7 +331,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
     `Montag` und `Montag, im Vorrat`.
   - `weekViewShownAnnouncement('lunch')`: `Wochenansicht, Mittagessen.`
   - `dayViewShownAnnouncement('friday')`: `Tagesansicht, Freitag.`
-- [ ] `src/meals/domain/announcements.ts` anpassen:
+- [x] `src/meals/domain/announcements.ts` anpassen:
   ```ts
   export function slotName(slot: PlanSlot, naming: SlotNaming): string {
     return naming === 'time' ? mealTimeName(slot.time) : weekdayName(slot.day)
@@ -352,7 +352,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
   `fixedSlotText`, `mealSuggestionsLabel`, `slotFieldLabel` (bisher
   `mealTimeFieldLabel`) und `slotPlannedAnnouncement` ersetzen `mealTimeName(time)`
   genauso durch `slotName(slot, naming)`.
-- [ ] `src/meals/ui/CalendarDaysIcon.tsx` und `src/meals/ui/CalendarOneIcon.tsx` im
+- [x] `src/meals/ui/CalendarDaysIcon.tsx` und `src/meals/ui/CalendarOneIcon.tsx` im
   Aufbau von `SunriseIcon.tsx` anlegen (`className="buttonIcon"`,
   `viewBox="0 0 24 24"`, `stroke="currentColor"`, `strokeWidth="2"`,
   `aria-hidden="true"`, `focusable="false"`), mit den Lucide-Pfaden:
@@ -366,7 +366,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
   damit alle Kalender gleich aussehen. Vor dem Anlegen die Pfade unter
   https://lucide.dev/icons/calendar-days und https://lucide.dev/icons/calendar-1
   abgleichen.
-- [ ] `src/meals/ui/WeekPlanRow.tsx`:
+- [x] `src/meals/ui/WeekPlanRow.tsx`:
   - Neue Prop `naming: SlotNaming`.
   - `MealTimeMarks` wird zu `SlotMarks({ slot, naming, inSupply })`:
     ```tsx
@@ -379,7 +379,7 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
     ```
   - Alle Beschriftungen bekommen `(slot, naming, …)`: `slotFieldLabel`,
     `randomMealLabel`, `mealSuggestionsLabel`, `fixedSlotText`.
-- [ ] `src/meals/ui/WeekPlanPage.tsx`:
+- [x] `src/meals/ui/WeekPlanPage.tsx`:
   - Neue Props `shownView: WeekPlanView`, `onShowView: (view: WeekPlanView) => void`,
     `shownTime: MealTime`.
   - Lokale Komponente `ViewSwitchButton({ shownView, onShowView })`:
@@ -397,24 +397,24 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
     (`<div className="mealTimeNavigation" />`), damit der Umschalter rechts bleibt.
   - Die Liste rendert
     `shownSlots(shownView, shownDay, shownTime).map((slot) => <WeekPlanRow key={`${shownView}-${slot.day}-${slot.time}`} slot={slot} naming={slotNamingIn(shownView)} … />)`.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`:
+- [x] `src/meals/ui/WeekPlanArea.tsx`:
   - Neue Props `shownView`, `onShowView`, `shownTime`.
   - `showView(view)`: `onShowView(view)`, dann
     `announce(view === 'week' ? weekViewShownAnnouncement(shownTime) : dayViewShownAnnouncement(shownDay))`.
   - `chooseMeal` sagt
     `slotPlannedAnnouncement(slot, slotNamingIn(shownView), chosen, …)` an.
-- [ ] `src/SignedInApp.tsx`: neben `shownDay`
+- [x] `src/SignedInApp.tsx`: neben `shownDay`
   `const [shownView, setShownView] = useState<WeekPlanView>('day')` und
   `const [shownTime] = useState<MealTime>('lunch')` anlegen und an `WeekPlanArea`
   durchreichen. In Phase 2 kommt der Setter dazu.
-- [ ] `src/index.css`:
+- [x] `src/index.css`:
   - Neu ist `.planNavigation { display: flex; align-items: center; gap: 1.5rem; margin: 1rem 0; }`.
   - `.dayNavigation` verliert `margin` und bekommt `flex: 1`. Die übrigen Regeln
     bleiben, also Pfeile außen und Tag in der Mitte.
   - `.mealTimeNavigation { flex: 1; }`
   - `.weekdayMark { flex: none; width: 2.5rem; }`. Die Breite reicht für `Mo.` bis
     `So.`, und so stehen alle Felder bündig.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`:
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`:
   - `WeekPlanAreaUnderTest` hält zusätzlich `shownView` in `useState`.
     `renderWeekPlanArea` bekommt am Ende die Parameter `initialView: WeekPlanView = 'day'`
     und `initialTime: MealTime = 'lunch'`. Neu ist die Hilfe
@@ -451,28 +451,28 @@ fest `'lunch'`. Am Ende ist die Wochenansicht vollständig bedienbar.
       violations in the week view of a fixed plan`.
   - `shows the rolling, stepping and clearing buttons as icons only` prüft zusätzlich
     `Wochenansicht`.
-- [ ] `src/SignedInApp.test.tsx`: Neu sind
+- [x] `src/SignedInApp.test.tsx`: Neu sind
   - `opens the week plan in the day view`: Es gibt `Wochenansicht`, aber kein Feld
     `Dienstag`.
   - `keeps the week view after a visit to the meals area`: `Wochenansicht`, dann
     `Gerichte`, dann `Wochenplan`. Das Feld `Montag` ist da, ebenso der Knopf
     `Tagesansicht`.
-- [ ] `e2e/weekPlan.spec.ts`: Neu ist `plans a day of the week in the week view`. Zur
+- [x] `e2e/weekPlan.spec.ts`: Neu ist `plans a day of the week in the week view`. Zur
   Woche umschalten, im Feld `Donnerstag` Bolognese wählen, auf
   `thursday.lunch` auf dem Server warten, zur Tagesansicht wechseln und zum Donnerstag
   blättern (`stepToDay`). Das Feld `Mittagessen` zeigt `Bolognese`.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch, einschließlich `weekPlanView.test.ts`.
-- [ ] `switches to the week view and says which meal time it shows` und
+- [x] `npm run test` läuft durch, einschließlich `weekPlanView.test.ts`.
+- [x] `switches to the week view and says which meal time it shows` und
   `switches back to the day that was shown before` sind grün, der Fokus bleibt auf dem
   Umschalter.
-- [ ] `keeps the week view after a visit to the meals area` ist grün.
-- [ ] Alle `has no accessibility violations …`-Tests sind grün, auch die beiden neuen.
-- [ ] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
-- [ ] `npm run build` übersetzt ohne Typfehler.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `plans a day of the week in the
+- [x] `keeps the week view after a visit to the meals area` ist grün.
+- [x] Alle `has no accessibility violations …`-Tests sind grün, auch die beiden neuen.
+- [x] `npm run lint` läuft durch, `test/domainLayerBoundary.test.ts` bleibt grün.
+- [x] `npm run build` übersetzt ohne Typfehler.
+- [x] `npm run test:e2e` läuft durch, einschließlich `plans a day of the week in the
   week view`.
 
 **Manuelle Verifikation**:
@@ -596,6 +596,11 @@ unsichtbare `<h2>` nennt die gezeigte Tageszeit.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1: Lucide 1.48.0 zeichnet `calendar-days` und `calendar-1` inzwischen einen
+  Pixel höher (`y="3"`, `M3 9h18`, Punkte bei 13/17). Wie im Plan vorgesehen folgen
+  die neuen Icons den Koordinaten des vorhandenen `CalendarIcon.tsx` (`y="4"`,
+  `M3 10h18`), damit alle Kalender gleich aussehen.
 
 ## Verweise
 

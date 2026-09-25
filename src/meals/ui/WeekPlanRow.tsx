@@ -3,18 +3,15 @@ import { SnowflakeIcon } from '../../shared/ui/SnowflakeIcon'
 import {
   fixedSlotText,
   mealSuggestionsLabel,
-  mealTimeFieldLabel,
   randomMealLabel,
+  slotFieldLabel,
+  weekdayAbbreviation,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
 import { suggestMeals } from '../domain/mealSuggestions'
 import type { Supply } from '../domain/supply'
-import {
-  shownMealIn,
-  type MealTime,
-  type PlanSlot,
-  type WeekPlan,
-} from '../domain/weekPlan'
+import { shownMealIn, type PlanSlot, type WeekPlan } from '../domain/weekPlan'
+import type { SlotNaming } from '../domain/weekPlanView'
 import {
   isCoveredIn,
   isFixed,
@@ -26,6 +23,7 @@ import { ShuffleIcon } from './ShuffleIcon'
 
 type WeekPlanRowProps = {
   slot: PlanSlot
+  naming: SlotNaming
   plan: WeekPlan
   meals: readonly Meal[]
   randomCandidateCount: number
@@ -47,18 +45,26 @@ export function WeekPlanRow(props: WeekPlanRowProps) {
   )
 }
 
-function MealTimeMarks({
-  time,
+function SlotMarks({
+  slot,
+  naming,
   inSupply,
 }: {
-  time: MealTime
+  slot: PlanSlot
+  naming: SlotNaming
   inSupply: boolean
 }) {
   return (
     <>
-      <span className="mealTimeMark" aria-hidden="true">
-        <MealTimeIcon time={time} />
-      </span>
+      {naming === 'time' ? (
+        <span className="mealTimeMark" aria-hidden="true">
+          <MealTimeIcon time={slot.time} />
+        </span>
+      ) : (
+        <span className="weekdayMark" aria-hidden="true">
+          {weekdayAbbreviation(slot.day)}
+        </span>
+      )}
       <span className="supplyMark" aria-hidden="true">
         {inSupply && <SnowflakeIcon />}
       </span>
@@ -68,6 +74,7 @@ function MealTimeMarks({
 
 function ShuffleSlotButton({
   slot,
+  naming,
   randomCandidateCount,
   onShuffleSlot,
 }: WeekPlanRowProps) {
@@ -75,7 +82,7 @@ function ShuffleSlotButton({
     <button
       type="button"
       className="iconButton"
-      aria-label={randomMealLabel(slot.time)}
+      aria-label={randomMealLabel(slot, naming)}
       disabled={randomCandidateCount === 0}
       onClick={() => onShuffleSlot(slot)}
     >
@@ -85,25 +92,25 @@ function ShuffleSlotButton({
 }
 
 function FixedSlot(props: WeekPlanRowProps) {
-  const { slot, plan, meals, supplies, stage } = props
+  const { slot, naming, plan, meals, supplies, stage } = props
   const planned = shownMealIn(plan, slot, meals)
   const inSupply = isCoveredIn(stage, plan, slot, meals, supplies)
 
   return (
     <div className="weekPlanChoice">
-      <MealTimeMarks time={slot.time} inSupply={inSupply} />
+      <SlotMarks slot={slot} naming={naming} inSupply={inSupply} />
       <span className="weekPlanMeal" aria-hidden="true">
         {planned?.name}
       </span>
       <span className="visuallyHidden">
-        {fixedSlotText(slot.time, planned, inSupply)}
+        {fixedSlotText(slot, naming, planned, inSupply)}
       </span>
     </div>
   )
 }
 
 function EditableSlot(props: WeekPlanRowProps) {
-  const { slot, plan, meals, supplies, stage, onChooseMeal } = props
+  const { slot, naming, plan, meals, supplies, stage, onChooseMeal } = props
   const [typed, setTyped] = useState<string | null>(null)
   const choice = useRef<HTMLDivElement>(null)
   const plannedName = shownMealIn(plan, slot, meals)?.name ?? ''
@@ -126,16 +133,16 @@ function EditableSlot(props: WeekPlanRowProps) {
 
   return (
     <div className="weekPlanChoice" ref={choice}>
-      <MealTimeMarks time={slot.time} inSupply={inSupply} />
+      <SlotMarks slot={slot} naming={naming} inSupply={inSupply} />
       <input
-        aria-label={mealTimeFieldLabel(slot.time, inSupply)}
+        aria-label={slotFieldLabel(slot, naming, inSupply)}
         value={typed ?? plannedName}
         onChange={(event) => change(event.target.value)}
         onBlur={forgetTypingWhenLeaving}
       />
       <ShuffleSlotButton {...props} />
       <MealSuggestions
-        label={mealSuggestionsLabel(slot.time)}
+        label={mealSuggestionsLabel(slot, naming)}
         meals={suggestMeals(meals, typed ?? '')}
         onChoose={chooseSuggestion}
       />

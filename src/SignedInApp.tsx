@@ -13,9 +13,11 @@ import {
   mealsWithoutItems,
   suppliedMealCount,
   weekdayOf,
+  type MealTime,
   type WeekPlanTransfer,
   type Weekday,
 } from './meals/domain/weekPlan'
+import type { WeekPlanView } from './meals/domain/weekPlanView'
 import { CategoriesArea } from './meals/ui/CategoriesArea'
 import { MealsArea } from './meals/ui/MealsArea'
 import { SuppliesArea } from './meals/ui/SuppliesArea'
@@ -113,6 +115,8 @@ export function SignedInApp({
   const supplies = useSupplies(suppliesClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
   const [shownDay, setShownDay] = useState<Weekday>(() => weekdayOf(clock()))
+  const [shownView, setShownView] = useState<WeekPlanView>('day')
+  const [shownTime] = useState<MealTime>('lunch')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
   function addMealToShoppingList(meal: Meal) {
@@ -208,6 +212,9 @@ export function SignedInApp({
         supplies={supplies.supplies}
         shownDay={shownDay}
         onShowDay={setShownDay}
+        shownView={shownView}
+        onShowView={setShownView}
+        shownTime={shownTime}
         navigation={navigation}
         announce={announce}
         random={random}
