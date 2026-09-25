@@ -634,18 +634,18 @@ neuen Modell.
 
 **Manuelle Verifikation**:
 
-- [ ] Mit VoiceOver den Wochenplan öffnen und durchwischen: Man hört
+- [x] Mit VoiceOver den Wochenplan öffnen und durchwischen: Man hört
   `Wochenplan, … von 28`, `Vorheriger Tag, abgeblendet`, `Montag, Überschrift`,
   `Nächster Tag`, dann `Frühstück`, `Zufallsgericht für Frühstück` und so weiter bis
   `Abendessen`. Die Icons werden nicht vorgelesen.
-- [ ] `Nächster Tag` mehrmals doppeltippen: Jedes Mal kommt die Ansage des neuen Tages,
+- [x] `Nächster Tag` mehrmals doppeltippen: Jedes Mal kommt die Ansage des neuen Tages,
   und der Fokus bleibt auf dem Pfeil. Am Sonntag ist der Knopf abgeblendet, und ein
   weiterer Doppeltipp bewirkt nichts.
-- [ ] Die vier Icons sind auf dem Handy erkennbar und stehen bündig. Die Felder aller
+- [x] Die vier Icons sind auf dem Handy erkennbar und stehen bündig. Die Felder aller
   vier Zeilen stehen gleich weit rechts, mit und ohne Schneeflocke, auch bei
   eingeschalteter Farbumkehr.
-- [ ] Die gesperrten Pfeile sind sichtbar ausgegraut.
-- [ ] Einen Platz am Dienstag auf dem einen Gerät planen. Auf dem zweiten Gerät
+- [x] Die gesperrten Pfeile sind sichtbar ausgegraut.
+- [x] Einen Platz am Dienstag auf dem einen Gerät planen. Auf dem zweiten Gerät
   erscheint er, sobald man dort zum Dienstag blättert.
 
 ### Phase 2: Heute als Starttag
@@ -657,14 +657,14 @@ Die Uhr wird eingespeist.
 
 **Aufgaben**:
 
-- [ ] In `src/meals/domain/weekPlan.test.ts` zuerst `weekdayOf` testen:
+- [x] In `src/meals/domain/weekPlan.test.ts` zuerst `weekdayOf` testen:
   - `names a Monday as monday`: `new Date(2026, 8, 21, 12)` ergibt `'monday'`.
   - `names a Sunday as sunday`: `new Date(2026, 8, 27, 12)` ergibt `'sunday'`, weil
     `getDay()` hier `0` liefert.
   - `takes the local day shortly after midnight`: `new Date(2026, 8, 25, 0, 5)` ergibt
     `'friday'`.
-- [ ] `src/shared/domain/clock.ts` anlegen: `export type Clock = () => Date`.
-- [ ] `weekdayOf` in `src/meals/domain/weekPlan.ts`:
+- [x] `src/shared/domain/clock.ts` anlegen: `export type Clock = () => Date`.
+- [x] `weekdayOf` in `src/meals/domain/weekPlan.ts`:
   ```ts
   const DAYS_FROM_SUNDAY_TO_MONDAY = 6
 
@@ -672,11 +672,11 @@ Die Uhr wird eingespeist.
     return WEEKDAYS[(date.getDay() + DAYS_FROM_SUNDAY_TO_MONDAY) % WEEKDAYS.length]
   }
   ```
-- [ ] `src/SignedInApp.tsx`: Die Prop `clock?: Clock` bekommt den Standard
+- [x] `src/SignedInApp.tsx`: Die Prop `clock?: Clock` bekommt den Standard
   `() => new Date()`, und der Startwert lautet
   `useState<Weekday>(() => weekdayOf(clock()))`. `App.tsx` und `main.tsx` bleiben
   unverändert, weil sie den Standard nutzen.
-- [ ] `src/SignedInApp.test.tsx`: Die Hilfsfunktion zum Rendern bekommt eine feste Uhr,
+- [x] `src/SignedInApp.test.tsx`: Die Hilfsfunktion zum Rendern bekommt eine feste Uhr,
   standardmäßig einen Montag (`() => new Date(2026, 8, 21, 12)`), damit die Tests aus
   Phase 1 unverändert bleiben. Neu sind:
   - `opens the week plan on the day of today`: Die Uhr steht auf Freitag, die `<h2>`
@@ -684,13 +684,13 @@ Die Uhr wird eingespeist.
   - `keeps the stepped day although the clock moves on`: Die Uhr gibt erst Freitag,
     dann Samstag. Nach `Vorheriger Tag` und einem Besuch bei `Gerichte` heißt die
     `<h2>` `Donnerstag`.
-- [ ] `e2e/weekPlan.spec.ts`: In `test.beforeEach` die Zeit festsetzen, bevor
+- [x] `e2e/weekPlan.spec.ts`: In `test.beforeEach` die Zeit festsetzen, bevor
   `page.goto` läuft:
   `await page.clock.setFixedTime(new Date('2026-09-21T12:00:00'))`, ein Montag. So
   laufen die Tests aus Phase 1 unverändert. Neu ist `opens the week plan on the day of
   today`: Die Zeit steht auf `2026-09-25T12:00:00`, die `<h2>` heißt `Freitag`, und
   `Vorheriger Tag` und `Nächster Tag` sind beide bedienbar.
-- [ ] `docs/notes.txt`: Die Punkte `3 Zeilen pro Tag im Wochenplan` (Zeile 135) und
+- [x] `docs/notes.txt`: Die Punkte `3 Zeilen pro Tag im Wochenplan` (Zeile 135) und
   unter `Wochenplan erweitern` die Unterpunkte `Tag steht oben, links und rechts
   buttons …` (Zeile 150) und `4 Zeilen mit passenden Icons …` (Zeile 151) auf `x`
   setzen und nach DONE verschieben. Der Oberpunkt `Wochenplan erweitern` bleibt mit
@@ -706,12 +706,12 @@ Die Uhr wird eingespeist.
 
 **Automatisierte Verifikation**:
 
-- [ ] `npm run test` läuft durch, besonders `weekdayOf` für Sonntag und kurz nach
+- [x] `npm run test` läuft durch, besonders `weekdayOf` für Sonntag und kurz nach
   Mitternacht.
-- [ ] `opens the week plan on the day of today` und `keeps the stepped day although
+- [x] `opens the week plan on the day of today` und `keeps the stepped day although
   the clock moves on` sind grün.
-- [ ] `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft durch, einschließlich `opens the week plan on the day of
+- [x] `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft durch, einschließlich `opens the week plan on the day of
   today`.
 
 **Manuelle Verifikation**:
@@ -734,6 +734,9 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   `shows the day as its abbreviation and names it in full`, `spends the supply on an
   earlier day before the shown one` und `keeps stepping through the days while the plan
   is fixed`.
+- Phase 2: In `docs/notes.txt` stehen die zwei erledigten Unterpunkte unter DONE
+  unter einer Kopie des Oberpunkts, die mit `/` markiert ist. So bleiben sie zuordenbar,
+  und der Oberpunkt bleibt unter TODO mit seinen offenen Unterpunkten unverändert.
 
 ## Verweise
 

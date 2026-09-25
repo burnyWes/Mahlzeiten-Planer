@@ -18,6 +18,7 @@ import {
   WEEKDAYS,
   weekdayAfter,
   weekdayBefore,
+  weekdayOf,
   weekPlanTransfer,
   withMealIn,
   type MealTime,
@@ -527,5 +528,19 @@ describe('weekdayAfter', () => {
 
   it('has no day after Sunday', () => {
     expect(weekdayAfter('sunday')).toBeNull()
+  })
+})
+
+describe('weekdayOf', () => {
+  it('names a Monday as monday', () => {
+    expect(weekdayOf(new Date(2026, 8, 21, 12))).toBe('monday')
+  })
+
+  it('names a Sunday as sunday', () => {
+    expect(weekdayOf(new Date(2026, 8, 27, 12))).toBe('sunday')
+  })
+
+  it('takes the local day shortly after midnight', () => {
+    expect(weekdayOf(new Date(2026, 8, 25, 0, 5))).toBe('friday')
   })
 })

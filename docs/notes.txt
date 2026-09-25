@@ -109,6 +109,10 @@ x Einkaufsliste: loescht das andere Geraet einen Artikel, waehrend hier ein eige
 x Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbestaetigt
   ist, wertet dropConfirmedRemovals sein Fehlen im Snapshot schon als Bestaetigung
   (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).
+x 3 Zeilen pro Tag im Wochenplan
+/ Wochenplan erweitern
+  x Tag steht oben, links und rechts buttons, um zum voherigen, nächsten tag zu kommen
+  x 4 Zeilen mit passenden Icons: Morgens, Mittags, Snack, Abends
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -132,7 +136,6 @@ TODO
   MZP-006 sichtbar, weil die Zeile sofort erscheint und nicht erst nach der
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
-- 3 Zeilen pro Tag im Wochenplan
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 - Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
   Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)
@@ -147,8 +150,6 @@ TODO
   - daneben Anzahl-Tage-Selector
   - Ab dem Datepickertag und für anzahl tage wird geplant
   n Links in der Tageszeile steht der richtige Wochentag
-  - Tag steht oben, links und rechts buttons, um zum voherigen, nächsten tag zu kommen
-  - 4 Zeilen mit passenden Icons: Morgens, Mittags, Snack, Abends
 - Regeln für die Zufallsauswahl
   - Hauptgericht darf nur Mittags oder Abends gewürfelt werden.
     - Wenn mittags für den gleichen tag schon Haupgericht gewürfelt wurde, dann darf abends nicht nochmal Hauptgericht
@@ -178,3 +179,8 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   am selben Gericht bis zum Neuladen; einen Ausweg wie isStaleSnapshot gibt es nicht
   (MZP-027, Entscheidung 1).
 - Einheit ebenfalls merken und Vorschläge machen. Neuer Eintrag im Optionsmenü: Einheiten-Verwaltung
+- Zufallsregeln: der Wochenplan hat seit MZP-028 vier Plaetze pro Tag
+  (MealTime 'breakfast' | 'lunch' | 'snack' | 'dinner'); PlanningRule bekommt den
+  PlanSlot, die Regeln oben koennen slot.time mit meal.kind vergleichen
+- Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
+  gelesen und koennen von Hand geloescht werden

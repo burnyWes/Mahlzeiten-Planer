@@ -14,6 +14,7 @@ import {
 } from './meals/domain/weekPlan'
 import type { Meal } from './meals/domain/meal'
 import type { AppearanceClient } from './shared/appearance/appearanceClient'
+import type { Clock } from './shared/domain/clock'
 import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
 import { useAppearance } from './shared/appearance/useAppearance'
 import { SignedInApp } from './SignedInApp'
@@ -38,6 +39,14 @@ function SignedInAppWithAppearance({
   return <SignedInApp {...props} appearance={useAppearance(appearanceClient)} />
 }
 
+const aMonday = new Date(2026, 8, 21, 12)
+const aFriday = new Date(2026, 8, 25, 12)
+const aSaturday = new Date(2026, 8, 26, 12)
+
+function stoppedAt(date: Date): Clock {
+  return () => date
+}
+
 function renderSignedInApp(
   initialItems: readonly ShoppingItem[] = [],
   initialMeals: readonly Meal[] = [],
@@ -45,6 +54,7 @@ function renderSignedInApp(
   appearanceClient = createInMemoryAppearanceClient(),
   weekPlanClient = createInMemoryWeekPlanClient(),
   suppliesClient = createInMemorySuppliesClient(),
+  clock: Clock = stoppedAt(aMonday),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -56,6 +66,7 @@ function renderSignedInApp(
       createSuppliesClient={() => suppliesClient}
       createKnownItemsClient={() => knownItemsClient}
       appearanceClient={appearanceClient}
+      clock={clock}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -278,6 +289,49 @@ describe('SignedInApp', () => {
     expect(screen.getByRole('button', { name: 'Wochenplan' })).toHaveAttribute(
       'aria-current',
       'page',
+    )
+  })
+
+  it('opens the week plan on the day of today', async () => {
+    renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(),
+      createInMemorySuppliesClient(),
+      stoppedAt(aFriday),
+    )
+
+    await goToArea('Wochenplan')
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+      'Freitag',
+    )
+  })
+
+  it('keeps the stepped day although the clock moves on', async () => {
+    const readings = [aFriday, aSaturday]
+    let reading = 0
+    renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(),
+      createInMemorySuppliesClient(),
+      () => readings[Math.min(reading++, readings.length - 1)],
+    )
+
+    await goToArea('Wochenplan')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Vorheriger Tag' }),
+    )
+    await goToArea('Gerichte')
+    await goToArea('Wochenplan')
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+      'Donnerstag',
     )
   })
 

@@ -17,8 +17,12 @@ import {
   typeInto,
 } from './keyboard.ts'
 
-test.beforeEach(async () => {
+const A_MONDAY = new Date('2026-09-21T12:00:00')
+const A_FRIDAY = new Date('2026-09-25T12:00:00')
+
+test.beforeEach(async ({ page }) => {
   await prepareEmulators()
+  await page.clock.setFixedTime(A_MONDAY)
 })
 
 test.afterEach(async ({ page }) => {
@@ -322,4 +326,22 @@ test('steps through the week with the arrows', async ({ page }) => {
   await expect(nextDay).toHaveAttribute('aria-disabled', 'true')
   await expect(nextDay).toBeFocused()
   await expect(previousDay).toHaveAttribute('aria-disabled', 'false')
+})
+
+test('opens the week plan on the day of today', async ({ page }) => {
+  await page.clock.setFixedTime(A_FRIDAY)
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Wochenplan')
+
+  await expect(page.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+    'Freitag',
+  )
+  await expect(
+    page.getByRole('button', { name: 'Vorheriger Tag', exact: true }),
+  ).toHaveAttribute('aria-disabled', 'false')
+  await expect(
+    page.getByRole('button', { name: 'Nächster Tag', exact: true }),
+  ).toHaveAttribute('aria-disabled', 'false')
 })

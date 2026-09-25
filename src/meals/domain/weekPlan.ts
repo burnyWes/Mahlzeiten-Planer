@@ -35,6 +35,14 @@ export const EMPTY_WEEK_PLAN: WeekPlan = Object.fromEntries(
   WEEKDAYS.map((day) => [day, EMPTY_DAY_PLAN]),
 ) as WeekPlan
 
+const DAYS_FROM_SUNDAY_TO_MONDAY = 6
+
+export function weekdayOf(date: Date): Weekday {
+  return WEEKDAYS[
+    (date.getDay() + DAYS_FROM_SUNDAY_TO_MONDAY) % WEEKDAYS.length
+  ]
+}
+
 export function weekdayBefore(day: Weekday): Weekday | null {
   return WEEKDAYS[WEEKDAYS.indexOf(day) - 1] ?? null
 }

@@ -12,6 +12,7 @@ import { withoutPortions } from './meals/domain/supply'
 import {
   mealsWithoutItems,
   suppliedMealCount,
+  weekdayOf,
   type WeekPlanTransfer,
   type Weekday,
 } from './meals/domain/weekPlan'
@@ -23,6 +24,7 @@ import { useSupplies } from './meals/ui/useSupplies'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
 import { WeekPlanArea } from './meals/ui/WeekPlanArea'
 import type { Appearance } from './shared/appearance/useAppearance'
+import type { Clock } from './shared/domain/clock'
 import { CalendarIcon } from './shared/ui/CalendarIcon'
 import { ChecklistIcon } from './shared/ui/ChecklistIcon'
 import { NavigationBar, type Area } from './shared/ui/NavigationBar'
@@ -79,6 +81,7 @@ type SignedInAppProps = {
   appearance: Appearance
   announce: (text: string) => void
   random?: RandomSource
+  clock?: Clock
 }
 
 export function SignedInApp({
@@ -90,6 +93,7 @@ export function SignedInApp({
   appearance,
   announce,
   random = Math.random,
+  clock = () => new Date(),
 }: SignedInAppProps) {
   const [shoppingListClient] = useState(() =>
     createShoppingListClient(announce),
@@ -108,7 +112,7 @@ export function SignedInApp({
   const weekPlanning = useWeekPlan(weekPlanClient)
   const supplies = useSupplies(suppliesClient)
   const [activeArea, setActiveArea] = useState<AreaId>('shopping')
-  const [shownDay, setShownDay] = useState<Weekday>('monday')
+  const [shownDay, setShownDay] = useState<Weekday>(() => weekdayOf(clock()))
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
 
   function addMealToShoppingList(meal: Meal) {
