@@ -5,7 +5,7 @@ branch: main
 story: MZP-028
 topic: "Wochenplan als Tagesansicht mit vier Mahlzeiten"
 tags: [plan, meals, weekPlan, domain, firestore, ui]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-028 — Wochenplan als Tagesansicht mit vier Mahlzeiten
@@ -716,9 +716,9 @@ Die Uhr wird eingespeist.
 
 **Manuelle Verifikation**:
 
-- [ ] Die App auf dem Handy neu laden und den Wochenplan öffnen. Es steht der heutige
+- [x] Die App auf dem Handy neu laden und den Wochenplan öffnen. Es steht der heutige
   Wochentag da.
-- [ ] Zu einem anderen Tag blättern, zu `Gerichte` wechseln und zurück. Der geblätterte
+- [x] Zu einem anderen Tag blättern, zu `Gerichte` wechseln und zurück. Der geblätterte
   Tag steht noch da. Nach dem Neuladen steht wieder der heutige Tag da.
 
 ## Notizen zur Umsetzung

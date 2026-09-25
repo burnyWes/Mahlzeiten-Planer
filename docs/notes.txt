@@ -184,3 +184,5 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   PlanSlot, die Regeln oben koennen slot.time mit meal.kind vergleichen
 - Firestore: weekPlan/current und weekPlan/stage werden seit MZP-028 nicht mehr
   gelesen und koennen von Hand geloescht werden
+- reset-button auf Wochenplan-Seite
+- Wochenansicht auf Wochenplan-Seite
