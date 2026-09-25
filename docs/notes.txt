@@ -162,9 +162,9 @@ TODO
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
-- Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
+x Kategorien nutzen: Gerichteliste nach Kategorie filtern, im Wochenplan nach
   Kategorie wuerfeln (Feld categories am Gericht steht seit MZP-021 bereit)
-- ausgegraute buttons heller zeichnen
+x ausgegraute buttons heller zeichnen
 - Wochenplan erweitern
   - oben Date-Picker für Startdatum
   - daneben Anzahl-Tage-Selector

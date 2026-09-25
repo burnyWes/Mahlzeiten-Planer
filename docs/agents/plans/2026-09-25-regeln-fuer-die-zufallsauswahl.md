@@ -5,7 +5,7 @@ branch: main
 story: MZP-031
 topic: "Regeln für die Zufallsauswahl im Wochenplan"
 tags: [plan, meals, weekPlan, randomPlanning, domain, ui, e2e]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-031 — Regeln für die Zufallsauswahl im Wochenplan
@@ -309,10 +309,10 @@ Hauptgericht, und VoiceOver hört, wie viele Plätze belegt sind oder dass nicht
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit echten Gerichten die Woche würfeln: Frühstück nur Frühstück
+- [x] Auf dem Gerät mit echten Gerichten die Woche würfeln: Frühstück nur Frühstück
   oder Snack, Snack-Spalte nur Snacks, pro Tag genau ein Hauptgericht, mal mittags und
   mal abends.
-- [ ] Mit VoiceOver: Ansage nach dem Wochenwurf nennt die richtige Zahl. Ein Würfel an
+- [x] Mit VoiceOver: Ansage nach dem Wochenwurf nennt die richtige Zahl. Ein Würfel an
   einer Zeile ohne passendes Gericht sagt „…, kein passendes Gericht.“
 
 ### Phase 2: Abwechslung — anderes Gericht beim Einzelwurf und Kategorie-Abstand
@@ -359,10 +359,10 @@ Abhängigkeiten: Phase 1
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mehrfach die Woche würfeln: Kein Hauptgericht und kein `none`-Gericht
+- [x] Auf dem Gerät mehrfach die Woche würfeln: Kein Hauptgericht und kein `none`-Gericht
   mit gleicher Kategorie steht am selben Tag oder an zwei Tagen hintereinander, sofern
   genug Gerichte anderer Kategorien vorhanden sind.
-- [ ] Ein zweiter Druck auf den Würfel einer Zeile bringt ein anderes Gericht.
+- [x] Ein zweiter Druck auf den Würfel einer Zeile bringt ein anderes Gericht.
 
 ### Phase 3: Frühstück und Snack bleiben gern wie am Vortag
 
@@ -405,7 +405,7 @@ Abhängigkeiten: Phase 2
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Gerät mit mehreren Frühstücks- und Snack-Gerichten die Woche würfeln:
+- [x] Auf dem Gerät mit mehreren Frühstücks- und Snack-Gerichten die Woche würfeln:
   Frühstück und Snack wiederholen sich in Blöcken (z. B. Müsli, Müsli, Brot, Joghurt,
   Joghurt), statt jeden Tag zu wechseln.
 
