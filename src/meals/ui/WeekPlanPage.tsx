@@ -27,6 +27,7 @@ import {
   type WeekPlanView,
 } from '../domain/weekPlanView'
 import {
+  canChoosePeriod,
   canClear,
   canShuffle,
   canTransfer,
@@ -34,6 +35,7 @@ import {
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
 import { AddToShoppingListIcon } from './AddToShoppingListIcon'
+import { CalendarCogIcon } from './CalendarCogIcon'
 import { CalendarDaysIcon } from './CalendarDaysIcon'
 import { CalendarOneIcon } from './CalendarOneIcon'
 import { ChevronLeftIcon } from './ChevronLeftIcon'
@@ -64,6 +66,7 @@ type WeekPlanPageProps = {
   onToggleStage: () => void
   onAddToShoppingList: () => void
   onClearPlan: () => void
+  onChoosePeriod: () => void
 }
 
 type DayStepButtonProps = {
@@ -199,6 +202,7 @@ export function WeekPlanPage({
   onToggleStage,
   onAddToShoppingList,
   onClearPlan,
+  onChoosePeriod,
 }: WeekPlanPageProps) {
   const heading = useHeadingFocus()
   const plannedMeals = plannedMealCount(plan, meals)
@@ -211,6 +215,15 @@ export function WeekPlanPage({
           <h1 ref={heading} tabIndex={-1}>
             {weekPlanHeading(plannedMeals, slotCountOf(plan), stage)}
           </h1>
+          <button
+            type="button"
+            className="iconButton"
+            aria-label="Zeitraum wählen"
+            aria-disabled={!canChoosePeriod(stage)}
+            onClick={onChoosePeriod}
+          >
+            <CalendarCogIcon />
+          </button>
         </div>
         <div className="planNavigation">
           {shownView === 'day' ? (

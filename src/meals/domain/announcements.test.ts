@@ -26,6 +26,9 @@ import {
   planDateHeading,
   planDateMark,
   planDateName,
+  periodAppliedAnnouncement,
+  periodDaysPhrase,
+  periodFailureMessage,
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   fixedSlotText,
@@ -63,6 +66,7 @@ import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import { toPlanDate, WEEKDAYS } from './planDate'
+import { InvalidPlanPeriod } from './planPeriod'
 import { MEAL_TIMES, type PlanSlot } from './weekPlan'
 import { EDITING_STAGE, FIXED_STAGE, transferredStage } from './weekPlanStage'
 
@@ -1000,5 +1004,44 @@ describe('mealSuggestionsLabel', () => {
     expect(mealSuggestionsLabel(mondaySnack, 'day')).toBe(
       'Vorschläge für Montag, 21. September',
     )
+  })
+})
+
+describe('periodAppliedAnnouncement', () => {
+  it('names the first and the last day and counts the days', () => {
+    expect(periodAppliedAnnouncement({ start: FRIDAY, days: 10 })).toBe(
+      'Zeitraum Freitag, 25. September bis Sonntag, 4. Oktober, 10 Tage.',
+    )
+  })
+
+  it('names a single day only once', () => {
+    expect(periodAppliedAnnouncement({ start: FRIDAY, days: 1 })).toBe(
+      'Zeitraum Freitag, 25. September, 1 Tag.',
+    )
+  })
+})
+
+describe('periodDaysPhrase', () => {
+  it('speaks of a single day in the singular', () => {
+    expect(periodDaysPhrase(1)).toBe('1 Tag')
+  })
+
+  it('speaks of several days in the plural', () => {
+    expect(periodDaysPhrase(7)).toBe('7 Tage')
+  })
+})
+
+describe('periodFailureMessage', () => {
+  it('asks for a start date when it is missing', () => {
+    expect(periodFailureMessage(new InvalidPlanPeriod('startMissing'))).toBe(
+      'Bitte ein Startdatum wählen.',
+    )
+  })
+
+  it('has no message for any other failure', () => {
+    expect(periodFailureMessage(new InvalidPlanPeriod('daysOutOfRange'))).toBe(
+      null,
+    )
+    expect(periodFailureMessage(new Error('anything'))).toBeNull()
   })
 })

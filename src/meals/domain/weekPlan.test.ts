@@ -23,6 +23,7 @@ import {
   weekPlanFromWeekdays,
   weekPlanTransfer,
   withMealIn,
+  withPeriod,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
@@ -587,5 +588,39 @@ describe('mealsWithoutItems', () => {
 
   it('names nothing when every planned meal carries items', () => {
     expect(mealsWithoutItems([bolognese, pizza])).toEqual([])
+  })
+})
+
+describe('withPeriod', () => {
+  const fullWeek = planWith(
+    [slot(MONDAY, 'lunch'), 'soup'],
+    [slot(WEDNESDAY, 'dinner'), 'pizza'],
+    [slot(FRIDAY, 'lunch'), 'bolognese'],
+    [slot(SUNDAY, 'dinner'), 'pizza'],
+  )
+  const fromFriday: PlanPeriod = { start: FRIDAY, days: 5 }
+
+  it('keeps the meals of days that stay in the period', () => {
+    const plan = withPeriod(fullWeek, fromFriday)
+
+    expect(plan.period).toEqual(fromFriday)
+    expect(filledSlots(plan)).toEqual([
+      slot(FRIDAY, 'lunch'),
+      slot(SUNDAY, 'dinner'),
+    ])
+  })
+
+  it('drops the meals of days outside the new period', () => {
+    const plan = withPeriod(fullWeek, fromFriday)
+
+    expect(Object.keys(plan.days)).not.toContain(MONDAY)
+    expect(Object.keys(plan.days)).not.toContain(WEDNESDAY)
+  })
+
+  it('starts the new days empty', () => {
+    const plan = withPeriod(fullWeek, fromFriday)
+
+    expect(mealIn(plan, slot(NEXT_MONDAY, 'lunch'))).toBeNull()
+    expect(Object.keys(plan.days)).toHaveLength(5)
   })
 })

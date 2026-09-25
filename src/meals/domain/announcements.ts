@@ -23,6 +23,7 @@ import {
   type PlanDate,
   type Weekday,
 } from './planDate'
+import { InvalidPlanPeriod, lastDateOf, type PlanPeriod } from './planPeriod'
 import type { MealTime, PlanSlot } from './weekPlan'
 import type { SlotNaming } from './weekPlanView'
 import { isFixed, isTransferred, type WeekPlanStage } from './weekPlanStage'
@@ -283,6 +284,27 @@ export function planDateMark(date: PlanDate): string {
 
 export function planDateHeading(date: PlanDate): string {
   return `${planDateMark(date)}${twoDigits(monthOf(date))}.`
+}
+
+export function periodDaysPhrase(days: number): string {
+  return days === 1 ? '1 Tag' : `${days} Tage`
+}
+
+function periodRangePhrase(period: PlanPeriod): string {
+  const first = planDateName(period.start)
+  return period.days === 1
+    ? first
+    : `${first} bis ${planDateName(lastDateOf(period))}`
+}
+
+export function periodAppliedAnnouncement(period: PlanPeriod): string {
+  return `Zeitraum ${periodRangePhrase(period)}, ${periodDaysPhrase(period.days)}.`
+}
+
+export function periodFailureMessage(error: unknown): string | null {
+  return error instanceof InvalidPlanPeriod && error.reason === 'startMissing'
+    ? 'Bitte ein Startdatum wählen.'
+    : null
 }
 
 export function dayShownAnnouncement(date: PlanDate): string {

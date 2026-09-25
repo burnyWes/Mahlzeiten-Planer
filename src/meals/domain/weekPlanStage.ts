@@ -57,6 +57,10 @@ export function canShuffle(stage: WeekPlanStage): boolean {
   return !isFixed(stage)
 }
 
+export function canChoosePeriod(stage: WeekPlanStage): boolean {
+  return !isFixed(stage)
+}
+
 export function canTransfer(
   stage: WeekPlanStage,
   plannedMeals: number,

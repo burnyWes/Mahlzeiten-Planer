@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { toPlanDate } from './planDate'
 import {
+  canHaveFewerDays,
+  canHaveMoreDays,
+  createPlanPeriod,
   dateAfter,
   dateBefore,
   datesOf,
   includesDate,
+  InvalidPlanPeriod,
   isPlanPeriod,
   lastDateOf,
   samePeriod,
@@ -158,5 +162,64 @@ describe('shownDayIn', () => {
         FRIDAY,
       ),
     ).toBe('2026-10-01')
+  })
+})
+
+describe('createPlanPeriod', () => {
+  function reasonFor(start: string, days: number) {
+    try {
+      createPlanPeriod({ start, days })
+    } catch (error) {
+      return error instanceof InvalidPlanPeriod ? error.reason : error
+    }
+    return null
+  }
+
+  it('creates a period from a start date and a number of days', () => {
+    expect(createPlanPeriod({ start: '2026-09-25', days: 10 })).toEqual({
+      start: FRIDAY,
+      days: 10,
+    })
+  })
+
+  it('accepts a start date in the past', () => {
+    expect(createPlanPeriod({ start: '2020-01-06', days: 1 })).toEqual({
+      start: '2020-01-06',
+      days: 1,
+    })
+  })
+
+  it('refuses a missing start date', () => {
+    expect(reasonFor('', 7)).toBe('startMissing')
+  })
+
+  it('refuses a start date the calendar does not have', () => {
+    expect(reasonFor('2026-02-30', 7)).toBe('startMissing')
+  })
+
+  it('refuses no day, more than ten days and part of a day', () => {
+    expect(reasonFor('2026-09-25', 0)).toBe('daysOutOfRange')
+    expect(reasonFor('2026-09-25', 11)).toBe('daysOutOfRange')
+    expect(reasonFor('2026-09-25', 2.5)).toBe('daysOutOfRange')
+  })
+})
+
+describe('canHaveFewerDays', () => {
+  it('allows fewer days above one', () => {
+    expect(canHaveFewerDays(2)).toBe(true)
+  })
+
+  it('allows no fewer than one day', () => {
+    expect(canHaveFewerDays(1)).toBe(false)
+  })
+})
+
+describe('canHaveMoreDays', () => {
+  it('allows more days below ten', () => {
+    expect(canHaveMoreDays(9)).toBe(true)
+  })
+
+  it('allows no more than ten days', () => {
+    expect(canHaveMoreDays(10)).toBe(false)
   })
 })

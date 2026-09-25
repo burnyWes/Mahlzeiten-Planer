@@ -523,3 +523,71 @@ test('shows the dinner of the whole week', async ({ page }) => {
     page.getByRole('button', { name: 'Abendessen', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
 })
+
+test('plans the chosen period', async ({ page }) => {
+  await storeMealOnServer('Bolognese')
+  await page.clock.setFixedTime(A_FRIDAY)
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Wochenplan')
+  await pressButton(page, 'Zeitraum wählen')
+
+  await expect(page.getByRole('heading', { name: 'Zeitraum' })).toBeFocused()
+
+  await page.getByLabel('Startdatum', { exact: true }).fill('2026-09-28')
+  for (let step = 7; step < 10; step++) await pressButton(page, 'Ein Tag mehr')
+  await pressButton(page, 'Übernehmen')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Zeitraum Montag, 28. September bis Mittwoch, 7. Oktober, 10 Tage.',
+  )
+  await expect(page.getByRole('heading', { level: 2 })).toHaveAccessibleName(
+    'Montag, 28. September',
+  )
+
+  await pressButton(page, 'Wochenansicht')
+
+  await expect(page.locator('.weekdayMark')).toHaveCount(10)
+  await expect(page.locator('.weekdayMark').last()).toHaveText('Mi. 07.')
+  await expect(
+    page.getByRole('button', {
+      name: 'Zufallsauswahl generieren',
+      exact: true,
+    }),
+  ).toBeEnabled()
+
+  await pressButton(page, 'Zufallsauswahl generieren')
+
+  const periodDates = [
+    '2026-09-28',
+    '2026-09-29',
+    '2026-09-30',
+    '2026-10-01',
+    '2026-10-02',
+    '2026-10-03',
+    '2026-10-04',
+    '2026-10-05',
+    '2026-10-06',
+    '2026-10-07',
+  ]
+  await expect
+    .poll(async () => {
+      const planned = await weekPlanOnServer()
+      return {
+        dates: [
+          ...new Set(Object.keys(planned).map((slot) => slot.split('.')[0])),
+        ].sort(),
+        mainMealsPerDay: periodDates.map(
+          (date) =>
+            [planned[`${date}.lunch`], planned[`${date}.dinner`]].filter(
+              Boolean,
+            ).length,
+        ),
+      }
+    })
+    .toEqual({
+      dates: periodDates,
+      mainMealsPerDay: periodDates.map(() => 1),
+    })
+})

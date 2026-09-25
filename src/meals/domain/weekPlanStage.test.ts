@@ -9,6 +9,7 @@ import {
   type PlanSlot,
 } from './weekPlan'
 import {
+  canChoosePeriod,
   canClear,
   canShuffle,
   canTransfer,
@@ -88,6 +89,10 @@ describe('EDITING_STAGE', () => {
   it('allows no clearing while no meal is planned', () => {
     expect(canClear(EDITING_STAGE, 0)).toBe(false)
   })
+
+  it('allows choosing the period', () => {
+    expect(canChoosePeriod(EDITING_STAGE)).toBe(true)
+  })
 })
 
 describe('FIXED_STAGE', () => {
@@ -109,6 +114,10 @@ describe('FIXED_STAGE', () => {
 
   it('allows no clearing however many meals are planned', () => {
     expect(canClear(FIXED_STAGE, 5)).toBe(false)
+  })
+
+  it('allows no choosing of the period', () => {
+    expect(canChoosePeriod(FIXED_STAGE)).toBe(false)
   })
 })
 
@@ -134,6 +143,10 @@ describe('transferredStage', () => {
 
   it('allows no clearing', () => {
     expect(canClear(transferredStage([]), 5)).toBe(false)
+  })
+
+  it('allows no choosing of the period', () => {
+    expect(canChoosePeriod(transferredStage([]))).toBe(false)
   })
 })
 

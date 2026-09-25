@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
@@ -14,7 +14,7 @@ import type { Meal, MealKind } from '../domain/meal'
 import type { MainMealTimeRule, RandomSource } from '../domain/randomPlanning'
 import type { Supply } from '../domain/supply'
 import { toPlanDate, type PlanDate } from '../domain/planDate'
-import { datesOf, type PlanPeriod } from '../domain/planPeriod'
+import { datesOf, shownDayIn, type PlanPeriod } from '../domain/planPeriod'
 import {
   emptyWeekPlan,
   MEAL_TIMES,
@@ -155,16 +155,17 @@ function WeekPlanAreaUnderTest({
   random,
   onAddToShoppingList,
 }: WeekPlanAreaUnderTestProps) {
-  const [shownDay, setShownDay] = useState(initialDay)
+  const [chosenDay, setChosenDay] = useState<PlanDate | null>(initialDay)
   const [shownView, setShownView] = useState(initialView)
   const [shownTime, setShownTime] = useState(initialTime)
+  const weekPlanning = useWeekPlan(weekPlanClient, WEEK)
   return (
     <WeekPlanArea
       meals={useMeals(mealsClient).meals}
-      weekPlanning={useWeekPlan(weekPlanClient, WEEK)}
+      weekPlanning={weekPlanning}
       supplies={supplies}
-      shownDay={shownDay}
-      onShowDay={setShownDay}
+      shownDay={shownDayIn(weekPlanning.plan.period, chosenDay, initialDay)}
+      onShowDay={setChosenDay}
       shownView={shownView}
       onShowView={setShownView}
       shownTime={shownTime}
@@ -173,6 +174,7 @@ function WeekPlanAreaUnderTest({
       announce={announce}
       random={random}
       onAddToShoppingList={onAddToShoppingList}
+      onPeriodApplied={() => setChosenDay(null)}
     />
   )
 }
@@ -369,6 +371,41 @@ function suggestionsFor(name: string) {
 
 function noSuggestionsFor(name: string) {
   return screen.queryByRole('list', { name: `Vorschläge für ${name}` })
+}
+
+function periodButton() {
+  return screen.getByRole('button', { name: 'Zeitraum wählen' })
+}
+
+function openPeriod() {
+  return userEvent.click(periodButton())
+}
+
+function startField() {
+  return screen.getByLabelText('Startdatum')
+}
+
+function chooseStart(date: string) {
+  fireEvent.change(startField(), { target: { value: date } })
+}
+
+function applyButton() {
+  return screen.getByRole('button', { name: 'Übernehmen' })
+}
+
+function shownPeriodDays() {
+  return within(screen.getByRole('group', { name: 'Anzahl Tage' })).getByText(
+    /^\d+$/,
+  ).textContent
+}
+
+async function stepDaysTo(days: number) {
+  const current = Number(shownPeriodDays())
+  const button = screen.getByRole('button', {
+    name: days > current ? 'Ein Tag mehr' : 'Ein Tag weniger',
+  })
+  for (let step = 0; step < Math.abs(days - current); step++)
+    await userEvent.click(button)
 }
 
 function mealTimeRows() {
@@ -1996,6 +2033,173 @@ describe('WeekPlanArea', () => {
     )
 
     await fixPlan()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('shows the period button as an icon only beside the heading', () => {
+    renderWeekPlanArea([bolognese])
+
+    const header = screen
+      .getByRole('heading', { level: 1 })
+      .closest('.pageHeader') as HTMLElement
+
+    expect(within(header).getByRole('button')).toBe(periodButton())
+    expect(periodButton().textContent).toBe('')
+    expect(periodButton().querySelector('svg')).not.toBeNull()
+    expect(periodButton()).toHaveAttribute('aria-disabled', 'false')
+  })
+
+  it('offers no period choice while the plan is fixed', async () => {
+    const { announcements } = renderWeekPlanArea([bolognese])
+
+    await fixPlan()
+    announcements.length = 0
+    await openPeriod()
+
+    expect(periodButton()).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.queryByRole('heading', { name: 'Zeitraum' })).toBeNull()
+    expect(announcements).toEqual([])
+  })
+
+  it('offers no period choice after the transfer', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+      [],
+      alwaysFirst,
+      transferredStage([]),
+    )
+
+    await openPeriod()
+
+    expect(periodButton()).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.queryByRole('heading', { name: 'Zeitraum' })).toBeNull()
+  })
+
+  it('opens the period page with the stored period', async () => {
+    renderWeekPlanArea([bolognese])
+
+    await openPeriod()
+
+    expect(screen.getByRole('heading', { name: 'Zeitraum' })).toHaveFocus()
+    expect(startField()).toHaveValue('2026-09-21')
+    expect(shownPeriodDays()).toBe('7')
+  })
+
+  it('limits the days of the period to one up to ten', async () => {
+    const { announcements } = renderWeekPlanArea([bolognese])
+
+    await openPeriod()
+    await stepDaysTo(10)
+
+    expect(shownPeriodDays()).toBe('10')
+    expect(announcements.at(-1)).toBe('10 Tage')
+    expect(screen.getByRole('button', { name: 'Ein Tag mehr' })).toBeDisabled()
+
+    await stepDaysTo(1)
+
+    expect(announcements.at(-1)).toBe('1 Tag')
+    expect(
+      screen.getByRole('button', { name: 'Ein Tag weniger' }),
+    ).toBeDisabled()
+  })
+
+  it('applies the chosen period and says so', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([bolognese])
+
+    await openPeriod()
+    chooseStart('2026-09-25')
+    await stepDaysTo(10)
+    await userEvent.click(applyButton())
+
+    expect(weekPlanClient.storedWeekPlan().period).toEqual({
+      start: FRIDAY,
+      days: 10,
+    })
+    expect(announcements.at(-1)).toBe(
+      'Zeitraum Freitag, 25. September bis Sonntag, 4. Oktober, 10 Tage.',
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, keine von 40' }),
+    ).toHaveFocus()
+    expect(shownDayHeading()).toHaveAccessibleName('Freitag, 25. September')
+  })
+
+  it('drops the meals of days outside the applied period', async () => {
+    const { weekPlanClient } = renderWeekPlanArea(
+      [bolognese, pizza],
+      planWith(
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(FRIDAY, 'lunch'), 'pizza'],
+      ),
+    )
+
+    await openPeriod()
+    chooseStart('2026-09-25')
+    await userEvent.click(applyButton())
+
+    const stored = weekPlanClient.storedWeekPlan()
+    expect(mealIn(stored, slot(FRIDAY, 'lunch'))).toBe('pizza')
+    expect(Object.keys(stored.days)).not.toContain(MONDAY)
+  })
+
+  it('refuses a period without start date', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([bolognese])
+    const before = weekPlanClient.storedWeekPlan()
+
+    await openPeriod()
+    chooseStart('')
+    await userEvent.click(applyButton())
+
+    expect(screen.getByText('Bitte ein Startdatum wählen.')).toBeInTheDocument()
+    expect(announcements.at(-1)).toBe('Bitte ein Startdatum wählen.')
+    expect(startField()).toHaveFocus()
+    expect(startField()).toHaveAccessibleDescription(
+      'Bitte ein Startdatum wählen.',
+    )
+    expect(weekPlanClient.storedWeekPlan()).toBe(before)
+  })
+
+  it('goes back to the plan without applying', async () => {
+    const { weekPlanClient } = renderWeekPlanArea([bolognese])
+
+    await openPeriod()
+    chooseStart('2026-09-25')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Wochenplan' }),
+    )
+
+    expect(weekPlanClient.storedWeekPlan().period).toEqual(WEEK)
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, keine von 28' }),
+    ).toHaveFocus()
+  })
+
+  it('steps only through the days of the period', async () => {
+    renderWeekPlanArea([bolognese])
+
+    await openPeriod()
+    chooseStart('2026-09-25')
+    await stepDaysTo(10)
+    await userEvent.click(applyButton())
+    for (let step = 0; step < 9; step++)
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Nächster Tag' }),
+      )
+
+    expect(shownDayHeading()).toHaveAccessibleName('Sonntag, 4. Oktober')
+    expect(
+      screen.getByRole('button', { name: 'Nächster Tag' }),
+    ).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('has no accessibility violations on the period page', async () => {
+    const { rendered } = renderWeekPlanArea([bolognese])
+
+    await openPeriod()
+    chooseStart('')
+    await userEvent.click(applyButton())
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

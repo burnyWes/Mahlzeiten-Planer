@@ -57,6 +57,10 @@ export function emptied(plan: WeekPlan): WeekPlan {
   return emptyWeekPlan(plan.period)
 }
 
+export function withPeriod(plan: WeekPlan, period: PlanPeriod): WeekPlan {
+  return withDays(period, (date) => dayPlanOf(plan, date))
+}
+
 export function slotCountOf(plan: WeekPlan): number {
   return planSlotsOf(plan.period).length
 }

@@ -545,10 +545,10 @@ Nach außen bleibt alles wie heute, nur die Tage tragen jetzt ein Datum.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Handy mit dem vorhandenen Produktionsplan: Nach dem Update steht der
+- [x] Auf dem Handy mit dem vorhandenen Produktionsplan: Nach dem Update steht der
   laufende Wochenplan unverändert auf Mo.–So. dieser Woche, und die Tagesüberschrift
   zeigt `Fr. 25.09.`.
-- [ ] In der Wochenansicht steht `Fr. 25.` in einer Zeile, und die Eingabefelder stehen
+- [x] In der Wochenansicht steht `Fr. 25.` in einer Zeile, und die Eingabefelder stehen
   bündig untereinander, auch mit invertierten Farben.
 
 ### Phase 2: Zeitraum wählen
@@ -560,7 +560,7 @@ zeigt der Wochenplan die gewählten Tage.
 
 **Aufgaben**:
 
-- [ ] `src/meals/domain/planPeriod.test.ts` / `planPeriod.ts`:
+- [x] `src/meals/domain/planPeriod.test.ts` / `planPeriod.ts`:
 
   ```ts
   export type PlanPeriodDraft = { start: string; days: number }
@@ -578,26 +578,26 @@ zeigt der Wochenplan die gewählten Tage.
   (leer oder ungültig), und `daysOutOfRange` bei 0, 11 oder einer Kommazahl. Ein
   Datum in der Vergangenheit ist gültig. Der Aufbau von `InvalidPlanPeriod` folgt
   `InvalidSupply` in `supply.ts`.
-- [ ] `src/meals/domain/weekPlan.test.ts` / `weekPlan.ts`: `withPeriod(plan, period)`.
+- [x] `src/meals/domain/weekPlan.test.ts` / `weekPlan.ts`: `withPeriod(plan, period)`.
   Tests:
   - `it('keeps the meals of days that stay in the period')`: 21.–27.09. → 25.09. mit
     5 Tagen, Fr.–So. behalten ihre Gerichte
   - `it('drops the meals of days outside the new period')`: Mo.–Do. fehlen danach in
     `days`
   - `it('starts the new days empty')`
-- [ ] `src/meals/domain/weekPlanStage.test.ts` / `weekPlanStage.ts`:
+- [x] `src/meals/domain/weekPlanStage.test.ts` / `weekPlanStage.ts`:
   `canChoosePeriod(stage)` ist `!isFixed(stage)`. Tests in den Blöcken
   `EDITING_STAGE`, `FIXED_STAGE` und `transferredStage`.
-- [ ] `src/meals/domain/announcements.test.ts` / `announcements.ts`:
+- [x] `src/meals/domain/announcements.test.ts` / `announcements.ts`:
   - `periodAppliedAnnouncement(period)` →
     `'Zeitraum Freitag, 25. September bis Sonntag, 4. Oktober, 10 Tage.'`, bei
     `days: 1` `'Zeitraum Freitag, 25. September, 1 Tag.'`
   - `periodFailureMessage(error)` → bei `startMissing`
     `'Bitte ein Startdatum wählen.'`, sonst `null` (wie `mealFailureMessage`)
   - `periodDaysPhrase(days)` → `'1 Tag'` / `'7 Tage'`, auch für die Stepper-Ansage
-- [ ] `src/shared/ui/Stepper.tsx`: optionales `lessDisabled?: boolean` (Standard
+- [x] `src/shared/ui/Stepper.tsx`: optionales `lessDisabled?: boolean` (Standard
   `false`) auf den „−“-Knopf. Die vorhandenen Aufrufer bleiben unverändert.
-- [ ] `src/meals/ui/CalendarCogIcon.tsx` anlegen, im Aufbau wie `CalendarDaysIcon.tsx`.
+- [x] `src/meals/ui/CalendarCogIcon.tsx` anlegen, im Aufbau wie `CalendarDaysIcon.tsx`.
   Die Pfade werden von https://lucide.dev/icons/calendar-cog (ISC-Lizenz) übernommen,
   zur Umsetzung dort gegenprüfen:
 
@@ -617,7 +617,7 @@ zeigt der Wochenplan die gewählten Tage.
   <circle cx="18" cy="18" r="3" />
   ```
 
-- [ ] `src/meals/ui/PeriodPage.tsx` anlegen, nach dem Muster von `AddSupplyPage.tsx`:
+- [x] `src/meals/ui/PeriodPage.tsx` anlegen, nach dem Muster von `AddSupplyPage.tsx`:
   - Props: `period: PlanPeriod`, `onApply(period)`, `onBack()`, `announce(text)`
   - Zustand `draft: PlanPeriodDraft` aus `period`, `failureMessage`
   - `<button onClick={onBack}>Zurück zum Wochenplan</button>`, `<h1 ref={heading}
@@ -635,7 +635,7 @@ zeigt der Wochenplan die gewählten Tage.
   - `apply`: `try { onApply(createPlanPeriod(draft)) } catch (error) { const message =
     periodFailureMessage(error); if (message === null) throw error; … Fokus ins
     Datumsfeld }`
-- [ ] `src/meals/ui/WeekPlanArea.tsx`:
+- [x] `src/meals/ui/WeekPlanArea.tsx`:
   - `const [page, setPage] = useState<'plan' | 'period'>('plan')`
   - `openPeriod()`: `if (!canChoosePeriod(stage)) return; setPage('period')`
   - `applyPeriod(period)`: `if (!canChoosePeriod(stage)) return;`
@@ -644,7 +644,7 @@ zeigt der Wochenplan die gewählten Tage.
   - neue Prop `onPeriodApplied: () => void`
   - bei `page === 'period'` wird `<PeriodPage period={plan.period} …>` ohne
     `navigation` gerendert (wie die Unterseiten von `SuppliesArea`)
-- [ ] `src/meals/ui/WeekPlanPage.tsx`: im `.pageHeader` nach dem `h1`:
+- [x] `src/meals/ui/WeekPlanPage.tsx`: im `.pageHeader` nach dem `h1`:
 
   ```tsx
   <button
@@ -658,8 +658,8 @@ zeigt der Wochenplan die gewählten Tage.
   </button>
   ```
 
-- [ ] `src/SignedInApp.tsx`: `onPeriodApplied={() => setChosenDay(null)}`.
-- [ ] `src/meals/ui/WeekPlanArea.test.tsx`: neue Tests (Hilfen `periodButton()`,
+- [x] `src/SignedInApp.tsx`: `onPeriodApplied={() => setChosenDay(null)}`.
+- [x] `src/meals/ui/WeekPlanArea.test.tsx`: neue Tests (Hilfen `periodButton()`,
   `openPeriod()`, `startField()`, `applyButton()`):
   - `it('shows the period button as an icon only beside the heading')`
   - `it('offers no period choice while the plan is fixed')`: nach `fixPlan()` gilt
@@ -682,7 +682,7 @@ zeigt der Wochenplan die gewählten Tage.
   - `it('steps only through the days of the period')`: 10-Tage-Zeitraum, „Nächster
     Tag“ am 04.10. ist gesperrt
   - `it('has no accessibility violations on the period page')`
-- [ ] `src/SignedInApp.test.tsx`: neue Tests zur Tagesregel (Uhr an einem Freitag,
+- [x] `src/SignedInApp.test.tsx`: neue Tests zur Tagesregel (Uhr an einem Freitag,
   25.09.):
   - `it('shows today after applying a period that includes it')`
   - `it('shows the first day after applying a period without today')`: Start
@@ -690,7 +690,7 @@ zeigt der Wochenplan die gewählten Tage.
   - `it('moves to today when the other device sets a period without the chosen day')`:
     auf Samstag geblättert, dann `weekPlanArrivesFromElsewhere` mit einem Zeitraum ab
     Freitag, 1 Tag → Freitag
-- [ ] `e2e/weekPlan.spec.ts`: `test('plans the chosen period')`. Wochenplan an
+- [x] `e2e/weekPlan.spec.ts`: `test('plans the chosen period')`. Wochenplan an
   `A_FRIDAY` öffnen, „Zeitraum wählen“, Start `2026-09-28`, auf 10 Tage stellen,
   „Übernehmen“. Danach heißt die Überschrift `Montag, 28. September`, die Wochenansicht
   hat 10 Zeilen bis `Mi. 07.`, „Zufallsauswahl generieren“ füllt alle 10 Tage, und
@@ -703,14 +703,14 @@ zeigt der Wochenplan die gewählten Tage.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Tests zu `createPlanPeriod`, `withPeriod`, `canChoosePeriod` und den
+- [x] Die neuen Tests zu `createPlanPeriod`, `withPeriod`, `canChoosePeriod` und den
   Ansagen laufen grün.
-- [ ] Die neuen Tests in `WeekPlanArea.test.tsx` und `SignedInApp.test.tsx` laufen
+- [x] Die neuen Tests in `WeekPlanArea.test.tsx` und `SignedInApp.test.tsx` laufen
   grün, einschließlich axe auf der Seite „Zeitraum“.
-- [ ] `npm run test` läuft vollständig grün.
-- [ ] `npm run lint` meldet nichts.
-- [ ] `npm run build` läuft durch.
-- [ ] `npx playwright test e2e/weekPlan.spec.ts` läuft grün, auch
+- [x] `npm run test` läuft vollständig grün.
+- [x] `npm run lint` meldet nichts.
+- [x] `npm run build` läuft durch.
+- [x] `npx playwright test e2e/weekPlan.spec.ts` läuft grün, auch
   `plans the chosen period`.
 
 **Manuelle Verifikation**:
@@ -734,6 +734,16 @@ zeigt der Wochenplan die gewählten Tage.
 - Phase 1: `emptyWeekPlan` legt für jeden Tag des Zeitraums einen leeren Tagesplan an.
   `withMealIn` ignoriert Plätze außerhalb des Zeitraums, damit `days` nur Tage im
   Zeitraum enthält.
+- Phase 2: Lucide hat `calendar-cog` inzwischen neu gezeichnet (lucide-static 1.48.0:
+  Ringe `v3`, Linie bei `y=9`). `CalendarCogIcon` übernimmt die Pfade aus dem Plan, die
+  zur älteren Zeichnung von `CalendarDaysIcon` passen, damit die Kalender-Icons
+  einheitlich aussehen.
+- Phase 2: „Anzahl Tage“ ist eine Gruppe (`role="group"` mit `aria-labelledby`) um den
+  Stepper. Ein `aria-labelledby` direkt auf der Zahl wäre auf einem `span` ohne Rolle
+  nicht erlaubt.
+- Phase 2: Der Test-Aufbau in `WeekPlanArea.test.tsx` leitet den gezeigten Tag wie
+  `SignedInApp` über `shownDayIn` ab, damit das Blättern nach „Übernehmen“ im
+  Zeitraum bleibt.
 
 ## Verweise
 

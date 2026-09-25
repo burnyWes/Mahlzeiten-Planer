@@ -29,6 +29,34 @@ export function isPlanPeriod(value: unknown): value is PlanPeriod {
   return isPlanDate(candidate.start) && isPeriodLength(candidate.days)
 }
 
+export type PlanPeriodDraft = { start: string; days: number }
+
+export type InvalidPlanPeriodReason = 'startMissing' | 'daysOutOfRange'
+
+export class InvalidPlanPeriod extends Error {
+  reason: InvalidPlanPeriodReason
+
+  constructor(reason: InvalidPlanPeriodReason) {
+    super(reason)
+    this.name = 'InvalidPlanPeriod'
+    this.reason = reason
+  }
+}
+
+export function createPlanPeriod(draft: PlanPeriodDraft): PlanPeriod {
+  if (!isPlanDate(draft.start)) throw new InvalidPlanPeriod('startMissing')
+  if (!isPeriodLength(draft.days)) throw new InvalidPlanPeriod('daysOutOfRange')
+  return { start: draft.start, days: draft.days }
+}
+
+export function canHaveFewerDays(days: number): boolean {
+  return days > MIN_PERIOD_DAYS
+}
+
+export function canHaveMoreDays(days: number): boolean {
+  return days < MAX_PERIOD_DAYS
+}
+
 export function weekOf(today: PlanDate): PlanPeriod {
   return {
     start: daysAfter(today, -WEEKDAYS.indexOf(weekdayOf(today))),

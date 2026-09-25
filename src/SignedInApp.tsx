@@ -292,6 +292,7 @@ export function SignedInApp({
         announce={announce}
         random={random}
         onAddToShoppingList={addWeekPlanToShoppingList}
+        onPeriodApplied={() => setChosenDay(null)}
       />
     )
 

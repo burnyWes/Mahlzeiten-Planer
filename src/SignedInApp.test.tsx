@@ -1,4 +1,11 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
@@ -192,6 +199,35 @@ function planOf(...ids: readonly string[]): WeekPlan {
     (plan, id, position) => withMealIn(plan, WEEK_SLOTS[position], id),
     EMPTY_PLAN,
   )
+}
+
+function renderSignedInAppOnFriday() {
+  return renderSignedInApp(
+    [],
+    [],
+    createInMemoryKnownItemsClient(),
+    createInMemoryAppearanceClient(),
+    createInMemoryWeekPlanClient(EMPTY_PLAN),
+    createInMemorySuppliesClient(),
+    stoppedAt(aFriday),
+  )
+}
+
+async function applyPeriod(start: string, days: number) {
+  await userEvent.click(screen.getByRole('button', { name: 'Zeitraum wählen' }))
+  fireEvent.change(screen.getByLabelText('Startdatum'), {
+    target: { value: start },
+  })
+  const stepButton = screen.getByRole('button', {
+    name: days > 7 ? 'Ein Tag mehr' : 'Ein Tag weniger',
+  })
+  for (let step = 0; step < Math.abs(days - 7); step++)
+    await userEvent.click(stepButton)
+  await userEvent.click(screen.getByRole('button', { name: 'Übernehmen' }))
+}
+
+function shownDayName() {
+  return screen.getByRole('heading', { level: 2 })
 }
 
 async function planBologneseForBreakfast() {
@@ -403,6 +439,42 @@ describe('SignedInApp', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveAccessibleName(
       'Donnerstag, 24. September',
     )
+  })
+
+  it('shows today after applying a period that includes it', async () => {
+    renderSignedInAppOnFriday()
+
+    await goToArea('Wochenplan')
+    await userEvent.click(screen.getByRole('button', { name: 'Nächster Tag' }))
+    await applyPeriod('2026-09-24', 7)
+
+    expect(shownDayName()).toHaveAccessibleName('Freitag, 25. September')
+  })
+
+  it('shows the first day after applying a period without today', async () => {
+    renderSignedInAppOnFriday()
+
+    await goToArea('Wochenplan')
+    await applyPeriod('2026-10-01', 3)
+
+    expect(shownDayName()).toHaveAccessibleName('Donnerstag, 1. Oktober')
+  })
+
+  it('moves to today when the other device sets a period without the chosen day', async () => {
+    const { weekPlanClient } = renderSignedInAppOnFriday()
+
+    await goToArea('Wochenplan')
+    await userEvent.click(screen.getByRole('button', { name: 'Nächster Tag' }))
+
+    expect(shownDayName()).toHaveAccessibleName('Samstag, 26. September')
+
+    act(() =>
+      weekPlanClient.weekPlanArrivesFromElsewhere(
+        emptyWeekPlan({ start: toPlanDate('2026-09-25'), days: 1 }),
+      ),
+    )
+
+    expect(shownDayName()).toHaveAccessibleName('Freitag, 25. September')
   })
 
   it('keeps the shown day after a visit to the meals area', async () => {

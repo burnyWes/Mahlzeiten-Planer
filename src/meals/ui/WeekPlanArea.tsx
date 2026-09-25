@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   mealTimeShownAnnouncement,
   noMatchingMealAnnouncement,
+  periodAppliedAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   slotPlannedAnnouncement,
@@ -19,6 +20,7 @@ import {
   type RandomSource,
 } from '../domain/randomPlanning'
 import type { PlanDate } from '../domain/planDate'
+import type { PlanPeriod } from '../domain/planPeriod'
 import type { Supply } from '../domain/supply'
 import {
   coveredSlotsOf,
@@ -28,11 +30,13 @@ import {
   slotCountOf,
   weekPlanTransfer,
   withMealIn,
+  withPeriod,
   type MealTime,
   type PlanSlot,
   type WeekPlanTransfer,
 } from '../domain/weekPlan'
 import {
+  canChoosePeriod,
   canClear,
   canTransfer,
   EDITING_STAGE,
@@ -41,6 +45,7 @@ import {
   transferredStage,
 } from '../domain/weekPlanStage'
 import { slotNamingIn, type WeekPlanView } from '../domain/weekPlanView'
+import { PeriodPage } from './PeriodPage'
 import { WeekPlanPage } from './WeekPlanPage'
 import type { WeekPlanning } from './useWeekPlan'
 
@@ -58,6 +63,7 @@ type WeekPlanAreaProps = {
   announce: (text: string) => void
   random: RandomSource
   onAddToShoppingList: (transfer: WeekPlanTransfer) => void
+  onPeriodApplied: () => void
 }
 
 export function WeekPlanArea({
@@ -74,7 +80,9 @@ export function WeekPlanArea({
   announce,
   random,
   onAddToShoppingList,
+  onPeriodApplied,
 }: WeekPlanAreaProps) {
+  const [page, setPage] = useState<'plan' | 'period'>('plan')
   const randomCandidateCount = randomCandidates(meals).length
   const { plan, stage, mainMealTimeRule } = weekPlanning
   const plannedMeals = plannedMealCount(plan, meals)
@@ -164,6 +172,29 @@ export function WeekPlanArea({
     onAddToShoppingList(weekPlanTransfer(plan, meals, supplies))
   }
 
+  function openPeriod() {
+    if (!canChoosePeriod(stage)) return
+    setPage('period')
+  }
+
+  function applyPeriod(period: PlanPeriod) {
+    if (!canChoosePeriod(stage)) return
+    weekPlanning.replacePlan(withPeriod(plan, period))
+    onPeriodApplied()
+    setPage('plan')
+    announce(periodAppliedAnnouncement(period))
+  }
+
+  if (page === 'period')
+    return (
+      <PeriodPage
+        period={plan.period}
+        onApply={applyPeriod}
+        onBack={() => setPage('plan')}
+        announce={announce}
+      />
+    )
+
   return (
     <WeekPlanPage
       navigation={navigation}
@@ -184,6 +215,7 @@ export function WeekPlanArea({
       onToggleStage={toggleStage}
       onAddToShoppingList={addToShoppingList}
       onClearPlan={clearPlan}
+      onChoosePeriod={openPeriod}
     />
   )
 }

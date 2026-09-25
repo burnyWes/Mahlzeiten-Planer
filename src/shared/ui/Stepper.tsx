@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 type StepperProps = {
   lessLabel: string
   moreLabel: string
+  lessDisabled?: boolean
   moreDisabled: boolean
   onLess: () => void
   onMore: () => void
@@ -12,6 +13,7 @@ type StepperProps = {
 export function Stepper({
   lessLabel,
   moreLabel,
+  lessDisabled = false,
   moreDisabled,
   onLess,
   onMore,
@@ -23,6 +25,7 @@ export function Stepper({
         type="button"
         className="stepperButton"
         aria-label={lessLabel}
+        disabled={lessDisabled}
         onClick={onLess}
       >
         −
