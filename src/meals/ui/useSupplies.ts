@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SuppliesClient } from '../api/suppliesClient'
 import type { MealId } from '../domain/meal'
+import { supplyOf, type Supply } from '../domain/supply'
 import {
-  supplyOf,
-  withoutSupply,
-  withSupply,
-  type Supply,
-} from '../domain/supply'
+  dropConfirmedSupplies,
+  rememberSupplyWrite,
+  withUnconfirmedSupplies,
+  type UnconfirmedSupplies,
+} from '../domain/unconfirmedSupplies'
 
 export type Supplies = {
   supplies: readonly Supply[]
@@ -21,28 +22,53 @@ export type Supplies = {
 export function useSupplies(client: SuppliesClient): Supplies {
   const [supplies, setSupplies] = useState<readonly Supply[]>([])
   const kept = useRef<readonly Supply[]>([])
+  const live = useRef<readonly Supply[]>([])
+  const unconfirmed = useRef<UnconfirmedSupplies>([])
 
-  const publish = useCallback((written: readonly Supply[]) => {
-    kept.current = written
-    setSupplies(written)
+  const show = useCallback(() => {
+    kept.current = withUnconfirmedSupplies(live.current, unconfirmed.current)
+    setSupplies(kept.current)
   }, [])
 
-  useEffect(() => client.observeSupplies(publish), [client, publish])
+  useEffect(
+    () =>
+      client.observeSupplies((arriving) => {
+        live.current = arriving
+        unconfirmed.current = dropConfirmedSupplies(
+          unconfirmed.current,
+          arriving,
+        )
+        show()
+      }),
+    [client, show],
+  )
+
+  const rememberWrite = useCallback(
+    (mealId: MealId, written: Supply | null) => {
+      unconfirmed.current = rememberSupplyWrite(
+        unconfirmed.current,
+        mealId,
+        written,
+      )
+      show()
+    },
+    [show],
+  )
 
   const keepSupply = useCallback(
     (written: Supply) => {
-      publish(withSupply(kept.current, written))
+      rememberWrite(written.mealId, written)
       client.writeSupply(written)
     },
-    [client, publish],
+    [client, rememberWrite],
   )
 
   const removeSupply = useCallback(
     (mealId: MealId) => {
-      publish(withoutSupply(kept.current, mealId))
+      rememberWrite(mealId, null)
       client.removeSupply(mealId)
     },
-    [client, publish],
+    [client, rememberWrite],
   )
 
   const changeSupply = useCallback(

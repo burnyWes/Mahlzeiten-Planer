@@ -69,6 +69,43 @@ x Wochenplan: useWeekPlan uebernimmt jede Momentaufnahme ungeprueft in den Zusta
   gruen, und im selben Lauf war auch der bekannt wackelige Test "sign in, add, check off
   and clean up" rot. Der Test wartet jetzt vor der Uebergabe auf den Server; die Ursache
   ist damit nicht behoben, nur aus dem Test herausgehalten.
+x test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
+  vitest, wenn alle 21 Testdateien parallel laufen - der Test startet ESLint
+  programmatisch. Allein braucht er 2,9 s. Einmal gesehen am 2026-09-18; der
+  Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
+  oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
+x Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSupplies.ts:25-30),
+  ohne Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - dieselbe Klasse wie der
+  Wochenplan-Eintrag oben, abgefangen nur in useShoppingList ueber unconfirmedWrites.
+  Am 2026-09-22 in zwei E2E-Laeufen gesehen: "recounts a supply and removes it again"
+  erwartete nach dem Aendern auf 4 den Stand "Linsensuppe, 4.", bekam "Linsensuppe, 1." -
+  die verspaetete Momentaufnahme des ersten Schreibvorgangs setzte die Anzeige zurueck.
+  Ebenso "changes the count of a supply at its row" und "buys only the day that the supply
+  no longer covers". Wiederholungslaeufe waren jedes Mal gruen.
+x Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf einen
+  Druck ab und trifft damit den useSupplies-Eintrag oben haeufiger als die
+  Vorraete-Seite, die immer nur einen Vorrat schreibt.
+x E2E: ein Test endet, sobald die Anzeige stimmt; sein letzter Schreibvorgang kann dann
+  noch unterwegs sein und landet erst nach dem Leeren des Emulators durch den naechsten
+  Test (prepareEmulators). Am 2026-09-25 belegt: "Spaghetti, 7" aus "plans a week ..."
+  entstand 240 ms nach dem Leeren und stand im Folgetest "buys only the day ..." auf der
+  Liste. Bei --repeat-each=10 fielen so 2 bis 8 von 100 Laeufen durch (MZP-027).
+x Einkaufsliste: mehrere schnelle Schritte am Mengen-Stepper. rememberWrite behaelt das
+  before des ersten Schritts (src/shopping/domain/unconfirmedWrites.ts:29). Kommt
+  verspaetet ein Zwischenstand, ist er weder written noch before, der Schreibvorgang
+  gilt als ueberholt und die Anzeige springt kurz auf den Zwischenstand, bis der
+  naechste Snapshot den Endstand bringt (MZP-020, Entscheidung 10).
+x Firestore-Adapter: die zwei Snapshot-Listener (offen / diese Sitzung abgehakt)
+  zu einer or()-Abfrage zusammenfassen. Dann gibt es keinen Zwischenstand mehr,
+  in dem die veraltete "offen"-Abfrage die abgehakte ueberschreibt oder der
+  Artikel kurz aus beiden Abfragen faellt. Seit MZP-006 faengt die optimistische
+  Anzeige das ab, die Momentaufnahme bleibt aber kurzzeitig in sich
+  widerspruechlich.
+x Einkaufsliste: loescht das andere Geraet einen Artikel, waehrend hier ein eigener
+  Mengen-Schritt noch unbestaetigt ist, behaelt dropConfirmedWrites den Schreibvorgang,
+  solange das Dokument fehlt (src/shopping/domain/unconfirmedWrites.ts:54). Der Artikel
+  bleibt als Geist stehen, und updateDoc meldet "Konnte nicht gespeichert werden."
+  (MZP-020, Entscheidung 10).
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -86,51 +123,19 @@ TODO
   "Aufraeumen" ordnet nur die Ansicht neu. Abgehakte Artikel irgendwann wirklich
   loeschen (z. B. beim Aufraeumen oder nach einer Frist), ohne dass sie dem anderen
   Geraet unter dem Finger verschwinden.
-- Firestore-Adapter: die zwei Snapshot-Listener (offen / diese Sitzung abgehakt)
-  zu einer or()-Abfrage zusammenfassen. Dann gibt es keinen Zwischenstand mehr,
-  in dem die veraltete "offen"-Abfrage die abgehakte ueberschreibt oder der
-  Artikel kurz aus beiden Abfragen faellt. Seit MZP-006 faengt die optimistische
-  Anzeige das ab, die Momentaufnahme bleibt aber kurzzeitig in sich
-  widerspruechlich.
 - Firestore mit persistentLocalCache (IndexedDB) einrichten: ausstehende
   Schreibvorgaenge ueberleben heute kein Neuladen. Wer einen Artikel hinzufuegt und
   die App sofort neu laedt oder schliesst, verliert ihn stillschweigend - seit
   MZP-006 sichtbar, weil die Zeile sofort erscheint und nicht erst nach der
   Bestaetigung. Der E2E-Test "keeps the added item after a reload" wartet deshalb
   auf den Server, bevor er neu laedt.
-b test/domainLayerBoundary.test.ts laeuft gelegentlich in die 5000-ms-Grenze von
-  vitest, wenn alle 21 Testdateien parallel laufen - der Test startet ESLint
-  programmatisch. Allein braucht er 2,9 s. Einmal gesehen am 2026-09-18; der
-  Wiederholungslauf war gruen. Entweder testTimeout fuer diese Datei hochsetzen
-  oder die ESLint-Instanz ueber die Tests hinweg wiederverwenden.
 - 3 Zeilen pro Tag im Wochenplan
-b Vorraete: useSupplies veroeffentlicht jede Momentaufnahme ungeprueft (useSupplies.ts:25-30),
-  ohne Schutz fuer noch unbestaetigte eigene Schreibvorgaenge - dieselbe Klasse wie der
-  Wochenplan-Eintrag oben, abgefangen nur in useShoppingList ueber unconfirmedWrites.
-  Am 2026-09-22 in zwei E2E-Laeufen gesehen: "recounts a supply and removes it again"
-  erwartete nach dem Aendern auf 4 den Stand "Linsensuppe, 4.", bekam "Linsensuppe, 1." -
-  die verspaetete Momentaufnahme des ersten Schreibvorgangs setzte die Anzeige zurueck.
-  Ebenso "changes the count of a supply at its row" und "buys only the day that the supply
-  no longer covers". Wiederholungslaeufe waren jedes Mal gruen.
-b Vorraete: die Wochenplan-Uebertragung bucht seit MZP-015 mehrere Vorraete auf einen
-  Druck ab und trifft damit den useSupplies-Eintrag oben haeufiger als die
-  Vorraete-Seite, die immer nur einen Vorrat schreibt.
 - Dropdown in Einstellungen: Hauptmahlzeit |Nur Mittags|Nur Abends|Mittags und Abends|
 - Zufallsregeln im Wochenplan: nur Hauptmahlzeiten wuerfeln (Feld mainMeal am
   Gericht steht seit MZP-017 bereit, PLANNING_RULES ist der Platz dafuer)
 - Zufallsregeln: das Feld mainMeal heisst seit MZP-019 kind und traegt
   'mainMeal' | 'breakfast' | 'none'; der Punkt weiter oben meint dieses Feld.
   Die Zeile im Formular heisst seitdem Hauptgericht
-b Einkaufsliste: mehrere schnelle Schritte am Mengen-Stepper. rememberWrite behaelt das
-  before des ersten Schritts (src/shopping/domain/unconfirmedWrites.ts:29). Kommt
-  verspaetet ein Zwischenstand, ist er weder written noch before, der Schreibvorgang
-  gilt als ueberholt und die Anzeige springt kurz auf den Zwischenstand, bis der
-  naechste Snapshot den Endstand bringt (MZP-020, Entscheidung 10).
-b Einkaufsliste: loescht das andere Geraet einen Artikel, waehrend hier ein eigener
-  Mengen-Schritt noch unbestaetigt ist, behaelt dropConfirmedWrites den Schreibvorgang,
-  solange das Dokument fehlt (src/shopping/domain/unconfirmedWrites.ts:54). Der Artikel
-  bleibt als Geist stehen, und updateDoc meldet "Konnte nicht gespeichert werden."
-  (MZP-020, Entscheidung 10).
 b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbestaetigt
   ist, wertet dropConfirmedRemovals sein Fehlen im Snapshot schon als Bestaetigung
   (src/shopping/domain/unconfirmedWrites.ts:72) (MZP-020, Entscheidung 10).
@@ -159,3 +164,16 @@ b Einkaufsliste: wird ein Artikel per "Weniger" entfernt, der selbst noch unbest
   Kategorie nicht an 2 Tagen hintereinander gewürfelt werden.
 - Zufallsregeln: kind traegt seit MZP-026 auch 'snack' (Firestore-Feld snack);
   die Snack-Regeln weiter oben koennen darauf aufsetzen
+b Vorraete: Wird ein Vorrat angelegt und sofort wieder entfernt, kann eine sehr alte
+  Momentaufnahme ohne ihn das Entfernen zu frueh bestaetigen (dropConfirmedSupplies),
+  und eine spaetere verspaetete mit ihm laesst ihn kurz wieder erscheinen (MZP-027,
+  Entscheidung 1).
+b Vorraete und Einkaufsliste: kehrt ein eigener Stand zu einem frueheren Wert zurueck
+  (Vorrat 1 -> 4 -> 1, Stepper 1 -> 2 -> 1), bestaetigt eine verspaetete alte
+  Momentaufnahme mit diesem Wert den offenen Schreibvorgang zu frueh. Kommt danach
+  verspaetet der Zwischenstand, springt die Anzeige kurz darauf, und ein changeSupply in
+  diesem Fenster rechnet mit dem falschen Stand (MZP-027).
+b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme ankommt
+  (dropConfirmedSupplies). Bleibt diese aus, verdeckt er Aenderungen des anderen Geraets
+  am selben Gericht bis zum Neuladen; einen Ausweg wie isStaleSnapshot gibt es nicht
+  (MZP-027, Entscheidung 1).

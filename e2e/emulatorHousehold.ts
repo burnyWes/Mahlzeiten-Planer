@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import type { Page } from '@playwright/test'
 import { firebaseConfig } from '../src/shared/auth/firebaseConfig.ts'
 
 const PROJECT = firebaseConfig.projectId
@@ -29,6 +30,16 @@ async function callEmulator(url: string, method: string, body?: unknown) {
   if (!response.ok) {
     throw new Error(`${method} ${url} failed: ${await response.text()}`)
   }
+}
+
+type PendingWrites = {
+  waitForPendingWrites?: () => Promise<void>
+}
+
+export async function settleWrites(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    (globalThis as PendingWrites).waitForPendingWrites?.(),
+  )
 }
 
 export async function prepareEmulators(): Promise<void> {
@@ -193,6 +204,29 @@ export async function storeItemOnServer(
       },
     },
   )
+}
+
+type ListedItemDocuments = {
+  documents?: readonly {
+    name: string
+    fields: { name: { stringValue: string } }
+  }[]
+}
+
+export async function removeItemOnServer(name: string): Promise<void> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/items`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedItemDocuments
+  const stored = (listed.documents ?? []).find(
+    (document) => document.fields.name.stringValue === name,
+  )
+  if (stored === undefined) throw new Error(`${name} is not on the server`)
+  await callEmulator(`${FIRESTORE_EMULATOR}/v1/${stored.name}`, 'DELETE')
 }
 
 type ListedMeals = {

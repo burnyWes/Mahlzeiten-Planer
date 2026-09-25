@@ -107,6 +107,7 @@ export function useShoppingList(
         return {
           written: withQuantity(outcome.into, outcome.quantity),
           before: liveItems.find((live) => live.id === outcome.into.id) ?? null,
+          earlierWrites: [],
         }
       }
       return {
@@ -116,6 +117,7 @@ export function useShoppingList(
           checkedOffAt: null,
         },
         before: null,
+        earlierWrites: [],
       }
     },
     [client, liveItems],

@@ -524,7 +524,7 @@ describe('toggling before the snapshot has caught up', () => {
     expect(checkbox('Milch').checked).toBe(true)
   })
 
-  it('keeps the row while the snapshot does not carry the item at all', async () => {
+  it('lets go of a row the other device removed during an own write', async () => {
     const client = await withList([openItem('milk', 'Milch', 1)])
 
     await userEvent.click(checkbox('Milch'))
@@ -533,8 +533,7 @@ describe('toggling before the snapshot has caught up', () => {
       client.snapshotArrives([])
     })
 
-    expect(shownItems()).toEqual(['Milch'])
-    expect(checkbox('Milch').checked).toBe(false)
+    expect(screen.queryAllByRole('checkbox')).toEqual([])
   })
 
   it('shows an added item in the list right away', async () => {

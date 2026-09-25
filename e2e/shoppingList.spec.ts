@@ -3,6 +3,8 @@ import {
   itemNamesOnServer,
   itemQuantitiesOnServer,
   prepareEmulators,
+  removeItemOnServer,
+  settleWrites,
   storeItemOnServer,
 } from './emulatorHousehold.ts'
 import {
@@ -14,6 +16,10 @@ import {
 
 test.beforeEach(async () => {
   await prepareEmulators()
+})
+
+test.afterEach(async ({ page }) => {
+  await settleWrites(page)
 })
 
 async function addItem(page: Page, name: string, amount = '', unit = '') {
@@ -190,4 +196,26 @@ test('removes an item with its last unit', async ({ page }) => {
   await page.reload()
 
   await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch'])
+})
+
+test('lets go of an item the other device removed during an own step', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+  await addItem(page, 'Milch')
+  await settleWrites(page)
+
+  await page.context().setOffline(true)
+  await pressButton(page, 'Mehr, Milch')
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch, 2'])
+  await removeItemOnServer('Milch')
+  await page.context().setOffline(false)
+  await settleWrites(page)
+
+  await expect.poll(() => shownShoppingItems(page)).toEqual([])
+  await expect(page.getByRole('status')).not.toContainText(
+    'Konnte nicht gespeichert werden.',
+  )
+  await expect.poll(itemNamesOnServer).toEqual([])
 })

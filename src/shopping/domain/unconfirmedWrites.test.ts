@@ -22,8 +22,9 @@ function item(
 function write(
   written: ShoppingItem,
   before: ShoppingItem | null = null,
+  earlierWrites: readonly ShoppingItem[] = [],
 ): UnconfirmedWrite {
-  return { written, before }
+  return { written, before, earlierWrites }
 }
 
 describe('rememberWrite', () => {
@@ -38,7 +39,11 @@ describe('rememberWrite', () => {
       null,
     )
 
-    expect(remembered).toEqual([write(item('milk', { amount: 3, unit: 'l' }))])
+    expect(remembered).toEqual([
+      write(item('milk', { amount: 3, unit: 'l' }), null, [
+        item('milk', { amount: 2, unit: 'l' }),
+      ]),
+    ])
   })
 
   it('keeps the state before the earliest write of the same item', () => {
@@ -49,7 +54,31 @@ describe('rememberWrite', () => {
     )
 
     expect(remembered).toEqual([
-      write(item('milk', { amount: 3, unit: 'l' }), item('milk')),
+      write(item('milk', { amount: 3, unit: 'l' }), item('milk'), [
+        item('milk', { amount: 2, unit: 'l' }),
+      ]),
+    ])
+  })
+
+  it('keeps the replaced write among the earlier writes', () => {
+    const afterFirstStep = rememberWrite(
+      [],
+      item('milk', { amount: 2, unit: null }),
+      item('milk', { amount: 1, unit: null }),
+    )
+
+    const remembered = rememberWrite(
+      afterFirstStep,
+      item('milk', { amount: 3, unit: null }),
+      item('milk', { amount: 2, unit: null }),
+    )
+
+    expect(remembered).toEqual([
+      write(
+        item('milk', { amount: 3, unit: null }),
+        item('milk', { amount: 1, unit: null }),
+        [item('milk', { amount: 2, unit: null })],
+      ),
     ])
   })
 
@@ -121,9 +150,31 @@ describe('dropConfirmedWrites', () => {
     expect(remaining).toEqual([])
   })
 
-  it('keeps a write the snapshot does not carry at all', () => {
+  it('drops a write of a known item the snapshot no longer carries', () => {
     const remaining = dropConfirmedWrites(
       [write(item('milk', null, 500), item('milk'))],
+      [item('bread')],
+    )
+
+    expect(remaining).toEqual([])
+  })
+
+  it('keeps a write of an added item the snapshot has not delivered yet', () => {
+    const remaining = dropConfirmedWrites(
+      [write(item('milk'))],
+      [item('bread')],
+    )
+
+    expect(remaining).toHaveLength(1)
+  })
+
+  it('keeps a stepped added item the snapshot has not delivered yet', () => {
+    const remaining = dropConfirmedWrites(
+      [
+        write(item('milk', { amount: 2, unit: null }), null, [
+          item('milk', { amount: 1, unit: null }),
+        ]),
+      ],
       [item('bread')],
     )
 
@@ -169,6 +220,45 @@ describe('dropConfirmedWrites', () => {
     )
 
     expect(remaining).toHaveLength(1)
+  })
+
+  it('keeps a write while the snapshot shows an earlier own state', () => {
+    const remaining = dropConfirmedWrites(
+      [
+        write(
+          item('milk', { amount: 3, unit: null }),
+          item('milk', { amount: 1, unit: null }),
+          [item('milk', { amount: 2, unit: null })],
+        ),
+      ],
+      [item('milk', { amount: 2, unit: null })],
+    )
+
+    expect(remaining).toHaveLength(1)
+  })
+
+  it('keeps a write while the snapshot shows an own check off stamped elsewhere', () => {
+    const remaining = dropConfirmedWrites(
+      [write(item('milk'), item('milk'), [item('milk', null, 500)])],
+      [item('milk', null, 501)],
+    )
+
+    expect(remaining).toHaveLength(1)
+  })
+
+  it('drops a write the other device overtook after several steps', () => {
+    const remaining = dropConfirmedWrites(
+      [
+        write(
+          item('milk', { amount: 3, unit: null }),
+          item('milk', { amount: 1, unit: null }),
+          [item('milk', { amount: 2, unit: null })],
+        ),
+      ],
+      [item('milk', { amount: 7, unit: null })],
+    )
+
+    expect(remaining).toEqual([])
   })
 
   it('drops a write back to the state before it once the snapshot carries it', () => {

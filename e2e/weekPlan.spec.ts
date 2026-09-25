@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   hiddenMealNamesOnServer,
   prepareEmulators,
+  settleWrites,
   supplyCountsOnServer,
   weekPlanOnServer,
   weekPlanStageOnServer,
@@ -17,6 +18,10 @@ import {
 
 test.beforeEach(async () => {
   await prepareEmulators()
+})
+
+test.afterEach(async ({ page }) => {
+  await settleWrites(page)
 })
 
 test('plans a week and puts its items on the shopping list', async ({

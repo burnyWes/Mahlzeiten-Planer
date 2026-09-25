@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { prepareEmulators, supplyCountsOnServer } from './emulatorHousehold.ts'
+import {
+  prepareEmulators,
+  settleWrites,
+  supplyCountsOnServer,
+} from './emulatorHousehold.ts'
 import {
   chooseSuggestion,
   pressButton,
@@ -10,6 +14,10 @@ import {
 
 test.beforeEach(async () => {
   await prepareEmulators()
+})
+
+test.afterEach(async ({ page }) => {
+  await settleWrites(page)
 })
 
 test('keeps a supply of a meal after a reload', async ({ page }) => {

@@ -3,13 +3,13 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
+  or,
   query,
   setDoc,
   updateDoc,
   where,
   type DocumentData,
   type Firestore,
-  type QuerySnapshot,
 } from 'firebase/firestore'
 import type { Quantity } from '../../shared/domain/quantity'
 import type { ItemId, ShoppingItem } from '../domain/shoppingItem'
@@ -41,6 +41,15 @@ export function toShoppingItem(id: ItemId, stored: DocumentData): ShoppingItem {
   }
 }
 
+function isRemovedElsewhere(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'not-found'
+  )
+}
+
 export function createFirestoreShoppingListClient(
   firestore: Firestore,
   sessionStartedAt: number,
@@ -56,45 +65,30 @@ export function createFirestoreShoppingListClient(
     write.catch(() => onWriteFailure(WRITE_FAILED))
   }
 
+  function updateInBackground(id: ItemId, changes: DocumentData) {
+    updateDoc(itemDocument(id), changes).catch((error: unknown) => {
+      if (isRemovedElsewhere(error)) return
+      onWriteFailure(WRITE_FAILED)
+    })
+  }
+
   return {
     observeItems(onItems) {
-      const openItems = new Map<ItemId, ShoppingItem>()
-      const checkedOffThisSession = new Map<ItemId, ShoppingItem>()
-      const answered = new Set<string>()
-
-      function publish() {
-        if (answered.size < 2) return
-        const merged = new Map([...checkedOffThisSession, ...openItems])
-        onItems([...merged.values()])
-      }
-
-      function collectInto(
-        known: Map<ItemId, ShoppingItem>,
-        observation: string,
-      ) {
-        return (snapshot: QuerySnapshot) => {
-          known.clear()
-          snapshot.forEach((document) => {
-            known.set(document.id, toShoppingItem(document.id, document.data()))
-          })
-          answered.add(observation)
-          publish()
-        }
-      }
-
-      const unsubscribeOpen = onSnapshot(
-        query(items, where('checkedOffAt', '==', null)),
-        collectInto(openItems, 'open'),
+      return onSnapshot(
+        query(
+          items,
+          or(
+            where('checkedOffAt', '==', null),
+            where('checkedOffAt', '>=', sessionStartedAt),
+          ),
+        ),
+        (snapshot) =>
+          onItems(
+            snapshot.docs.map((document) =>
+              toShoppingItem(document.id, document.data()),
+            ),
+          ),
       )
-      const unsubscribeCheckedOff = onSnapshot(
-        query(items, where('checkedOffAt', '>=', sessionStartedAt)),
-        collectInto(checkedOffThisSession, 'checkedOff'),
-      )
-
-      return () => {
-        unsubscribeOpen()
-        unsubscribeCheckedOff()
-      }
     },
 
     addItem(newItem) {
@@ -104,17 +98,15 @@ export function createFirestoreShoppingListClient(
     },
 
     changeQuantity(id, quantity) {
-      writeInBackground(updateDoc(itemDocument(id), { quantity }))
+      updateInBackground(id, { quantity })
     },
 
     checkOffItem(id) {
-      writeInBackground(
-        updateDoc(itemDocument(id), { checkedOffAt: Date.now() }),
-      )
+      updateInBackground(id, { checkedOffAt: Date.now() })
     },
 
     reopenItem(id) {
-      writeInBackground(updateDoc(itemDocument(id), { checkedOffAt: null }))
+      updateInBackground(id, { checkedOffAt: null })
     },
 
     removeItem(id) {

@@ -1,9 +1,13 @@
 import { expect, test, type Page } from '@playwright/test'
-import { prepareEmulators } from './emulatorHousehold.ts'
+import { prepareEmulators, settleWrites } from './emulatorHousehold.ts'
 import { pressButton, signIn } from './keyboard.ts'
 
 test.beforeEach(async () => {
   await prepareEmulators()
+})
+
+test.afterEach(async ({ page }) => {
+  await settleWrites(page)
 })
 
 function invertedColorsSwitch(page: Page) {

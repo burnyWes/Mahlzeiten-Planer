@@ -5,6 +5,7 @@ import {
   mealCategoriesOnServer,
   nonMainMealNamesOnServer,
   prepareEmulators,
+  settleWrites,
   snackMealNamesOnServer,
   storeMealOnServer,
 } from './emulatorHousehold.ts'
@@ -20,6 +21,10 @@ import {
 
 test.beforeEach(async () => {
   await prepareEmulators()
+})
+
+test.afterEach(async ({ page }) => {
+  await settleWrites(page)
 })
 
 test('writes down a meal and transfers it to the shopping list using the keyboard only', async ({

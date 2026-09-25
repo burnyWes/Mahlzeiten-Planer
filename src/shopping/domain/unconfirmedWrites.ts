@@ -1,9 +1,10 @@
 import { sameQuantity } from '../../shared/domain/quantity'
-import type { ItemId, ShoppingItem } from './shoppingItem'
+import { isOpen, type ItemId, type ShoppingItem } from './shoppingItem'
 
 export type UnconfirmedWrite = {
   written: ShoppingItem
   before: ShoppingItem | null
+  earlierWrites: readonly ShoppingItem[]
 }
 
 export type UnconfirmedWrites = readonly UnconfirmedWrite[]
@@ -18,6 +19,27 @@ function sameItemState(one: ShoppingItem, other: ShoppingItem): boolean {
   )
 }
 
+function sameStateApartFromCheckOffTime(
+  one: ShoppingItem,
+  other: ShoppingItem,
+): boolean {
+  return (
+    one.name === other.name &&
+    isOpen(one) === isOpen(other) &&
+    sameQuantity(one.quantity, other.quantity)
+  )
+}
+
+function isOwnEarlierState(
+  write: UnconfirmedWrite,
+  live: ShoppingItem,
+): boolean {
+  if (write.before !== null && sameItemState(live, write.before)) return true
+  return write.earlierWrites.some((earlier) =>
+    sameStateApartFromCheckOffTime(live, earlier),
+  )
+}
+
 export function rememberWrite(
   writes: UnconfirmedWrites,
   written: ShoppingItem,
@@ -26,7 +48,13 @@ export function rememberWrite(
   const earlier = writes.find((write) => write.written.id === written.id)
   return [
     ...writes.filter((write) => write.written.id !== written.id),
-    { written, before: earlier === undefined ? before : earlier.before },
+    earlier === undefined
+      ? { written, before, earlierWrites: [] }
+      : {
+          written,
+          before: earlier.before,
+          earlierWrites: [...earlier.earlierWrites, earlier.written],
+        },
   ]
 }
 
@@ -51,10 +79,10 @@ export function dropConfirmedWrites(
 ): UnconfirmedWrites {
   return writes.filter((write) => {
     const live = liveItems.find((item) => item.id === write.written.id)
-    if (live === undefined) return true
+    if (live === undefined) return write.before === null
     if (sameItemState(live, write.written)) return false
-    if (write.before === null) return true
-    return sameItemState(live, write.before)
+    if (isOwnEarlierState(write, live)) return true
+    return write.before === null && write.earlierWrites.length === 0
   })
 }
 

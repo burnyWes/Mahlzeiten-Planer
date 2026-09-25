@@ -207,7 +207,7 @@ Abhängigkeiten: keine
 Damit sind die Bugs 2 und 3 erledigt. Bug 1 wird nach dem grünen Gesamtlauf abgehakt.
 
 **Aufgaben**:
-- [ ] Test-first `src/meals/domain/unconfirmedSupplies.test.ts`, mindestens:
+- [x] Test-first `src/meals/domain/unconfirmedSupplies.test.ts`, mindestens:
   - `overlays the own count while the snapshot still shows an earlier one`
   - `hides a supply removed here while the snapshot still carries it`
   - `adds a supply kept here that the snapshot has not delivered yet`
@@ -216,8 +216,8 @@ Damit sind die Bugs 2 und 3 erledigt. Bug 1 wird nach dem grünen Gesamtlauf abg
   - `drops an own removal once the snapshot no longer carries the supply`
   - `keeps an own write while the snapshot shows another count`
   - `replaces an earlier own write of the same meal`
-- [ ] `src/meals/domain/unconfirmedSupplies.ts` mit den oben genannten Funktionen.
-- [ ] Test-first in `src/meals/ui/useSupplies.test.tsx` einen verzögernden Client
+- [x] `src/meals/domain/unconfirmedSupplies.ts` mit den oben genannten Funktionen.
+- [x] Test-first in `src/meals/ui/useSupplies.test.tsx` einen verzögernden Client
   `createLaggingSuppliesClient` (Muster: `createLaggingWeekPlanClient` in
   `useWeekPlan.test.tsx`: hält die Momentaufnahmen eigener Schreibvorgänge zurück,
   `deliverNextSnapshot()`, `suppliesArriveFromElsewhere()`), dazu:
@@ -226,7 +226,7 @@ Damit sind die Bugs 2 und 3 erledigt. Bug 1 wird nach dem grünen Gesamtlauf abg
   - `keeps every supply spent at once when their snapshots arrive late`
   - `keeps a removed supply hidden while a late snapshot still carries it`
   - `shows a supply the other device changed while an own write waits`
-- [ ] `src/meals/ui/useSupplies.ts` umbauen:
+- [x] `src/meals/ui/useSupplies.ts` umbauen:
   ```ts
   const live = useRef<readonly Supply[]>([])
   const unconfirmed = useRef<UnconfirmedSupplies>([])
@@ -241,8 +241,8 @@ Damit sind die Bugs 2 und 3 erledigt. Bug 1 wird nach dem grünen Gesamtlauf abg
   ```
   Die Reihenfolge ist wichtig: Der In-Memory-Client veröffentlicht synchron in
   `writeSupply`, der Stand muss deshalb vorher gemerkt sein.
-- [ ] Die bestehenden Tests in `useSupplies.test.tsx` bleiben unverändert grün.
-- [ ] `docs/notes.txt`: die Einträge zu Bug 1 (`domainLayerBoundary`), Bug 2 (`useSupplies`)
+- [x] Die bestehenden Tests in `useSupplies.test.tsx` bleiben unverändert grün.
+- [x] `docs/notes.txt`: die Einträge zu Bug 1 (`domainLayerBoundary`), Bug 2 (`useSupplies`)
   und Bug 3 (Wochenplan-Übertragung) auf `x` setzen und nach DONE verschieben. Unter TODO
   als `b` anhängen: „Vorräte: Wird ein Vorrat angelegt und sofort wieder entfernt, kann
   eine sehr alte Momentaufnahme ohne ihn das Entfernen zu früh bestätigen
@@ -250,9 +250,9 @@ Damit sind die Bugs 2 und 3 erledigt. Bug 1 wird nach dem grünen Gesamtlauf abg
   erscheinen (MZP-027, Entscheidung 1).“
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` grün, einschließlich `test/domainLayerBoundary.test.ts` im Gesamtlauf
-- [ ] `npm run lint` und `npm run build` grün
-- [ ] `npm run test:e2e` grün, dann `e2e/supplies.spec.ts` und `e2e/weekPlan.spec.ts`
+- [x] `npm run test` grün, einschließlich `test/domainLayerBoundary.test.ts` im Gesamtlauf
+- [x] `npm run lint` und `npm run build` grün
+- [x] `npm run test:e2e` grün, dann `e2e/supplies.spec.ts` und `e2e/weekPlan.spec.ts`
   zehnmal hintereinander grün (`npx playwright test e2e/supplies.spec.ts e2e/weekPlan.spec.ts --repeat-each=10`
   innerhalb von `firebase emulators:exec` wie in `test:e2e`)
 
@@ -264,13 +264,13 @@ Ein verspäteter eigener Zwischenstand lässt die Einkaufsliste nicht mehr zurü
 (Bug 4).
 
 **Aufgaben**:
-- [ ] Test-first in `src/shopping/domain/unconfirmedWrites.test.ts`:
+- [x] Test-first in `src/shopping/domain/unconfirmedWrites.test.ts`:
   - `rememberWrite`: `keeps the replaced write among the earlier writes`
     (`{ written: 3, before: 1, earlierWrites: [2] }` nach 1 → 2 → 3)
   - `dropConfirmedWrites`: `keeps a write while the snapshot shows an earlier own state`
   - `dropConfirmedWrites`: `drops a write the other device overtook after several steps`
   - bestehende Tests an die neue Form anpassen (Hilfsfunktion `write(written, before, earlierWrites = [])`)
-- [ ] `src/shopping/domain/unconfirmedWrites.ts`:
+- [x] `src/shopping/domain/unconfirmedWrites.ts`:
   ```ts
   export type UnconfirmedWrite = {
     written: ShoppingItem
@@ -282,14 +282,14 @@ Ein verspäteter eigener Zwischenstand lässt die Einkaufsliste nicht mehr zurü
   `written` an `earlierWrites` an. `dropConfirmedWrites` behält, solange `live` dem
   `before` oder einem Stand aus `earlierWrites` gleicht (Hilfsfunktion
   `isOwnEarlierState(write, live)`).
-- [ ] `src/shopping/ui/useShoppingList.ts`: `carryOut` liefert `earlierWrites: []` mit.
+- [x] `src/shopping/ui/useShoppingList.ts`: `carryOut` liefert `earlierWrites: []` mit.
   Die übrigen Aufrufstellen gehen über `rememberWrite` und bleiben.
-- [ ] `docs/notes.txt`: den Eintrag „mehrere schnelle Schritte am Mengen-Stepper“ auf
+- [x] `docs/notes.txt`: den Eintrag „mehrere schnelle Schritte am Mengen-Stepper“ auf
   `x` setzen und nach DONE verschieben.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`, `npm run lint`, `npm run build` grün
-- [ ] `npm run test:e2e` grün
+- [x] `npm run test`, `npm run lint`, `npm run build` grün
+- [x] `npm run test:e2e` grün
 
 ### Phase 3: Eine or()-Abfrage für die Einkaufsliste, Löschung anderswo erkennen
 
@@ -299,7 +299,7 @@ Der Adapter liefert Momentaufnahmen ohne Lücke. Damit kann die Domäne einen au
 anderen Gerät gelöschten Artikel erkennen (Bug 5, TODO `or()`-Abfrage).
 
 **Aufgaben**:
-- [ ] Zuerst `src/shopping/api/firestoreShoppingListClient.ts`: `observeItems` auf eine
+- [x] Zuerst `src/shopping/api/firestoreShoppingListClient.ts`: `observeItems` auf eine
   Abfrage umstellen, `openItems`, `checkedOffThisSession`, `answered` und `publish`
   entfallen:
   ```ts
@@ -316,33 +316,33 @@ anderen Gerät gelöschten Artikel erkennen (Bug 5, TODO `or()`-Abfrage).
         toShoppingItem(document.id, document.data()))),
   )
   ```
-- [ ] Sofort `npm run test:e2e` laufen lassen. Lehnt der Emulator die Abfrage ab, hier
+- [x] Sofort `npm run test:e2e` laufen lassen. Lehnt der Emulator die Abfrage ab, hier
   anhalten und mit dem Nutzer den Weg klären (Entscheidung 3).
-- [ ] Im selben Adapter werden `changeQuantity`, `checkOffItem` und `reopenItem` über
+- [x] Im selben Adapter werden `changeQuantity`, `checkOffItem` und `reopenItem` über
   `updateInBackground` geschrieben. Das schweigt bei `FirestoreError` mit
   `code === 'not-found'` und meldet sonst `WRITE_FAILED`, wie `writeInBackground`.
-- [ ] Test-first in `unconfirmedWrites.test.ts`:
+- [x] Test-first in `unconfirmedWrites.test.ts`:
   - `drops a write of a known item the snapshot no longer carries` (ersetzt
     `keeps a write the snapshot does not carry at all`)
   - `keeps a write of an added item the snapshot has not delivered yet`
   - `keeps a stepped added item the snapshot has not delivered yet`
     (`before: null`, `earlierWrites` nicht leer)
-- [ ] `dropConfirmedWrites`: `live === undefined` → behalten genau dann, wenn
+- [x] `dropConfirmedWrites`: `live === undefined` → behalten genau dann, wenn
   `write.before === null`.
-- [ ] `e2e/emulatorHousehold.ts`: `removeItemOnServer(name)` sucht das Dokument über die
+- [x] `e2e/emulatorHousehold.ts`: `removeItemOnServer(name)` sucht das Dokument über die
   REST-Liste der Sammlung `items` und löscht es per `DELETE` (Muster:
   `storeItemOnServer`, `itemNamesOnServer`).
-- [ ] `e2e/shoppingList.spec.ts`: `lets go of an item the other device removed during an own step`:
+- [x] `e2e/shoppingList.spec.ts`: `lets go of an item the other device removed during an own step`:
   Milch anlegen, auf dem Server ankommen lassen, `page.context().setOffline(true)`,
   „Mehr, Milch“, `removeItemOnServer('Milch')`, `setOffline(false)`. Erwartet wird eine
   leere Liste und keine Ansage „Konnte nicht gespeichert werden.“ in der Statusregion.
-- [ ] `docs/notes.txt`: den `b`-Eintrag „loescht das andere Geraet einen Artikel …“ und den
+- [x] `docs/notes.txt`: den `b`-Eintrag „loescht das andere Geraet einen Artikel …“ und den
   TODO-Eintrag „Firestore-Adapter: die zwei Snapshot-Listener … or()-Abfrage“ auf `x`
   setzen und nach DONE verschieben.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`, `npm run lint`, `npm run build` grün
-- [ ] `npm run test:e2e` grün, dazu `e2e/shoppingList.spec.ts` zehnmal hintereinander
+- [x] `npm run test`, `npm run lint`, `npm run build` grün
+- [x] `npm run test:e2e` grün, dazu `e2e/shoppingList.spec.ts` zehnmal hintereinander
   grün (`--repeat-each=10`)
 
 **Manuelle Verifikation**:
@@ -388,6 +388,43 @@ zurück (Bug 6).
   angehängten aus Phase 1
 
 ## Notizen zur Umsetzung
+
+- **Phase 1, E2E-Leck zwischen Tests:** `--repeat-each=10` fiel in 2 bis 8 von 100
+  Läufen durch, auch ohne die Änderung (Ausgangsstand 2 von 100). Ursache: Ein Test
+  endet, sobald die Anzeige stimmt. Sein letzter Schreibvorgang landet dann erst nach dem
+  Leeren des Emulators durch den Folgetest (belegt über `createTime`: „Spaghetti, 7“
+  entstand 240 ms nach dem Leeren). Behoben ohne Wartezeiten: Emulator-Builds stellen
+  `window.waitForPendingWrites` bereit (`src/shared/auth/firebase.ts`), jede Spec
+  wartet in `afterEach` über `settleWrites(page)` (`e2e/emulatorHousehold.ts`) darauf.
+  Danach zweimal 100 von 100 grün. Als `b` in `notes.txt` aufgenommen und mit `x` nach
+  DONE verschoben.
+- **Auf Wunsch des Nutzers zusätzlich als `b` notiert, nicht gelöst:** Rückkehr zu einem
+  früheren Wert (Vorrat 1 → 4 → 1, Stepper 1 → 2 → 1) wird zu früh bestätigt. Ein offener
+  Vorrats-Stand hat keinen Ausweg, falls seine Momentaufnahme ausbleibt. Das
+  Endkriterium von Phase 4 lässt deshalb diese beiden `b`-Einträge neben dem aus
+  Phase 1 zu.
+- **Phase 2, Abhaken-Zeitstempel:** Hook und Adapter nehmen beim Abhaken je ein eigenes
+  `Date.now()`. Ein Stand aus `earlierWrites` gleicht die Momentaufnahme deshalb nur über
+  offen/abgehakt, nicht über `checkedOffAt` (`sameStateApartFromCheckOffTime`). Sonst
+  würde Abhaken und schnelles Wieder-Öffnen als „überholt“ verworfen. `before` bleibt
+  exakt, damit das Abhaken des anderen Geräts weiterhin als Überholen gilt.
+- **Phase 3, `not-found`:** Der Fehler eines abgelehnten `updateDoc` trägt
+  `code === 'not-found'`, ist aber kein `instanceof FirestoreError`. `isRemovedElsewhere`
+  prüft deshalb strukturell auf `code`.
+- **Phase 3, UI-Test angepasst:** `ShoppingArea.test.tsx` „keeps the row while the
+  snapshot does not carry the item at all“ hielt die Lücke der zwei Listener fest. Mit
+  Entscheidung 3 heißt „fehlt“ gelöscht, deshalb jetzt „lets go of a row the other
+  device removed during an own write“.
+- **Phase 3, E2E-Test:** Er belegt, dass die Zeile verschwindet und keine Ansage kommt.
+  Die Ansage kam vor der `not-found`-Behandlung nachweislich. Die Domänenregel selbst
+  kann er nicht erzwingen: Die lokale Momentaufnahme bestätigt den Schritt sofort, die
+  Geisterzeile entsteht nur, wenn genau diese verspätet kommt. Die Regel sichern der
+  Unit-Test und der UI-Test ab. Vor `setOffline(true)` wartet der Test über
+  `settleWrites` auf die Bestätigung des Anlegens. Sonst sendet das SDK das
+  unbestätigte `setDoc` nach dem Wieder-Verbinden erneut und legt Milch nach dem Löschen
+  wieder an (4 von 15 Läufen).
+- Befehl für die Wiederholungsläufe:
+  `npx firebase emulators:exec --only auth,firestore --project mahlzeiten-planer-ecd26 "npm run build:e2e && npx playwright test <specs> --repeat-each=10"`
 
 ## Verweise
 

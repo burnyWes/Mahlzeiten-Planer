@@ -6,6 +6,7 @@ import {
   memoryLocalCache,
   persistentLocalCache,
   persistentMultipleTabManager,
+  waitForPendingWrites,
   type Firestore,
 } from 'firebase/firestore'
 import { firebaseConfig } from './firebaseConfig'
@@ -43,6 +44,9 @@ export const firestore = localStore.firestore
 if (import.meta.env.VITE_USE_EMULATORS === 'true') {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
   connectFirestoreEmulator(firestore, '127.0.0.1', 8080)
+  Object.assign(window, {
+    waitForPendingWrites: () => waitForPendingWrites(firestore),
+  })
 }
 export const storageWarning = localStore.survivesRestart
   ? ''
