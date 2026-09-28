@@ -311,7 +311,7 @@ statt „Item“.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/announcements.test.ts`, die Erwartungen anpassen:
+- [x] Test zuerst: `src/meals/domain/announcements.test.ts`, die Erwartungen anpassen:
       - `:296` „Einkaufs-Artikel, keine“, `:300` „Einkaufs-Artikel, 3“
       - `:404` „Hackfleisch, 500 g als Artikel übernommen.“
       - `:412` „Hackfleisch entfernt, noch 2 Artikel.“, `:418` „… noch 1 Artikel.“,
@@ -319,7 +319,7 @@ statt „Item“.
       - `:550`, `:920`, `:925`, `:949` „… hat keine Einkaufs-Artikel.“
 
       Die Fälle schlagen fehl.
-- [ ] `src/meals/domain/announcements.ts`: die Texte ändern.
+- [x] `src/meals/domain/announcements.ts`: die Texte ändern.
       ```ts
       export function mealItemsHeading(itemCount: number): string {
         return itemCount === 0
@@ -339,16 +339,16 @@ statt „Item“.
       `mealWithoutItemsAnnouncement` liefert `${meal.name} hat keine Einkaufs-Artikel.`.
       „Artikel“ hat keine eigene Pluralform, deshalb fällt die Unterscheidung
       zwischen 1 und n in `remainingItemPhrase` weg.
-- [ ] `src/meals/ui/MealItemsEditor.tsx`:
+- [x] `src/meals/ui/MealItemsEditor.tsx`:
       `aria-label="Einkaufs-Artikel hinzufügen"`,
       `<label htmlFor="mealItemName">Artikel</label>`, Button-Text „Artikel
       hinzufügen“.
-- [ ] `src/meals/ui/MealsArea.test.tsx`: `name: 'Einkaufs-Artikel hinzufügen'`
+- [x] `src/meals/ui/MealsArea.test.tsx`: `name: 'Einkaufs-Artikel hinzufügen'`
       (`:158`), `getByLabelText('Artikel')` (`:160`, `:1683`, `:1696`, `:1699`,
       `:1707`, `:1783`), Button „Artikel hinzufügen“ (`:166`, `:1760`), Ansagen
       (`:360`, `:378`) und Überschriften „Einkaufs-Artikel, keine“ / „Einkaufs-Artikel,
       1“ / `/Einkaufs-Artikel/` (`:594`, `:623`, `:639`).
-- [ ] `src/SignedInApp.test.tsx`: `getByLabelText('Artikel')` (`:143`, `:1250`),
+- [x] `src/SignedInApp.test.tsx`: `getByLabelText('Artikel')` (`:143`, `:1250`),
       Button „Artikel hinzufügen“ (`:147`), Ansagen mit „Einkaufs-Artikel“ (`:657`,
       `:760`, `:1145`).
 
@@ -356,18 +356,18 @@ statt „Item“.
       ist exakt, und das Formular heißt „Einkaufs-Artikel hinzufügen“. Auf der
       Gericht-Seite gibt es keinen zweiten Button „Artikel hinzufügen“. Der „+“-Button
       der Einkaufsliste ist dort nicht zu sehen.
-- [ ] `e2e/keyboard.ts`: In `takeOverItem` `typeInto(page, 'Artikel', name)` und
+- [x] `e2e/keyboard.ts`: In `takeOverItem` `typeInto(page, 'Artikel', name)` und
       `pressButton(page, 'Artikel hinzufügen')` setzen. Beide Hilfen gleichen exakt
       ab.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die angepassten Fälle in `announcements.test.ts` schlagen vor der Umsetzung fehl
+- [x] Die angepassten Fälle in `announcements.test.ts` schlagen vor der Umsetzung fehl
       und laufen danach grün.
-- [ ] `grep -rnwE "Items?" src e2e` findet nichts mehr. Das Wort steht heute nur in
+- [x] `grep -rnwE "Items?" src e2e` findet nichts mehr. Das Wort steht heute nur in
       Texten, Bezeichner wie `MealItem` trifft der Wortabgleich nicht.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run test:e2e` läuft grün.
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run test:e2e` läuft grün.
 
 ### Phase 2: Vorräte nach Art und Kategorie filtern
 
@@ -379,7 +379,7 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
 
 **Aufgaben**:
 
-- [ ] Test zuerst: `src/meals/domain/mealFilter.test.ts`, `describe('suppliesMatching')`,
+- [x] Test zuerst: `src/meals/domain/mealFilter.test.ts`, `describe('suppliesMatching')`,
       mit einer Hilfe `supplied(meal, count)`:
       - `keeps every supply without a filter`
       - `keeps the supplies whose meal has the chosen kind`
@@ -387,15 +387,15 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
         Schreibweise egal ist (`suppe` findet „Suppe“)
       - `tells a kind from a category of the same name`
       - `keeps the order and the counts of the supplies`
-- [ ] Test zuerst: Die Fälle aus `describe('mealsInCategory')`
+- [x] Test zuerst: Die Fälle aus `describe('mealsInCategory')`
       (`src/meals/domain/mealCategory.test.ts:341-364`) nach
       `describe('mealsMatching')` in `mealFilter.test.ts` übertragen. Übertragen wird,
       was dort noch fehlt: die Schreibweise („SUPPE“ findet „Suppe“) und
       ausgeblendete Gerichte mit der Kategorie. Danach `describe('mealsInCategory')`
       und seinen Import entfernen.
-- [ ] `src/meals/domain/mealCategory.ts`: `carriesCategory` exportieren und
+- [x] `src/meals/domain/mealCategory.ts`: `carriesCategory` exportieren und
       `mealsInCategory` entfernen.
-- [ ] `src/meals/domain/mealFilter.ts`: das Prädikat herausziehen und
+- [x] `src/meals/domain/mealFilter.ts`: das Prädikat herausziehen und
       `suppliesMatching` ergänzen:
       ```ts
       export function matchesMealFilter(meal: Meal, filter: MealFilter): boolean {
@@ -424,7 +424,7 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
       `type CategoryOverview` aus `./mealCategory` sowie `type SuppliedMeal` aus
       `./supply`. Einen Zyklus gibt es nicht, weil `supply.ts` und `mealCategory.ts`
       nur `./meal` importieren. Die bestehenden `mealsMatching`-Fälle bleiben grün.
-- [ ] Test zuerst: `src/meals/domain/announcements.test.ts`
+- [x] Test zuerst: `src/meals/domain/announcements.test.ts`
       - `suppliesHeading`: `(0)` → „Vorräte, keine“, `(5)` → „Vorräte, 5“, `(2, 5)` →
         „Vorräte, 2 von 5“
       - `supplyFilterAnnouncement`: `{ by: 'category', category: 'Vegetarisch' }`,
@@ -432,7 +432,7 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
         1, 1 → „Snack, 1 von 1 Vorrat.“
       - `supplyFilterResetAnnouncement`: 5 → „Filter zurückgesetzt, 5 Vorräte.“,
         1 → „Filter zurückgesetzt, 1 Vorrat.“
-- [ ] `src/meals/domain/announcements.ts`:
+- [x] `src/meals/domain/announcements.ts`:
       ```ts
       export function suppliesHeading(
         supplyCount: number,
@@ -458,13 +458,13 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
       ```
       Dazu kommen die privaten Hilfen `supplyCountPhrase` („1 Vorrat“ / „n
       Vorräten“) und `supplyTotalPhrase` („1 Vorrat“ / „n Vorräte“).
-- [ ] `src/shared/ui/useFocusAfterRemoval.ts`: Neben `rowRemovedAt(position)` kommt
+- [x] `src/shared/ui/useFocusAfterRemoval.ts`: Neben `rowRemovedAt(position)` kommt
       `fallbackAfterRemoval()` dazu. Sie sorgt dafür, dass nach dem nächsten Rendern
       das Rückfallziel den Fokus bekommt, egal welche Zeilen dann zu sehen sind. Der
       Ref für die ausstehende Fokussierung unterscheidet dafür zwischen „Zeile an
       Position n“ und „Rückfallziel“, zum Beispiel
       `useRef<number | 'fallback' | null>(null)`.
-- [ ] `src/meals/ui/SupplyListPage.tsx`: neue Props
+- [x] `src/meals/ui/SupplyListPage.tsx`: neue Props
       ```ts
       totalCount: number
       kinds: readonly ChosenMealKind[]
@@ -484,7 +484,7 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
         die einzige gezeigte Zeile, wird `fallbackAfterRemoval()` aufgerufen, sonst
         wie bisher `rowRemovedAt(position)`. Die Bedingung bekommt einen sprechenden
         Namen, zum Beispiel `removesLastFilteredRow`.
-- [ ] `src/meals/ui/SuppliesArea.tsx`:
+- [x] `src/meals/ui/SuppliesArea.tsx`:
       - `useState<MealFilter | null>(null)` als `chosenFilter`
       - Ableitungen wie im Zielbild: `kinds` und `categories` aus den Gerichten von
         `supplied`, `activeFilter = knownFilter(...)`,
@@ -503,14 +503,14 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
         `onChooseFilter={chooseFilter}`.
       - `changeCount` und `deleteSupply` zählen für die Entfernen-Ansage weiter
         `supplied.length - 1`, also alle Vorräte.
-- [ ] `src/meals/ui/SuppliesArea.test.tsx`: Die Hilfe wird zu
+- [x] `src/meals/ui/SuppliesArea.test.tsx`: Die Hilfe wird zu
       `meal(id, name, parts: Partial<Meal> = {})`. Dazu kommen die Hilfen
       `supplyFilter()` (`getByRole('combobox', { name: 'Filter' })`),
       `chooseFilter(nameOrValue)`, `chosenFilterText()` und `offeredFilters()`, nach
       dem Muster von `MealsArea.test.tsx:258-275`. Die bestehenden Fälle bleiben
       unverändert grün. Weil die Standard-Gerichte `kind: 'mainMeal'` tragen, prüft
       der bestehende axe-Test der Liste (`:510-517`) künftig auch die Filterzeile mit.
-- [ ] `src/meals/ui/SuppliesArea.test.tsx`, neue Fälle:
+- [x] `src/meals/ui/SuppliesArea.test.tsx`, neue Fälle:
       - `offers no filter when no supplied meal has a kind or a category`: alle
         Gerichte `kind: 'none'`, keine Kategorien, also keine Combobox „Filter“.
       - `offers only the kinds and categories of supplied meals`: Im Vorrat sind
@@ -552,21 +552,21 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
         über die Detailseite. Die Ansage nennt die Anzahl aller verbleibenden
         Vorräte.
       - `has no accessibility violations on the filtered list`
-- [ ] `src/SignedInApp.test.tsx`, neuer Fall `shows every supply again after leaving
+- [x] `src/SignedInApp.test.tsx`, neuer Fall `shows every supply again after leaving
       the supplies`: Auf der Vorräte-Seite einen Filter wählen, über die
       Navigationsleiste zu „Gerichte“ und zurück wechseln. Die Auswahl zeigt „Alle“.
-- [ ] `docs/notes.txt`: unter TODO einen Bug anhängen:
+- [x] `docs/notes.txt`: unter TODO einen Bug anhängen:
       `b Gerichte: eine verschwundene Filteroption bleibt gemerkt und wird still wieder gewählt, sobald ein passendes Gericht zurueckkommt (MealsArea.tsx:66-70). Auf der Vorraete-Seite seit MZP-037 behoben.`
-- [ ] `src/shopping/ui/ShoppingListPage.tsx` bleibt unverändert. Die Fokusfälle der
+- [x] `src/shopping/ui/ShoppingListPage.tsx` bleibt unverändert. Die Fokusfälle der
       Einkaufsliste laufen weiter grün.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Fälle in `mealFilter.test.ts` und `announcements.test.ts` schlagen vor
+- [x] Die neuen Fälle in `mealFilter.test.ts` und `announcements.test.ts` schlagen vor
       der Umsetzung fehl und laufen danach grün.
-- [ ] Alle Fälle in `SuppliesArea.test.tsx`, `MealsArea.test.tsx` und
+- [x] Alle Fälle in `SuppliesArea.test.tsx`, `MealsArea.test.tsx` und
       `ShoppingArea.test.tsx` laufen grün.
-- [ ] `npm run test`, `npm run lint` und `npm run build` laufen durch, der
+- [x] `npm run test`, `npm run lint` und `npm run build` laufen durch, der
       Architekturtest eingeschlossen.
 - [ ] `npm run test:e2e` läuft grün.
 
@@ -588,6 +588,12 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 2: Eine Kategorie erscheint im Filter in der Schreibweise des alphabetisch
+  ersten Gerichts (`mealCategories`). Das Testgericht „Gemüsesuppe“ trägt deshalb
+  „Vegetarisch“ und nicht „vegetarisch“, sonst hieße die Option „vegetarisch“.
+  Die Schreibweise selbst prüft `mealFilter.test.ts`.
+- Phase 2: `SuppliesArea.test.tsx` bekam zusätzlich die Hilfe `resetFilter()`.
 
 ## Verweise
 

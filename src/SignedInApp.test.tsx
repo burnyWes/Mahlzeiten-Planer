@@ -140,11 +140,13 @@ async function writeDownMeal(
     screen.getByRole('button', { name: 'Gericht hinzufügen' }),
   )
   await userEvent.type(screen.getByLabelText('Name'), name)
-  await userEvent.type(screen.getByLabelText('Item'), itemName)
+  await userEvent.type(screen.getByLabelText('Artikel'), itemName)
   if (amount !== '')
     await userEvent.type(screen.getByLabelText('Menge'), amount)
   if (unit !== '') await userEvent.type(screen.getByLabelText('Einheit'), unit)
-  await userEvent.click(screen.getByRole('button', { name: 'Item hinzufügen' }))
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Artikel hinzufügen' }),
+  )
   await userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
 }
 
@@ -375,6 +377,44 @@ describe('SignedInApp', () => {
       screen.getByRole('button', { name: 'Mehr, Bolognese' }),
     ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('shows every supply again after leaving the supplies', async () => {
+    renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese'),
+        { ...meal('nuts', 'Nüsse'), kind: 'snack' },
+      ],
+      undefined,
+      undefined,
+      undefined,
+      createInMemorySuppliesClient([
+        { mealId: 'bolognese', count: 2 },
+        { mealId: 'nuts', count: 1 },
+      ]),
+    )
+
+    await goToArea('Vorräte')
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Filter' }),
+      'Snack',
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, 1 von 2' }),
+    ).toBeInTheDocument()
+
+    await goToArea('Gerichte')
+    await goToArea('Vorräte')
+
+    const supplyFilter = screen.getByRole('combobox', {
+      name: 'Filter',
+    }) as HTMLSelectElement
+    expect(supplyFilter.selectedOptions[0].textContent).toBe('Alle')
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, 2' }),
+    ).toBeInTheDocument()
   })
 
   it('switches to the week plan and marks it as the current area', async () => {
@@ -654,7 +694,7 @@ describe('SignedInApp', () => {
     await transferTheWeekPlan()
 
     expect(announcements).toContain(
-      'Wochenplan, 1 Artikel hinzugefügt. Suppe hat keine Einkaufs-Items.',
+      'Wochenplan, 1 Artikel hinzugefügt. Suppe hat keine Einkaufs-Artikel.',
     )
   })
 
@@ -757,7 +797,7 @@ describe('SignedInApp', () => {
       'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
     )
     expect(announcements).not.toContain(
-      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Artikel.',
     )
   })
 
@@ -1142,7 +1182,7 @@ describe('SignedInApp', () => {
     await transferToShoppingList('Suppe')
 
     expect(client.storedItems()).toEqual([])
-    expect(announcements).toContain('Suppe hat keine Einkaufs-Items.')
+    expect(announcements).toContain('Suppe hat keine Einkaufs-Artikel.')
   })
 
   it('counts every item of a transferred meal in the catalog', async () => {
@@ -1247,7 +1287,7 @@ describe('SignedInApp', () => {
     await userEvent.click(
       screen.getByRole('button', { name: 'Gericht hinzufügen' }),
     )
-    await userEvent.type(screen.getByLabelText('Item'), 'milch')
+    await userEvent.type(screen.getByLabelText('Artikel'), 'milch')
 
     expect(
       within(screen.getByRole('list', { name: 'Vorschläge' })).getByRole(

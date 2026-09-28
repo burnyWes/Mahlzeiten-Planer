@@ -116,17 +116,17 @@ export function filterResetAnnouncement(totalCount: number): string {
 
 export function mealItemsHeading(itemCount: number): string {
   return itemCount === 0
-    ? 'Einkaufs-Items, keine'
-    : `Einkaufs-Items, ${itemCount}`
+    ? 'Einkaufs-Artikel, keine'
+    : `Einkaufs-Artikel, ${itemCount}`
 }
 
 export function mealItemAddedAnnouncement(item: MealItem): string {
-  return `${formatMealItem(item)} als Item übernommen.`
+  return `${formatMealItem(item)} als Artikel übernommen.`
 }
 
 function remainingItemPhrase(remainingItems: number): string {
-  if (remainingItems === 0) return 'keine Items mehr'
-  return remainingItems === 1 ? 'noch 1 Item' : `noch ${remainingItems} Items`
+  if (remainingItems === 0) return 'keine Artikel mehr'
+  return `noch ${remainingItems} Artikel`
 }
 
 export function mealItemRemovedAnnouncement(
@@ -234,7 +234,7 @@ export function mealDeletedAnnouncement(
 }
 
 export function mealWithoutItemsAnnouncement(meal: NewMeal): string {
-  return `${meal.name} hat keine Einkaufs-Items.`
+  return `${meal.name} hat keine Einkaufs-Artikel.`
 }
 
 const weekdayNames: Record<Weekday, string> = {
@@ -455,8 +455,34 @@ export function mealSuggestionsLabel(
   return `Vorschläge für ${slotName(slot, naming)}`
 }
 
-export function suppliesHeading(supplyCount: number): string {
-  return supplyCount === 0 ? 'Vorräte, keine' : `Vorräte, ${supplyCount}`
+export function suppliesHeading(
+  supplyCount: number,
+  filteredFromCount: number | null = null,
+): string {
+  if (supplyCount === 0) return 'Vorräte, keine'
+  return filteredFromCount === null
+    ? `Vorräte, ${supplyCount}`
+    : `Vorräte, ${supplyCount} von ${filteredFromCount}`
+}
+
+function supplyCountPhrase(supplyCount: number): string {
+  return supplyCount === 1 ? '1 Vorrat' : `${supplyCount} Vorräten`
+}
+
+function supplyTotalPhrase(supplyCount: number): string {
+  return supplyCount === 1 ? '1 Vorrat' : `${supplyCount} Vorräte`
+}
+
+export function supplyFilterAnnouncement(
+  filter: MealFilter,
+  shownCount: number,
+  totalCount: number,
+): string {
+  return `${mealFilterName(filter)}, ${shownCount} von ${supplyCountPhrase(totalCount)}.`
+}
+
+export function supplyFilterResetAnnouncement(totalCount: number): string {
+  return `Filter zurückgesetzt, ${supplyTotalPhrase(totalCount)}.`
 }
 
 export function supplyAddedAnnouncement(

@@ -189,3 +189,6 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
   gelesen und koennen von Hand geloescht werden
 - Firestore: weekPlan/meals wird seit MZP-035 nur noch gelesen, solange
   weekPlan/datedMeals fehlt, und kann danach von Hand geloescht werden
+b Gerichte: eine verschwundene Filteroption bleibt gemerkt und wird still wieder gewaehlt,
+  sobald ein passendes Gericht zurueckkommt (MealsArea.tsx:66-70). Auf der
+  Vorraete-Seite seit MZP-037 behoben.

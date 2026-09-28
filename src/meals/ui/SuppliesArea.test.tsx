@@ -12,7 +12,7 @@ import { SuppliesArea } from './SuppliesArea'
 import { useMeals } from './useMeals'
 import { useSupplies } from './useSupplies'
 
-function meal(id: string, name: string): Meal {
+function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
   return {
     id,
     name,
@@ -22,6 +22,7 @@ function meal(id: string, name: string): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    ...parts,
   }
 }
 
@@ -130,6 +131,30 @@ function shownSupplyNames() {
     .map((row) => within(row).getAllByRole('button')[0].textContent)
 }
 
+function supplyFilter() {
+  return screen.getByRole('combobox', { name: 'Filter' })
+}
+
+function chooseFilter(nameOrValue: string) {
+  return userEvent.selectOptions(supplyFilter(), nameOrValue)
+}
+
+function chosenFilterText() {
+  return (supplyFilter() as HTMLSelectElement).selectedOptions[0].textContent
+}
+
+function offeredFilters() {
+  return within(supplyFilter())
+    .getAllByRole('option')
+    .map((option) => option.textContent)
+}
+
+function resetFilter() {
+  return userEvent.click(
+    screen.getByRole('button', { name: 'Filter zurücksetzen' }),
+  )
+}
+
 async function addSupply(mealName: string, count: string) {
   await openSupplyForm()
   await fillIn('Gericht', mealName)
@@ -139,6 +164,37 @@ async function addSupply(mealName: string, count: string) {
 
 const bolognese = meal('bolognese', 'Bolognese')
 const soup = meal('soup', 'Linsensuppe')
+
+const lasagne = meal('lasagne', 'Lasagne', { categories: ['Vegetarisch'] })
+const vegetableSoup = meal('vegetableSoup', 'Gemüsesuppe', {
+  kind: 'none',
+  categories: ['Vegetarisch'],
+})
+const nuts = meal('nuts', 'Nüsse', { kind: 'snack' })
+const muesli = meal('muesli', 'Müsli', { kind: 'breakfast' })
+const ratatouille = meal('ratatouille', 'Ratatouille', {
+  categories: ['Vegetarisch'],
+})
+
+const filterableMeals = [
+  bolognese,
+  lasagne,
+  vegetableSoup,
+  nuts,
+  muesli,
+  ratatouille,
+]
+const filterableSupplies = [
+  supply('bolognese', 1),
+  supply('lasagne', 2),
+  supply('vegetableSoup', 1),
+  supply('nuts', 1),
+  supply('muesli', 4),
+]
+
+function renderFilterableSupplies() {
+  return renderSuppliesArea(filterableMeals, filterableSupplies)
+}
 
 describe('SuppliesArea', () => {
   it('reports that nothing is kept in store yet', () => {
@@ -531,6 +587,200 @@ describe('SuppliesArea', () => {
     await fillIn('Gericht', 'bolo')
 
     expect(screen.getByRole('list', { name: 'Vorschläge' })).toBeInTheDocument()
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('offers no filter when no supplied meal has a kind or a category', () => {
+    renderSuppliesArea(
+      [
+        meal('bread', 'Brot', { kind: 'none' }),
+        meal('rice', 'Reis', { kind: 'none' }),
+      ],
+      [supply('bread', 1), supply('rice', 2)],
+    )
+
+    expect(screen.queryByRole('combobox', { name: 'Filter' })).toBeNull()
+  })
+
+  it('offers only the kinds and categories of supplied meals', () => {
+    renderSuppliesArea(
+      [
+        meal('lasagne', 'Lasagne', { categories: ['Vegetarisch'] }),
+        nuts,
+        meal('muesli', 'Müsli', {
+          kind: 'breakfast',
+          categories: ['Asiatisch'],
+        }),
+        meal('porridge', 'Porridge', { kind: 'snack', hidden: true }),
+        meal('bread', 'Brot', { kind: 'none' }),
+      ],
+      [
+        supply('lasagne', 1),
+        supply('nuts', 2),
+        supply('porridge', 1),
+        supply('bread', 3),
+      ],
+    )
+
+    expect(offeredFilters()).toEqual([
+      'Alle',
+      'Hauptgericht',
+      'Snack',
+      'Vegetarisch',
+    ])
+    expect(
+      within(supplyFilter())
+        .getAllByRole('group')
+        .map((group) => group.getAttribute('label')),
+    ).toEqual(['Art', 'Kategorie'])
+  })
+
+  it('shows only the supplies of the chosen category', async () => {
+    renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+
+    expect(shownSupplyNames()).toEqual(['Gemüsesuppe', 'Lasagne'])
+  })
+
+  it('shows only the supplies of the chosen kind', async () => {
+    renderFilterableSupplies()
+
+    await chooseFilter('Hauptgericht')
+
+    expect(shownSupplyNames()).toEqual(['Bolognese', 'Lasagne'])
+  })
+
+  it('counts and announces the filtered supplies', async () => {
+    const { announcements } = renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+
+    const heading = screen.getByRole('heading', { name: 'Vorräte, 2 von 5' })
+    expect(heading).toHaveTextContent('Vorräte, 2 / 5')
+    expect(announcements).toContain('Vegetarisch, 2 von 5 Vorräten.')
+  })
+
+  it('resets the filter with the cross', async () => {
+    const { announcements } = renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+    await resetFilter()
+
+    expect(announcements).toContain('Filter zurückgesetzt, 5 Vorräte.')
+    expect(chosenFilterText()).toBe('Alle')
+    expect(supplyFilter()).toHaveFocus()
+    expect(
+      screen.getByRole('heading', { name: 'Vorräte, 5' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps the filter while a supply is added', async () => {
+    renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+    await addSupply('Ratatouille', '2')
+
+    expect(chosenFilterText()).toBe('Vegetarisch')
+    expect(shownSupplyNames()).toEqual([
+      'Gemüsesuppe',
+      'Lasagne',
+      'Ratatouille',
+    ])
+  })
+
+  it('keeps the filter when returning from a supply', async () => {
+    renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+    await openSupply('Lasagne')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Vorräten' }),
+    )
+
+    expect(chosenFilterText()).toBe('Vegetarisch')
+    expect(shownSupplyNames()).toEqual(['Gemüsesuppe', 'Lasagne'])
+  })
+
+  it('shows every supply when no supply matches the chosen filter anymore', async () => {
+    const { suppliesClient } = renderFilterableSupplies()
+
+    await chooseFilter('Snack')
+    await act(async () => {
+      suppliesClient.suppliesArriveFromElsewhere(
+        filterableSupplies.filter((one) => one.mealId !== 'nuts'),
+      )
+    })
+
+    expect(chosenFilterText()).toBe('Alle')
+    expect(shownSupplyNames()).toEqual([
+      'Bolognese',
+      'Gemüsesuppe',
+      'Lasagne',
+      'Müsli',
+    ])
+  })
+
+  it('keeps showing every supply when a matching supply comes back', async () => {
+    const { suppliesClient } = renderFilterableSupplies()
+
+    await chooseFilter('Snack')
+    await act(async () => {
+      suppliesClient.suppliesArriveFromElsewhere(
+        filterableSupplies.filter((one) => one.mealId !== 'nuts'),
+      )
+    })
+    await act(async () => {
+      suppliesClient.suppliesArriveFromElsewhere(filterableSupplies)
+    })
+
+    expect(chosenFilterText()).toBe('Alle')
+    expect(shownSupplyNames()).toEqual([
+      'Bolognese',
+      'Gemüsesuppe',
+      'Lasagne',
+      'Müsli',
+      'Nüsse',
+    ])
+  })
+
+  it('leaves the focus on the heading when the last filtered row is removed', async () => {
+    const { announcements } = renderFilterableSupplies()
+
+    await chooseFilter('Snack')
+    await takeOneLess('Nüsse')
+
+    expect(announcements).toContain('Nüsse entfernt, noch 4 Vorräte.')
+    expect(screen.getByRole('heading', { name: 'Vorräte, 4' })).toHaveFocus()
+  })
+
+  it('leaves the focus on the following filtered row after a removal', async () => {
+    renderFilterableSupplies()
+
+    await chooseFilter('Hauptgericht')
+    await takeOneLess('Bolognese')
+
+    expect(nameButtonOf('Lasagne')).toHaveFocus()
+  })
+
+  it('counts every supply when a filtered supply is removed', async () => {
+    const { announcements } = renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+    await openSupply('Lasagne')
+    await askToDeleteSupply()
+    await confirmDeletion()
+
+    expect(announcements).toContain('Lasagne entfernt, noch 4 Vorräte.')
+    expect(chosenFilterText()).toBe('Vegetarisch')
+    expect(shownSupplyNames()).toEqual(['Gemüsesuppe'])
+  })
+
+  it('has no accessibility violations on the filtered list', async () => {
+    const { rendered } = renderFilterableSupplies()
+
+    await chooseFilter('Vegetarisch')
+
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 })

@@ -2,9 +2,18 @@ import { useState, type ReactNode } from 'react'
 import {
   supplyAddedAnnouncement,
   supplyChangedAnnouncement,
+  supplyFilterAnnouncement,
+  supplyFilterResetAnnouncement,
   supplyRemovedAnnouncement,
 } from '../domain/announcements'
 import type { Meal, MealId } from '../domain/meal'
+import { mealCategories } from '../domain/mealCategory'
+import {
+  knownFilter,
+  suppliesMatching,
+  usedMealKinds,
+  type MealFilter,
+} from '../domain/mealFilter'
 import {
   combinedSupply,
   suppliedMeals,
@@ -40,7 +49,15 @@ export function SuppliesArea({
   navigation,
 }: SuppliesAreaProps) {
   const [page, setPage] = useState<SuppliesPage>({ kind: 'list' })
+  const [chosenFilter, setChosenFilter] = useState<MealFilter | null>(null)
   const supplied = suppliedMeals(supplies.supplies, meals)
+  const suppliedDishes = supplied.map((one) => one.meal)
+  const kinds = usedMealKinds(suppliedDishes)
+  const categories = mealCategories(suppliedDishes)
+  const activeFilter = knownFilter(kinds, categories, chosenFilter)
+  const shownSupplied = suppliesMatching(supplied, activeFilter)
+  const chosenFilterIsGone = chosenFilter !== null && activeFilter === null
+  if (chosenFilterIsGone) setChosenFilter(null)
 
   const addressedSupply =
     page.kind === 'list' || page.kind === 'add'
@@ -49,6 +66,19 @@ export function SuppliesArea({
 
   function showList() {
     setPage({ kind: 'list' })
+  }
+
+  function chooseFilter(filter: MealFilter | null) {
+    setChosenFilter(filter)
+    announce(
+      filter === null
+        ? supplyFilterResetAnnouncement(supplied.length)
+        : supplyFilterAnnouncement(
+            filter,
+            suppliesMatching(supplied, filter).length,
+            supplied.length,
+          ),
+    )
   }
 
   function showSupply(id: MealId) {
@@ -126,7 +156,12 @@ export function SuppliesArea({
   return (
     <SupplyListPage
       navigation={navigation}
-      supplied={supplied}
+      supplied={shownSupplied}
+      totalCount={supplied.length}
+      kinds={kinds}
+      categories={categories}
+      activeFilter={activeFilter}
+      onChooseFilter={chooseFilter}
       onAddSupply={() => setPage({ kind: 'add' })}
       onOpenSupply={(one) => showSupply(one.meal.id)}
       onLessSupply={(one) => changeCount(one, withOneLess)}

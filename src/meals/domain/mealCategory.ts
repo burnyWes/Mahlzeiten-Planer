@@ -64,14 +64,6 @@ export function knownCategory(
   )
 }
 
-export function mealsInCategory(
-  meals: readonly Meal[],
-  category: string | null,
-): readonly Meal[] {
-  if (category === null) return meals
-  return meals.filter((meal) => carriesCategory(meal, category))
-}
-
 function startsWithTyped(category: CategoryOverview, typed: string): boolean {
   return normalizeMealName(category.name).startsWith(typed)
 }
@@ -116,7 +108,7 @@ export function withoutCategory(
     }))
 }
 
-function carriesCategory(meal: Meal, name: string): boolean {
+export function carriesCategory(meal: Meal, name: string): boolean {
   return meal.categories.some((category) => sameCategory(category, name))
 }
 

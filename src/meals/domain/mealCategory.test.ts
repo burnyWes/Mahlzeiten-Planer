@@ -5,7 +5,6 @@ import {
   categoryToAdd,
   knownCategory,
   mealCategories,
-  mealsInCategory,
   suggestCategories,
   withCategoryRenamed,
   withoutCategory,
@@ -335,30 +334,5 @@ describe('knownCategory', () => {
 
   it('finds nothing when the chosen category is gone', () => {
     expect(knownCategory(known, 'Nudelgericht')).toBeNull()
-  })
-})
-
-describe('mealsInCategory', () => {
-  const bolognese = meal('Bolognese', ['Nudelgericht'])
-  const lentilSoup = meal('Linsensuppe', ['Suppe'])
-  const onionSoup = meal('Zwiebelsuppe', ['suppe', 'Schnell'], true)
-  const meals = [bolognese, lentilSoup, onionSoup]
-
-  it('keeps every meal without a category chosen', () => {
-    expect(mealsInCategory(meals, null)).toEqual(meals)
-  })
-
-  it('keeps the meals carrying the category, whatever its spelling', () => {
-    expect(mealsInCategory(meals, 'SUPPE')).toEqual([lentilSoup, onionSoup])
-  })
-
-  it('keeps hidden meals carrying the category', () => {
-    expect(mealsInCategory(meals, 'Schnell')).toEqual([onionSoup])
-  })
-
-  it('keeps the order of the meals', () => {
-    expect(
-      mealsInCategory([onionSoup, bolognese, lentilSoup], 'Suppe'),
-    ).toEqual([onionSoup, lentilSoup])
   })
 })

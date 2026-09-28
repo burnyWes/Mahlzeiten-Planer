@@ -1,9 +1,10 @@
 import type { ChosenMealKind, Meal } from './meal'
 import {
+  carriesCategory,
   knownCategory,
-  mealsInCategory,
   type CategoryOverview,
 } from './mealCategory'
+import type { SuppliedMeal } from './supply'
 
 export type MealFilter =
   { by: 'kind'; kind: ChosenMealKind } | { by: 'category'; category: string }
@@ -27,12 +28,24 @@ export function knownFilter(
   return category === null ? null : { by: 'category', category }
 }
 
+export function matchesMealFilter(meal: Meal, filter: MealFilter): boolean {
+  return filter.by === 'kind'
+    ? meal.kind === filter.kind
+    : carriesCategory(meal, filter.category)
+}
+
 export function mealsMatching(
   meals: readonly Meal[],
   filter: MealFilter | null,
 ): readonly Meal[] {
   if (filter === null) return meals
-  if (filter.by === 'kind')
-    return meals.filter((meal) => meal.kind === filter.kind)
-  return mealsInCategory(meals, filter.category)
+  return meals.filter((meal) => matchesMealFilter(meal, filter))
+}
+
+export function suppliesMatching(
+  supplied: readonly SuppliedMeal[],
+  filter: MealFilter | null,
+): readonly SuppliedMeal[] {
+  if (filter === null) return supplied
+  return supplied.filter((one) => matchesMealFilter(one.meal, filter))
 }

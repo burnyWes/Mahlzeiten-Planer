@@ -155,15 +155,15 @@ async function fillIn(label: string, text: string) {
 
 async function takeOverItem(name: string, amount = '', unit = '') {
   const itemForm = screen.getByRole('form', {
-    name: 'Einkaufs-Item hinzufügen',
+    name: 'Einkaufs-Artikel hinzufügen',
   })
-  await userEvent.type(within(itemForm).getByLabelText('Item'), name)
+  await userEvent.type(within(itemForm).getByLabelText('Artikel'), name)
   if (amount !== '')
     await userEvent.type(within(itemForm).getByLabelText('Menge'), amount)
   if (unit !== '')
     await userEvent.type(within(itemForm).getByLabelText('Einheit'), unit)
   await userEvent.click(
-    within(itemForm).getByRole('button', { name: 'Item hinzufügen' }),
+    within(itemForm).getByRole('button', { name: 'Artikel hinzufügen' }),
   )
 }
 
@@ -357,7 +357,9 @@ describe('MealsArea', () => {
       { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
       { name: 'Spaghetti', quantity: null },
     ])
-    expect(announcements).toContain('Hackfleisch, 500 g als Item übernommen.')
+    expect(announcements).toContain(
+      'Hackfleisch, 500 g als Artikel übernommen.',
+    )
   })
 
   it('removes an item that was taken over by mistake', async () => {
@@ -375,7 +377,7 @@ describe('MealsArea', () => {
     expect(client.storedMeals()[0].items).toEqual([
       { name: 'Spaghetti', quantity: null },
     ])
-    expect(announcements).toContain('Hackfleisch entfernt, noch 1 Item.')
+    expect(announcements).toContain('Hackfleisch entfernt, noch 1 Artikel.')
   })
 
   it('shows the removal of a taken over item as an icon only', async () => {
@@ -591,7 +593,7 @@ describe('MealsArea', () => {
 
     expect(announcements).toContain('Die Menge muss eine Zahl sein.')
     expect(
-      screen.getByRole('heading', { name: 'Einkaufs-Items, keine' }),
+      screen.getByRole('heading', { name: 'Einkaufs-Artikel, keine' }),
     ).toBeInTheDocument()
   })
 
@@ -620,7 +622,7 @@ describe('MealsArea', () => {
     await openMeal('Bolognese')
 
     expect(
-      screen.getByRole('heading', { name: 'Einkaufs-Items, 1' }),
+      screen.getByRole('heading', { name: 'Einkaufs-Artikel, 1' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Hackfleisch, 500 g')).toBeInTheDocument()
     expect(screen.getByText('Zwiebel')).toBeInTheDocument()
@@ -636,7 +638,9 @@ describe('MealsArea', () => {
 
     expect(screen.queryByRole('heading', { name: 'Zutaten' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'Rezept' })).toBeNull()
-    expect(screen.queryByRole('heading', { name: /Einkaufs-Items/ })).toBeNull()
+    expect(
+      screen.queryByRole('heading', { name: /Einkaufs-Artikel/ }),
+    ).toBeNull()
   })
 
   it('moves the focus to the name of the meal that was opened', async () => {
@@ -1680,7 +1684,7 @@ describe('MealsArea', () => {
     renderMealsArea([], ['Hackfleisch', 'Schafskäse', 'Spaghetti'])
 
     await openMealForm()
-    await userEvent.type(screen.getByLabelText('Item'), 'ha')
+    await userEvent.type(screen.getByLabelText('Artikel'), 'ha')
 
     expect(
       within(screen.getByRole('list', { name: 'Vorschläge' }))
@@ -1693,10 +1697,10 @@ describe('MealsArea', () => {
     renderMealsArea([], ['Hackfleisch'])
 
     await openMealForm()
-    await userEvent.type(screen.getByLabelText('Item'), 'hack')
+    await userEvent.type(screen.getByLabelText('Artikel'), 'hack')
     await userEvent.click(screen.getByRole('button', { name: 'Hackfleisch' }))
 
-    expect(screen.getByLabelText('Item')).toHaveValue('Hackfleisch')
+    expect(screen.getByLabelText('Artikel')).toHaveValue('Hackfleisch')
     expect(screen.getByLabelText('Menge')).toHaveFocus()
   })
 
@@ -1704,7 +1708,7 @@ describe('MealsArea', () => {
     const { rendered } = renderMealsArea([], ['Hackfleisch'])
 
     await openMealForm()
-    await userEvent.type(screen.getByLabelText('Item'), 'hack')
+    await userEvent.type(screen.getByLabelText('Artikel'), 'hack')
 
     expect(screen.getByRole('list', { name: 'Vorschläge' })).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
@@ -1757,7 +1761,7 @@ describe('MealsArea', () => {
 
     expect(screen.getByLabelText('Einheit')).toHaveValue('kg')
     expect(
-      screen.getByRole('button', { name: 'Item hinzufügen' }),
+      screen.getByRole('button', { name: 'Artikel hinzufügen' }),
     ).toHaveFocus()
   })
 
@@ -1780,7 +1784,7 @@ describe('MealsArea', () => {
 
     await openMealForm()
     await takeOverItem('Knoblauch')
-    await userEvent.type(screen.getByLabelText('Item'), 'knob')
+    await userEvent.type(screen.getByLabelText('Artikel'), 'knob')
 
     expect(
       within(screen.getByRole('list', { name: 'Vorschläge' })).getByRole(

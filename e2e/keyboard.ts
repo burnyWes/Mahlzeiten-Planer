@@ -22,10 +22,10 @@ export async function takeOverItem(
   amount = '',
   unit = '',
 ) {
-  await typeInto(page, 'Item', name)
+  await typeInto(page, 'Artikel', name)
   if (amount !== '') await typeInto(page, 'Menge', amount)
   if (unit !== '') await typeInto(page, 'Einheit', unit)
-  await pressButton(page, 'Item hinzufügen')
+  await pressButton(page, 'Artikel hinzufügen')
 }
 
 export async function chooseSuggestion(

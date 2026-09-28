@@ -52,6 +52,8 @@ import {
   suppliesHeading,
   supplyAddedAnnouncement,
   supplyChangedAnnouncement,
+  supplyFilterAnnouncement,
+  supplyFilterResetAnnouncement,
   supplyRemovedAnnouncement,
   weekdayAbbreviation,
   weekdayName,
@@ -293,11 +295,11 @@ describe('categorySavedAnnouncement', () => {
 
 describe('mealItemsHeading', () => {
   it('says that the meal carries no item yet', () => {
-    expect(mealItemsHeading(0)).toBe('Einkaufs-Items, keine')
+    expect(mealItemsHeading(0)).toBe('Einkaufs-Artikel, keine')
   })
 
   it('counts the items of the meal', () => {
-    expect(mealItemsHeading(3)).toBe('Einkaufs-Items, 3')
+    expect(mealItemsHeading(3)).toBe('Einkaufs-Artikel, 3')
   })
 })
 
@@ -382,6 +384,42 @@ describe('suppliesHeading', () => {
   it('counts the supplies', () => {
     expect(suppliesHeading(3)).toBe('Vorräte, 3')
   })
+
+  it('counts the filtered supplies out of all supplies', () => {
+    expect(suppliesHeading(2, 5)).toBe('Vorräte, 2 von 5')
+  })
+})
+
+describe('supplyFilterAnnouncement', () => {
+  it('names the chosen category and counts the supplies', () => {
+    expect(
+      supplyFilterAnnouncement(
+        { by: 'category', category: 'Vegetarisch' },
+        2,
+        5,
+      ),
+    ).toBe('Vegetarisch, 2 von 5 Vorräten.')
+  })
+
+  it('names the chosen kind and counts a single supply', () => {
+    expect(supplyFilterAnnouncement({ by: 'kind', kind: 'snack' }, 1, 1)).toBe(
+      'Snack, 1 von 1 Vorrat.',
+    )
+  })
+})
+
+describe('supplyFilterResetAnnouncement', () => {
+  it('counts every supply', () => {
+    expect(supplyFilterResetAnnouncement(5)).toBe(
+      'Filter zurückgesetzt, 5 Vorräte.',
+    )
+  })
+
+  it('counts a single supply', () => {
+    expect(supplyFilterResetAnnouncement(1)).toBe(
+      'Filter zurückgesetzt, 1 Vorrat.',
+    )
+  })
 })
 
 describe('supplyAddedAnnouncement', () => {
@@ -401,7 +439,7 @@ describe('supplyAddedAnnouncement', () => {
 describe('mealItemAddedAnnouncement', () => {
   it('confirms the item with its quantity', () => {
     expect(mealItemAddedAnnouncement(mincedMeat)).toBe(
-      'Hackfleisch, 500 g als Item übernommen.',
+      'Hackfleisch, 500 g als Artikel übernommen.',
     )
   })
 })
@@ -409,19 +447,19 @@ describe('mealItemAddedAnnouncement', () => {
 describe('mealItemRemovedAnnouncement', () => {
   it('counts the items that are left', () => {
     expect(mealItemRemovedAnnouncement(mincedMeat, 2)).toBe(
-      'Hackfleisch entfernt, noch 2 Items.',
+      'Hackfleisch entfernt, noch 2 Artikel.',
     )
   })
 
   it('speaks of a single item in the singular', () => {
     expect(mealItemRemovedAnnouncement(mincedMeat, 1)).toBe(
-      'Hackfleisch entfernt, noch 1 Item.',
+      'Hackfleisch entfernt, noch 1 Artikel.',
     )
   })
 
   it('says that nothing is left', () => {
     expect(mealItemRemovedAnnouncement(mincedMeat, 0)).toBe(
-      'Hackfleisch entfernt, keine Items mehr.',
+      'Hackfleisch entfernt, keine Artikel mehr.',
     )
   })
 })
@@ -547,7 +585,7 @@ describe('mealDeletedAnnouncement', () => {
 describe('mealWithoutItemsAnnouncement', () => {
   it('reports that there is nothing to transfer', () => {
     expect(mealWithoutItemsAnnouncement(bolognese)).toBe(
-      'Spaghetti Bolognese hat keine Einkaufs-Items.',
+      'Spaghetti Bolognese hat keine Einkaufs-Artikel.',
     )
   })
 })
@@ -917,12 +955,14 @@ describe('weekPlanTransferAnnouncement', () => {
   it('names a planned meal that carries no item', () => {
     expect(
       weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [soup], 0),
-    ).toBe('Wochenplan, 6 Artikel hinzugefügt. Suppe hat keine Einkaufs-Items.')
+    ).toBe(
+      'Wochenplan, 6 Artikel hinzugefügt. Suppe hat keine Einkaufs-Artikel.',
+    )
   })
 
   it('says only what is missing when nothing was added', () => {
     expect(weekPlanTransferAnnouncement('', [soup], 0)).toBe(
-      'Suppe hat keine Einkaufs-Items.',
+      'Suppe hat keine Einkaufs-Artikel.',
     )
   })
 
@@ -946,7 +986,7 @@ describe('weekPlanTransferAnnouncement', () => {
 
   it('names the week plan first when only a hint is left', () => {
     expect(weekPlanTransferAnnouncement('', [soup], 2)).toBe(
-      'Wochenplan, nichts hinzugefügt. 2 Gerichte aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Items.',
+      'Wochenplan, nichts hinzugefügt. 2 Gerichte aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Artikel.',
     )
   })
 })

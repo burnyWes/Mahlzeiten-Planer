@@ -112,11 +112,11 @@ export function MealItemsEditor({
       )}
       <form
         onSubmit={takeOverItem}
-        aria-label="Einkaufs-Item hinzufügen"
+        aria-label="Einkaufs-Artikel hinzufügen"
         aria-describedby="mealItemFailure"
       >
         <p className="field">
-          <label htmlFor="mealItemName">Item</label>
+          <label htmlFor="mealItemName">Artikel</label>
           <input
             id="mealItemName"
             ref={nameField}
@@ -158,7 +158,7 @@ export function MealItemsEditor({
           {failureMessage}
         </p>
         <button type="submit" ref={addButton}>
-          Item hinzufügen
+          Artikel hinzufügen
         </button>
       </form>
     </>
