@@ -568,7 +568,7 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
       `ShoppingArea.test.tsx` laufen grün.
 - [x] `npm run test`, `npm run lint` und `npm run build` laufen durch, der
       Architekturtest eingeschlossen.
-- [ ] `npm run test:e2e` läuft grün.
+- [x] `npm run test:e2e` läuft grün.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
@@ -594,9 +594,9 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   „Vegetarisch“ und nicht „vegetarisch“, sonst hieße die Option „vegetarisch“.
   Die Schreibweise selbst prüft `mealFilter.test.ts`.
 - Phase 2: `SuppliesArea.test.tsx` bekam zusätzlich die Hilfe `resetFilter()`.
-- Phase 2: `npm run test:e2e` konnte nicht laufen, weil die Freigabeprüfung für
-  Shell-Befehle keine Antwort gab. Die manuelle Prüfung auf dem iPhone war am
-  2026-09-28 vollständig erfolgreich.
+- Phase 2: `npm run test:e2e` hat der Nutzer von Hand gestartet, weil die
+  Freigabeprüfung für Shell-Befehle keine Antwort gab. Alle 43 Fälle waren grün. Die
+  manuelle Prüfung auf dem iPhone war am 2026-09-28 vollständig erfolgreich.
 
 ## Verweise
 
