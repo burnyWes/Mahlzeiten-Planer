@@ -5,7 +5,7 @@ branch: main
 story: MZP-037
 topic: "Artikel statt Item und Vorräte filtern"
 tags: [plan, meals, announcements, MealItemsEditor, SupplyListPage, SuppliesArea, mealFilter, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-037 — Artikel statt Item und Vorräte filtern
@@ -572,16 +572,16 @@ eigenen Ansagen und der Fokusregel für die letzte gefilterte Zeile.
 
 **Manuelle Verifikation** (auf dem iPhone, installierte PWA, VoiceOver an):
 
-- [ ] Im Gericht-Formular liest VoiceOver „Einkaufs-Artikel, n“, das Feld „Artikel“ und
+- [x] Im Gericht-Formular liest VoiceOver „Einkaufs-Artikel, n“, das Feld „Artikel“ und
       den Button „Artikel hinzufügen“. Nach dem Übernehmen kommt „… als Artikel
       übernommen.“.
-- [ ] Auf der Vorräte-Seite steht die Filterzeile unter der Überschrift. Das Rad bietet
+- [x] Auf der Vorräte-Seite steht die Filterzeile unter der Überschrift. Das Rad bietet
       nur Arten und Kategorien an, die es unter den Vorräten gibt.
-- [ ] Nach der Wahl einer Kategorie kommt „<Kategorie>, n von m Vorräten.“, und die
+- [x] Nach der Wahl einer Kategorie kommt „<Kategorie>, n von m Vorräten.“, und die
       Überschrift liest „Vorräte, n von m“.
-- [ ] Das ✕ setzt zurück, die Ansage lautet „Filter zurückgesetzt, m Vorräte.“, und
+- [x] Das ✕ setzt zurück, die Ansage lautet „Filter zurückgesetzt, m Vorräte.“, und
       der VoiceOver-Cursor steht auf „Filter, Alle“.
-- [ ] Nach „Weniger“ auf der letzten Portion der einzigen gefilterten Zeile kommt die
+- [x] Nach „Weniger“ auf der letzten Portion der einzigen gefilterten Zeile kommt die
       Entfernen-Ansage, und der VoiceOver-Cursor steht auf der Überschrift „Vorräte,
       m“.
 
@@ -594,6 +594,9 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   „Vegetarisch“ und nicht „vegetarisch“, sonst hieße die Option „vegetarisch“.
   Die Schreibweise selbst prüft `mealFilter.test.ts`.
 - Phase 2: `SuppliesArea.test.tsx` bekam zusätzlich die Hilfe `resetFilter()`.
+- Phase 2: `npm run test:e2e` konnte nicht laufen, weil die Freigabeprüfung für
+  Shell-Befehle keine Antwort gab. Die manuelle Prüfung auf dem iPhone war am
+  2026-09-28 vollständig erfolgreich.
 
 ## Verweise
 
