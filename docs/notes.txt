@@ -16,6 +16,12 @@ Legende:
 TODO-List
 --------- 
 DONE
+n Firestore-Regeln werden nirgends automatisch ausgerollt: deploy.yml schiebt nur die
+  App nach GitHub Pages. Eine neue Sammlung ist deshalb in der Produktion so lange
+  gesperrt, bis jemand von Hand
+  "npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26"
+  aufruft. Entweder in den Workflow aufnehmen (braucht ein Service-Account-Secret)
+  oder wenigstens in die Freigabe-Schritte schreiben.
 n Klickfläche zum abhaken vergrößern
 x Firebase haerten: Selbstregistrierung abschalten (Authentication - Settings -
   User actions - "Erstellen (Registrierung) aktivieren" aus). Das Konto besteht,
@@ -156,12 +162,6 @@ TODO
 
 - Alexa-Integration
 - PDF-Import
-- Firestore-Regeln werden nirgends automatisch ausgerollt: deploy.yml schiebt nur die
-  App nach GitHub Pages. Eine neue Sammlung ist deshalb in der Produktion so lange
-  gesperrt, bis jemand von Hand
-  "npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26"
-  aufruft. Entweder in den Workflow aufnehmen (braucht ein Service-Account-Secret)
-  oder wenigstens in die Freigabe-Schritte schreiben.
 - Datenbank aufraeumen: abgehakte Artikel bleiben dauerhaft in Firestore (items),
   "Aufraeumen" ordnet nur die Ansicht neu. Abgehakte Artikel irgendwann wirklich
   loeschen (z. B. beim Aufraeumen oder nach einer Frist), ohne dass sie dem anderen
