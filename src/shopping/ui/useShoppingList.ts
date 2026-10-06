@@ -63,6 +63,7 @@ export type ShoppingList = {
   toggleItem: (item: ShoppingItem) => string
   takeOneMore: (item: ShoppingItem) => string
   takeOneLess: (item: ShoppingItem) => string
+  removeItem: (item: ShoppingItem) => string
   cleanUp: () => string
 }
 
@@ -256,6 +257,7 @@ export function useShoppingList(
     toggleItem,
     takeOneMore,
     takeOneLess,
+    removeItem,
     cleanUp,
   }
 }

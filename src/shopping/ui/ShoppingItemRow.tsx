@@ -13,6 +13,7 @@ import {
 type ShoppingItemRowProps = {
   item: ShoppingItem
   checkbox: Ref<HTMLInputElement>
+  lessButton: Ref<HTMLButtonElement>
   onToggle: (item: ShoppingItem) => void
   onLess: () => void
   onMore: () => void
@@ -21,6 +22,7 @@ type ShoppingItemRowProps = {
 export function ShoppingItemRow({
   item,
   checkbox,
+  lessButton,
   onToggle,
   onLess,
   onMore,
@@ -58,6 +60,7 @@ export function ShoppingItemRow({
         lessLabel={lessItemLabel(item)}
         moreLabel={moreItemLabel(item)}
         moreDisabled={!canTakeOneMore(item)}
+        lessButton={lessButton}
         onLess={onLess}
         onMore={onMore}
       >

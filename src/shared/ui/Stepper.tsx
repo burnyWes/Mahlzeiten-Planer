@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 
 type StepperProps = {
   lessLabel: string
   moreLabel: string
   lessDisabled?: boolean
+  lessButton?: Ref<HTMLButtonElement>
   moreDisabled: boolean
   onLess: () => void
   onMore: () => void
@@ -14,6 +15,7 @@ export function Stepper({
   lessLabel,
   moreLabel,
   lessDisabled = false,
+  lessButton,
   moreDisabled,
   onLess,
   onMore,
@@ -22,6 +24,7 @@ export function Stepper({
   return (
     <span className="stepper">
       <button
+        ref={lessButton}
         type="button"
         className="stepperButton"
         aria-label={lessLabel}

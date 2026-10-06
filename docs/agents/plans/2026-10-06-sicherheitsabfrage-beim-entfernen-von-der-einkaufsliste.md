@@ -264,47 +264,47 @@ Abfrage umgestellt. Die UI-Tests entstehen test-getrieben in `ShoppingArea.test.
 
 **Aufgaben**:
 
-- [ ] `src/shopping/domain/announcements.test.ts`: Test für `removeItemHeading`
+- [x] `src/shopping/domain/announcements.test.ts`: Test für `removeItemHeading`
       (`"Brot entfernen?"`) schreiben, rot sehen, dann `removeItemHeading` in
       `announcements.ts` ergänzen.
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx`: Hilfsfunktionen `confirmRemoval()`
+- [x] `src/shopping/ui/ShoppingArea.test.tsx`: Hilfsfunktionen `confirmRemoval()`
       (Klick auf „Entfernen“) und `cancelRemoval()` (Klick auf „Abbrechen“) ergänzen.
-- [ ] Neue Tests in `ShoppingArea.test.tsx` (zuerst rot):
-  - [ ] `asks before removing an item with its last unit`: „Weniger, Brot“ bei Menge 1
+- [x] Neue Tests in `ShoppingArea.test.tsx` (zuerst rot):
+  - [x] `asks before removing an item with its last unit`: „Weniger, Brot“ bei Menge 1
         zeigt die Überschrift „Brot entfernen?“ mit Fokus, den erklärenden Satz und den
         Knopf „Zurück zur Einkaufsliste“. `client.storedItems()` enthält Brot noch, und
         es gibt keine Ansage.
-  - [ ] `asks before removing an item without quantity` und
+  - [x] `asks before removing an item without quantity` und
         `asks before removing an item with a fraction below one` (`0,5 l`).
-  - [ ] `takes one less without asking above one`: Milch mit 2 wird zu 1, ohne dass
+  - [x] `takes one less without asking above one`: Milch mit 2 wird zu 1, ohne dass
         eine Abfrage erscheint.
-  - [ ] `keeps the item when the removal is cancelled`: Nach „Abbrechen“ ist Brot
+  - [x] `keeps the item when the removal is cancelled`: Nach „Abbrechen“ ist Brot
         unverändert gespeichert, es gibt keine Ansage, und der Fokus liegt auf
         „Weniger, Brot“.
-  - [ ] `keeps the item when going back from the removal`: dasselbe über „Zurück zur
+  - [x] `keeps the item when going back from the removal`: dasselbe über „Zurück zur
         Einkaufsliste“.
-  - [ ] `removes the whole item even if its quantity rose meanwhile`: Abfrage für Brot
+  - [x] `removes the whole item even if its quantity rose meanwhile`: Abfrage für Brot
         öffnen, dann kommt per `renderWithLaggingSnapshots` eine Momentaufnahme mit
         Brot, Menge 3. Nach „Entfernen“ ist Brot gelöscht.
-  - [ ] `returns to the list when the item to remove is gone`: Abfrage öffnen, dann
+  - [x] `returns to the list when the item to remove is gone`: Abfrage öffnen, dann
         kommt eine Momentaufnahme ohne Brot. Die Liste erscheint ohne Ansage, und der
         Fokus liegt auf der Überschrift.
-  - [ ] `has no accessibility violations on the removal page` (axe).
-- [ ] Bestehende Tests in `ShoppingArea.test.tsx:936-1047` umstellen: Nach jedem
+  - [x] `has no accessibility violations on the removal page` (axe).
+- [x] Bestehende Tests in `ShoppingArea.test.tsx:936-1047` umstellen: Nach jedem
       `takeOneLess`, das entfernt, folgt `confirmRemoval()`. Betroffen sind „removes an
       item when its last unit is taken“, „removes an item with a fraction below one“,
       „says that nothing is open any more“, die drei Fokustests („leaves the focus on
       …“), „does not count a removed item as a change to clean up“ und die beiden
       „keeps a removed item away …“. Die Erwartungen bleiben gleich, nur die drei
       Fokustests prüfen jetzt den Fokus nach der Rückkehr von der Abfrage.
-- [ ] `src/shared/ui/Stepper.tsx`: optionalen Prop `lessButton?: Ref<HTMLButtonElement>`
+- [x] `src/shared/ui/Stepper.tsx`: optionalen Prop `lessButton?: Ref<HTMLButtonElement>`
       an den Weniger-Knopf hängen.
-- [ ] `src/shared/ui/useFocusAfterRemoval.ts`: optionalen Parameter
+- [x] `src/shared/ui/useFocusAfterRemoval.ts`: optionalen Parameter
       `removedBeforeMount: number | null = null` ergänzen und `pendingFocus` damit
       vorbelegen. Die übrigen Aufrufer bleiben unverändert.
-- [ ] `src/shopping/ui/useShoppingList.ts`: `removeItem` in den Typ `ShoppingList` und
+- [x] `src/shopping/ui/useShoppingList.ts`: `removeItem` in den Typ `ShoppingList` und
       in das Rückgabeobjekt aufnehmen.
-- [ ] `src/shopping/ui/RemoveItemPage.tsx` neu anlegen:
+- [x] `src/shopping/ui/RemoveItemPage.tsx` neu anlegen:
       ```tsx
       <main className="page">
         <button type="button" onClick={onCancel}>Zurück zur Einkaufsliste</button>
@@ -316,39 +316,39 @@ Abfrage umgestellt. Die UI-Tests entstehen test-getrieben in `ShoppingArea.test.
         </div>
       </main>
       ```
-- [ ] `src/shopping/ui/ShoppingItemRow.tsx`: Prop `lessButton` ergänzen und an
+- [x] `src/shopping/ui/ShoppingItemRow.tsx`: Prop `lessButton` ergänzen und an
       `Stepper` durchreichen.
-- [ ] `src/shopping/ui/ShoppingListPage.tsx`: Typ `ListFocus` exportieren und Prop
+- [x] `src/shopping/ui/ShoppingListPage.tsx`: Typ `ListFocus` exportieren und Prop
       `focus: ListFocus` ergänzen. `useFocusAfterRemoval` bekommt
       `removedBeforeMount`, die Map `lessButtons` kommt hinzu, ebenso der
       Aufbau-Effekt für `lessButton`. `takeOneLess(item, position)`, der Import von
       `isLastUnit` und `rowRemovedAt` entfallen, `onLess={() => onLessItem(item)}`.
-- [ ] `src/shopping/ui/ShoppingArea.tsx`: `addingItem` durch `page: ShoppingPage`
+- [x] `src/shopping/ui/ShoppingArea.tsx`: `addingItem` durch `page: ShoppingPage`
       ersetzen (Startwert `{ kind: 'list', focus: { kind: 'heading' } }`). Dazu kommen
       `takeOneLessOrAsk`, `remove`, `cancelRemoval` (→ `lessButton`) und der Randfall
       `itemToRemoveIsGone`. `AddItemPage.onBack` führt zurück zur Liste mit Fokus auf
       der Überschrift.
-- [ ] `e2e/shoppingList.spec.ts:203` („removes an item with its last unit“): nach
+- [x] `e2e/shoppingList.spec.ts:203` („removes an item with its last unit“): nach
       `pressButton(page, 'Weniger, Brot')` die Überschrift „Brot entfernen?“ erwarten
       und `pressButton(page, 'Entfernen')` ergänzen. Die übrigen Erwartungen bleiben
       gleich.
-- [ ] `docs/architektur/05-bausteinsicht.md:116`: `RemoveItemPage` in den Knoten
+- [x] `docs/architektur/05-bausteinsicht.md:116`: `RemoveItemPage` in den Knoten
       `shoppingArea` aufnehmen (`ShoppingListPage · AddItemPage · RemoveItemPage`).
-- [ ] `docs/notes.txt`: unten unter TODO anhängen:
+- [x] `docs/notes.txt`: unten unter TODO anhängen:
       `- Vorraete: Sicherheitsabfrage, wenn "Weniger" den letzten Vorrat entfernt
       (wie MZP-038 auf der Einkaufsliste)`.
 
 **Automatisierte Verifikation**:
 
-- [ ] Die neuen Tests in `ShoppingArea.test.tsx` und `announcements.test.ts` laufen grün.
-- [ ] Die umgestellten Tests in `ShoppingArea.test.tsx:936-1047` laufen grün.
-- [ ] Die Tests der übrigen Nutzer von `Stepper` und `useFocusAfterRemoval`
+- [x] Die neuen Tests in `ShoppingArea.test.tsx` und `announcements.test.ts` laufen grün.
+- [x] Die umgestellten Tests in `ShoppingArea.test.tsx:936-1047` laufen grün.
+- [x] Die Tests der übrigen Nutzer von `Stepper` und `useFocusAfterRemoval`
       (`SuppliesArea.test.tsx`, `WeekPlanArea.test.tsx`, Gerichte- und
       Verwaltungslisten) laufen unverändert grün.
-- [ ] `npm run test` läuft grün.
-- [ ] `npm run lint` läuft ohne Befund.
-- [ ] `npm run build` läuft durch (Typprüfung).
-- [ ] `npm run test:e2e` läuft grün, auch „removes an item with its last unit“.
+- [x] `npm run test` läuft grün.
+- [x] `npm run lint` läuft ohne Befund.
+- [x] `npm run build` läuft durch (Typprüfung).
+- [x] `npm run test:e2e` läuft grün, auch „removes an item with its last unit“.
 
 **Manuelle Verifikation**:
 

@@ -20,6 +20,7 @@ import {
   listHeading,
   moreItemLabel,
   quantityChangedAnnouncement,
+  removeItemHeading,
   reopenAnnouncement,
 } from './announcements'
 import { InvalidShoppingItem, type ShoppingItem } from './shoppingItem'
@@ -284,6 +285,12 @@ describe('the quantity stepper', () => {
         quantity: { amount: 2, unit: null },
       }),
     ).toBe('Brot, 2.')
+  })
+})
+
+describe('removeItemHeading', () => {
+  it('asks whether the item should be removed', () => {
+    expect(removeItemHeading(openItem('Brot'))).toBe('Brot entfernen?')
   })
 })
 

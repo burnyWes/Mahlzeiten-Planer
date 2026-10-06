@@ -192,3 +192,5 @@ b Vorraete: ein offener eigener Stand gilt, bis genau er in einer Momentaufnahme
 b Gerichte: eine verschwundene Filteroption bleibt gemerkt und wird still wieder gewaehlt,
   sobald ein passendes Gericht zurueckkommt (MealsArea.tsx:66-70). Auf der
   Vorraete-Seite seit MZP-037 behoben.
+- Vorraete: Sicherheitsabfrage, wenn "Weniger" den letzten Vorrat entfernt
+  (wie MZP-038 auf der Einkaufsliste)

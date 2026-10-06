@@ -128,6 +128,10 @@ export function itemRemovedAnnouncement(
   return `${item.name} entfernt, ${openCountPhrase(openCount)}.`
 }
 
+export function removeItemHeading(item: ShoppingItem): string {
+  return `${item.name} entfernen?`
+}
+
 export function quantityChangedAnnouncement(item: ShoppingItem): string {
   return `${formatItemForAnnouncement(item)}.`
 }

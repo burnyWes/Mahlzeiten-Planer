@@ -207,6 +207,10 @@ test('removes an item with its last unit', async ({ page }) => {
   await addItem(page, 'Milch')
 
   await pressButton(page, 'Weniger, Brot')
+  await expect(
+    page.getByRole('heading', { name: 'Brot entfernen?' }),
+  ).toBeFocused()
+  await pressButton(page, 'Entfernen')
 
   await expect(page.getByRole('status')).toContainText(
     'Brot entfernt, noch 1 offen.',

@@ -5,9 +5,10 @@ type PendingFocus = number | 'fallback' | null
 export function useFocusAfterRemoval<Key>(
   keys: readonly Key[],
   fallback: RefObject<HTMLElement | null>,
+  removedBeforeMount: number | null = null,
 ) {
   const rows = useRef(new Map<Key, HTMLElement>())
-  const pendingFocus = useRef<PendingFocus>(null)
+  const pendingFocus = useRef<PendingFocus>(removedBeforeMount)
 
   function followingRow(position: number): HTMLElement | null {
     const following = keys[Math.min(position, keys.length - 1)]
