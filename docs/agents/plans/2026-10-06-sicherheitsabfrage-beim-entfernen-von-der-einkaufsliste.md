@@ -5,7 +5,7 @@ branch: main
 story: MZP-038
 topic: "Sicherheitsabfrage beim Entfernen von der Einkaufsliste"
 tags: [plan, shopping, ShoppingArea, ShoppingListPage, ShoppingItemRow, Stepper, useFocusAfterRemoval, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-038 — Sicherheitsabfrage beim Entfernen von der Einkaufsliste
@@ -352,13 +352,13 @@ Abfrage umgestellt. Die UI-Tests entstehen test-getrieben in `ShoppingArea.test.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: „Weniger“ bei einem Artikel mit Menge 1 öffnen.
+- [x] Auf dem iPhone mit VoiceOver: „Weniger“ bei einem Artikel mit Menge 1 öffnen.
       VoiceOver liest „Brot entfernen?, Überschrift“ vor.
-- [ ] „Abbrechen“: VoiceOver steht wieder auf „Weniger, Brot“, und Brot ist unverändert.
-- [ ] „Entfernen“: VoiceOver sagt „Brot entfernt, noch N offen.“ und steht auf dem
+- [x] „Abbrechen“: VoiceOver steht wieder auf „Weniger, Brot“, und Brot ist unverändert.
+- [x] „Entfernen“: VoiceOver sagt „Brot entfernt, noch N offen.“ und steht auf dem
       nächsten Artikel. Auf dem zweiten Gerät verschwindet Brot.
-- [ ] Bei einem Artikel mit Menge 2 verringert „Weniger“ ohne Abfrage.
-- [ ] Die Bestätigungsseite ist auch bei invertierten Farben gut lesbar.
+- [x] Bei einem Artikel mit Menge 2 verringert „Weniger“ ohne Abfrage.
+- [x] Die Bestätigungsseite ist auch bei invertierten Farben gut lesbar.
 
 ## Notizen zur Umsetzung
 
