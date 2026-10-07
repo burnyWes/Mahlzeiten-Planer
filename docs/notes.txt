@@ -194,3 +194,11 @@ b Gerichte: eine verschwundene Filteroption bleibt gemerkt und wird still wieder
   Vorraete-Seite seit MZP-037 behoben.
 - Vorraete: Sicherheitsabfrage, wenn "Weniger" den letzten Vorrat entfernt
   (wie MZP-038 auf der Einkaufsliste)
+- Reste
+  - Checkbox in Gericht Bearbeiten hinzufügen
+    - Reste (Es gibt Reste o.ä.), default = false
+  - Wenn Reste angehakt, und im Plan durch Zufall gewählt, dann automatisch am nächsten Tag nochmal
+  - Die Wiederholung des Gerichts am nächsten Tag mit passendem Icon markieren (NICHT Vorräte-Icon)
+  - Beim Drücken auf "Auf die Einkaufsliste"-Button werden Reste weder aus den Vorräten entfernt, noch auf die
+  Einkaufsliste geschrieben.
+  
