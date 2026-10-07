@@ -25,6 +25,7 @@ const emptyDraft: MealDraft = {
   ingredientNotes: '',
   recipe: '',
   kind: 'mainMeal',
+  leftovers: false,
 }
 
 function meal(name: string): Meal {
@@ -37,6 +38,7 @@ function meal(name: string): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 
@@ -86,6 +88,7 @@ describe('createMeal', () => {
           ingredientNotes: 'Zwiebel, Knoblauch',
           recipe: 'Anbraten.',
           kind: 'mainMeal',
+          leftovers: false,
         },
         items,
         [],
@@ -99,6 +102,7 @@ describe('createMeal', () => {
       categories: [],
       hidden: false,
       kind: 'mainMeal',
+      leftovers: false,
     })
   })
 
@@ -175,6 +179,7 @@ describe('createMeal', () => {
         categories: [],
         hidden: false,
         kind: 'mainMeal',
+        leftovers: false,
       },
     )
   })
@@ -212,6 +217,23 @@ describe('createMeal', () => {
     ).toBe('snack')
   })
 
+  it('creates a meal leaving leftovers when the draft says so', () => {
+    expect(
+      createMeal(
+        { ...emptyDraft, name: 'Bolognese', leftovers: true },
+        [],
+        [],
+        false,
+      ).leftovers,
+    ).toBe(true)
+  })
+
+  it('creates a meal without leftovers when the draft says so', () => {
+    expect(
+      createMeal({ ...emptyDraft, name: 'Suppe' }, [], [], false).leftovers,
+    ).toBe(false)
+  })
+
   it('creates a meal without a kind when the draft says so', () => {
     expect(
       createMeal({ ...emptyDraft, name: 'Suppe', kind: 'none' }, [], [], false)
@@ -230,6 +252,7 @@ describe('withHiding', () => {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 
   it('hides a meal that was visible', () => {
@@ -241,6 +264,7 @@ describe('withHiding', () => {
       categories: [],
       hidden: true,
       kind: 'mainMeal',
+      leftovers: false,
     })
   })
 
@@ -278,6 +302,13 @@ describe('withHiding', () => {
     expect(withHiding({ ...bolognese, kind: 'none' }, true).kind).toBe('none')
   })
 
+  it('keeps the leftovers of a meal', () => {
+    expect(withHiding({ ...bolognese, leftovers: true }, true).leftovers).toBe(
+      true,
+    )
+    expect(withHiding(bolognese, false).leftovers).toBe(false)
+  })
+
   it('shows a meal that was hidden', () => {
     expect(withHiding({ ...bolognese, hidden: true }, false).hidden).toBe(false)
   })
@@ -302,6 +333,7 @@ describe('countHiddenMeals', () => {
     categories: [],
     hidden: false,
     kind: 'none',
+    leftovers: false,
   }
 
   it('counts no hidden meal in an empty list', () => {

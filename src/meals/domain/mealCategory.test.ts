@@ -25,6 +25,7 @@ function meal(
     categories,
     hidden,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 

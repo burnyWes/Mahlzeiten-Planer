@@ -10,6 +10,7 @@ import {
   categoryRemovedAnnouncement,
   invalidMealMessage,
   hidingLabel,
+  leftoversPlannedAnnouncement,
   mealFailureMessage,
   mealHidingAnnouncement,
   mealNameLabel,
@@ -91,6 +92,7 @@ const bolognese: NewMeal = {
   categories: [],
   hidden: false,
   kind: 'mainMeal',
+  leftovers: false,
 }
 
 describe('mealsHeading', () => {
@@ -775,32 +777,38 @@ describe('slotName', () => {
 
 describe('fixedSlotText', () => {
   it('names the meal time, the meal and the supply', () => {
-    expect(fixedSlotText(mondayBreakfast, 'time', bolognese, true)).toBe(
+    expect(fixedSlotText(mondayBreakfast, 'time', bolognese, 'supply')).toBe(
       'Frühstück, Spaghetti Bolognese, im Vorrat',
     )
   })
 
   it('names the meal time and the meal without a supply', () => {
-    expect(fixedSlotText(mondayBreakfast, 'time', bolognese, false)).toBe(
+    expect(fixedSlotText(mondayBreakfast, 'time', bolognese, null)).toBe(
       'Frühstück, Spaghetti Bolognese',
     )
   })
 
   it('says that nothing is planned for the meal time', () => {
-    expect(fixedSlotText(mondaySnack, 'time', null, false)).toBe(
+    expect(fixedSlotText(mondaySnack, 'time', null, null)).toBe(
       'Snack, nichts geplant',
     )
   })
 
   it('says that nothing is planned for the day', () => {
-    expect(fixedSlotText(mondaySnack, 'day', null, false)).toBe(
+    expect(fixedSlotText(mondaySnack, 'day', null, null)).toBe(
       'Montag, 21. September, nichts geplant',
     )
   })
 
   it('names the day, the meal and the supply', () => {
-    expect(fixedSlotText(mondayLunch, 'day', bolognese, true)).toBe(
+    expect(fixedSlotText(mondayLunch, 'day', bolognese, 'supply')).toBe(
       'Montag, 21. September, Spaghetti Bolognese, im Vorrat',
+    )
+  })
+
+  it('names the meal time, the meal and its leftovers', () => {
+    expect(fixedSlotText(mondayDinner, 'time', bolognese, 'leftovers')).toBe(
+      'Abendessen, Spaghetti Bolognese, Reste',
     )
   })
 })
@@ -821,50 +829,80 @@ describe('randomMealLabel', () => {
 
 describe('slotFieldLabel', () => {
   it('names the meal time of a slot without a supply', () => {
-    expect(slotFieldLabel(mondayDinner, 'time', false)).toBe('Abendessen')
+    expect(slotFieldLabel(mondayDinner, 'time', null)).toBe('Abendessen')
   })
 
   it('adds the supply to the meal time of a covered slot', () => {
-    expect(slotFieldLabel(mondayDinner, 'time', true)).toBe(
+    expect(slotFieldLabel(mondayDinner, 'time', 'supply')).toBe(
       'Abendessen, im Vorrat',
     )
   })
 
   it('names the day of a slot without a supply', () => {
-    expect(slotFieldLabel(mondayDinner, 'day', false)).toBe(
+    expect(slotFieldLabel(mondayDinner, 'day', null)).toBe(
       'Montag, 21. September',
     )
   })
 
   it('adds the supply to the day of a covered slot', () => {
-    expect(slotFieldLabel(mondayDinner, 'day', true)).toBe(
+    expect(slotFieldLabel(mondayDinner, 'day', 'supply')).toBe(
       'Montag, 21. September, im Vorrat',
+    )
+  })
+
+  it('adds the leftovers to the meal time', () => {
+    expect(slotFieldLabel(mondayDinner, 'time', 'leftovers')).toBe(
+      'Abendessen, Reste',
+    )
+  })
+
+  it('adds the leftovers to the day', () => {
+    expect(slotFieldLabel(mondayDinner, 'day', 'leftovers')).toBe(
+      'Montag, 21. September, Reste',
     )
   })
 })
 
 describe('slotPlannedAnnouncement', () => {
   it('says which meal landed in which meal time', () => {
-    expect(slotPlannedAnnouncement(mondayLunch, 'time', bolognese, false)).toBe(
+    expect(slotPlannedAnnouncement(mondayLunch, 'time', bolognese, null)).toBe(
       'Mittagessen, Spaghetti Bolognese.',
     )
   })
 
   it('says that the meal of the slot is kept in store', () => {
-    expect(slotPlannedAnnouncement(mondayLunch, 'time', bolognese, true)).toBe(
-      'Mittagessen, Spaghetti Bolognese, im Vorrat.',
-    )
+    expect(
+      slotPlannedAnnouncement(mondayLunch, 'time', bolognese, 'supply'),
+    ).toBe('Mittagessen, Spaghetti Bolognese, im Vorrat.')
   })
 
   it('says which meal landed on which day', () => {
-    expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, false)).toBe(
+    expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, null)).toBe(
       'Montag, 21. September, Spaghetti Bolognese.',
     )
   })
 
   it('says that the meal of the day is kept in store', () => {
-    expect(slotPlannedAnnouncement(mondayLunch, 'day', bolognese, true)).toBe(
-      'Montag, 21. September, Spaghetti Bolognese, im Vorrat.',
+    expect(
+      slotPlannedAnnouncement(mondayLunch, 'day', bolognese, 'supply'),
+    ).toBe('Montag, 21. September, Spaghetti Bolognese, im Vorrat.')
+  })
+  it('says that the meal of the slot is leftovers', () => {
+    expect(
+      slotPlannedAnnouncement(mondayDinner, 'time', bolognese, 'leftovers'),
+    ).toBe('Abendessen, Spaghetti Bolognese, Reste.')
+  })
+})
+
+describe('leftoversPlannedAnnouncement', () => {
+  it('names the day, the meal time and the meal of the leftovers', () => {
+    expect(
+      leftoversPlannedAnnouncement(
+        { date: toPlanDate('2026-09-22'), time: 'dinner' },
+        bolognese,
+      ),
+    ).toBe(
+      'Dienstag, 22. September, Abendessen, Reste von Spaghetti Bolognese.',
     )
   })
 })
@@ -940,6 +978,7 @@ describe('weekPlanTransferAnnouncement', () => {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 
   it('puts the week plan in front of what was added', () => {

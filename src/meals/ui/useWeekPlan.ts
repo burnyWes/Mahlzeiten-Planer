@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WeekPlanClient } from '../api/weekPlanClient'
 import type { MealId } from '../domain/meal'
 import {
-  DEFAULT_MAIN_MEAL_TIME_RULE,
+  DEFAULT_ROLLING_RULES,
+  sameRollingRules,
   type MainMealTimeRule,
+  type RollingRules,
 } from '../domain/randomPlanning'
 import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import type { PlanPeriod } from '../domain/planPeriod'
@@ -23,11 +25,12 @@ import {
 export type WeekPlanning = {
   plan: WeekPlan
   stage: WeekPlanStage
-  mainMealTimeRule: MainMealTimeRule
+  rollingRules: RollingRules
   chooseMeal: (slot: PlanSlot, id: MealId | null) => void
   replacePlan: (plan: WeekPlan) => void
   changeStage: (stage: WeekPlanStage) => void
   changeMainMealTimeRule: (rule: MainMealTimeRule) => void
+  changeLeftoverPlanning: (plansLeftovers: boolean) => void
 }
 
 export function useWeekPlan(
@@ -38,10 +41,10 @@ export function useWeekPlan(
   const [stage, setStage] = useState<WeekPlanStage>(EDITING_STAGE)
   const unconfirmedPlan = useRef<WeekPlan | null>(null)
   const unconfirmedStage = useRef<WeekPlanStage | null>(null)
-  const [mainMealTimeRule, setMainMealTimeRule] = useState<MainMealTimeRule>(
-    DEFAULT_MAIN_MEAL_TIME_RULE,
+  const [rollingRules, setRollingRules] = useState<RollingRules>(
+    DEFAULT_ROLLING_RULES,
   )
-  const unconfirmedMainMealTimeRule = useRef<MainMealTimeRule | null>(null)
+  const unconfirmedRollingRules = useRef<RollingRules | null>(null)
 
   useEffect(
     () =>
@@ -67,17 +70,17 @@ export function useWeekPlan(
 
   useEffect(
     () =>
-      client.observeMainMealTimeRule((arriving) => {
+      client.observeRollingRules((arriving) => {
         if (
           isStaleSnapshot(
-            unconfirmedMainMealTimeRule.current,
+            unconfirmedRollingRules.current,
             arriving,
-            (one, other) => one === other,
+            sameRollingRules,
           )
         )
           return
-        unconfirmedMainMealTimeRule.current = null
-        setMainMealTimeRule(arriving)
+        unconfirmedRollingRules.current = null
+        setRollingRules(arriving)
       }),
     [client],
   )
@@ -107,22 +110,35 @@ export function useWeekPlan(
     [client],
   )
 
-  const changeMainMealTimeRule = useCallback(
-    (written: MainMealTimeRule) => {
-      unconfirmedMainMealTimeRule.current = written
-      setMainMealTimeRule(written)
-      client.writeMainMealTimeRule(written)
+  const changeRollingRules = useCallback(
+    (written: RollingRules) => {
+      unconfirmedRollingRules.current = written
+      setRollingRules(written)
+      client.writeRollingRules(written)
     },
     [client],
+  )
+
+  const changeMainMealTimeRule = useCallback(
+    (mainMealTime: MainMealTimeRule) =>
+      changeRollingRules({ ...rollingRules, mainMealTime }),
+    [rollingRules, changeRollingRules],
+  )
+
+  const changeLeftoverPlanning = useCallback(
+    (plansLeftovers: boolean) =>
+      changeRollingRules({ ...rollingRules, plansLeftovers }),
+    [rollingRules, changeRollingRules],
   )
 
   return {
     plan,
     stage,
-    mainMealTimeRule,
+    rollingRules,
     chooseMeal,
     replacePlan,
     changeStage,
     changeMainMealTimeRule,
+    changeLeftoverPlanning,
   }
 }

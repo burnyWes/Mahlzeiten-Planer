@@ -173,7 +173,7 @@ flowchart TB
     subgraph domain["domain"]
         direction LR
         meal["meal · mealCategory<br/>mealFilter · mealSuggestions"]
-        weekPlan["weekPlan · weekPlanStage<br/>weekPlanView · randomPlanning<br/>planDate · planPeriod"]
+        weekPlan["weekPlan · weekPlanStage<br/>weekPlanView · randomPlanning<br/>leftovers · planDate · planPeriod"]
         supply["supply · unconfirmedSupplies"]
         support["text · unconfirmedWrite<br/>announcements"]
     end

@@ -19,6 +19,7 @@ function meal(name: string, parts: Partial<Meal> = {}): Meal {
     categories: [],
     hidden: false,
     kind: 'none',
+    leftovers: false,
     ...parts,
   }
 }

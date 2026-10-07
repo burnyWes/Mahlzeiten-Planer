@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import {
   dayShownAnnouncement,
   dayViewShownAnnouncement,
+  leftoversPlannedAnnouncement,
   mealTimeShownAnnouncement,
   noMatchingMealAnnouncement,
   periodAppliedAnnouncement,
@@ -12,6 +13,7 @@ import {
   weekPlanShuffledAnnouncement,
   weekViewShownAnnouncement,
 } from '../domain/announcements'
+import { leftoversRolledAfter, rolledInto } from '../domain/leftovers'
 import type { Meal, MealId } from '../domain/meal'
 import {
   filledWeekPlan,
@@ -25,7 +27,6 @@ import type { Supply } from '../domain/supply'
 import {
   coveredSlotsOf,
   emptied,
-  isSuppliedIn,
   plannedMealCount,
   slotCountOf,
   weekPlanTransfer,
@@ -33,6 +34,7 @@ import {
   withPeriod,
   type MealTime,
   type PlanSlot,
+  type WeekPlan,
   type WeekPlanTransfer,
 } from '../domain/weekPlan'
 import {
@@ -42,6 +44,7 @@ import {
   EDITING_STAGE,
   FIXED_STAGE,
   isFixed,
+  slotMarkOf,
   transferredStage,
 } from '../domain/weekPlanStage'
 import { slotNamingIn, type WeekPlanView } from '../domain/weekPlanView'
@@ -84,7 +87,7 @@ export function WeekPlanArea({
 }: WeekPlanAreaProps) {
   const [page, setPage] = useState<'plan' | 'period'>('plan')
   const randomCandidateCount = randomCandidates(meals).length
-  const { plan, stage, mainMealTimeRule } = weekPlanning
+  const { plan, stage, rollingRules } = weekPlanning
   const plannedMeals = plannedMealCount(plan, meals)
 
   function showDay(day: PlanDate) {
@@ -117,9 +120,22 @@ export function WeekPlanArea({
         slot,
         slotNamingIn(shownView),
         chosen,
-        isSuppliedIn(planned, slot, meals, supplies),
+        slotMarkOf(stage, planned, slot, meals, supplies),
       ),
     )
+  }
+
+  function rolledAnnouncement(rolled: WeekPlan, slot: PlanSlot, picked: Meal) {
+    const planned = slotPlannedAnnouncement(
+      slot,
+      slotNamingIn(shownView),
+      picked,
+      slotMarkOf(stage, rolled, slot, meals, supplies),
+    )
+    const leftoverSlot = leftoversRolledAfter(rolled, slot)
+    return leftoverSlot === null
+      ? planned
+      : `${planned} ${leftoversPlannedAnnouncement(leftoverSlot, picked)}`
   }
 
   function shuffleSlot(slot: PlanSlot) {
@@ -128,17 +144,32 @@ export function WeekPlanArea({
       weekPlanning.plan,
       slot,
       random,
-      mainMealTimeRule,
+      rollingRules.mainMealTime,
     )
     if (picked === null) {
       announce(noMatchingMealAnnouncement(slot, slotNamingIn(shownView)))
       return
     }
-    chooseMeal(slot, picked.id)
+    const rolled = rolledInto(
+      weekPlanning.plan,
+      slot,
+      picked,
+      meals,
+      supplies,
+      rollingRules,
+    )
+    weekPlanning.replacePlan(rolled)
+    announce(rolledAnnouncement(rolled, slot, picked))
   }
 
   function shuffleWeek() {
-    const rolled = filledWeekPlan(meals, plan.period, random, mainMealTimeRule)
+    const rolled = filledWeekPlan(
+      meals,
+      plan.period,
+      random,
+      rollingRules,
+      supplies,
+    )
     weekPlanning.replacePlan(rolled)
     announce(
       weekPlanShuffledAnnouncement(

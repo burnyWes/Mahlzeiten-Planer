@@ -23,13 +23,14 @@ import {
 import {
   DEFAULT_MAIN_MEAL_TIME_RULE,
   isMainMealTimeRule,
-  type MainMealTimeRule,
+  type RollingRules,
 } from '../domain/randomPlanning'
 import {
   dateOfWeekday,
   MEAL_TIMES,
   mealIn,
   weekPlanFromWeekdays,
+  withPeriod,
   type DayPlan,
   type MealTime,
   type PlanSlot,
@@ -57,15 +58,27 @@ function toDayPlan(stored: unknown): DayPlan {
   ) as DayPlan
 }
 
+function toLeftoverSlot(stored: unknown): PlanSlot[] {
+  if (typeof stored !== 'object' || stored === null) return []
+  const { date, time } = stored as Record<string, unknown>
+  return isPlanDate(date) && isMealTime(time) ? [{ date, time }] : []
+}
+
+function toLeftoverSlots(stored: unknown): readonly PlanSlot[] {
+  return Array.isArray(stored) ? stored.flatMap(toLeftoverSlot) : []
+}
+
 function toWeekPlan(stored: DocumentData | undefined): WeekPlan | null {
   const period: unknown = { start: stored?.start, days: stored?.days }
   if (!isPlanPeriod(period)) return null
-  return {
+  const storedPlan: WeekPlan = {
     period,
     days: Object.fromEntries(
       datesOf(period).map((date) => [date, toDayPlan(stored?.plan?.[date])]),
     ),
+    leftoverSlots: toLeftoverSlots(stored?.leftovers),
   }
+  return withPeriod(storedPlan, period)
 }
 
 function fromDayPlan(plan: WeekPlan, date: PlanDate): DocumentData {
@@ -81,6 +94,7 @@ function fromWeekPlan(plan: WeekPlan): DocumentData {
     plan: Object.fromEntries(
       datesOf(plan.period).map((date) => [date, fromDayPlan(plan, date)]),
     ),
+    leftovers: plan.leftoverSlots.map(({ date, time }) => ({ date, time })),
   }
 }
 
@@ -140,13 +154,21 @@ function fromWeekPlanStage(stage: WeekPlanStage): DocumentData {
     : { mode: stage.mode }
 }
 
-function toMainMealTimeRule(
-  stored: DocumentData | undefined,
-): MainMealTimeRule {
+function toRollingRules(stored: DocumentData | undefined): RollingRules {
   const storedRule: unknown = stored?.mainMealTime
-  return isMainMealTimeRule(storedRule)
-    ? storedRule
-    : DEFAULT_MAIN_MEAL_TIME_RULE
+  return {
+    mainMealTime: isMainMealTimeRule(storedRule)
+      ? storedRule
+      : DEFAULT_MAIN_MEAL_TIME_RULE,
+    plansLeftovers: stored?.leftovers !== false,
+  }
+}
+
+function fromRollingRules(rules: RollingRules): DocumentData {
+  return {
+    mainMealTime: rules.mainMealTime,
+    leftovers: rules.plansLeftovers,
+  }
 }
 
 export function createFirestoreWeekPlanClient(
@@ -212,14 +234,14 @@ export function createFirestoreWeekPlanClient(
       )
     },
 
-    observeMainMealTimeRule(onRule) {
+    observeRollingRules(onRules) {
       return onSnapshot(rollingRules, (snapshot) => {
-        onRule(toMainMealTimeRule(snapshot.data()))
+        onRules(toRollingRules(snapshot.data()))
       })
     },
 
-    writeMainMealTimeRule(rule) {
-      setDoc(rollingRules, { mainMealTime: rule }).catch(() =>
+    writeRollingRules(rules) {
+      setDoc(rollingRules, fromRollingRules(rules)).catch(() =>
         onWriteFailure(WRITE_FAILED),
       )
     },

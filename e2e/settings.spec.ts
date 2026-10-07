@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
   knownUnitNamesOnServer,
-  mainMealTimeRuleOnServer,
   prepareEmulators,
+  rollingRulesOnServer,
   settleWrites,
 } from './emulatorHousehold.ts'
 import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
@@ -31,12 +31,48 @@ test('remembers the main meal time for the household after a reload', async ({
   await mainMealTimeChoice(page).selectOption({ label: 'Nur abends' })
   await settleWrites(page)
 
-  await expect.poll(mainMealTimeRuleOnServer).toBe('dinner')
+  await expect
+    .poll(async () => (await rollingRulesOnServer()).mainMealTime)
+    .toBe('dinner')
 
   await page.reload()
   await pressButton(page, 'Einstellungen')
 
   await expect(mainMealTimeChoice(page)).toHaveValue('dinner')
+})
+
+function leftoverPlanningSwitch(page: Page) {
+  return page.getByRole('switch', { name: 'Reste einplanen' })
+}
+
+test('switches off planning leftovers for the household', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Einstellungen')
+  await expect(leftoverPlanningSwitch(page)).toBeChecked()
+  await leftoverPlanningSwitch(page).focus()
+  await page.keyboard.press('Space')
+  await settleWrites(page)
+
+  await expect.poll(rollingRulesOnServer).toEqual({
+    mainMealTime: 'lunchOrDinner',
+    leftovers: false,
+  })
+
+  await mainMealTimeChoice(page).focus()
+  await mainMealTimeChoice(page).selectOption({ label: 'Nur abends' })
+  await settleWrites(page)
+
+  await expect.poll(rollingRulesOnServer).toEqual({
+    mainMealTime: 'dinner',
+    leftovers: false,
+  })
+
+  await page.reload()
+  await pressButton(page, 'Einstellungen')
+
+  await expect(leftoverPlanningSwitch(page)).not.toBeChecked()
 })
 
 test('merges a misspelt unit into the right one', async ({ page }) => {

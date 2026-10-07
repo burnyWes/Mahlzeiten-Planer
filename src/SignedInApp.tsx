@@ -221,11 +221,21 @@ export function SignedInApp({
         value: rule,
         label: mainMealTimeRuleName(rule),
       })),
-      chosen: weekPlanning.mainMealTimeRule,
+      chosen: weekPlanning.rollingRules.mainMealTime,
       onChoose: (value) => {
         if (isMainMealTimeRule(value))
           weekPlanning.changeMainMealTimeRule(value)
       },
+    },
+    {
+      kind: 'toggle',
+      id: 'leftoverPlanning',
+      label: 'Reste einplanen',
+      enabled: weekPlanning.rollingRules.plansLeftovers,
+      onToggle: () =>
+        weekPlanning.changeLeftoverPlanning(
+          !weekPlanning.rollingRules.plansLeftovers,
+        ),
     },
     { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel-Verwaltung' },
     { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },

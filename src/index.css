@@ -249,6 +249,10 @@ button[aria-disabled='true'] {
   margin: 0 0 1rem;
 }
 
+.leftoversField {
+  margin-top: 1.5rem;
+}
+
 .itemList input[type='checkbox'],
 .toggleField input[type='checkbox'] {
   appearance: none;

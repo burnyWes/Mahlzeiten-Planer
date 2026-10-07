@@ -1,15 +1,17 @@
+import { rolledInto } from './leftovers'
 import type { Meal, MealKind } from './meal'
 import { sameCategory } from './mealCategory'
 import type { PlanDate } from './planDate'
 import { dateAfter, dateBefore, datesOf, type PlanPeriod } from './planPeriod'
+import type { Supply } from './supply'
 import {
   emptyWeekPlan,
+  isLeftoverIn,
   MEAL_TIMES,
   mealIn,
   planSlotsOf,
   sameSlot,
   shownMealIn,
-  withMealIn,
   type MealTime,
   type PlanSlot,
   type WeekPlan,
@@ -31,6 +33,26 @@ export const DEFAULT_MAIN_MEAL_TIME_RULE: MainMealTimeRule = 'lunchOrDinner'
 
 export function isMainMealTimeRule(value: unknown): value is MainMealTimeRule {
   return MAIN_MEAL_TIME_RULES.some((rule) => rule === value)
+}
+
+export type RollingRules = {
+  mainMealTime: MainMealTimeRule
+  plansLeftovers: boolean
+}
+
+export const DEFAULT_ROLLING_RULES: RollingRules = {
+  mainMealTime: DEFAULT_MAIN_MEAL_TIME_RULE,
+  plansLeftovers: true,
+}
+
+export function sameRollingRules(
+  one: RollingRules,
+  other: RollingRules,
+): boolean {
+  return (
+    one.mainMealTime === other.mainMealTime &&
+    one.plansLeftovers === other.plansLeftovers
+  )
 }
 
 export type PlanningRule = (
@@ -267,13 +289,18 @@ function filledDay(
   plan: WeekPlan,
   date: PlanDate,
   random: RandomSource,
-  rule: MainMealTimeRule,
+  rules: RollingRules,
+  supplies: readonly Supply[],
 ): WeekPlan {
+  const rule = rules.mainMealTime
   const mainMealTime = fixedMainMealTime(rule) ?? mainMealTimeOf(random)
   return MEAL_TIMES.reduce((filled, time) => {
     const slot = { date, time }
+    if (isLeftoverIn(filled, slot)) return filled
     const picked = pickMealFor(meals, filled, slot, random, rule, mainMealTime)
-    return picked === null ? filled : withMealIn(filled, slot, picked.id)
+    return picked === null
+      ? filled
+      : rolledInto(filled, slot, picked, meals, supplies, rules)
   }, plan)
 }
 
@@ -281,10 +308,11 @@ export function filledWeekPlan(
   meals: readonly Meal[],
   period: PlanPeriod,
   random: RandomSource,
-  rule: MainMealTimeRule,
+  rules: RollingRules,
+  supplies: readonly Supply[],
 ): WeekPlan {
   return datesOf(period).reduce(
-    (plan, date) => filledDay(meals, plan, date, random, rule),
+    (plan, date) => filledDay(meals, plan, date, random, rules, supplies),
     emptyWeekPlan(period),
   )
 }

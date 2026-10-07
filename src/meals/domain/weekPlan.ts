@@ -1,6 +1,7 @@
 import type { Meal, MealId } from './meal'
 import { daysAfter, WEEKDAYS, type PlanDate, type Weekday } from './planDate'
 import {
+  dateBefore,
   datesOf,
   includesDate,
   samePeriod,
@@ -21,6 +22,7 @@ export type DayPlan = Readonly<Record<MealTime, MealId | null>>
 export type WeekPlan = {
   readonly period: PlanPeriod
   readonly days: Readonly<Partial<Record<PlanDate, DayPlan>>>
+  readonly leftoverSlots: readonly PlanSlot[]
 }
 
 const EMPTY_DAY_PLAN: DayPlan = Object.fromEntries(
@@ -40,17 +42,25 @@ function dayPlanOf(plan: WeekPlan, date: PlanDate): DayPlan {
 function withDays(
   period: PlanPeriod,
   dayPlanOn: (date: PlanDate) => DayPlan,
+  leftoverSlots: readonly PlanSlot[],
 ): WeekPlan {
   return {
     period,
     days: Object.fromEntries(
       datesOf(period).map((date) => [date, dayPlanOn(date)]),
     ),
+    leftoverSlots,
   }
 }
 
+function hasOriginalWithin(period: PlanPeriod, slot: PlanSlot): boolean {
+  return (
+    includesDate(period, slot.date) && dateBefore(period, slot.date) !== null
+  )
+}
+
 export function emptyWeekPlan(period: PlanPeriod): WeekPlan {
-  return withDays(period, () => EMPTY_DAY_PLAN)
+  return withDays(period, () => EMPTY_DAY_PLAN, [])
 }
 
 export function emptied(plan: WeekPlan): WeekPlan {
@@ -58,7 +68,11 @@ export function emptied(plan: WeekPlan): WeekPlan {
 }
 
 export function withPeriod(plan: WeekPlan, period: PlanPeriod): WeekPlan {
-  return withDays(period, (date) => dayPlanOf(plan, date))
+  return withDays(
+    period,
+    (date) => dayPlanOf(plan, date),
+    plan.leftoverSlots.filter((slot) => hasOriginalWithin(period, slot)),
+  )
 }
 
 export function slotCountOf(plan: WeekPlan): number {
@@ -86,6 +100,24 @@ export function sameSlot(one: PlanSlot, other: PlanSlot): boolean {
   return one.date === other.date && one.time === other.time
 }
 
+function sameSlots(
+  one: readonly PlanSlot[],
+  other: readonly PlanSlot[],
+): boolean {
+  return (
+    one.length === other.length &&
+    one.every((slot) => other.some((each) => sameSlot(each, slot)))
+  )
+}
+
+function slotOnNextDay(slot: PlanSlot): PlanSlot {
+  return { date: daysAfter(slot.date, 1), time: slot.time }
+}
+
+export function isLeftoverIn(plan: WeekPlan, slot: PlanSlot): boolean {
+  return plan.leftoverSlots.some((each) => sameSlot(each, slot))
+}
+
 export function mealIn(plan: WeekPlan, slot: PlanSlot): MealId | null {
   return plan.days[slot.date]?.[slot.time] ?? null
 }
@@ -96,12 +128,16 @@ export function withMealIn(
   id: MealId | null,
 ): WeekPlan {
   if (!includesDate(plan.period, slot.date)) return plan
+  const leftoversOfOriginal = slotOnNextDay(slot)
   return {
     ...plan,
     days: {
       ...plan.days,
       [slot.date]: { ...dayPlanOf(plan, slot.date), [slot.time]: id },
     },
+    leftoverSlots: plan.leftoverSlots.filter(
+      (each) => !sameSlot(each, slot) && !sameSlot(each, leftoversOfOriginal),
+    ),
   }
 }
 
@@ -110,7 +146,8 @@ export function sameWeekPlan(one: WeekPlan, other: WeekPlan): boolean {
     samePeriod(one.period, other.period) &&
     planSlotsOf(one.period).every(
       (slot) => mealIn(one, slot) === mealIn(other, slot),
-    )
+    ) &&
+    sameSlots(one.leftoverSlots, other.leftoverSlots)
   )
 }
 
@@ -136,7 +173,8 @@ function timesPlannedBefore(
   mealId: MealId,
 ): number {
   return slotsBefore(plan, slot).filter(
-    (earlier) => mealIn(plan, earlier) === mealId,
+    (earlier) =>
+      mealIn(plan, earlier) === mealId && !isLeftoverIn(plan, earlier),
   ).length
 }
 
@@ -147,7 +185,7 @@ export function isSuppliedIn(
   supplies: readonly Supply[],
 ): boolean {
   const planned = shownMealIn(plan, slot, meals)
-  if (planned === null) return false
+  if (planned === null || isLeftoverIn(plan, slot)) return false
   const supply = supplyOf(supplies, planned.id)
   return (
     supply !== null && timesPlannedBefore(plan, slot, planned.id) < supply.count
@@ -167,6 +205,15 @@ function plannedSlots(
     const meal = shownMealIn(plan, slot, meals)
     return meal === null ? [] : [{ slot, meal }]
   })
+}
+
+function transferredSlots(
+  plan: WeekPlan,
+  meals: readonly Meal[],
+): readonly PlannedSlot[] {
+  return plannedSlots(plan, meals).filter(
+    ({ slot }) => !isLeftoverIn(plan, slot),
+  )
 }
 
 export function coveredSlotsOf(
@@ -205,7 +252,7 @@ export function weekPlanTransfer(
   meals: readonly Meal[],
   supplies: readonly Supply[],
 ): WeekPlanTransfer {
-  const planned = plannedSlots(plan, meals)
+  const planned = transferredSlots(plan, meals)
   const coveredSlots = coveredSlotsOf(plan, meals, supplies)
   const isCovered = ({ slot }: PlannedSlot) =>
     coveredSlots.some((covered) => sameSlot(covered, slot))

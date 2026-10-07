@@ -12,6 +12,7 @@ function meal(name: string, id = name): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 

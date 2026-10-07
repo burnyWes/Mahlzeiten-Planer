@@ -1,9 +1,10 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { WeekPlanClient } from '../api/weekPlanClient'
+import { withLeftoversIn } from '../domain/leftovers'
 import {
-  DEFAULT_MAIN_MEAL_TIME_RULE,
-  type MainMealTimeRule,
+  DEFAULT_ROLLING_RULES,
+  type RollingRules,
 } from '../domain/randomPlanning'
 import { toPlanDate } from '../domain/planDate'
 import type { PlanPeriod } from '../domain/planPeriod'
@@ -28,23 +29,25 @@ const EMPTY_PLAN = emptyWeekPlan(WEEK)
 type LaggingWeekPlanClient = WeekPlanClient & {
   deliverNextSnapshot(): void
   deliverNextStageSnapshot(): void
-  deliverNextRuleSnapshot(): void
+  deliverNextRulesSnapshot(): void
   weekPlanArrivesFromElsewhere(plan: WeekPlan): void
-  ruleArrivesFromElsewhere(rule: MainMealTimeRule): void
+  rulesArriveFromElsewhere(rules: RollingRules): void
   storedWeekPlan(): WeekPlan
+  writtenRules(): readonly RollingRules[]
 }
 
 function createLaggingWeekPlanClient(
-  initialRule: MainMealTimeRule = DEFAULT_MAIN_MEAL_TIME_RULE,
+  initialRules: RollingRules = DEFAULT_ROLLING_RULES,
 ): LaggingWeekPlanClient {
   let plan = EMPTY_PLAN
   let stage: WeekPlanStage = EDITING_STAGE
   const heldBackPlans: WeekPlan[] = []
   const heldBackStages: WeekPlanStage[] = []
-  const heldBackRules: MainMealTimeRule[] = []
+  const heldBackRules: RollingRules[] = []
+  const writtenRules: RollingRules[] = []
   let onPlan: (plan: WeekPlan) => void = () => {}
   let onStage: (stage: WeekPlanStage) => void = () => {}
-  let onRule: (rule: MainMealTimeRule) => void = () => {}
+  let onRules: (rules: RollingRules) => void = () => {}
 
   return {
     observeWeekPlan(onWeekPlan) {
@@ -65,13 +68,14 @@ function createLaggingWeekPlanClient(
       stage = written
       heldBackStages.push(written)
     },
-    observeMainMealTimeRule(onRuleArriving) {
-      onRule = onRuleArriving
-      onRuleArriving(initialRule)
+    observeRollingRules(onRulesArriving) {
+      onRules = onRulesArriving
+      onRulesArriving(initialRules)
       return () => {}
     },
-    writeMainMealTimeRule(written) {
+    writeRollingRules(written) {
       heldBackRules.push(written)
+      writtenRules.push(written)
     },
     deliverNextSnapshot() {
       onPlan(heldBackPlans.shift()!)
@@ -79,18 +83,21 @@ function createLaggingWeekPlanClient(
     deliverNextStageSnapshot() {
       onStage(heldBackStages.shift()!)
     },
-    deliverNextRuleSnapshot() {
-      onRule(heldBackRules.shift()!)
+    deliverNextRulesSnapshot() {
+      onRules(heldBackRules.shift()!)
     },
     weekPlanArrivesFromElsewhere(arriving) {
       plan = arriving
       onPlan(arriving)
     },
-    ruleArrivesFromElsewhere(arriving) {
-      onRule(arriving)
+    rulesArriveFromElsewhere(arriving) {
+      onRules(arriving)
     },
     storedWeekPlan() {
       return plan
+    },
+    writtenRules() {
+      return [...writtenRules]
     },
   }
 }
@@ -154,6 +161,26 @@ describe('useWeekPlan', () => {
     expect(weekPlan.current.plan).toEqual(fromElsewhere)
   })
 
+  it('keeps its leftovers when a late snapshot differs only in them', () => {
+    const client = createLaggingWeekPlanClient()
+    const weekPlan = weekPlanOf(client)
+    const withoutLeftovers = withMealIn(
+      withMealIn(EMPTY_PLAN, mondayDinner, 'bolognese'),
+      { date: toPlanDate('2026-09-22'), time: 'dinner' },
+      'bolognese',
+    )
+    const withLeftovers = withLeftoversIn(
+      withMealIn(EMPTY_PLAN, mondayDinner, 'bolognese'),
+      { date: toPlanDate('2026-09-22'), time: 'dinner' },
+      'bolognese',
+    )
+
+    act(() => weekPlan.current.replacePlan(withLeftovers))
+    act(() => client.weekPlanArrivesFromElsewhere(withoutLeftovers))
+
+    expect(weekPlan.current.plan).toEqual(withLeftovers)
+  })
+
   it('keeps the transfer when the snapshot of the fixing arrives late', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
@@ -169,30 +196,85 @@ describe('useWeekPlan', () => {
     expect(weekPlan.current.stage).toEqual(transferredStage([mondayLunch]))
   })
 
-  it('takes the rule for the main meal time from the server', () => {
-    const weekPlan = weekPlanOf(createLaggingWeekPlanClient('dinner'))
+  it('takes the rolling rules from the server', () => {
+    const weekPlan = weekPlanOf(
+      createLaggingWeekPlanClient({
+        mainMealTime: 'dinner',
+        plansLeftovers: false,
+      }),
+    )
 
-    expect(weekPlan.current.mainMealTimeRule).toBe('dinner')
+    expect(weekPlan.current.rollingRules).toEqual({
+      mainMealTime: 'dinner',
+      plansLeftovers: false,
+    })
   })
 
-  it('keeps its own rule when a late snapshot of the old one arrives', () => {
+  it('keeps its own rules when a late snapshot of the old ones arrives', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
 
     act(() => weekPlan.current.changeMainMealTimeRule('lunch'))
-    act(() => client.ruleArrivesFromElsewhere('lunchOrDinner'))
+    act(() => client.rulesArriveFromElsewhere(DEFAULT_ROLLING_RULES))
 
-    expect(weekPlan.current.mainMealTimeRule).toBe('lunch')
+    expect(weekPlan.current.rollingRules.mainMealTime).toBe('lunch')
   })
 
-  it('takes the rule of the other device once its own is confirmed', () => {
+  it('takes the rules of the other device once its own are confirmed', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
 
     act(() => weekPlan.current.changeMainMealTimeRule('lunch'))
-    act(() => client.deliverNextRuleSnapshot())
-    act(() => client.ruleArrivesFromElsewhere('dinner'))
+    act(() => client.deliverNextRulesSnapshot())
+    act(() =>
+      client.rulesArriveFromElsewhere({
+        mainMealTime: 'dinner',
+        plansLeftovers: true,
+      }),
+    )
 
-    expect(weekPlan.current.mainMealTimeRule).toBe('dinner')
+    expect(weekPlan.current.rollingRules.mainMealTime).toBe('dinner')
+  })
+
+  it('keeps the leftovers when the time of the main meal changes', () => {
+    const client = createLaggingWeekPlanClient({
+      mainMealTime: 'lunchOrDinner',
+      plansLeftovers: false,
+    })
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.changeMainMealTimeRule('dinner'))
+
+    expect(client.writtenRules()).toEqual([
+      { mainMealTime: 'dinner', plansLeftovers: false },
+    ])
+  })
+
+  it('keeps the time of the main meal when the leftovers change', () => {
+    const client = createLaggingWeekPlanClient({
+      mainMealTime: 'dinner',
+      plansLeftovers: true,
+    })
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.changeLeftoverPlanning(false))
+
+    expect(weekPlan.current.rollingRules).toEqual({
+      mainMealTime: 'dinner',
+      plansLeftovers: false,
+    })
+    expect(client.writtenRules()).toEqual([
+      { mainMealTime: 'dinner', plansLeftovers: false },
+    ])
+  })
+
+  it('keeps its own leftover planning when a late snapshot arrives', () => {
+    const client = createLaggingWeekPlanClient()
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.changeLeftoverPlanning(false))
+    act(() => client.rulesArriveFromElsewhere(DEFAULT_ROLLING_RULES))
+
+    expect(weekPlan.current.rollingRules.plansLeftovers).toBe(false)
   })
 })

@@ -3,6 +3,7 @@ import {
   breakfastMealNamesOnServer,
   hiddenMealNamesOnServer,
   knownUnitNamesOnServer,
+  leftoverMealNamesOnServer,
   mealCategoriesOnServer,
   nonMainMealNamesOnServer,
   prepareEmulators,
@@ -236,6 +237,31 @@ test('reads a stored snack without the main meal field as a snack', async ({
   await expect(
     page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
   ).not.toBeChecked()
+})
+
+test('marks a meal as leaving leftovers', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await switchCheckbox(page, 'Reste')
+  await pressButton(page, 'Speichern')
+
+  await expect.poll(leftoverMealNamesOnServer).toEqual(['Bolognese'])
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese')
+  await pressButton(page, 'Bearbeiten')
+
+  await expect(
+    page.getByRole('checkbox', { name: 'Reste', exact: true }),
+  ).toBeChecked()
+  await expect(
+    page.getByRole('checkbox', { name: 'Hauptgericht', exact: true }),
+  ).toBeChecked()
 })
 
 test('keeps the actions of a long meal in view at the bottom of the screen', async ({

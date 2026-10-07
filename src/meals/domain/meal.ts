@@ -24,6 +24,7 @@ export type NewMeal = {
   categories: readonly string[]
   hidden: boolean
   kind: MealKind
+  leftovers: boolean
 }
 
 export type Meal = NewMeal & {
@@ -35,6 +36,7 @@ export type MealDraft = {
   ingredientNotes: string
   recipe: string
   kind: MealKind
+  leftovers: boolean
 }
 
 export type MealItemDraft = QuantityDraft & {
@@ -86,6 +88,7 @@ export function createMeal(
     categories,
     hidden,
     kind: draft.kind,
+    leftovers: draft.leftovers,
   }
 }
 
@@ -98,6 +101,7 @@ export function withHiding(meal: Meal, hidden: boolean): NewMeal {
     categories: meal.categories,
     hidden,
     kind: meal.kind,
+    leftovers: meal.leftovers,
   }
 }
 

@@ -158,8 +158,33 @@ type StoredDayPlans = Record<
   { mapValue?: { fields?: Record<string, { stringValue?: string }> } }
 >
 
+type StoredLeftoverSlot = {
+  mapValue?: {
+    fields?: {
+      date?: { stringValue?: string }
+      time?: { stringValue?: string }
+    }
+  }
+}
+
 type StoredWeekPlan = {
-  fields?: { plan?: { mapValue?: { fields?: StoredDayPlans } } }
+  fields?: {
+    plan?: { mapValue?: { fields?: StoredDayPlans } }
+    leftovers?: { arrayValue?: { values?: readonly StoredLeftoverSlot[] } }
+  }
+}
+
+export async function leftoverSlotsOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/datedMeals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) return []
+  const stored = (await response.json()) as StoredWeekPlan
+  return (stored.fields?.leftovers?.arrayValue?.values ?? []).map(
+    (slot) =>
+      `${slot.mapValue?.fields?.date?.stringValue}.${slot.mapValue?.fields?.time?.stringValue}`,
+  )
 }
 
 export async function weekPlanOnServer(): Promise<
@@ -271,17 +296,26 @@ export async function weekPlanStageOnServer(): Promise<WeekPlanStageOnServer> {
 }
 
 type StoredRollingRules = {
-  fields?: { mainMealTime?: { stringValue?: string } }
+  fields?: {
+    mainMealTime?: { stringValue?: string }
+    leftovers?: { booleanValue?: boolean }
+  }
 }
 
-export async function mainMealTimeRuleOnServer(): Promise<string | null> {
+export async function rollingRulesOnServer(): Promise<{
+  mainMealTime: string | null
+  leftovers: boolean | null
+}> {
   const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/rollingRules`
   const response = await fetch(url, {
     headers: { Authorization: 'Bearer owner' },
   })
-  if (!response.ok) return null
+  if (!response.ok) return { mainMealTime: null, leftovers: null }
   const stored = (await response.json()) as StoredRollingRules
-  return stored.fields?.mainMealTime?.stringValue ?? null
+  return {
+    mainMealTime: stored.fields?.mainMealTime?.stringValue ?? null,
+    leftovers: stored.fields?.leftovers?.booleanValue ?? null,
+  }
 }
 
 export async function storeItemOnServer(
@@ -334,6 +368,7 @@ type ListedMeals = {
       mainMeal?: { booleanValue?: boolean }
       breakfast?: { booleanValue?: boolean }
       snack?: { booleanValue?: boolean }
+      leftovers?: { booleanValue?: boolean }
       categories?: {
         arrayValue?: { values?: readonly { stringValue: string }[] }
       }
@@ -397,6 +432,20 @@ export async function snackMealNamesOnServer(): Promise<readonly string[]> {
     .map((document) => document.fields.name.stringValue)
 }
 
+export async function leftoverMealNamesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/meals`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedMeals
+  return (listed.documents ?? [])
+    .filter((document) => document.fields.leftovers?.booleanValue === true)
+    .map((document) => document.fields.name.stringValue)
+}
+
 export async function mealCategoriesOnServer(): Promise<
   Record<string, readonly string[]>
 > {
@@ -422,6 +471,7 @@ type StoredMealFlags = {
   mainMeal?: boolean
   breakfast?: boolean
   snack?: boolean
+  leftovers?: boolean
 }
 
 export async function weekPlanMealNamesOnServer(): Promise<

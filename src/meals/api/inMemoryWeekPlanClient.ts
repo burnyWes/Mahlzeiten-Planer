@@ -1,6 +1,6 @@
 import {
-  DEFAULT_MAIN_MEAL_TIME_RULE,
-  type MainMealTimeRule,
+  DEFAULT_ROLLING_RULES,
+  type RollingRules,
 } from '../domain/randomPlanning'
 import type { WeekPlan } from '../domain/weekPlan'
 import { EDITING_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
@@ -11,21 +11,21 @@ export type InMemoryWeekPlanClient = WeekPlanClient & {
   storedWeekPlan(): WeekPlan
   stageArrivesFromElsewhere(stage: WeekPlanStage): void
   storedStage(): WeekPlanStage
-  mainMealTimeRuleArrivesFromElsewhere(rule: MainMealTimeRule): void
-  storedMainMealTimeRule(): MainMealTimeRule
+  rollingRulesArriveFromElsewhere(rules: RollingRules): void
+  storedRollingRules(): RollingRules
 }
 
 export function createInMemoryWeekPlanClient(
   initialPlan: WeekPlan,
   initialStage: WeekPlanStage = EDITING_STAGE,
-  initialMainMealTimeRule: MainMealTimeRule = DEFAULT_MAIN_MEAL_TIME_RULE,
+  initialRollingRules: RollingRules = DEFAULT_ROLLING_RULES,
 ): InMemoryWeekPlanClient {
   let plan = initialPlan
   let stage = initialStage
-  let mainMealTimeRule = initialMainMealTimeRule
+  let rollingRules = initialRollingRules
   const listeners = new Set<(plan: WeekPlan) => void>()
   const stageListeners = new Set<(stage: WeekPlanStage) => void>()
-  const ruleListeners = new Set<(rule: MainMealTimeRule) => void>()
+  const rulesListeners = new Set<(rules: RollingRules) => void>()
 
   function publish() {
     listeners.forEach((listener) => listener(plan))
@@ -35,8 +35,8 @@ export function createInMemoryWeekPlanClient(
     stageListeners.forEach((listener) => listener(stage))
   }
 
-  function publishMainMealTimeRule() {
-    ruleListeners.forEach((listener) => listener(mainMealTimeRule))
+  function publishRollingRules() {
+    rulesListeners.forEach((listener) => listener(rollingRules))
   }
 
   return {
@@ -58,14 +58,14 @@ export function createInMemoryWeekPlanClient(
       stage = written
       publishStage()
     },
-    observeMainMealTimeRule(onRule) {
-      ruleListeners.add(onRule)
-      onRule(mainMealTimeRule)
-      return () => ruleListeners.delete(onRule)
+    observeRollingRules(onRules) {
+      rulesListeners.add(onRules)
+      onRules(rollingRules)
+      return () => rulesListeners.delete(onRules)
     },
-    writeMainMealTimeRule(written) {
-      mainMealTimeRule = written
-      publishMainMealTimeRule()
+    writeRollingRules(written) {
+      rollingRules = written
+      publishRollingRules()
     },
     weekPlanArrivesFromElsewhere(arriving) {
       plan = arriving
@@ -81,12 +81,12 @@ export function createInMemoryWeekPlanClient(
     storedStage() {
       return stage
     },
-    mainMealTimeRuleArrivesFromElsewhere(arriving) {
-      mainMealTimeRule = arriving
-      publishMainMealTimeRule()
+    rollingRulesArriveFromElsewhere(arriving) {
+      rollingRules = arriving
+      publishRollingRules()
     },
-    storedMainMealTimeRule() {
-      return mainMealTimeRule
+    storedRollingRules() {
+      return rollingRules
     },
   }
 }

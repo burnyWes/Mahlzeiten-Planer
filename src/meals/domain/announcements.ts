@@ -26,7 +26,12 @@ import {
 import { lastDateOf, type PlanPeriod } from './planPeriod'
 import type { MealTime, PlanSlot } from './weekPlan'
 import type { SlotNaming } from './weekPlanView'
-import { isFixed, isTransferred, type WeekPlanStage } from './weekPlanStage'
+import {
+  isFixed,
+  isTransferred,
+  type SlotMark,
+  type WeekPlanStage,
+} from './weekPlanStage'
 
 const messagesByReason: Record<InvalidMealReason, string> = {
   nameMissing: 'Bitte einen Namen eingeben.',
@@ -357,15 +362,23 @@ export function slotName(slot: PlanSlot, naming: SlotNaming): string {
   return naming === 'time' ? mealTimeName(slot.time) : planDateName(slot.date)
 }
 
+const slotMarkNames: Record<Exclude<SlotMark, null>, string> = {
+  supply: 'im Vorrat',
+  leftovers: 'Reste',
+}
+
+function withSlotMark(text: string, mark: SlotMark): string {
+  return mark === null ? text : `${text}, ${slotMarkNames[mark]}`
+}
+
 export function fixedSlotText(
   slot: PlanSlot,
   naming: SlotNaming,
   meal: NewMeal | null,
-  inSupply: boolean,
+  mark: SlotMark,
 ): string {
   if (meal === null) return `${slotName(slot, naming)}, nichts geplant`
-  const planned = `${slotName(slot, naming)}, ${meal.name}`
-  return inSupply ? `${planned}, im Vorrat` : planned
+  return withSlotMark(`${slotName(slot, naming)}, ${meal.name}`, mark)
 }
 
 export function randomMealLabel(slot: PlanSlot, naming: SlotNaming): string {
@@ -375,20 +388,25 @@ export function randomMealLabel(slot: PlanSlot, naming: SlotNaming): string {
 export function slotFieldLabel(
   slot: PlanSlot,
   naming: SlotNaming,
-  inSupply: boolean,
+  mark: SlotMark,
 ): string {
-  const name = slotName(slot, naming)
-  return inSupply ? `${name}, im Vorrat` : name
+  return withSlotMark(slotName(slot, naming), mark)
 }
 
 export function slotPlannedAnnouncement(
   slot: PlanSlot,
   naming: SlotNaming,
   meal: NewMeal,
-  inSupply: boolean,
+  mark: SlotMark,
 ): string {
-  const planned = `${slotName(slot, naming)}, ${meal.name}`
-  return inSupply ? `${planned}, im Vorrat.` : `${planned}.`
+  return `${withSlotMark(`${slotName(slot, naming)}, ${meal.name}`, mark)}.`
+}
+
+export function leftoversPlannedAnnouncement(
+  slot: PlanSlot,
+  meal: NewMeal,
+): string {
+  return `${planDateName(slot.date)}, ${mealTimeName(slot.time)}, Reste von ${meal.name}.`
 }
 
 export function weekViewShownAnnouncement(time: MealTime): string {

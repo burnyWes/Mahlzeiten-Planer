@@ -8,6 +8,7 @@ import {
   dateOfWeekday,
   emptied,
   emptyWeekPlan,
+  isLeftoverIn,
   isSuppliedIn,
   MEAL_TIMES,
   mealIn,
@@ -33,6 +34,7 @@ const MONDAY = toPlanDate('2026-09-21')
 const TUESDAY = toPlanDate('2026-09-22')
 const WEDNESDAY = toPlanDate('2026-09-23')
 const FRIDAY = toPlanDate('2026-09-25')
+const SATURDAY = toPlanDate('2026-09-26')
 const SUNDAY = toPlanDate('2026-09-27')
 const NEXT_MONDAY = toPlanDate('2026-09-28')
 
@@ -49,6 +51,7 @@ function meal(id: string, name: string, items: Meal['items'] = []): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 
@@ -75,6 +78,13 @@ function planWith(
     (plan, [plannedSlot, id]) => withMealIn(plan, plannedSlot, id),
     EMPTY_PLAN,
   )
+}
+
+function withLeftoverMarks(
+  plan: WeekPlan,
+  ...leftoverSlots: readonly PlanSlot[]
+): WeekPlan {
+  return { ...plan, leftoverSlots }
 }
 
 function filledSlots(plan: WeekPlan): readonly PlanSlot[] {
@@ -106,6 +116,10 @@ describe('emptyWeekPlan', () => {
   it('keeps the period it was given', () => {
     expect(EMPTY_PLAN.period).toEqual(WEEK)
   })
+
+  it('holds no leftovers', () => {
+    expect(EMPTY_PLAN.leftoverSlots).toEqual([])
+  })
 })
 
 describe('slotCountOf', () => {
@@ -129,6 +143,42 @@ describe('emptied', () => {
 
     expect(filledSlots(plan)).toEqual([])
     expect(plan.period).toEqual(WEEK)
+  })
+
+  it('drops the leftovers', () => {
+    const plan = emptied(
+      withLeftoverMarks(
+        planWith(
+          [slot(MONDAY, 'dinner'), 'bolognese'],
+          [slot(TUESDAY, 'dinner'), 'bolognese'],
+        ),
+        slot(TUESDAY, 'dinner'),
+      ),
+    )
+
+    expect(plan.leftoverSlots).toEqual([])
+  })
+})
+
+describe('isLeftoverIn', () => {
+  const withLeftovers = withLeftoverMarks(
+    planWith(
+      [slot(MONDAY, 'dinner'), 'bolognese'],
+      [slot(TUESDAY, 'dinner'), 'bolognese'],
+    ),
+    slot(TUESDAY, 'dinner'),
+  )
+
+  it('finds the leftovers in their slot', () => {
+    expect(isLeftoverIn(withLeftovers, slot(TUESDAY, 'dinner'))).toBe(true)
+  })
+
+  it('takes the original slot for no leftovers', () => {
+    expect(isLeftoverIn(withLeftovers, slot(MONDAY, 'dinner'))).toBe(false)
+  })
+
+  it('takes another time of the same day for no leftovers', () => {
+    expect(isLeftoverIn(withLeftovers, slot(TUESDAY, 'lunch'))).toBe(false)
   })
 })
 
@@ -195,6 +245,53 @@ describe('withMealIn', () => {
 
     expect(mealIn(EMPTY_PLAN, slot(MONDAY, 'lunch'))).toBeNull()
   })
+
+  describe('with leftovers on Tuesday evening', () => {
+    const withLeftovers = withLeftoverMarks(
+      planWith(
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'bolognese'],
+        [slot(WEDNESDAY, 'dinner'), 'soup'],
+      ),
+      slot(TUESDAY, 'dinner'),
+    )
+
+    it('turns the leftovers into an ordinary slot when they are changed', () => {
+      const plan = withMealIn(withLeftovers, slot(TUESDAY, 'dinner'), 'pizza')
+
+      expect(mealIn(plan, slot(TUESDAY, 'dinner'))).toBe('pizza')
+      expect(plan.leftoverSlots).toEqual([])
+    })
+
+    it('turns the leftovers into an ordinary slot when they are emptied', () => {
+      const plan = withMealIn(withLeftovers, slot(TUESDAY, 'dinner'), null)
+
+      expect(plan.leftoverSlots).toEqual([])
+    })
+
+    it('keeps the meal of the leftovers when the original changes', () => {
+      const plan = withMealIn(withLeftovers, slot(MONDAY, 'dinner'), 'pizza')
+
+      expect(mealIn(plan, slot(TUESDAY, 'dinner'))).toBe('bolognese')
+      expect(plan.leftoverSlots).toEqual([])
+    })
+
+    it('keeps the leftovers when another slot changes', () => {
+      const changedLunch = withMealIn(
+        withLeftovers,
+        slot(MONDAY, 'lunch'),
+        'pizza',
+      )
+      const changedNextDay = withMealIn(
+        withLeftovers,
+        slot(WEDNESDAY, 'dinner'),
+        'pizza',
+      )
+
+      expect(changedLunch.leftoverSlots).toEqual([slot(TUESDAY, 'dinner')])
+      expect(changedNextDay.leftoverSlots).toEqual([slot(TUESDAY, 'dinner')])
+    })
+  })
 })
 
 describe('sameSlot', () => {
@@ -257,6 +354,19 @@ describe('plannedMeals', () => {
 })
 
 describe('plannedMealCount', () => {
+  it('counts the leftovers as planned', () => {
+    const plan = withLeftoverMarks(
+      planWith(
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'bolognese'],
+      ),
+      slot(TUESDAY, 'dinner'),
+    )
+
+    expect(plannedMealCount(plan, knownMeals)).toBe(2)
+    expect(plannedMeals(plan, knownMeals)).toEqual([bolognese, bolognese])
+  })
+
   it('counts no slot of an empty plan', () => {
     expect(plannedMealCount(EMPTY_PLAN, knownMeals)).toBe(0)
   })
@@ -281,6 +391,45 @@ describe('plannedMealCount', () => {
 })
 
 describe('isSuppliedIn', () => {
+  describe('with leftovers', () => {
+    const bologneseWithLeftovers = withLeftoverMarks(
+      planWith(
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'bolognese'],
+      ),
+      slot(TUESDAY, 'dinner'),
+    )
+    const soupLeftoversBeforeSoup = withLeftoverMarks(
+      planWith(
+        [slot(TUESDAY, 'lunch'), 'soup'],
+        [slot(WEDNESDAY, 'lunch'), 'soup'],
+      ),
+      slot(TUESDAY, 'lunch'),
+    )
+
+    it('never covers the leftovers', () => {
+      expect(
+        isSuppliedIn(
+          bologneseWithLeftovers,
+          slot(TUESDAY, 'dinner'),
+          knownMeals,
+          [supply('bolognese', 5)],
+        ),
+      ).toBe(false)
+    })
+
+    it('spends no portion on leftovers before an ordinary slot', () => {
+      expect(
+        isSuppliedIn(
+          soupLeftoversBeforeSoup,
+          slot(WEDNESDAY, 'lunch'),
+          knownMeals,
+          [supply('soup', 1)],
+        ),
+      ).toBe(true)
+    })
+  })
+
   it('reports a slot whose meal is kept in store', () => {
     const plan = planWith([slot(MONDAY, 'lunch'), 'pizza'])
 
@@ -423,6 +572,44 @@ describe('sameWeekPlan', () => {
     ).toBe(false)
   })
 
+  it('fails for two plans that differ only in their leftovers', () => {
+    const planned = planWith(
+      [slot(MONDAY, 'dinner'), 'soup'],
+      [slot(TUESDAY, 'dinner'), 'soup'],
+    )
+
+    expect(
+      sameWeekPlan(
+        planned,
+        withLeftoverMarks(planned, slot(TUESDAY, 'dinner')),
+      ),
+    ).toBe(false)
+  })
+
+  it('holds for two plans with the same leftovers in another order', () => {
+    const planned = planWith(
+      [slot(MONDAY, 'lunch'), 'soup'],
+      [slot(TUESDAY, 'lunch'), 'soup'],
+      [slot(MONDAY, 'dinner'), 'pizza'],
+      [slot(TUESDAY, 'dinner'), 'pizza'],
+    )
+
+    expect(
+      sameWeekPlan(
+        withLeftoverMarks(
+          planned,
+          slot(TUESDAY, 'lunch'),
+          slot(TUESDAY, 'dinner'),
+        ),
+        withLeftoverMarks(
+          planned,
+          slot(TUESDAY, 'dinner'),
+          slot(TUESDAY, 'lunch'),
+        ),
+      ),
+    ).toBe(true)
+  })
+
   it('fails for two plans that differ in one meal time of the same day', () => {
     expect(
       sameWeekPlan(
@@ -434,6 +621,20 @@ describe('sameWeekPlan', () => {
 })
 
 describe('coveredSlotsOf', () => {
+  it('lists no leftovers', () => {
+    const plan = withLeftoverMarks(
+      planWith(
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'bolognese'],
+      ),
+      slot(TUESDAY, 'dinner'),
+    )
+
+    expect(coveredSlotsOf(plan, knownMeals, [supply('bolognese', 5)])).toEqual([
+      slot(MONDAY, 'dinner'),
+    ])
+  })
+
   it('lists the covered slots in the order of the week', () => {
     const plan = planWith(
       [slot(FRIDAY, 'lunch'), 'soup'],
@@ -468,6 +669,38 @@ describe('coveredSlotsOf', () => {
 })
 
 describe('weekPlanTransfer', () => {
+  describe('with leftovers', () => {
+    const bologneseWithLeftovers = withLeftoverMarks(
+      planWith(
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+        [slot(TUESDAY, 'dinner'), 'bolognese'],
+      ),
+      slot(TUESDAY, 'dinner'),
+    )
+    const soupLeftoversBeforeSoup = withLeftoverMarks(
+      planWith(
+        [slot(TUESDAY, 'lunch'), 'soup'],
+        [slot(WEDNESDAY, 'lunch'), 'soup'],
+      ),
+      slot(TUESDAY, 'lunch'),
+    )
+
+    it('buys the meal of the leftovers only once', () => {
+      expect(weekPlanTransfer(bologneseWithLeftovers, knownMeals, [])).toEqual({
+        mealsToBuy: [bolognese],
+        spentSupplies: [],
+      })
+    })
+
+    it('spends no supply on the leftovers', () => {
+      expect(
+        weekPlanTransfer(soupLeftoversBeforeSoup, knownMeals, [
+          supply('soup', 1),
+        ]),
+      ).toEqual({ mealsToBuy: [], spentSupplies: [supply('soup', 1)] })
+    })
+  })
+
   it('leaves every planned meal to buy while nothing is kept in store', () => {
     const plan = planWith(
       [slot(MONDAY, 'lunch'), 'pizza'],
@@ -622,5 +855,51 @@ describe('withPeriod', () => {
 
     expect(mealIn(plan, slot(NEXT_MONDAY, 'lunch'))).toBeNull()
     expect(Object.keys(plan.days)).toHaveLength(5)
+  })
+
+  it('keeps leftovers whose original stays in the period', () => {
+    const plan = withPeriod(
+      withLeftoverMarks(
+        planWith(
+          [slot(FRIDAY, 'dinner'), 'bolognese'],
+          [slot(SATURDAY, 'dinner'), 'bolognese'],
+        ),
+        slot(SATURDAY, 'dinner'),
+      ),
+      fromFriday,
+    )
+
+    expect(plan.leftoverSlots).toEqual([slot(SATURDAY, 'dinner')])
+  })
+
+  it('turns leftovers on the new first day into an ordinary slot', () => {
+    const plan = withPeriod(
+      withLeftoverMarks(
+        planWith(
+          [slot(MONDAY, 'dinner'), 'bolognese'],
+          [slot(TUESDAY, 'dinner'), 'bolognese'],
+        ),
+        slot(TUESDAY, 'dinner'),
+      ),
+      { start: TUESDAY, days: 7 },
+    )
+
+    expect(mealIn(plan, slot(TUESDAY, 'dinner'))).toBe('bolognese')
+    expect(plan.leftoverSlots).toEqual([])
+  })
+
+  it('drops leftovers on days outside the new period', () => {
+    const plan = withPeriod(
+      withLeftoverMarks(
+        planWith(
+          [slot(MONDAY, 'dinner'), 'bolognese'],
+          [slot(TUESDAY, 'dinner'), 'bolognese'],
+        ),
+        slot(TUESDAY, 'dinner'),
+      ),
+      fromFriday,
+    )
+
+    expect(plan.leftoverSlots).toEqual([])
   })
 })

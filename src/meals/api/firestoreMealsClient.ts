@@ -61,6 +61,7 @@ function toMeal(id: MealId, stored: DocumentData): Meal {
     categories: toCategories(stored),
     hidden: stored.hidden === true,
     kind: toKind(stored),
+    leftovers: stored.leftovers === true,
   }
 }
 
@@ -78,6 +79,7 @@ function toDocument(meal: NewMeal): DocumentData {
     mainMeal: meal.kind === 'mainMeal',
     breakfast: meal.kind === 'breakfast',
     snack: meal.kind === 'snack',
+    leftovers: meal.leftovers,
   }
 }
 

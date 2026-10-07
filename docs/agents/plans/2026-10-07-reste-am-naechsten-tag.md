@@ -268,15 +268,15 @@ Ein Gericht lässt sich als „Reste“ kennzeichnen. Das Kennzeichen wird gespe
 auf allen Geräten gezeigt.
 
 **Aufgaben**:
-- [ ] `meal.test.ts` zuerst: `createMeal` übernimmt `draft.leftovers`, `withHiding`
+- [x] `meal.test.ts` zuerst: `createMeal` übernimmt `draft.leftovers`, `withHiding`
   behält `leftovers`.
-- [ ] `src/meals/domain/meal.ts`: `leftovers: boolean` in `NewMeal` und `MealDraft`;
+- [x] `src/meals/domain/meal.ts`: `leftovers: boolean` in `NewMeal` und `MealDraft`;
   `createMeal` und `withHiding` reichen es durch.
-- [ ] `src/meals/api/firestoreMealsClient.ts`: `toMeal` liest
+- [x] `src/meals/api/firestoreMealsClient.ts`: `toMeal` liest
   `leftovers: stored.leftovers === true`, `toDocument` schreibt `leftovers`.
-- [ ] `inMemoryMealsClient.ts` und alle Testdaten mit `Meal`-Literalen
+- [x] `inMemoryMealsClient.ts` und alle Testdaten mit `Meal`-Literalen
   (`npm run lint`/`tsc` findet sie) um `leftovers: false` ergänzen.
-- [ ] `src/meals/ui/MealFormPage.tsx`: leerer Entwurf `leftovers: false`,
+- [x] `src/meals/ui/MealFormPage.tsx`: leerer Entwurf `leftovers: false`,
   Bearbeiten übernimmt `meal.leftovers`. Neues Häkchen nach „Snack“:
   ```tsx
   <label className="toggleField leftoversField">
@@ -288,21 +288,21 @@ auf allen Geräten gezeigt.
     />
   </label>
   ```
-- [ ] `src/index.css`: `.leftoversField { margin-top: 1.5rem; }` (nur Abstand nach
+- [x] `src/index.css`: `.leftoversField { margin-top: 1.5rem; }` (nur Abstand nach
   oben, der übrige Stil kommt von `.toggleField`).
-- [ ] `MealsArea.test.tsx`: Häkchen „Reste“ ist anfangs aus. Anhaken und Speichern
+- [x] `MealsArea.test.tsx`: Häkchen „Reste“ ist anfangs aus. Anhaken und Speichern
   legt `leftovers: true` im Fake ab, beim Bearbeiten ist es wieder angehakt.
   Das Häkchen ändert die Art nicht.
-- [ ] `e2e/emulatorHousehold.ts`: `leftovers?: boolean` in `StoredMealFlags`, neu
+- [x] `e2e/emulatorHousehold.ts`: `leftovers?: boolean` in `StoredMealFlags`, neu
   `leftoverMealNamesOnServer()` nach dem Muster von `snackMealNamesOnServer`.
-- [ ] `e2e/meals.spec.ts`: neuer Test „marks a meal as leaving leftovers“. Gericht
+- [x] `e2e/meals.spec.ts`: neuer Test „marks a meal as leaving leftovers“. Gericht
   anlegen, „Reste“ anhaken, speichern, `expect.poll(leftoverMealNamesOnServer)`
   enthält es, nach dem Neuladen ist das Häkchen beim Bearbeiten gesetzt.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` grün (inkl. neuer Tests in `meal.test.ts`, `MealsArea.test.tsx`)
-- [ ] `npm run lint` und `npm run build` laufen durch
-- [ ] `npm run test:e2e` grün, darunter „marks a meal as leaving leftovers“
+- [x] `npm run test` grün (inkl. neuer Tests in `meal.test.ts`, `MealsArea.test.tsx`)
+- [x] `npm run lint` und `npm run build` laufen durch
+- [x] `npm run test:e2e` grün, darunter „marks a meal as leaving leftovers“
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone: Der Abstand zwischen „Snack“ und „Reste“ ist sichtbar größer als
@@ -317,7 +317,7 @@ Die Würfelregeln werden zu einem gemeinsamen Wert. Der neue Schalter lässt sic
 ein- und ausschalten und gilt für beide Geräte.
 
 **Aufgaben**:
-- [ ] `src/meals/domain/randomPlanning.ts`:
+- [x] `src/meals/domain/randomPlanning.ts`:
   ```ts
   export type RollingRules = {
     mainMealTime: MainMealTimeRule
@@ -330,27 +330,27 @@ ein- und ausschalten und gilt für beide Geräte.
   export function sameRollingRules(one: RollingRules, other: RollingRules): boolean
   ```
   Test in `randomPlanning.test.ts` zuerst.
-- [ ] `src/meals/api/weekPlanClient.ts`: `observeRollingRules(onRules)` und
+- [x] `src/meals/api/weekPlanClient.ts`: `observeRollingRules(onRules)` und
   `writeRollingRules(rules)` ersetzen `observeMainMealTimeRule`/`writeMainMealTimeRule`.
-- [ ] `src/meals/api/firestoreWeekPlanClient.ts`: `toRollingRules(stored)` liest
+- [x] `src/meals/api/firestoreWeekPlanClient.ts`: `toRollingRules(stored)` liest
   `mainMealTime` (wie `toMainMealTimeRule`) und `leftovers !== false`.
   `writeRollingRules` schreibt `{ mainMealTime, leftovers }` per `setDoc`.
-- [ ] `src/meals/api/inMemoryWeekPlanClient.ts`: dritter Parameter
+- [x] `src/meals/api/inMemoryWeekPlanClient.ts`: dritter Parameter
   `initialRollingRules = DEFAULT_ROLLING_RULES`, `rollingRulesArriveFromElsewhere`,
   `storedRollingRules`. Die bisherigen `mainMealTimeRule…`-Helfer und ihre
   Verwendungen in Tests umstellen (u. a. `WeekPlanArea.test.tsx:195, 200, 238, 1030`).
-- [ ] `src/meals/ui/useWeekPlan.ts`: Zustand `rollingRules` mit `unconfirmedRollingRules`
+- [x] `src/meals/ui/useWeekPlan.ts`: Zustand `rollingRules` mit `unconfirmedRollingRules`
   und `isStaleSnapshot(…, sameRollingRules)`.
   `WeekPlanning` bietet `rollingRules`, `changeMainMealTimeRule(rule)` und
   `changeLeftoverPlanning(plansLeftovers)`. Beide schreiben
   `{ ...rollingRules, <geändertes Feld> }`. `mainMealTimeRule` fällt weg, Aufrufer lesen
   `rollingRules.mainMealTime`.
-- [ ] `useWeekPlan.test.tsx`: Der eigene Fake-Client dort (`:33-76`) bekommt
+- [x] `useWeekPlan.test.tsx`: Der eigene Fake-Client dort (`:33-76`) bekommt
   `observeRollingRules`/`writeRollingRules`, die Tests `:175-196` werden umgestellt.
   Ändern des einen Felds behält das andere. Eine veraltete
   Momentaufnahme überschreibt den unbestätigten Stand nicht (Muster der bisherigen
   Rule-Tests).
-- [ ] `src/SignedInApp.tsx`: nach dem Eintrag `mainMealTimeRule`:
+- [x] `src/SignedInApp.tsx`: nach dem Eintrag `mainMealTimeRule`:
   ```ts
   {
     kind: 'toggle',
@@ -363,21 +363,21 @@ ein- und ausschalten und gilt für beide Geräte.
   ```
   `WeekPlanArea` bekommt `rollingRules` statt `mainMealTimeRule` (Destrukturierung
   `WeekPlanArea.tsx:87`).
-- [ ] `src/SignedInApp.test.tsx` (neben den Tests `:1545-1562` zu „Hauptgericht
+- [x] `src/SignedInApp.test.tsx` (neben den Tests `:1545-1562` zu „Hauptgericht
   würfeln“): Schalter „Reste einplanen“ steht nach „Hauptgericht würfeln“, ist an,
   Umschalten schreibt `plansLeftovers: false` und lässt `mainMealTime` unverändert.
-- [ ] `e2e/emulatorHousehold.ts`: `mainMealTimeRuleOnServer` zu
+- [x] `e2e/emulatorHousehold.ts`: `mainMealTimeRuleOnServer` zu
   `rollingRulesOnServer(): Promise<{ mainMealTime: string | null; leftovers: boolean | null }>`
   erweitern.
-- [ ] `e2e/settings.spec.ts`: neuer Test „switches off planning leftovers for the
+- [x] `e2e/settings.spec.ts`: neuer Test „switches off planning leftovers for the
   household“. Der Schalter ist an, wird ausgeschaltet, auf dem Server
   `leftovers: false`; danach „Nur abends“ wählen, und `leftovers` bleibt `false`.
   Den bestehenden Test auf `rollingRulesOnServer` umstellen.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` grün
-- [ ] `npm run lint` und `npm run build` laufen durch
-- [ ] `npm run test:e2e` grün, darunter beide Tests in `settings.spec.ts`
+- [x] `npm run test` grün
+- [x] `npm run lint` und `npm run build` laufen durch
+- [x] `npm run test:e2e` grün, darunter beide Tests in `settings.spec.ts`
 
 ### Phase 3: Reste würfeln und anzeigen
 
@@ -387,7 +387,7 @@ Würfeln setzt Reste am Folgetag. Der Plan speichert sie, die Zeile zeigt die Bo
 VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
 
 **Aufgaben**:
-- [ ] `weekPlan.test.ts` zuerst, dann `src/meals/domain/weekPlan.ts`:
+- [x] `weekPlan.test.ts` zuerst, dann `src/meals/domain/weekPlan.ts`:
   - `WeekPlan` bekommt `readonly leftoverSlots: readonly PlanSlot[]`.
   - `emptyWeekPlan`/`emptied`/`withDays`: `leftoverSlots: []` bzw. durchgereicht.
     `withPeriod` behält nur Reste-Plätze, deren Datum **und** Vortag im neuen
@@ -399,7 +399,7 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
   - `withMealIn(plan, slot, id)` entfernt `slot` und den Platz am Folgetag zur selben
     Tageszeit aus `leftoverSlots`. Tests: Reste-Platz geändert → Gericht neu,
     Kennzeichen weg. Original geändert → Gericht am Folgetag bleibt, Kennzeichen weg.
-- [ ] `leftovers.test.ts` zuerst, dann neu `src/meals/domain/leftovers.ts`:
+- [x] `leftovers.test.ts` zuerst, dann neu `src/meals/domain/leftovers.ts`:
   ```ts
   export function leftoverSlotAfter(plan: WeekPlan, slot: PlanSlot): PlanSlot | null
   // dateAfter(plan.period, slot.date) mit slot.time, sonst null
@@ -426,7 +426,7 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
   `leftovers.ts` importiert `RollingRules` per `import type` aus `randomPlanning.ts`
   (Vorbild: `announcements.ts:17`). Es gibt keine `import/no-cycle`-Regel, und der
   reine Typ-Import löst sich zur Laufzeit auf.
-- [ ] `randomPlanning.test.ts` zuerst, dann `src/meals/domain/randomPlanning.ts`:
+- [x] `randomPlanning.test.ts` zuerst, dann `src/meals/domain/randomPlanning.ts`:
   `filledWeekPlan(meals, period, random, rules, supplies)` (alle rund 20 Aufrufe in
   `randomPlanning.test.ts` ausdrücklich umstellen, kein Default) und
   `filledDay` überspringen Plätze mit `isLeftoverIn` und setzen über `rolledInto`.
@@ -435,11 +435,11 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
   zwei Tage → Mo abends Bolognese, Di abends Bolognese als Reste, Di mittags kein
   Hauptgericht. Mit Vorrat Bolognese 1 → keine Reste. Reste lösen keine weiteren Reste
   aus (drei Tage: Mi abends ist kein Reste-Platz).
-- [ ] `src/meals/api/firestoreWeekPlanClient.ts`: `toWeekPlan` liest
+- [x] `src/meals/api/firestoreWeekPlanClient.ts`: `toWeekPlan` liest
   `stored.leftovers` als Liste `{ date, time }` (nur gültige `PlanDate`/`MealTime`,
   deren Datum und Vortag im Zeitraum liegen, sonst ignorieren; fehlt das Feld → `[]`). `fromWeekPlan` schreibt
   `leftovers: plan.leftoverSlots.map(({ date, time }) => ({ date, time }))`.
-- [ ] `src/meals/domain/weekPlanStage.ts`:
+- [x] `src/meals/domain/weekPlanStage.ts`:
   ```ts
   export type SlotMark = 'supply' | 'leftovers' | null
   export function slotMarkOf(stage, plan, slot, meals, supplies): SlotMark
@@ -447,7 +447,7 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
   ```
   `isCoveredIn` bleibt für den Vorrat. Tests in `weekPlanStage.test.ts`; die
   bestehenden Tests (`weekPlanStage.test.ts:163-230`) bleiben.
-- [ ] `src/meals/domain/announcements.ts` (Tests zuerst):
+- [x] `src/meals/domain/announcements.ts` (Tests zuerst):
   - `slotFieldLabel(slot, naming, mark)` → „Abendessen, Reste“ / „…, im Vorrat“.
   - `fixedSlotText(slot, naming, meal, mark)` analog.
   - `slotPlannedAnnouncement(slot, naming, meal, mark)` analog.
@@ -456,11 +456,11 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
   - neu `leftoversPlannedAnnouncement(slot, meal)` →
     „`<Datumsname>`, `<Tageszeit>`, Reste von `<Gericht>`.“ (Datumsname wie
     `planDateName`, Tageszeit wie `mealTimeName`).
-- [ ] `src/meals/ui/PackageIcon.tsx`: neu, Muster `SnowflakeIcon`, Pfade aus lucide
+- [x] `src/meals/ui/PackageIcon.tsx`: neu, Muster `SnowflakeIcon`, Pfade aus lucide
   `package` (ISC, https://lucide.dev/icons/package).
-- [ ] `src/meals/ui/WeekPlanRow.tsx`: `SlotMarks` bekommt `mark: SlotMark` und zeigt
+- [x] `src/meals/ui/WeekPlanRow.tsx`: `SlotMarks` bekommt `mark: SlotMark` und zeigt
   `SnowflakeIcon` bzw. `PackageIcon`. `FixedSlot`/`EditableSlot` nutzen `slotMarkOf`.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`:
+- [x] `src/meals/ui/WeekPlanArea.tsx`:
   - `shuffleSlot`: `pickMealFor` → `rolledInto(plan, slot, picked, meals, supplies,
     rollingRules)` → `weekPlanning.replacePlan(rolled)`. Ansage
     `slotPlannedAnnouncement(…, slotMarkOf(…))`. Ist der Folgeplatz in `rolled`
@@ -469,27 +469,27 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
   - `chooseMeal` übergibt `slotMarkOf` an die Ansage (heute `isSuppliedIn`,
     `WeekPlanArea.tsx:120`).
   - `shuffleWeek`: `filledWeekPlan(meals, plan.period, random, rollingRules, supplies)`.
-- [ ] `WeekPlanArea.test.tsx`: Würfeln eines Platzes mit einem Reste-Gericht zeigt am
+- [x] `WeekPlanArea.test.tsx`: Würfeln eines Platzes mit einem Reste-Gericht zeigt am
   Folgetag „Abendessen, Reste“ und sagt beide Plätze an. Das Kennzeichen verschwindet
   nach einer Wahl von Hand im Reste-Platz und im Original. Im festgelegten Plan liest
   der versteckte Text „Abendessen, Bolognese, Reste“. In der Wochenansicht hat die
   Zeile des Folgetags die Box. Mit `plansLeftovers: false` entstehen keine Reste.
-- [ ] `useWeekPlan.test.tsx`: Eine Momentaufnahme, die sich nur in `leftoverSlots`
+- [x] `useWeekPlan.test.tsx`: Eine Momentaufnahme, die sich nur in `leftoverSlots`
   unterscheidet, gilt nicht als gleich (`sameWeekPlan`).
-- [ ] `e2e/emulatorHousehold.ts`: `StoredWeekPlan` um `leftovers` erweitern, neu
+- [x] `e2e/emulatorHousehold.ts`: `StoredWeekPlan` um `leftovers` erweitern, neu
   `leftoverSlotsOnServer(): Promise<readonly string[]>` (`"<date>.<time>"` aus
   `datedMeals.leftovers`).
-- [ ] `e2e/weekPlan.spec.ts`: neuer Test „rolls the leftovers of a meal into the next
+- [x] `e2e/weekPlan.spec.ts`: neuer Test „rolls the leftovers of a meal into the next
   day“. Bolognese (Hauptgericht, Reste) als einziges Gericht, „Nur abends“ in den
   Einstellungen, Zeitraum zwei Tage, „Zufallsauswahl generieren“. Am zweiten Tag
   ist das Feld „Abendessen, Reste“ mit Bolognese belegt, und
   `leftoverSlotsOnServer` enthält diesen Platz. Nach dem Neuladen ist das noch so.
-- [ ] `docs/architektur/05-bausteinsicht.md`: Knoten Zeile 176 um `leftovers` ergänzen.
+- [x] `docs/architektur/05-bausteinsicht.md`: Knoten Zeile 176 um `leftovers` ergänzen.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` grün (inkl. `leftovers.test.ts`, Architekturtest)
-- [ ] `npm run lint` und `npm run build` laufen durch
-- [ ] `npm run test:e2e` grün, darunter „rolls the leftovers of a meal into the next day“
+- [x] `npm run test` grün (inkl. `leftovers.test.ts`, Architekturtest)
+- [x] `npm run lint` und `npm run build` laufen durch
+- [x] `npm run test:e2e` grün, darunter „rolls the leftovers of a meal into the next day“
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone: Die Box ist in der Tages- und in der Wochenansicht gut von der
@@ -505,7 +505,7 @@ Reste-Plätze werden weder eingekauft noch aus dem Vorrat genommen und verbrauch
 Vorrats-Portion.
 
 **Aufgaben**:
-- [ ] `weekPlan.test.ts` zuerst, dann `src/meals/domain/weekPlan.ts`:
+- [x] `weekPlan.test.ts` zuerst, dann `src/meals/domain/weekPlan.ts`:
   - `timesPlannedBefore` zählt Reste-Plätze nicht.
   - `isSuppliedIn` ist für einen Reste-Platz `false`.
   - `weekPlanTransfer` lässt Reste-Plätze aus `mealsToBuy` und `spentSupplies` heraus
@@ -515,22 +515,30 @@ Vorrats-Portion.
     Vorrat Linsensuppe 1, Reste-Platz Linsensuppe vor einem normalen
     Linsensuppe-Platz → der normale Platz bleibt gedeckt.
     `coveredSlotsOf` enthält den Reste-Platz nie.
-- [ ] `WeekPlanArea.test.tsx`: „Auf die Einkaufsliste“ übergibt für Bolognese mit
+- [x] `WeekPlanArea.test.tsx`: „Auf die Einkaufsliste“ übergibt für Bolognese mit
   Resten genau einmal Bolognese, die Ansage bleibt wortgleich.
-- [ ] `e2e/weekPlan.spec.ts`: Der Test aus Phase 3 geht weiter: festlegen,
+- [x] `e2e/weekPlan.spec.ts`: Der Test aus Phase 3 geht weiter: festlegen,
   „Auf die Einkaufsliste“. Die Artikel von Bolognese stehen mit einfacher Menge auf der
   Liste (`itemQuantitiesOnServer`), die Vorräte bleiben unverändert.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` grün
-- [ ] `npm run lint` und `npm run build` laufen durch
-- [ ] `npm run test:e2e` grün
+- [x] `npm run test` grün
+- [x] `npm run lint` und `npm run build` laufen durch
+- [x] `npm run test:e2e` grün
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone eine Woche mit einem Reste-Gericht würfeln, festlegen und
   übertragen: Die Zutaten stehen nur einmal auf der Einkaufsliste.
 
 ## Notizen zur Umsetzung
+
+- Ob beim Würfeln eines Platzes Reste entstanden sind, entscheidet die neue
+  Domänenfunktion `leftoversRolledAfter(plan, slot)` in `leftovers.ts`. So bleibt die
+  Regel aus `WeekPlanArea` heraus.
+- `toWeekPlan` filtert die gelesenen Reste-Plätze über `withPeriod`, damit die Regel
+  „Datum und Vortag im Zeitraum“ nur an einer Stelle steht.
+- Schon das Leeren eines Reste-Feldes nimmt das Kennzeichen weg. Das Feld heißt danach
+  nur noch „Abendessen“, bevor ein neues Gericht gewählt ist.
 
 ## Verweise
 

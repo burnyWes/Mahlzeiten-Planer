@@ -13,12 +13,14 @@ import type { Supply } from '../domain/supply'
 import { shownMealIn, type PlanSlot, type WeekPlan } from '../domain/weekPlan'
 import type { SlotNaming } from '../domain/weekPlanView'
 import {
-  isCoveredIn,
   isFixed,
+  slotMarkOf,
+  type SlotMark,
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
 import { MealSuggestions } from './MealSuggestions'
 import { MealTimeIcon } from './MealTimeIcon'
+import { PackageIcon } from './PackageIcon'
 import { ShuffleIcon } from './ShuffleIcon'
 
 type WeekPlanRowProps = {
@@ -48,11 +50,11 @@ export function WeekPlanRow(props: WeekPlanRowProps) {
 function SlotMarks({
   slot,
   naming,
-  inSupply,
+  mark,
 }: {
   slot: PlanSlot
   naming: SlotNaming
-  inSupply: boolean
+  mark: SlotMark
 }) {
   return (
     <>
@@ -66,7 +68,8 @@ function SlotMarks({
         </span>
       )}
       <span className="supplyMark" aria-hidden="true">
-        {inSupply && <SnowflakeIcon />}
+        {mark === 'supply' && <SnowflakeIcon />}
+        {mark === 'leftovers' && <PackageIcon />}
       </span>
     </>
   )
@@ -94,16 +97,16 @@ function ShuffleSlotButton({
 function FixedSlot(props: WeekPlanRowProps) {
   const { slot, naming, plan, meals, supplies, stage } = props
   const planned = shownMealIn(plan, slot, meals)
-  const inSupply = isCoveredIn(stage, plan, slot, meals, supplies)
+  const mark = slotMarkOf(stage, plan, slot, meals, supplies)
 
   return (
     <div className="weekPlanChoice">
-      <SlotMarks slot={slot} naming={naming} inSupply={inSupply} />
+      <SlotMarks slot={slot} naming={naming} mark={mark} />
       <span className="weekPlanMeal" aria-hidden="true">
         {planned?.name}
       </span>
       <span className="visuallyHidden">
-        {fixedSlotText(slot, naming, planned, inSupply)}
+        {fixedSlotText(slot, naming, planned, mark)}
       </span>
     </div>
   )
@@ -114,7 +117,7 @@ function EditableSlot(props: WeekPlanRowProps) {
   const [typed, setTyped] = useState<string | null>(null)
   const choice = useRef<HTMLDivElement>(null)
   const plannedName = shownMealIn(plan, slot, meals)?.name ?? ''
-  const inSupply = isCoveredIn(stage, plan, slot, meals, supplies)
+  const mark = slotMarkOf(stage, plan, slot, meals, supplies)
 
   function change(written: string) {
     setTyped(written)
@@ -133,9 +136,9 @@ function EditableSlot(props: WeekPlanRowProps) {
 
   return (
     <div className="weekPlanChoice" ref={choice}>
-      <SlotMarks slot={slot} naming={naming} inSupply={inSupply} />
+      <SlotMarks slot={slot} naming={naming} mark={mark} />
       <input
-        aria-label={slotFieldLabel(slot, naming, inSupply)}
+        aria-label={slotFieldLabel(slot, naming, mark)}
         value={typed ?? plannedName}
         onChange={(event) => change(event.target.value)}
         onBlur={forgetTypingWhenLeaving}

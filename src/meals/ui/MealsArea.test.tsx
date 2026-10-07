@@ -18,6 +18,7 @@ function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
     ...parts,
   }
 }
@@ -221,6 +222,14 @@ function switchSnack() {
   return userEvent.click(snackBox())
 }
 
+function leftoversBox() {
+  return screen.getByRole('checkbox', { name: 'Reste' })
+}
+
+function switchLeftovers() {
+  return userEvent.click(leftoversBox())
+}
+
 function switchHiding(label: string) {
   return userEvent.click(screen.getByRole('button', { name: label }))
 }
@@ -336,6 +345,7 @@ describe('MealsArea', () => {
         categories: [],
         hidden: false,
         kind: 'mainMeal',
+        leftovers: false,
       },
     ])
     expect(announcements).toContain('Linsensuppe gespeichert.')
@@ -718,6 +728,7 @@ describe('MealsArea', () => {
         categories: [],
         hidden: false,
         kind: 'mainMeal',
+        leftovers: false,
       },
     ])
     expect(announcements).toContain('Bolognese vom Rind gespeichert.')
@@ -925,6 +936,7 @@ describe('MealsArea', () => {
         categories: ['Auflauf'],
         hidden: true,
         kind: 'none',
+        leftovers: false,
       }),
     ])
 
@@ -1548,6 +1560,52 @@ describe('MealsArea', () => {
 
     expect(client.storedMeals()[0]).toEqual(
       meal('soup', 'Suppe', { hidden: true, kind: 'snack' }),
+    )
+  })
+
+  it('leaves a new meal without leftovers', async () => {
+    renderMealsArea()
+
+    await openMealForm()
+
+    expect(leftoversBox()).not.toBeChecked()
+  })
+
+  it('marks a meal as leaving leftovers', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Bolognese')
+    await switchLeftovers()
+    await save()
+
+    expect(client.storedMeals()[0].leftovers).toBe(true)
+  })
+
+  it('shows whether the edited meal leaves leftovers', async () => {
+    renderMealsArea([meal('bolognese', 'Bolognese', { leftovers: true })])
+
+    await openMeal('Bolognese')
+    await editMeal()
+
+    expect(leftoversBox()).toBeChecked()
+  })
+
+  it('keeps the kind when a meal leaves leftovers', async () => {
+    const { client } = renderMealsArea([
+      meal('nuts', 'Nussmix', { kind: 'snack' }),
+    ])
+
+    await openMeal('Nussmix')
+    await editMeal()
+    await switchLeftovers()
+
+    expect(snackBox()).toBeChecked()
+
+    await save()
+
+    expect(client.storedMeals()[0]).toEqual(
+      meal('nuts', 'Nussmix', { kind: 'snack', leftovers: true }),
     )
   })
 

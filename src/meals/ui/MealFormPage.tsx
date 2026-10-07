@@ -41,6 +41,7 @@ const EMPTY_DRAFT: MealDraft = {
   ingredientNotes: '',
   recipe: '',
   kind: 'mainMeal',
+  leftovers: false,
 }
 
 function draftOf(meal: Meal | null): MealDraft {
@@ -50,6 +51,7 @@ function draftOf(meal: Meal | null): MealDraft {
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
     kind: meal.kind,
+    leftovers: meal.leftovers,
   }
 }
 
@@ -171,6 +173,14 @@ export function MealFormPage({
           type="checkbox"
           checked={draft.kind === 'snack'}
           onChange={(event) => chooseKind('snack', event.target.checked)}
+        />
+      </label>
+      <label className="toggleField leftoversField">
+        <span>Reste</span>
+        <input
+          type="checkbox"
+          checked={draft.leftovers}
+          onChange={(event) => change({ leftovers: event.target.checked })}
         />
       </label>
       <MealCategoriesEditor

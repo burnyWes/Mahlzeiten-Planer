@@ -28,6 +28,7 @@ function meal(id: string, name: string): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 

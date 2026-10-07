@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
+import { withLeftoversIn } from './meals/domain/leftovers'
 import { toPlanDate } from './meals/domain/planDate'
 import type { PlanPeriod } from './meals/domain/planPeriod'
 import {
@@ -160,6 +161,7 @@ function meal(id: string, name: string, items: Meal['items'] = []): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 
@@ -674,6 +676,37 @@ describe('SignedInApp', () => {
       'Hackfleisch, 500 g',
       'Bohnen',
     ])
+  })
+
+  it('buys the items of a meal with leftovers only once and says so as usual', async () => {
+    const plan = withLeftoversIn(
+      withMealIn(EMPTY_PLAN, { date: MONDAY, time: 'dinner' }, 'bolognese'),
+      { date: toPlanDate('2026-09-22'), time: 'dinner' },
+      'bolognese',
+    )
+    const { announcements } = renderSignedInApp(
+      [],
+      [
+        {
+          ...meal('bolognese', 'Bolognese', [
+            { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+          ]),
+          leftovers: true,
+        },
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(plan),
+    )
+
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain('Wochenplan, 1 Artikel hinzugefügt.')
+
+    await goToArea('Einkaufsliste')
+
+    expect(shownShoppingItemNames()).toEqual(['Hackfleisch, 500 g'])
   })
 
   it('names a planned meal without items once, however often it is planned', async () => {
@@ -1517,6 +1550,7 @@ describe('SignedInApp', () => {
     expect(shownItemNames()).toEqual([
       'Farben invertieren',
       expect.stringMatching(/^Hauptgericht würfeln/),
+      'Reste einplanen',
       'Artikel-Verwaltung',
       'Kategorie-Verwaltung',
       'Einheiten-Verwaltung',
@@ -1550,16 +1584,69 @@ describe('SignedInApp', () => {
     await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
 
     expect(mainMealTimeChoice()).toHaveDisplayValue('Nur abends')
-    expect(weekPlanClient.storedMainMealTimeRule()).toBe('dinner')
+    expect(weekPlanClient.storedRollingRules().mainMealTime).toBe('dinner')
   })
 
   it('shows the main meal time chosen on the other device', async () => {
     const { weekPlanClient } = renderSignedInApp()
 
     await goToArea('Einstellungen')
-    act(() => weekPlanClient.mainMealTimeRuleArrivesFromElsewhere('lunch'))
+    act(() =>
+      weekPlanClient.rollingRulesArriveFromElsewhere({
+        mainMealTime: 'lunch',
+        plansLeftovers: true,
+      }),
+    )
 
     expect(mainMealTimeChoice()).toHaveDisplayValue('Nur mittags')
+  })
+
+  it('offers to plan leftovers below the main meal time, switched on', async () => {
+    renderSignedInApp()
+
+    await goToArea('Einstellungen')
+
+    const rows = within(screen.getByRole('main')).getAllByRole('listitem')
+    expect(
+      within(rows[2]).getByRole('switch', { name: 'Reste einplanen' }),
+    ).toBeChecked()
+  })
+
+  it('switches off planning leftovers for the household and keeps the main meal time', async () => {
+    const weekPlanClient = createInMemoryWeekPlanClient(EMPTY_PLAN, undefined, {
+      mainMealTime: 'dinner',
+      plansLeftovers: true,
+    })
+    renderSignedInApp([], [], undefined, undefined, weekPlanClient)
+
+    await goToArea('Einstellungen')
+    await userEvent.click(
+      screen.getByRole('switch', { name: 'Reste einplanen' }),
+    )
+
+    expect(
+      screen.getByRole('switch', { name: 'Reste einplanen' }),
+    ).not.toBeChecked()
+    expect(weekPlanClient.storedRollingRules()).toEqual({
+      mainMealTime: 'dinner',
+      plansLeftovers: false,
+    })
+  })
+
+  it('keeps the leftover planning when the main meal time changes', async () => {
+    const weekPlanClient = createInMemoryWeekPlanClient(EMPTY_PLAN, undefined, {
+      mainMealTime: 'lunchOrDinner',
+      plansLeftovers: false,
+    })
+    renderSignedInApp([], [], undefined, undefined, weekPlanClient)
+
+    await goToArea('Einstellungen')
+    await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
+
+    expect(weekPlanClient.storedRollingRules()).toEqual({
+      mainMealTime: 'dinner',
+      plansLeftovers: false,
+    })
   })
 
   it('rolls the main meal of the week at the time chosen in the settings', async () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Meal } from './meal'
 import type { Supply } from './supply'
+import { withLeftoversIn } from './leftovers'
 import { toPlanDate, type PlanDate } from './planDate'
 import {
   emptyWeekPlan,
@@ -19,6 +20,7 @@ import {
   isFixed,
   isTransferred,
   sameStage,
+  slotMarkOf,
   transferredStage,
 } from './weekPlanStage'
 
@@ -32,6 +34,7 @@ function meal(id: string, name: string): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
   }
 }
 
@@ -270,5 +273,84 @@ describe('sameStage', () => {
         transferredStage([mondayDinner]),
       ),
     ).toBe(false)
+  })
+})
+
+describe('slotMarkOf', () => {
+  const withLeftovers = withLeftoversIn(
+    plan,
+    slot(TUESDAY, 'dinner'),
+    'bolognese',
+  )
+
+  it('marks the leftovers of a meal', () => {
+    expect(
+      slotMarkOf(
+        EDITING_STAGE,
+        withLeftovers,
+        slot(TUESDAY, 'dinner'),
+        knownMeals,
+        [],
+      ),
+    ).toBe('leftovers')
+  })
+
+  it('marks the leftovers on a fixed and on a transferred plan', () => {
+    expect(
+      slotMarkOf(
+        FIXED_STAGE,
+        withLeftovers,
+        slot(TUESDAY, 'dinner'),
+        knownMeals,
+        [],
+      ),
+    ).toBe('leftovers')
+    expect(
+      slotMarkOf(
+        transferredStage([]),
+        withLeftovers,
+        slot(TUESDAY, 'dinner'),
+        knownMeals,
+        [],
+      ),
+    ).toBe('leftovers')
+  })
+
+  it('marks no leftovers whose meal is gone', () => {
+    expect(
+      slotMarkOf(
+        EDITING_STAGE,
+        withLeftovers,
+        slot(TUESDAY, 'dinner'),
+        [pizza],
+        [],
+      ),
+    ).toBeNull()
+  })
+
+  it('marks a slot that the supply covers', () => {
+    expect(
+      slotMarkOf(EDITING_STAGE, plan, tuesdayLunch, knownMeals, [
+        supply('pizza', 1),
+      ]),
+    ).toBe('supply')
+  })
+
+  it('marks the leftovers rather than the supply', () => {
+    expect(
+      slotMarkOf(
+        EDITING_STAGE,
+        withLeftovers,
+        slot(TUESDAY, 'dinner'),
+        knownMeals,
+        [supply('bolognese', 5)],
+      ),
+    ).toBe('leftovers')
+  })
+
+  it('marks an ordinary slot with nothing', () => {
+    expect(
+      slotMarkOf(EDITING_STAGE, plan, mondayLunch, knownMeals, []),
+    ).toBeNull()
   })
 })

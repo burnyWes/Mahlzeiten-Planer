@@ -1,6 +1,7 @@
 import type { Meal } from './meal'
 import type { Supply } from './supply'
 import {
+  isLeftoverIn,
   isSuppliedIn,
   sameSlot,
   shownMealIn,
@@ -85,4 +86,19 @@ export function isCoveredIn(
       shownMealIn(plan, slot, meals) !== null
     )
   return isSuppliedIn(plan, slot, meals, supplies)
+}
+
+export type SlotMark = 'supply' | 'leftovers' | null
+
+export function slotMarkOf(
+  stage: WeekPlanStage,
+  plan: WeekPlan,
+  slot: PlanSlot,
+  meals: readonly Meal[],
+  supplies: readonly Supply[],
+): SlotMark {
+  if (isLeftoverIn(plan, slot) && shownMealIn(plan, slot, meals) !== null)
+    return 'leftovers'
+  if (isCoveredIn(stage, plan, slot, meals, supplies)) return 'supply'
+  return null
 }

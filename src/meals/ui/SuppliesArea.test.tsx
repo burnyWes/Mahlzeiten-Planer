@@ -22,6 +22,7 @@ function meal(id: string, name: string, parts: Partial<Meal> = {}): Meal {
     categories: [],
     hidden: false,
     kind: 'mainMeal',
+    leftovers: false,
     ...parts,
   }
 }

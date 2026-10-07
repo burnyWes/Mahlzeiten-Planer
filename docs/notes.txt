@@ -201,4 +201,3 @@ b Gerichte: eine verschwundene Filteroption bleibt gemerkt und wird still wieder
   - Die Wiederholung des Gerichts am nächsten Tag mit passendem Icon markieren (NICHT Vorräte-Icon)
   - Beim Drücken auf "Auf die Einkaufsliste"-Button werden Reste weder aus den Vorräten entfernt, noch auf die
   Einkaufsliste geschrieben.
-  

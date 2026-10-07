@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 import {
   hiddenMealNamesOnServer,
+  itemQuantitiesOnServer,
+  leftoverSlotsOnServer,
   mealIdOnServer,
   prepareEmulators,
   settleWrites,
@@ -17,6 +19,7 @@ import {
   shownShoppingItems,
   signIn,
   stepToDay,
+  switchCheckbox,
   takeOverItem,
   typeInto,
 } from './keyboard.ts'
@@ -395,6 +398,62 @@ test('rolls the main meal only in the evening when the household wants it so', a
       ])
     })
     .toEqual(WEEK_DATES.map(() => ['Brot', 'Bolognese']))
+})
+
+test('rolls the leftovers of a meal into the next day', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await takeOverItem(page, 'Hackfleisch', '500', 'g')
+  await switchCheckbox(page, 'Reste')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Einstellungen')
+  await page
+    .getByRole('combobox', { name: 'Hauptgericht würfeln' })
+    .selectOption({ label: 'Nur abends' })
+
+  await pressButton(page, 'Wochenplan')
+  await pressButton(page, 'Zeitraum wählen')
+  for (let step = 7; step > 2; step--)
+    await pressButton(page, 'Ein Tag weniger')
+  await pressButton(page, 'Übernehmen')
+  await expect(
+    page.getByRole('button', {
+      name: 'Zufallsauswahl generieren',
+      exact: true,
+    }),
+  ).toBeEnabled()
+  await pressButton(page, 'Zufallsauswahl generieren')
+
+  await expect.poll(leftoverSlotsOnServer).toEqual(['2026-09-22.dinner'])
+
+  await stepToDay(page, 'Dienstag, 22. September')
+
+  await expect(
+    page.getByLabel('Abendessen, Reste', { exact: true }),
+  ).toHaveValue('Bolognese')
+
+  await page.reload()
+  await pressButton(page, 'Wochenplan')
+  await stepToDay(page, 'Dienstag, 22. September')
+
+  await expect(
+    page.getByLabel('Abendessen, Reste', { exact: true }),
+  ).toHaveValue('Bolognese')
+
+  await pressButton(page, 'Plan festlegen')
+  await pressButton(page, 'Auf die Einkaufsliste')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Wochenplan, 1 Artikel hinzugefügt.',
+  )
+  await expect.poll(itemQuantitiesOnServer).toEqual(['Hackfleisch, 500 g'])
+  await expect.poll(supplyCountsOnServer).toEqual([])
 })
 
 test('lines the meal time field up with its shuffle button', async ({
