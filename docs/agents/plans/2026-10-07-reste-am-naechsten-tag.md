@@ -5,7 +5,7 @@ branch: main
 story: MZP-039
 topic: "Reste am nächsten Tag"
 tags: [plan, meals, meal, weekPlan, randomPlanning, leftovers, WeekPlanArea, WeekPlanRow, MealFormPage, SettingsPage, firestoreWeekPlanClient, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-039 — Reste am nächsten Tag
@@ -305,7 +305,7 @@ auf allen Geräten gezeigt.
 - [x] `npm run test:e2e` grün, darunter „marks a meal as leaving leftovers“
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone: Der Abstand zwischen „Snack“ und „Reste“ ist sichtbar größer als
+- [x] Auf dem iPhone: Der Abstand zwischen „Snack“ und „Reste“ ist sichtbar größer als
   zwischen den anderen Häkchen. VoiceOver liest „Reste, Markierungsfeld, nicht
   markiert“.
 
@@ -492,9 +492,9 @@ VoiceOver sagt „Reste“. Eine Änderung von Hand entfernt das Kennzeichen.
 - [x] `npm run test:e2e` grün, darunter „rolls the leftovers of a meal into the next day“
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone: Die Box ist in der Tages- und in der Wochenansicht gut von der
+- [x] Auf dem iPhone: Die Box ist in der Tages- und in der Wochenansicht gut von der
   Schneeflocke zu unterscheiden, auch mit umgekehrten Farben.
-- [ ] Mit VoiceOver einen einzelnen Platz würfeln, bis ein Reste-Gericht kommt: Die
+- [x] Mit VoiceOver einen einzelnen Platz würfeln, bis ein Reste-Gericht kommt: Die
   Ansage nennt beide Plätze verständlich, das Feld am Folgetag heißt „…, Reste“.
 
 ### Phase 4: Reste beim Übertragen
@@ -527,7 +527,7 @@ Vorrats-Portion.
 - [x] `npm run test:e2e` grün
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone eine Woche mit einem Reste-Gericht würfeln, festlegen und
+- [x] Auf dem iPhone eine Woche mit einem Reste-Gericht würfeln, festlegen und
   übertragen: Die Zutaten stehen nur einmal auf der Einkaufsliste.
 
 ## Notizen zur Umsetzung

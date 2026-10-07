@@ -155,6 +155,13 @@ x Wochenplan erweitern
   x daneben Anzahl-Tage-Selector
   x Ab dem Datepickertag und für anzahl tage wird geplant
   n Links in der Tageszeile steht der richtige Wochentag
+x Reste
+  x Checkbox in Gericht Bearbeiten hinzufügen
+    x Reste (Es gibt Reste o.ä.), default = false
+  x Wenn Reste angehakt, und im Plan durch Zufall gewählt, dann automatisch am nächsten Tag nochmal
+  x Die Wiederholung des Gerichts am nächsten Tag mit passendem Icon markieren (NICHT Vorräte-Icon)
+  x Beim Drücken auf "Auf die Einkaufsliste"-Button werden Reste weder aus den Vorräten entfernt, noch auf die
+  Einkaufsliste geschrieben.
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 TODO 
@@ -194,10 +201,3 @@ b Gerichte: eine verschwundene Filteroption bleibt gemerkt und wird still wieder
   Vorraete-Seite seit MZP-037 behoben.
 - Vorraete: Sicherheitsabfrage, wenn "Weniger" den letzten Vorrat entfernt
   (wie MZP-038 auf der Einkaufsliste)
-- Reste
-  - Checkbox in Gericht Bearbeiten hinzufügen
-    - Reste (Es gibt Reste o.ä.), default = false
-  - Wenn Reste angehakt, und im Plan durch Zufall gewählt, dann automatisch am nächsten Tag nochmal
-  - Die Wiederholung des Gerichts am nächsten Tag mit passendem Icon markieren (NICHT Vorräte-Icon)
-  - Beim Drücken auf "Auf die Einkaufsliste"-Button werden Reste weder aus den Vorräten entfernt, noch auf die
-  Einkaufsliste geschrieben.
