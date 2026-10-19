@@ -355,19 +355,19 @@ ob das VoiceOver-Wischen trägt, bevor die Artikel folgen.
       deckt `npm run lint` ab.
 
 **Manuelle Verifikation** (iPhone, installierte PWA):
-- [ ] Mit VoiceOver auf „Vorrat hinzufügen“: Nach „Menge, Textfeld, 1“ folgt „Menge
+- [x] Mit VoiceOver auf „Vorrat hinzufügen“: Nach „Menge, Textfeld, 1“ folgt „Menge
       ändern, 1, anpassbar“. Wischen nach oben sagt „2“, das Textfeld zeigt `2`.
       Wischen nach unten führt zurück auf `1`; ein weiteres Wischen nach unten ändert
       nichts.
-- [ ] Der neue Wert wird genau einmal angesagt, nicht doppelt.
-- [ ] Doppeltipp auf „Menge ändern“ ändert den Wert nicht versehentlich.
-- [ ] Ins leere Feld doppeltippen und `3` eingeben, dann Speichern: In der Übersicht
+- [x] Der neue Wert wird genau einmal angesagt, nicht doppelt.
+- [x] Doppeltipp auf „Menge ändern“ ändert den Wert nicht versehentlich.
+- [x] Ins leere Feld doppeltippen und `3` eingeben, dann Speichern: In der Übersicht
       steht der Vorrat mit 3, nicht 13.
-- [ ] Ohne VoiceOver: ▲/▼ antippen ändert den Wert, die Tastatur bleibt dabei offen,
+- [x] Ohne VoiceOver: ▲/▼ antippen ändert den Wert, die Tastatur bleibt dabei offen,
       wenn sie offen war.
-- [ ] „Vorrat bearbeiten“: Wischen ändert den angezeigten Bestand, und Speichern
+- [x] „Vorrat bearbeiten“: Wischen ändert den angezeigten Bestand, und Speichern
       übernimmt ihn.
-- [ ] Die graue `1` ist auch bei eingeschaltetem „Farben umkehren“ (App-Schalter)
+- [x] Die graue `1` ist auch bei eingeschaltetem „Farben umkehren“ (App-Schalter)
       lesbar und klar als Platzhalter erkennbar.
 
 ### Phase 2: Spinner bei den Artikeln
@@ -379,33 +379,33 @@ Abhängigkeiten: Phase 1 (`SpinButton`, `AmountSpinner`, CSS, `AmountStep`,
 bekommen den Spinner zwischen Menge und Einheit, dazu die graue `1`.
 
 **Aufgaben**:
-- [ ] `src/shared/domain/quantity.ts` test-getrieben (`quantity.test.ts`):
-  - [ ] `MAXIMUM_STEPPED_AMOUNT` und `roundedAmount` aus `shoppingItem.ts` hierher
+- [x] `src/shared/domain/quantity.ts` test-getrieben (`quantity.test.ts`):
+  - [x] `MAXIMUM_STEPPED_AMOUNT` und `roundedAmount` aus `shoppingItem.ts` hierher
         verschieben und exportieren; `shoppingItem.ts` importiert beide. Die
         bestehenden Tests der Einkaufsliste bleiben unverändert grün.
-  - [ ] `readSteppedAmount`: leer → 1, `'2,5'` → 2.5, `'2.5'` → 2.5, `'viel'`/`'0'`/
+  - [x] `readSteppedAmount`: leer → 1, `'2,5'` → 2.5, `'2.5'` → 2.5, `'viel'`/`'0'`/
         `'-1'` → `null`.
-  - [ ] `stepWrittenAmount`: alle Zeilen der Tabelle aus den Akzeptanzkriterien,
+  - [x] `stepWrittenAmount`: alle Zeilen der Tabelle aus den Akzeptanzkriterien,
         dazu `'2,2'`−1 → `'1,2'` (Rundung) und `'500'`+1 → `'501'`.
-- [ ] `src/shopping/ui/AddItemPage.tsx`: Das Mengenfeld bekommt `placeholder="1"`, und
+- [x] `src/shopping/ui/AddItemPage.tsx`: Das Mengenfeld bekommt `placeholder="1"`, und
       `AmountSpinner` (`minimum={1}`, `maximum={MAXIMUM_STEPPED_AMOUNT}`) kommt
       zwischen Menge und Einheit in `div.quantityFields`.
-- [ ] `src/meals/ui/MealItemsEditor.tsx`: ebenso.
-- [ ] `src/shopping/ui/ShoppingArea.test.tsx`: Neu: ↑ auf „Menge ändern“ bei leerem
+- [x] `src/meals/ui/MealItemsEditor.tsx`: ebenso.
+- [x] `src/shopping/ui/ShoppingArea.test.tsx`: Neu: ↑ auf „Menge ändern“ bei leerem
       Feld schreibt `2`; danach `g` als Einheit und Hinzufügen ergeben `2 g` auf der
       Liste.
-- [ ] `src/meals/ui/MealsArea.test.tsx`: Neu: Im Artikel-Formular wird aus `2,5` per ↑
+- [x] `src/meals/ui/MealsArea.test.tsx`: Neu: Im Artikel-Formular wird aus `2,5` per ↑
       `3,5`; nach „Artikel hinzufügen“ steht der Artikel mit 3,5 im Gericht.
-- [ ] `e2e/shoppingList.spec.ts`: ein Ablauf „Artikel anlegen, per ↑ auf ‚Menge
+- [x] `e2e/shoppingList.spec.ts`: ein Ablauf „Artikel anlegen, per ↑ auf ‚Menge
       ändern‘ erhöhen, hinzufügen“ prüft die Menge auf der Liste.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` grün, darin die neuen Fälle aus `quantity.test.ts`,
+- [x] `npm run test` grün, darin die neuen Fälle aus `quantity.test.ts`,
       `ShoppingArea.test.tsx` und `MealsArea.test.tsx` sowie die unveränderten Tests
       von `shoppingItem.test.ts`.
-- [ ] `npm run test:e2e` grün, darin der neue Ablauf in `shoppingList.spec.ts`.
-- [ ] `npm run lint` und `npm run build` laufen durch.
-- [ ] `npm run lint` meldet keinen Verstoß gegen `no-restricted-imports`.
+- [x] `npm run test:e2e` grün, darin der neue Ablauf in `shoppingList.spec.ts`.
+- [x] `npm run lint` und `npm run build` laufen durch.
+- [x] `npm run lint` meldet keinen Verstoß gegen `no-restricted-imports`.
 
 **Manuelle Verifikation** (iPhone, installierte PWA):
 - [ ] „Artikel hinzufügen“ mit VoiceOver: Die Reihenfolge ist „Menge, Textfeld, 1“ →
@@ -431,6 +431,9 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
 - Phase 1: Testing Library findet ▲/▼ innerhalb des `spinbutton` nicht per
   `getByRole('button', { hidden: true })`; die Tests greifen über `getByText` zu und
   prüfen `aria-hidden` ausdrücklich.
+- Phase 2: `readSteppedAmount` und `readAmount` teilen sich das Einlesen des Textes
+  (`writtenNumber`); `readAmount` bleibt für die Fehlermeldungen beim Speichern
+  zuständig, `readSteppedAmount` liefert stattdessen `null`.
 
 ## Verweise
 

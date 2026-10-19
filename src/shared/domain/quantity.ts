@@ -41,8 +41,24 @@ export function invalidQuantityMessage(reason: InvalidQuantityReason): string {
   return messagesByReason[reason]
 }
 
+export const MAXIMUM_STEPPED_AMOUNT = 9999
+
+const SMALLEST_STEPPED_AMOUNT = 1
+
+export function roundedAmount(amount: number): number {
+  return Math.round(amount * 1_000_000) / 1_000_000
+}
+
+function writtenNumber(written: string): number {
+  return Number(written.trim().replace(',', '.'))
+}
+
+function writtenWithComma(amount: number): string {
+  return String(amount).replace('.', ',')
+}
+
 function readAmount(written: string): number {
-  const amount = Number(written.trim().replace(',', '.'))
+  const amount = writtenNumber(written)
   if (Number.isNaN(amount)) throw new InvalidQuantity('amountNotANumber')
   if (amount <= 0) throw new InvalidQuantity('amountNotPositive')
   return amount
@@ -98,4 +114,22 @@ export function addQuantities(
 export function spokenAmount(written: string): string {
   const trimmed = written.trim()
   return trimmed === '' ? AMOUNT_OF_EMPTY_FIELD : trimmed
+}
+
+export function readSteppedAmount(written: string): number | null {
+  if (written.trim() === '') return Number(AMOUNT_OF_EMPTY_FIELD)
+  const amount = writtenNumber(written)
+  return Number.isNaN(amount) || amount <= 0 ? null : amount
+}
+
+export function stepWrittenAmount(
+  written: string,
+  step: AmountStep,
+): string | null {
+  const amount = readSteppedAmount(written)
+  if (amount === null) return null
+  const stepped = roundedAmount(amount + step)
+  if (stepped < SMALLEST_STEPPED_AMOUNT || stepped > MAXIMUM_STEPPED_AMOUNT)
+    return null
+  return writtenWithComma(stepped)
 }

@@ -6,9 +6,13 @@ import {
   invalidQuantityMessage,
   InvalidQuantity,
   orOneWithoutUnit,
+  MAXIMUM_STEPPED_AMOUNT,
   readQuantity,
+  readSteppedAmount,
+  roundedAmount,
   sameQuantity,
   spokenAmount,
+  stepWrittenAmount,
   type Quantity,
 } from './quantity'
 
@@ -191,5 +195,59 @@ describe('spokenAmount', () => {
 
   it('speaks a written amount as written', () => {
     expect(spokenAmount(' 2,5 ')).toBe('2,5')
+  })
+})
+
+describe('roundedAmount', () => {
+  it('drops the noise of floating point arithmetic', () => {
+    expect(roundedAmount(2.2 - 1)).toBe(1.2)
+  })
+})
+
+describe('readSteppedAmount', () => {
+  it('counts an empty field as one', () => {
+    expect(readSteppedAmount(' ')).toBe(1)
+  })
+
+  it.each([
+    ['2,5', 2.5],
+    ['2.5', 2.5],
+    ['500', 500],
+  ])('reads %j as %d', (written, amount) => {
+    expect(readSteppedAmount(written)).toBe(amount)
+  })
+
+  it.each(['viel', '0', '-1'])('reads nothing from %j', (written) => {
+    expect(readSteppedAmount(written)).toBeNull()
+  })
+})
+
+describe('stepWrittenAmount', () => {
+  it.each([
+    ['', 1, '2'],
+    ['1', 1, '2'],
+    ['2,5', 1, '3,5'],
+    ['2,5', -1, '1,5'],
+    ['1,5', 1, '2,5'],
+    ['9999', -1, '9998'],
+    ['2,2', -1, '1,2'],
+    ['500', 1, '501'],
+  ] as const)('steps %j by %i to %j', (written, step, stepped) => {
+    expect(stepWrittenAmount(written, step)).toBe(stepped)
+  })
+
+  it.each([
+    ['', -1],
+    ['1', -1],
+    ['1,5', -1],
+    ['9999', 1],
+    ['viel', 1],
+    ['viel', -1],
+  ] as const)('does not step %j by %i', (written, step) => {
+    expect(stepWrittenAmount(written, step)).toBeNull()
+  })
+
+  it('steps up to the largest amount', () => {
+    expect(stepWrittenAmount('9998', 1)).toBe(String(MAXIMUM_STEPPED_AMOUNT))
   })
 })

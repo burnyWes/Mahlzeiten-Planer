@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
@@ -370,6 +370,37 @@ describe('MealsArea', () => {
     expect(announcements).toContain(
       'Hackfleisch, 500 g als Artikel übernommen.',
     )
+  })
+
+  it('steps the amount of an item with the spin button', async () => {
+    const { client } = renderMealsArea()
+
+    await openMealForm()
+    await fillIn('Name', 'Bolognese')
+    const itemForm = screen.getByRole('form', {
+      name: 'Einkaufs-Artikel hinzufügen',
+    })
+    await userEvent.type(within(itemForm).getByLabelText('Artikel'), 'Milch')
+    await userEvent.type(within(itemForm).getByLabelText('Menge'), '2,5')
+    fireEvent.keyDown(
+      within(itemForm).getByRole('spinbutton', { name: 'Menge ändern' }),
+      { key: 'ArrowUp' },
+    )
+
+    expect(within(itemForm).getByLabelText('Menge')).toHaveValue('3,5')
+    expect(within(itemForm).getByLabelText('Menge')).toHaveAttribute(
+      'placeholder',
+      '1',
+    )
+
+    await userEvent.click(
+      within(itemForm).getByRole('button', { name: 'Artikel hinzufügen' }),
+    )
+    await save()
+
+    expect(client.storedMeals()[0].items).toEqual([
+      { name: 'Milch', quantity: { amount: 3.5, unit: null } },
+    ])
   })
 
   it('removes an item that was taken over by mistake', async () => {

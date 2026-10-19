@@ -200,6 +200,25 @@ test('changes the quantity of an item at its row', async ({ page }) => {
   await expect.poll(itemQuantitiesOnServer).toEqual(['Milch, 3 l'])
 })
 
+test('steps the amount of a new item with the spin button', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Artikel hinzufügen')
+  await typeInto(page, 'Name', 'Mehl')
+  await page.getByRole('spinbutton', { name: 'Menge ändern' }).focus()
+  await page.keyboard.press('ArrowUp')
+  await page.keyboard.press('ArrowUp')
+  await typeInto(page, 'Einheit', 'kg')
+  await pressButton(page, 'Hinzufügen')
+  await pressButton(page, 'Zurück zur Liste')
+
+  await expect.poll(() => shownShoppingItems(page)).toEqual(['Mehl, 3 kg'])
+  await expect.poll(itemQuantitiesOnServer).toEqual(['Mehl, 3 kg'])
+})
+
 test('removes an item with its last unit', async ({ page }) => {
   await page.goto('/')
   await signIn(page)

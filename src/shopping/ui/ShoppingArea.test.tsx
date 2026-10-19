@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
@@ -244,6 +244,33 @@ describe('ShoppingArea', () => {
     expect(stored.quantity).toEqual({ amount: 2, unit: 'l' })
     expect(stored.checkedOffAt).toBeNull()
     expect(stored.createdAt).toBeGreaterThan(0)
+  })
+
+  it('shows one as the placeholder of an empty amount', async () => {
+    renderShoppingArea()
+
+    await openAddItemPage()
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('')
+    expect(screen.getByLabelText('Menge')).toHaveAttribute('placeholder', '1')
+  })
+
+  it('steps an empty amount up with the spin button', async () => {
+    const { client } = renderShoppingArea()
+
+    await openAddItemPage()
+    await userEvent.type(screen.getByLabelText('Name'), 'Mehl')
+    fireEvent.keyDown(
+      screen.getByRole('spinbutton', { name: 'Menge ändern' }),
+      { key: 'ArrowUp' },
+    )
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('2')
+
+    await userEvent.type(screen.getByLabelText('Einheit'), 'g')
+    await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+
+    expect(client.storedItems()[0].quantity).toEqual({ amount: 2, unit: 'g' })
   })
 
   it('adds a typed item under its groomed name', async () => {

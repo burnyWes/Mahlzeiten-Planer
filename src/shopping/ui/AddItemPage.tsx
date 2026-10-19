@@ -1,4 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import {
+  MAXIMUM_STEPPED_AMOUNT,
+  readSteppedAmount,
+  spokenAmount,
+  stepWrittenAmount,
+  type AmountStep,
+} from '../../shared/domain/quantity'
+import { AmountSpinner } from '../../shared/ui/AmountSpinner'
 import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import { additionFailureMessage } from '../domain/announcements'
 import type { ShoppingItemDraft } from '../domain/shoppingItem'
@@ -34,6 +42,11 @@ export function AddItemPage({
 
   function change(part: Partial<ShoppingItemDraft>) {
     setDraft((previous) => ({ ...previous, ...part }))
+  }
+
+  function stepAmount(step: AmountStep) {
+    const stepped = stepWrittenAmount(draft.amount, step)
+    if (stepped !== null) change({ amount: stepped })
   }
 
   function chooseSuggestion(name: string) {
@@ -94,10 +107,18 @@ export function AddItemPage({
               ref={amountField}
               className="amountField"
               inputMode="decimal"
+              placeholder="1"
               value={draft.amount}
               onChange={(event) => change({ amount: event.target.value })}
             />
           </p>
+          <AmountSpinner
+            valueText={spokenAmount(draft.amount)}
+            value={readSteppedAmount(draft.amount)}
+            minimum={1}
+            maximum={MAXIMUM_STEPPED_AMOUNT}
+            onStep={stepAmount}
+          />
           <p className="field">
             <label htmlFor="itemUnit">Einheit</label>
             <input

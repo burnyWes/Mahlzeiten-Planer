@@ -1,7 +1,9 @@
 import {
   formatQuantity,
+  MAXIMUM_STEPPED_AMOUNT,
   orOneWithoutUnit,
   readQuantity,
+  roundedAmount,
   type Quantity,
   type QuantityDraft,
 } from '../../shared/domain/quantity'
@@ -107,12 +109,6 @@ export function withQuantity(
   quantity: Quantity | null,
 ): ShoppingItem {
   return { ...item, quantity }
-}
-
-export const MAXIMUM_STEPPED_AMOUNT = 9999
-
-function roundedAmount(amount: number): number {
-  return Math.round(amount * 1_000_000) / 1_000_000
 }
 
 export function steppedQuantity(item: ShoppingItem): Quantity {
