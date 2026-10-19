@@ -61,6 +61,7 @@ type WeekPlanPageProps = {
   onShowTime: (time: MealTime) => void
   onChooseMeal: (slot: PlanSlot, id: MealId | null) => void
   onShuffleSlot: (slot: PlanSlot) => void
+  onClearSlot: (slot: PlanSlot) => void
   onShuffleWeek: () => void
   stage: WeekPlanStage
   onToggleStage: () => void
@@ -197,6 +198,7 @@ export function WeekPlanPage({
   onShowTime,
   onChooseMeal,
   onShuffleSlot,
+  onClearSlot,
   onShuffleWeek,
   stage,
   onToggleStage,
@@ -255,6 +257,7 @@ export function WeekPlanPage({
                 stage={stage}
                 onChooseMeal={onChooseMeal}
                 onShuffleSlot={onShuffleSlot}
+                onClearSlot={onClearSlot}
               />
             ),
           )}

@@ -6,6 +6,7 @@ import {
   mealTimeShownAnnouncement,
   noMatchingMealAnnouncement,
   periodAppliedAnnouncement,
+  slotClearedAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   slotPlannedAnnouncement,
@@ -123,6 +124,11 @@ export function WeekPlanArea({
         slotMarkOf(stage, planned, slot, meals, supplies),
       ),
     )
+  }
+
+  function clearSlot(slot: PlanSlot) {
+    weekPlanning.chooseMeal(slot, null)
+    announce(slotClearedAnnouncement(slot, slotNamingIn(shownView)))
   }
 
   function rolledAnnouncement(rolled: WeekPlan, slot: PlanSlot, picked: Meal) {
@@ -243,6 +249,7 @@ export function WeekPlanArea({
       onShowTime={showTime}
       onChooseMeal={chooseMeal}
       onShuffleSlot={shuffleSlot}
+      onClearSlot={clearSlot}
       onShuffleWeek={shuffleWeek}
       stage={stage}
       onToggleStage={toggleStage}

@@ -1,6 +1,7 @@
 import { useRef, useState, type FocusEvent } from 'react'
 import { SnowflakeIcon } from '../../shared/ui/SnowflakeIcon'
 import {
+  clearSlotLabel,
   fixedSlotText,
   mealSuggestionsLabel,
   planDateMark,
@@ -18,6 +19,7 @@ import {
   type SlotMark,
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
+import { EraserIcon } from './EraserIcon'
 import { MealSuggestions } from './MealSuggestions'
 import { MealTimeIcon } from './MealTimeIcon'
 import { PackageIcon } from './PackageIcon'
@@ -33,6 +35,7 @@ type WeekPlanRowProps = {
   stage: WeekPlanStage
   onChooseMeal: (slot: PlanSlot, id: MealId | null) => void
   onShuffleSlot: (slot: PlanSlot) => void
+  onClearSlot: (slot: PlanSlot) => void
 }
 
 export function WeekPlanRow(props: WeekPlanRowProps) {
@@ -94,6 +97,30 @@ function ShuffleSlotButton({
   )
 }
 
+function ClearSlotButton({
+  slot,
+  naming,
+  empty,
+  onClear,
+}: {
+  slot: PlanSlot
+  naming: SlotNaming
+  empty: boolean
+  onClear: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className="iconButton"
+      aria-label={clearSlotLabel(slot, naming)}
+      aria-disabled={empty}
+      onClick={onClear}
+    >
+      <EraserIcon />
+    </button>
+  )
+}
+
 function FixedSlot(props: WeekPlanRowProps) {
   const { slot, naming, plan, meals, supplies, stage } = props
   const planned = shownMealIn(plan, slot, meals)
@@ -113,11 +140,21 @@ function FixedSlot(props: WeekPlanRowProps) {
 }
 
 function EditableSlot(props: WeekPlanRowProps) {
-  const { slot, naming, plan, meals, supplies, stage, onChooseMeal } = props
+  const {
+    slot,
+    naming,
+    plan,
+    meals,
+    supplies,
+    stage,
+    onChooseMeal,
+    onClearSlot,
+  } = props
   const [typed, setTyped] = useState<string | null>(null)
   const choice = useRef<HTMLDivElement>(null)
   const plannedName = shownMealIn(plan, slot, meals)?.name ?? ''
   const mark = slotMarkOf(stage, plan, slot, meals, supplies)
+  const shownText = typed ?? plannedName
 
   function change(written: string) {
     setTyped(written)
@@ -127,6 +164,12 @@ function EditableSlot(props: WeekPlanRowProps) {
   function chooseSuggestion(meal: Meal) {
     onChooseMeal(slot, meal.id)
     setTyped(null)
+  }
+
+  function clear() {
+    if (shownText === '') return
+    setTyped(null)
+    onClearSlot(slot)
   }
 
   function forgetTypingWhenLeaving(event: FocusEvent<HTMLInputElement>) {
@@ -139,9 +182,15 @@ function EditableSlot(props: WeekPlanRowProps) {
       <SlotMarks slot={slot} naming={naming} mark={mark} />
       <input
         aria-label={slotFieldLabel(slot, naming, mark)}
-        value={typed ?? plannedName}
+        value={shownText}
         onChange={(event) => change(event.target.value)}
         onBlur={forgetTypingWhenLeaving}
+      />
+      <ClearSlotButton
+        slot={slot}
+        naming={naming}
+        empty={shownText === ''}
+        onClear={clear}
       />
       <ShuffleSlotButton {...props} />
       <MealSuggestions

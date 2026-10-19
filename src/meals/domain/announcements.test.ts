@@ -52,6 +52,8 @@ import {
   planFixedAnnouncement,
   randomMealLabel,
   replacedKindAnnouncement,
+  clearSlotLabel,
+  slotClearedAnnouncement,
   slotFieldLabel,
   slotName,
   slotPlannedAnnouncement,
@@ -900,6 +902,32 @@ describe('randomMealLabel', () => {
   it('names the day the button rolls for', () => {
     expect(randomMealLabel(mondayBreakfast, 'day')).toBe(
       'Zufallsgericht für Montag, 21. September',
+    )
+  })
+})
+
+describe('clearSlotLabel', () => {
+  it('names the meal time the button clears', () => {
+    expect(clearSlotLabel(mondayBreakfast, 'time')).toBe('Frühstück leeren')
+  })
+
+  it('names the day the button clears', () => {
+    expect(clearSlotLabel(mondayBreakfast, 'day')).toBe(
+      'Montag, 21. September leeren',
+    )
+  })
+})
+
+describe('slotClearedAnnouncement', () => {
+  it('says that nothing is planned for the meal time', () => {
+    expect(slotClearedAnnouncement(mondayBreakfast, 'time')).toBe(
+      'Frühstück, nichts geplant.',
+    )
+  })
+
+  it('says that nothing is planned for the day', () => {
+    expect(slotClearedAnnouncement(mondayBreakfast, 'day')).toBe(
+      'Montag, 21. September, nichts geplant.',
     )
   })
 })

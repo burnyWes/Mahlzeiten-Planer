@@ -343,6 +343,14 @@ function shuffleSlot(name: string) {
   )
 }
 
+function clearSlotButton(name: string) {
+  return screen.getByRole('button', { name: `${name} leeren` })
+}
+
+function clearSlot(name: string) {
+  return userEvent.click(clearSlotButton(name))
+}
+
 function shuffleWeek() {
   return userEvent.click(
     screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
@@ -2224,6 +2232,146 @@ describe('WeekPlanArea', () => {
   })
 })
 
+describe('WeekPlanArea clearing a meal time', () => {
+  it('clears a planned meal time and says so', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+    )
+
+    await clearSlot('Mittagessen')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'lunch')),
+    ).toBeNull()
+    expect(mealTimeField('Mittagessen')).toHaveValue('')
+    expect(
+      screen.getByRole('heading', { name: 'Wochenplan, keine von 28' }),
+    ).toBeInTheDocument()
+    expect(announcements).toEqual(['Mittagessen, nichts geplant.'])
+  })
+
+  it('leaves the other meal times alone while it clears one', async () => {
+    const { weekPlanClient } = renderWeekPlanArea(
+      [bolognese],
+      planWith(
+        [slot(MONDAY, 'lunch'), 'bolognese'],
+        [slot(MONDAY, 'dinner'), 'bolognese'],
+      ),
+    )
+
+    await clearSlot('Mittagessen')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'dinner')),
+    ).toBe('bolognese')
+    expect(mealTimeField('Abendessen')).toHaveValue('Bolognese')
+  })
+
+  it('clears what was typed without choosing a meal', async () => {
+    const { announcements } = renderWeekPlanArea([bolognese, pizza])
+
+    await typeIntoMealTime('Frühstück', 'pi')
+    await clearSlot('Frühstück')
+
+    expect(mealTimeField('Frühstück')).toHaveValue('')
+    expect(noSuggestionsFor('Frühstück')).toBeNull()
+    expect(announcements.at(-1)).toBe('Frühstück, nichts geplant.')
+  })
+
+  it('keeps the clear button focused after clearing', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+    )
+
+    await clearSlot('Mittagessen')
+
+    expect(clearSlotButton('Mittagessen')).toHaveFocus()
+    expect(clearSlotButton('Mittagessen')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  })
+
+  it('offers no clearing of an empty meal time', async () => {
+    const { weekPlanClient, announcements } = renderWeekPlanArea([bolognese])
+
+    expect(clearSlotButton('Frühstück')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+
+    await clearSlot('Frühstück')
+
+    expect(mealsOf(weekPlanClient.storedWeekPlan())).toEqual(
+      mealsOf(EMPTY_PLAN),
+    )
+    expect(announcements).toEqual([])
+  })
+
+  it('names the day in the week view', async () => {
+    const { weekPlanClient, announcements } = renderWeekView(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+    )
+
+    await clearSlot('Montag, 21. September')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'lunch')),
+    ).toBeNull()
+    expect(announcements.at(-1)).toBe('Montag, 21. September, nichts geplant.')
+  })
+
+  it('offers no clearing while the plan is fixed', async () => {
+    renderWeekPlanArea(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+    )
+
+    await fixPlan()
+
+    expect(
+      screen
+        .queryAllByRole('button', { name: / leeren$/ })
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['Wochenplan leeren'])
+  })
+
+  it('shows the clear button as an icon only', () => {
+    renderWeekPlanArea([bolognese])
+
+    expect(clearSlotButton('Frühstück').textContent).toBe('')
+  })
+
+  it('places the clear button between the field and the rolling', () => {
+    renderWeekPlanArea([bolognese])
+
+    const lunchRow = mealTimeRows()[1]
+    const controls = Array.from(
+      lunchRow.querySelectorAll('input, button'),
+      (control) => control.getAttribute('aria-label'),
+    )
+    expect(controls).toEqual([
+      'Mittagessen',
+      'Mittagessen leeren',
+      'Zufallsgericht für Mittagessen',
+    ])
+  })
+
+  it('has no accessibility violations after a meal time was cleared', async () => {
+    const { rendered } = renderWeekPlanArea(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+    )
+
+    await clearSlot('Mittagessen')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
 describe('WeekPlanArea with leftovers', () => {
   const leavingLeftovers: Meal = { ...bolognese, leftovers: true }
   const mondayDinner = slot(MONDAY, 'dinner')
@@ -2344,6 +2492,37 @@ describe('WeekPlanArea with leftovers', () => {
     await userEvent.click(suggestionsFor('Abendessen')[0])
 
     expect(mealIn(weekPlanClient.storedWeekPlan(), tuesdayDinner)).toBe(
+      'bolognese',
+    )
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([])
+  })
+
+  it('keeps the meal of the leftovers but not the mark when the original is cleared', async () => {
+    const { weekPlanClient } = renderWeekPlanArea(
+      [leavingLeftovers, pizza],
+      withLeftovers,
+    )
+
+    await clearSlot('Abendessen')
+
+    expect(mealIn(weekPlanClient.storedWeekPlan(), mondayDinner)).toBeNull()
+    expect(mealIn(weekPlanClient.storedWeekPlan(), tuesdayDinner)).toBe(
+      'bolognese',
+    )
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([])
+  })
+
+  it('turns the leftovers into an empty slot when they are cleared', async () => {
+    const { weekPlanClient } = renderWeekPlanAreaOn(
+      TUESDAY,
+      [leavingLeftovers, pizza],
+      withLeftovers,
+    )
+
+    await clearSlot('Abendessen')
+
+    expect(mealIn(weekPlanClient.storedWeekPlan(), tuesdayDinner)).toBeNull()
+    expect(mealIn(weekPlanClient.storedWeekPlan(), mondayDinner)).toBe(
       'bolognese',
     )
     expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([])

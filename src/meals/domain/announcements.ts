@@ -440,6 +440,17 @@ export function randomMealLabel(slot: PlanSlot, naming: SlotNaming): string {
   return `Zufallsgericht für ${slotName(slot, naming)}`
 }
 
+export function clearSlotLabel(slot: PlanSlot, naming: SlotNaming): string {
+  return `${slotName(slot, naming)} leeren`
+}
+
+export function slotClearedAnnouncement(
+  slot: PlanSlot,
+  naming: SlotNaming,
+): string {
+  return `${slotName(slot, naming)}, nichts geplant.`
+}
+
 export function slotFieldLabel(
   slot: PlanSlot,
   naming: SlotNaming,
