@@ -8,6 +8,7 @@ import {
   orOneWithoutUnit,
   readQuantity,
   sameQuantity,
+  spokenAmount,
   type Quantity,
 } from './quantity'
 
@@ -180,5 +181,15 @@ describe('orOneWithoutUnit', () => {
       amount: 500,
       unit: 'g',
     })
+  })
+})
+
+describe('spokenAmount', () => {
+  it('speaks an empty amount as one', () => {
+    expect(spokenAmount('  ')).toBe('1')
+  })
+
+  it('speaks a written amount as written', () => {
+    expect(spokenAmount(' 2,5 ')).toBe('2,5')
   })
 })

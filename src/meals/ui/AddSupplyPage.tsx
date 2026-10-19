@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { spokenAmount, type AmountStep } from '../../shared/domain/quantity'
+import { AmountSpinner } from '../../shared/ui/AmountSpinner'
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { SaveIcon } from '../../shared/ui/SaveIcon'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
@@ -8,6 +10,9 @@ import { suggestMeals } from '../domain/mealSuggestions'
 import {
   createSupply,
   InvalidSupply,
+  MAXIMUM_COUNT,
+  readSteppedCount,
+  stepWrittenCount,
   type Supply,
   type SupplyDraft,
 } from '../domain/supply'
@@ -20,7 +25,7 @@ type AddSupplyPageProps = {
   announce: (text: string) => void
 }
 
-const EMPTY_DRAFT: SupplyDraft = { meal: '', count: '1' }
+const EMPTY_DRAFT: SupplyDraft = { meal: '', count: '' }
 
 export function AddSupplyPage({
   meals,
@@ -45,6 +50,11 @@ export function AddSupplyPage({
   function chooseSuggestion(meal: Meal) {
     change({ meal: meal.name })
     countField.current?.focus()
+  }
+
+  function stepCount(step: AmountStep) {
+    const stepped = stepWrittenCount(draft.count, step)
+    if (stepped !== null) change({ count: stepped })
   }
 
   function fieldOfFailure(error: unknown) {
@@ -87,17 +97,27 @@ export function AddSupplyPage({
         meals={suggestMeals(meals, draft.meal)}
         onChoose={chooseSuggestion}
       />
-      <p className="field">
-        <label htmlFor="supplyCount">Menge</label>
-        <input
-          id="supplyCount"
-          ref={countField}
-          className="amountField"
-          inputMode="numeric"
-          value={draft.count}
-          onChange={(event) => change({ count: event.target.value })}
+      <div className="quantityFields">
+        <p className="field">
+          <label htmlFor="supplyCount">Menge</label>
+          <input
+            id="supplyCount"
+            ref={countField}
+            className="amountField"
+            inputMode="numeric"
+            placeholder="1"
+            value={draft.count}
+            onChange={(event) => change({ count: event.target.value })}
+          />
+        </p>
+        <AmountSpinner
+          valueText={spokenAmount(draft.count)}
+          value={readSteppedCount(draft.count)}
+          minimum={1}
+          maximum={MAXIMUM_COUNT}
+          onStep={stepCount}
         />
-      </p>
+      </div>
       <p id="supplyFailure" className="failure">
         {failureMessage}
       </p>

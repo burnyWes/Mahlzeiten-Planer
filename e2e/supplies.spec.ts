@@ -47,6 +47,30 @@ test('keeps a supply of a meal after a reload', async ({ page }) => {
   await expect(shownItems(page)).toHaveText(['Bolognese−3+'])
 })
 
+test('steps the count of a new supply with the spin button', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Vorräte')
+  await pressButton(page, 'Vorrat hinzufügen')
+  await chooseSuggestion(page, 'Gericht', 'bolo', 'Bolognese')
+  await page.getByRole('spinbutton', { name: 'Menge ändern' }).focus()
+  await page.keyboard.press('ArrowUp')
+  await page.keyboard.press('ArrowUp')
+  await pressButton(page, 'Speichern')
+
+  await expect(page.getByRole('status')).toContainText('Bolognese, 3.')
+  await expect.poll(supplyCountsOnServer).toEqual([3])
+})
+
 test('recounts a supply and removes it again', async ({ page }) => {
   await page.goto('/')
   await signIn(page)

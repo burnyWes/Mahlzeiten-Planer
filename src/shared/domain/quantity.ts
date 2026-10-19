@@ -8,6 +8,8 @@ export type QuantityDraft = {
   unit: string
 }
 
+export type AmountStep = 1 | -1
+
 export type InvalidQuantityReason =
   | 'amountNotANumber'
   | 'amountNotPositive'
@@ -25,6 +27,8 @@ export class InvalidQuantity extends Error {
 }
 
 const ONE_WITHOUT_UNIT: Quantity = { amount: 1, unit: null }
+
+const AMOUNT_OF_EMPTY_FIELD = '1'
 
 const messagesByReason: Record<InvalidQuantityReason, string> = {
   amountNotANumber: 'Die Menge muss eine Zahl sein.',
@@ -89,4 +93,9 @@ export function addQuantities(
     amount: summand.amount + orOneWithoutUnit(other).amount,
     unit: summand.unit,
   }
+}
+
+export function spokenAmount(written: string): string {
+  const trimmed = written.trim()
+  return trimmed === '' ? AMOUNT_OF_EMPTY_FIELD : trimmed
 }

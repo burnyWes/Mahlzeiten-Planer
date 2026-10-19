@@ -7,7 +7,9 @@ import {
   isFull,
   isInSupply,
   isLastPortion,
+  readSteppedCount,
   recountedSupply,
+  stepWrittenCount,
   suppliedMeals,
   supplyOf,
   withOneLess,
@@ -60,10 +62,10 @@ describe('createSupply', () => {
     )
   })
 
-  it('refuses an empty count', () => {
-    expect(() =>
-      createSupply(meals, { meal: 'Bolognese', count: '  ' }),
-    ).toThrow(new InvalidSupply('countNotANumber'))
+  it('takes an empty count as one', () => {
+    expect(createSupply(meals, { meal: 'Bolognese', count: '  ' })).toEqual(
+      supply('bolognese', 1),
+    )
   })
 
   it('refuses a count that is no number', () => {
@@ -120,6 +122,12 @@ describe('combinedSupply', () => {
 describe('recountedSupply', () => {
   it('takes the count that was written for the meal', () => {
     expect(recountedSupply('bolognese', '5')).toEqual(supply('bolognese', 5))
+  })
+
+  it('refuses an empty count', () => {
+    expect(() => recountedSupply('bolognese', '  ')).toThrow(
+      new InvalidSupply('countNotANumber'),
+    )
   })
 
   it('refuses a count that is no number', () => {
@@ -271,5 +279,41 @@ describe('suppliedMeals', () => {
 
   it('leaves out a supply whose meal is gone', () => {
     expect(suppliedMeals([supply('pizza', 3)], meals)).toEqual([])
+  })
+})
+
+describe('readSteppedCount', () => {
+  it('counts an empty field as one', () => {
+    expect(readSteppedCount('')).toBe(1)
+  })
+
+  it('reads a written count', () => {
+    expect(readSteppedCount('5')).toBe(5)
+  })
+
+  it.each(['viele', '2,5', '0', '120'])('reads nothing from %s', (written) => {
+    expect(readSteppedCount(written)).toBeNull()
+  })
+})
+
+describe('stepWrittenCount', () => {
+  it.each([
+    ['', 1, '2'],
+    ['5', 1, '6'],
+    ['5', -1, '4'],
+    ['98', 1, '99'],
+    [' 3 ', 1, '4'],
+  ] as const)('steps %j by %i to %j', (written, step, stepped) => {
+    expect(stepWrittenCount(written, step)).toBe(stepped)
+  })
+
+  it.each([
+    ['', -1],
+    ['1', -1],
+    ['99', 1],
+    ['viele', 1],
+    ['viele', -1],
+  ] as const)('does not step %j by %i', (written, step) => {
+    expect(stepWrittenCount(written, step)).toBeNull()
   })
 })

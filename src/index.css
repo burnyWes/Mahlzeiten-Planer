@@ -209,11 +209,35 @@ button[aria-disabled='true'] {
 
 .quantityFields {
   display: flex;
+  align-items: flex-end;
   gap: 1rem;
 }
 
 .amountField {
   width: 6rem;
+}
+
+.amountField::placeholder {
+  color: var(--disabledLine);
+  opacity: 1;
+}
+
+.amountSpinner {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 0 1rem;
+  border-radius: 6px;
+}
+
+.spinArrow {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  line-height: 1;
+  background-color: var(--surface);
+  border-color: var(--accentLine);
 }
 
 .itemList label {

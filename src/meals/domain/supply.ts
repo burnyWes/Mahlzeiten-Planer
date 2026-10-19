@@ -1,3 +1,4 @@
+import type { AmountStep } from '../../shared/domain/quantity'
 import { byName, mealNamed, type Meal, type MealId } from './meal'
 
 export type Supply = {
@@ -34,15 +35,47 @@ export class InvalidSupply extends Error {
 
 export const MAXIMUM_COUNT = 99
 
-function readCount(written: string): number {
+const COUNT_OF_EMPTY_FIELD = 1
+
+function parsedCount(written: string): number | InvalidSupplyReason {
   const trimmed = written.trim()
   const count = Number(trimmed.replace(',', '.'))
-  if (trimmed === '' || Number.isNaN(count))
-    throw new InvalidSupply('countNotANumber')
-  if (!Number.isInteger(count)) throw new InvalidSupply('countNotWhole')
-  if (count < 1) throw new InvalidSupply('countNotPositive')
-  if (count > MAXIMUM_COUNT) throw new InvalidSupply('countTooLarge')
+  if (trimmed === '' || Number.isNaN(count)) return 'countNotANumber'
+  if (!Number.isInteger(count)) return 'countNotWhole'
+  if (count < 1) return 'countNotPositive'
+  if (count > MAXIMUM_COUNT) return 'countTooLarge'
   return count
+}
+
+function readCount(written: string): number {
+  const count = parsedCount(written)
+  if (typeof count === 'string') throw new InvalidSupply(count)
+  return count
+}
+
+function isEmptyField(written: string): boolean {
+  return written.trim() === ''
+}
+
+function readCountOrOne(written: string): number {
+  return isEmptyField(written) ? COUNT_OF_EMPTY_FIELD : readCount(written)
+}
+
+export function readSteppedCount(written: string): number | null {
+  if (isEmptyField(written)) return COUNT_OF_EMPTY_FIELD
+  const count = parsedCount(written)
+  return typeof count === 'number' ? count : null
+}
+
+export function stepWrittenCount(
+  written: string,
+  step: AmountStep,
+): string | null {
+  const count = readSteppedCount(written)
+  if (count === null) return null
+  const stepped = count + step
+  if (stepped < 1 || stepped > MAXIMUM_COUNT) return null
+  return String(stepped)
 }
 
 export function createSupply(
@@ -51,7 +84,7 @@ export function createSupply(
 ): Supply {
   const meal = mealNamed(meals, draft.meal)
   if (meal === null) throw new InvalidSupply('mealUnknown')
-  return { mealId: meal.id, count: readCount(draft.count) }
+  return { mealId: meal.id, count: readCountOrOne(draft.count) }
 }
 
 export function recountedSupply(mealId: MealId, written: string): Supply {

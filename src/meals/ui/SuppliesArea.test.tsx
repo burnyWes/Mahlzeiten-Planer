@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
@@ -84,6 +84,12 @@ async function fillIn(label: string, text: string) {
 
 function save() {
   return userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+}
+
+function stepWithSwipe(key: 'ArrowUp' | 'ArrowDown') {
+  fireEvent.keyDown(screen.getByRole('spinbutton', { name: 'Menge ändern' }), {
+    key,
+  })
 }
 
 function openSupply(name: string) {
@@ -238,13 +244,61 @@ describe('SuppliesArea', () => {
     expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 2)])
   })
 
-  it('starts the count of a new supply at one', async () => {
+  it('starts the count of a new supply empty with one as its placeholder', async () => {
     renderSuppliesArea([bolognese])
 
     await openSupplyForm()
 
-    expect(screen.getByLabelText('Menge')).toHaveValue('1')
+    expect(screen.getByLabelText('Menge')).toHaveValue('')
+    expect(screen.getByLabelText('Menge')).toHaveAttribute('placeholder', '1')
     expect(screen.getByLabelText('Gericht')).toHaveFocus()
+  })
+
+  it('keeps one portion when the count stays empty', async () => {
+    const { suppliesClient } = renderSuppliesArea([bolognese])
+
+    await openSupplyForm()
+    await fillIn('Gericht', 'Bolognese')
+    await save()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 1)])
+  })
+
+  it('takes a typed count as it is instead of adding it to a one', async () => {
+    const { suppliesClient } = renderSuppliesArea([bolognese])
+
+    await openSupplyForm()
+    await fillIn('Gericht', 'Bolognese')
+    await userEvent.type(screen.getByLabelText('Menge'), '3')
+    await save()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 3)])
+  })
+
+  it('steps the count of a new supply up from the empty one', async () => {
+    const { suppliesClient } = renderSuppliesArea([bolognese])
+
+    await openSupplyForm()
+    await fillIn('Gericht', 'Bolognese')
+    stepWithSwipe('ArrowUp')
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('2')
+    expect(
+      screen.getByRole('spinbutton', { name: 'Menge ändern' }),
+    ).toHaveAttribute('aria-valuetext', '2')
+
+    await save()
+
+    expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 2)])
+  })
+
+  it('steps the count up with the arrow above', async () => {
+    renderSuppliesArea([bolognese])
+
+    await openSupplyForm()
+    await userEvent.click(screen.getByText('▲'))
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('2')
   })
 
   it('refuses a meal nobody wrote down', async () => {
@@ -370,6 +424,29 @@ describe('SuppliesArea', () => {
     expect(suppliesClient.storedSupplies()).toEqual([supply('bolognese', 5)])
     expect(announcements).toContain('Bolognese, 5.')
     expect(shownSupplies()).toEqual(['Bolognese, 5'])
+  })
+
+  it('steps the count of a kept supply down and up', async () => {
+    renderSuppliesArea([bolognese], [supply('bolognese', 3)])
+
+    await openSupply('Bolognese')
+    stepWithSwipe('ArrowDown')
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('2')
+
+    stepWithSwipe('ArrowUp')
+    stepWithSwipe('ArrowUp')
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('4')
+  })
+
+  it('does not step the count of a kept supply below one', async () => {
+    renderSuppliesArea([bolognese], [supply('bolognese', 1)])
+
+    await openSupply('Bolognese')
+    stepWithSwipe('ArrowDown')
+
+    expect(screen.getByLabelText('Menge')).toHaveValue('1')
   })
 
   it('stays on the supply when the count cannot be read', async () => {

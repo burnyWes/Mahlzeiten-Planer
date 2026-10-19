@@ -87,7 +87,7 @@ flowchart TB
     end
 
     sharedDomain["shared/domain<br/>Quantity · Clock"]
-    sharedUi["shared/ui<br/>BottomBar · Stepper · Fokus · Ansagen"]
+    sharedUi["shared/ui<br/>BottomBar · Stepper · SpinButton · AmountSpinner · Fokus · Ansagen"]
     firestore[("Cloud Firestore")]
 
     ui --> port
@@ -205,7 +205,7 @@ flowchart LR
         appearance["<b>appearance</b><br/>AppearanceClient · useAppearance<br/>localStorageAppearanceClient"]
         appUpdate["<b>appUpdate</b><br/>AppUpdateClient · useAppUpdate · AppUpdateOffer<br/>serviceWorkerAppUpdateClient"]
         sdomain["<b>domain</b><br/>quantity · clock"]
-        sui["<b>ui</b><br/>NavigationBar · BottomBar · SettingsPage<br/>Announcer · Stepper · NameSuggestions<br/>useHeadingFocus · useFocusAfterRemoval"]
+        sui["<b>ui</b><br/>NavigationBar · BottomBar · SettingsPage<br/>Announcer · Stepper · SpinButton · AmountSpinner · NameSuggestions<br/>useHeadingFocus · useFocusAfterRemoval"]
     end
 
     auth -.-> fbauth[("Firebase Auth")]
