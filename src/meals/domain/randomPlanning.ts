@@ -3,6 +3,11 @@ import type { Meal, MealKind } from './meal'
 import { sameCategory } from './mealCategory'
 import type { PlanDate } from './planDate'
 import { dateAfter, dateBefore, datesOf, type PlanPeriod } from './planPeriod'
+import type {
+  MainMealTime,
+  MainMealTimeRule,
+  RollingRules,
+} from './rollingRules'
 import type { Supply } from './supply'
 import {
   emptyWeekPlan,
@@ -18,42 +23,6 @@ import {
 } from './weekPlan'
 
 export type RandomSource = () => number
-
-export type MainMealTime = Extract<MealTime, 'lunch' | 'dinner'>
-
-export type MainMealTimeRule = MainMealTime | 'lunchOrDinner'
-
-export const MAIN_MEAL_TIME_RULES: readonly MainMealTimeRule[] = [
-  'lunchOrDinner',
-  'lunch',
-  'dinner',
-]
-
-export const DEFAULT_MAIN_MEAL_TIME_RULE: MainMealTimeRule = 'lunchOrDinner'
-
-export function isMainMealTimeRule(value: unknown): value is MainMealTimeRule {
-  return MAIN_MEAL_TIME_RULES.some((rule) => rule === value)
-}
-
-export type RollingRules = {
-  mainMealTime: MainMealTimeRule
-  plansLeftovers: boolean
-}
-
-export const DEFAULT_ROLLING_RULES: RollingRules = {
-  mainMealTime: DEFAULT_MAIN_MEAL_TIME_RULE,
-  plansLeftovers: true,
-}
-
-export function sameRollingRules(
-  one: RollingRules,
-  other: RollingRules,
-): boolean {
-  return (
-    one.mainMealTime === other.mainMealTime &&
-    one.plansLeftovers === other.plansLeftovers
-  )
-}
 
 export type PlanningRule = (
   candidates: readonly Meal[],
@@ -300,7 +269,7 @@ function filledDay(
     const picked = pickMealFor(meals, filled, slot, random, rule, mainMealTime)
     return picked === null
       ? filled
-      : rolledInto(filled, slot, picked, meals, supplies, rules)
+      : rolledInto(filled, slot, picked, meals, supplies, rules, 'wholePlan')
   }, plan)
 }
 

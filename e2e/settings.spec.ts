@@ -4,6 +4,7 @@ import {
   prepareEmulators,
   rollingRulesOnServer,
   settleWrites,
+  storeRollingRulesOnServer,
 } from './emulatorHousehold.ts'
 import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
 
@@ -16,7 +17,16 @@ test.afterEach(async ({ page }) => {
 })
 
 function mainMealTimeChoice(page: Page) {
-  return page.getByRole('combobox', { name: 'Hauptgericht würfeln' })
+  return page.getByRole('combobox', { name: 'Hauptgericht' })
+}
+
+function ruleSwitch(page: Page, name: string) {
+  return page.getByRole('switch', { name })
+}
+
+async function openRollingRules(page: Page) {
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Regel-Verwaltung')
 }
 
 test('remembers the main meal time for the household after a reload', async ({
@@ -25,7 +35,7 @@ test('remembers the main meal time for the household after a reload', async ({
   await page.goto('/')
   await signIn(page)
 
-  await pressButton(page, 'Einstellungen')
+  await openRollingRules(page)
   await expect(mainMealTimeChoice(page)).toHaveValue('lunchOrDinner')
   await mainMealTimeChoice(page).focus()
   await mainMealTimeChoice(page).selectOption({ label: 'Nur abends' })
@@ -36,28 +46,25 @@ test('remembers the main meal time for the household after a reload', async ({
     .toBe('dinner')
 
   await page.reload()
-  await pressButton(page, 'Einstellungen')
+  await openRollingRules(page)
 
   await expect(mainMealTimeChoice(page)).toHaveValue('dinner')
 })
 
-function leftoverPlanningSwitch(page: Page) {
-  return page.getByRole('switch', { name: 'Reste einplanen' })
-}
-
-test('switches off planning leftovers for the household', async ({ page }) => {
+test('switches off leftovers for a single meal only', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
 
-  await pressButton(page, 'Einstellungen')
-  await expect(leftoverPlanningSwitch(page)).toBeChecked()
-  await leftoverPlanningSwitch(page).focus()
+  await openRollingRules(page)
+  await expect(ruleSwitch(page, 'Reste, Einzelgericht')).toBeChecked()
+  await ruleSwitch(page, 'Reste, Einzelgericht').focus()
   await page.keyboard.press('Space')
   await settleWrites(page)
 
   await expect.poll(rollingRulesOnServer).toEqual({
     mainMealTime: 'lunchOrDinner',
-    leftovers: false,
+    switchedOff: ['leftovers.singleMeal'],
+    leftovers: null,
   })
 
   await mainMealTimeChoice(page).focus()
@@ -66,13 +73,31 @@ test('switches off planning leftovers for the household', async ({ page }) => {
 
   await expect.poll(rollingRulesOnServer).toEqual({
     mainMealTime: 'dinner',
-    leftovers: false,
+    switchedOff: ['leftovers.singleMeal'],
+    leftovers: null,
   })
 
   await page.reload()
-  await pressButton(page, 'Einstellungen')
+  await openRollingRules(page)
 
-  await expect(leftoverPlanningSwitch(page)).not.toBeChecked()
+  await expect(ruleSwitch(page, 'Reste, Einzelgericht')).not.toBeChecked()
+  await expect(ruleSwitch(page, 'Reste, Gesamtplan')).toBeChecked()
+})
+
+test('takes over leftovers switched off before the update', async ({
+  page,
+}) => {
+  await storeRollingRulesOnServer({
+    mainMealTime: 'lunchOrDinner',
+    leftovers: false,
+  })
+
+  await page.goto('/')
+  await signIn(page)
+  await openRollingRules(page)
+
+  await expect(ruleSwitch(page, 'Reste, Einzelgericht')).not.toBeChecked()
+  await expect(ruleSwitch(page, 'Reste, Gesamtplan')).not.toBeChecked()
 })
 
 test('merges a misspelt unit into the right one', async ({ page }) => {

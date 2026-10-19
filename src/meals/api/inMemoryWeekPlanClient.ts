@@ -1,7 +1,7 @@
 import {
   DEFAULT_ROLLING_RULES,
   type RollingRules,
-} from '../domain/randomPlanning'
+} from '../domain/rollingRules'
 import type { WeekPlan } from '../domain/weekPlan'
 import { EDITING_STAGE, type WeekPlanStage } from '../domain/weekPlanStage'
 import type { WeekPlanClient } from './weekPlanClient'

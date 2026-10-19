@@ -2,23 +2,18 @@ import { describe, expect, it } from 'vitest'
 import type { Meal, MealKind } from './meal'
 import {
   apartFromSameCategory,
-  DEFAULT_ROLLING_RULES,
   filledWeekPlan,
-  isMainMealTimeRule,
-  MAIN_MEAL_TIME_RULES,
   mainMealTimeOf,
   narrowedBy,
   otherThanPlanned,
   pickMealFor,
   randomCandidates,
   rarestInThePlan,
-  sameRollingRules,
   stayingLikeTheDayBefore,
-  type MainMealTimeRule,
   type PlanningRule,
   type RandomSource,
-  type RollingRules,
 } from './randomPlanning'
+import type { MainMealTimeRule, RollingRules } from './rollingRules'
 import { toPlanDate, type PlanDate } from './planDate'
 import { datesOf, type PlanPeriod } from './planPeriod'
 import type { Supply } from './supply'
@@ -48,7 +43,7 @@ const EMPTY_PLAN = emptyWeekPlan(WEEK)
 const NO_SUPPLIES: readonly Supply[] = []
 
 function rollingRules(mainMealTime: MainMealTimeRule): RollingRules {
-  return { mainMealTime, plansLeftovers: true }
+  return { mainMealTime, switchedOff: [] }
 }
 
 function meal(
@@ -700,57 +695,6 @@ describe('mainMealTimeOf', () => {
   })
 })
 
-describe('isMainMealTimeRule', () => {
-  it('accepts every rule for the time of the main meal', () => {
-    expect(MAIN_MEAL_TIME_RULES.every(isMainMealTimeRule)).toBe(true)
-    expect(MAIN_MEAL_TIME_RULES).toEqual(['lunchOrDinner', 'lunch', 'dinner'])
-  })
-
-  it('rejects anything else', () => {
-    expect(isMainMealTimeRule('breakfast')).toBe(false)
-    expect(isMainMealTimeRule(undefined)).toBe(false)
-    expect(isMainMealTimeRule(42)).toBe(false)
-  })
-})
-
-describe('DEFAULT_ROLLING_RULES', () => {
-  it('rolls the main meal at lunch or dinner and plans leftovers', () => {
-    expect(DEFAULT_ROLLING_RULES).toEqual({
-      mainMealTime: 'lunchOrDinner',
-      plansLeftovers: true,
-    })
-  })
-})
-
-describe('sameRollingRules', () => {
-  it('takes rules with the same time and the same leftovers as the same', () => {
-    expect(
-      sameRollingRules(
-        { mainMealTime: 'dinner', plansLeftovers: false },
-        { mainMealTime: 'dinner', plansLeftovers: false },
-      ),
-    ).toBe(true)
-  })
-
-  it('tells rules apart by the time of the main meal', () => {
-    expect(
-      sameRollingRules(
-        { mainMealTime: 'dinner', plansLeftovers: true },
-        { mainMealTime: 'lunch', plansLeftovers: true },
-      ),
-    ).toBe(false)
-  })
-
-  it('tells rules apart by the leftovers', () => {
-    expect(
-      sameRollingRules(
-        { mainMealTime: 'dinner', plansLeftovers: true },
-        { mainMealTime: 'dinner', plansLeftovers: false },
-      ),
-    ).toBe(false)
-  })
-})
-
 describe('pickMealFor', () => {
   it('picks nothing when no meal is stored', () => {
     expect(
@@ -1126,11 +1070,29 @@ describe('filledWeekPlan', () => {
         [bolognese],
         { start: MONDAY, days: 2 },
         sequence([0]),
-        { mainMealTime: 'dinner', plansLeftovers: false },
+        {
+          mainMealTime: 'dinner',
+          switchedOff: [{ rule: 'leftovers', mode: 'wholePlan' }],
+        },
         NO_SUPPLIES,
       )
 
       expect(plan.leftoverSlots).toEqual([])
+    })
+
+    it('still plans leftovers while they are switched off for a single meal only', () => {
+      const plan = filledWeekPlan(
+        [bolognese],
+        { start: MONDAY, days: 2 },
+        sequence([0]),
+        {
+          mainMealTime: 'dinner',
+          switchedOff: [{ rule: 'leftovers', mode: 'singleMeal' }],
+        },
+        NO_SUPPLIES,
+      )
+
+      expect(plan.leftoverSlots).toEqual([slot(TUESDAY, 'dinner')])
     })
   })
 

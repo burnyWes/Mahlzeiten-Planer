@@ -302,11 +302,11 @@ Altfeld wird gelesen, und die Einstellungsseite ist aufgeräumt.
 
 Domäne (test-getrieben, erst der rote Test):
 
-- [ ] `src/meals/domain/rollingRules.ts` anlegen. Die oben genannten Typen und
+- [x] `src/meals/domain/rollingRules.ts` anlegen. Die oben genannten Typen und
       Funktionen aus `randomPlanning.ts` hierher verschieben und alle Importe
       anpassen. Die zugehörigen Tests (`isMainMealTimeRule`, `MAIN_MEAL_TIME_RULES`,
       `sameRollingRules`) ziehen nach `rollingRules.test.ts`.
-- [ ] Neue Typen einführen. `SwitchableRule` ist in dieser Phase nur `'leftovers'`,
+- [x] Neue Typen einführen. `SwitchableRule` ist in dieser Phase nur `'leftovers'`,
       Phase 2 erweitert die Union.
   ```ts
   export type RollingMode = 'singleMeal' | 'wholePlan'
@@ -326,18 +326,18 @@ Domäne (test-getrieben, erst der rote Test):
     switchedOff: [],
   }
   ```
-- [ ] `appliesIn(rules, rule, mode): boolean`. Tests:
+- [x] `appliesIn(rules, rule, mode): boolean`. Tests:
   - alles ein, wenn `switchedOff` leer ist
   - aus nur im ausgeschalteten Modus, der andere Modus bleibt ein
-- [ ] `withRuleSwitched(rules, ruleInMode, on): RollingRules`. Tests:
+- [x] `withRuleSwitched(rules, ruleInMode, on): RollingRules`. Tests:
   - Ausschalten nimmt den Eintrag auf, ein zweites Ausschalten verdoppelt ihn nicht
   - Einschalten entfernt den Eintrag
   - `mainMealTime` bleibt erhalten
   - ein Modus, den `MODES_OF_RULE` für die Regel nicht kennt, ändert nichts
-- [ ] `sameRollingRules` vergleicht `switchedOff` unabhängig von der Reihenfolge. Test:
+- [x] `sameRollingRules` vergleicht `switchedOff` unabhängig von der Reihenfolge. Test:
       `[a, b]` gleicht `[b, a]`, `[a]` gleicht nicht `[a, b]`.
-- [ ] `ruleInModeKey(ruleInMode): string` liefert `'leftovers.wholePlan'`.
-- [ ] `rollingRulesFromStored(stored: { mainMealTime?: unknown; switchedOff?: unknown; leftovers?: unknown }): RollingRules`.
+- [x] `ruleInModeKey(ruleInMode): string` liefert `'leftovers.wholePlan'`.
+- [x] `rollingRulesFromStored(stored: { mainMealTime?: unknown; switchedOff?: unknown; leftovers?: unknown }): RollingRules`.
       Tests:
   - ein leeres Dokument ergibt `DEFAULT_ROLLING_RULES`
   - eine unbekannte `mainMealTime` fällt auf `DEFAULT_MAIN_MEAL_TIME_RULE` zurück (wie heute)
@@ -346,17 +346,17 @@ Domäne (test-getrieben, erst der rote Test):
     (`'otherMeal.wholePlan'`, `'foo'`, `42`)
   - fehlt `switchedOff` und ist `leftovers: false`, sind beide Reste-Modi aus
   - ist `switchedOff` vorhanden, wird `leftovers` ignoriert
-- [ ] `src/meals/domain/leftovers.ts`: `rolledInto(plan, slot, meal, meals, supplies, rules, mode)`
+- [x] `src/meals/domain/leftovers.ts`: `rolledInto(plan, slot, meal, meals, supplies, rules, mode)`
       prüft `appliesIn(rules, 'leftovers', mode)` statt `rules.plansLeftovers`.
       `leftovers.test.ts` umstellen. Neue Tests: Reste aus nur für `singleMeal`, dann
       `rolledInto(…, 'singleMeal')` ohne und `rolledInto(…, 'wholePlan')` mit
       Reste-Platz. Dasselbe umgekehrt.
-- [ ] `src/meals/domain/randomPlanning.ts`: `filledDay` ruft
+- [x] `src/meals/domain/randomPlanning.ts`: `filledDay` ruft
       `rolledInto(…, rules, 'wholePlan')`. Test in `randomPlanning.test.ts`: Reste nur
       für `singleMeal` ausgeschaltet, `filledWeekPlan` plant trotzdem Reste. Der
       Test-Helfer `rollingRules(mainMealTime)` liefert `{ mainMealTime, switchedOff: [] }`,
       die Literale `{ mainMealTime, plansLeftovers }` werden ersetzt.
-- [ ] `src/meals/domain/announcements.ts`: neue Texte plus Tests in
+- [x] `src/meals/domain/announcements.ts`: neue Texte plus Tests in
       `announcements.test.ts`.
   ```ts
   rollingRulesHeading(): 'Regel-Verwaltung'
@@ -372,16 +372,16 @@ Domäne (test-getrieben, erst der rote Test):
 
 Adapter:
 
-- [ ] `src/meals/api/firestoreWeekPlanClient.ts`: `toRollingRules` ruft
+- [x] `src/meals/api/firestoreWeekPlanClient.ts`: `toRollingRules` ruft
       `rollingRulesFromStored(stored ?? {})`. `fromRollingRules` schreibt
       `{ mainMealTime, switchedOff: rules.switchedOff.map(ruleInModeKey) }` und kein
       `leftovers` mehr.
-- [ ] `src/meals/api/inMemoryWeekPlanClient.ts`, `weekPlanClient.ts`: Importe auf
+- [x] `src/meals/api/inMemoryWeekPlanClient.ts`, `weekPlanClient.ts`: Importe auf
       `rollingRules.ts` umstellen.
 
 Oberfläche:
 
-- [ ] `src/meals/ui/useWeekPlan.ts`: `changeLeftoverPlanning` ersetzen durch
+- [x] `src/meals/ui/useWeekPlan.ts`: `changeLeftoverPlanning` ersetzen durch
   ```ts
   switchRule: (ruleInMode: RuleInMode, on: boolean) => void
   ```
@@ -389,13 +389,13 @@ Oberfläche:
   `useWeekPlan.test.tsx` umstellen. Die Tests „keeps its own rules …“ und „takes the
   rules of the other device …“ bleiben sinngemäß, dazu kommt ein Test für `switchRule`,
   der `mainMealTime` erhält.
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `shuffleSlot` ruft
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `shuffleSlot` ruft
       `rolledInto(…, rollingRules, 'singleMeal')`. `filledWeekPlan` bleibt mit
       `rollingRules`. In `WeekPlanArea.test.tsx` den Helfer `renderRollingAtDinner`
       und die Literale `plansLeftovers` auf `switchedOff` umstellen. Neuer Test: Reste
       nur für `singleMeal` aus, ein Platz wird gewürfelt, kein Reste-Platz entsteht.
       Mit Reste nur für `wholePlan` aus entsteht dagegen einer.
-- [ ] `src/meals/ui/RollingRulesPage.tsx` neu. Props:
+- [x] `src/meals/ui/RollingRulesPage.tsx` neu. Props:
   ```ts
   type RollingRulesPageProps = {
     rollingRules: RollingRules
@@ -415,14 +415,14 @@ Oberfläche:
     `<label className="settingsToggle">` mit sichtbarem `rollingModeName(mode)` und
     `<input type="checkbox" role="switch" aria-label={ruleSwitchName(…)} aria-describedby={explanationId} checked={appliesIn(…)}>`.
   Die IDs leiten sich aus Regel und Modus ab, etwa `rule-leftovers-explanation`.
-- [ ] `src/shared/ui/SettingsPage.tsx`: Eintragsart `choice` samt
+- [x] `src/shared/ui/SettingsPage.tsx`: Eintragsart `choice` samt
       `SettingsChoiceOption` entfernen.
-- [ ] `src/index.css`: `.settingsChoice` und `.settingsChoice select` entfernen.
+- [x] `src/index.css`: `.settingsChoice` und `.settingsChoice select` entfernen.
       `.ruleGroup` anlegen: Abstand zwischen den Gruppen, Trennlinie wie bei
       `.mealRow`, `select` mit `width: 100%; min-width: 0`. Die Farben laufen über die
       vorhandenen Tokens, damit die Farbumkehr greift (`test/palette.test.ts` muss grün
       bleiben).
-- [ ] `src/SignedInApp.tsx`:
+- [x] `src/SignedInApp.tsx`:
   - `ROLLING_RULES_ENTRY = 'rollingRules'`
   - Eintrag `{ kind: 'page', id: ROLLING_RULES_ENTRY, label: 'Regel-Verwaltung' }` vor
     `KNOWN_ITEMS_ENTRY`
@@ -432,7 +432,7 @@ Oberfläche:
     rendert `RollingRulesPage` mit `weekPlanning.rollingRules`,
     `weekPlanning.changeMainMealTimeRule`, `weekPlanning.switchRule` und
     `onBack={() => setSettingsEntry(null)}`
-- [ ] `src/SignedInApp.test.tsx` umstellen:
+- [x] `src/SignedInApp.test.tsx` umstellen:
   - „offers to invert the colours …“ erwartet die neue Eintragsliste
   - die Tests zu Hauptgericht und Reste öffnen erst „Regel-Verwaltung“. Combobox-Name
     ist dann „Hauptgericht“, Schalter heißen „Reste, Einzelgericht“ / „Reste, Gesamtplan“
@@ -450,10 +450,10 @@ Oberfläche:
 
 E2E:
 
-- [ ] `e2e/emulatorHousehold.ts`: `rollingRulesOnServer` liefert
+- [x] `e2e/emulatorHousehold.ts`: `rollingRulesOnServer` liefert
       `{ mainMealTime, switchedOff: string[] | null, leftovers: boolean | null }`.
       Neu `storeRollingRulesOnServer(fields)` zum Vorbelegen des Altzustands.
-- [ ] `e2e/settings.spec.ts`:
+- [x] `e2e/settings.spec.ts`:
   - „remembers the main meal time …“ geht über „Regel-Verwaltung“, Combobox
     „Hauptgericht“
   - „switches off planning leftovers …“ wird zu „switches off leftovers for a single
@@ -463,22 +463,22 @@ E2E:
   - neu: „takes over leftovers switched off before the update“: Server mit
     `{ mainMealTime: 'lunchOrDinner', leftovers: false }` vorbelegen, beide
     Reste-Schalter sind aus
-- [ ] `e2e/weekPlan.spec.ts:379-382` und `:415-418`: über „Regel-Verwaltung“ zur
+- [x] `e2e/weekPlan.spec.ts:379-382` und `:415-418`: über „Regel-Verwaltung“ zur
       Combobox „Hauptgericht“.
 
 Dokumentation:
 
-- [ ] `docs/architektur/05-bausteinsicht.md:176`: `rollingRules` in den
+- [x] `docs/architektur/05-bausteinsicht.md:176`: `rollingRules` in den
       Baustein-Knoten aufnehmen. Bei `SettingsPage` (`:208`) ändert sich nichts.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`: grün, darunter die neuen Tests in `rollingRules.test.ts`,
+- [x] `npm run test`: grün, darunter die neuen Tests in `rollingRules.test.ts`,
       `leftovers.test.ts`, `randomPlanning.test.ts`, `useWeekPlan.test.tsx`,
       `WeekPlanArea.test.tsx`, `SignedInApp.test.tsx` und `domainLayerBoundary.test.ts`
-- [ ] `npm run lint`: ohne Befund
-- [ ] `npm run build`: übersetzt
-- [ ] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
-- [ ] `grep -rn "plansLeftovers\|changeLeftoverPlanning\|settingsChoice\|kind: 'choice'" src e2e`
+- [x] `npm run lint`: ohne Befund
+- [x] `npm run build`: übersetzt
+- [x] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
+- [x] `grep -rn "plansLeftovers\|changeLeftoverPlanning\|settingsChoice\|kind: 'choice'" src e2e`
       findet nichts
 
 **Manuelle Verifikation**:
@@ -596,6 +596,15 @@ E2E:
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1: Das Aussehen der Schalter hing an `.itemList input[type='checkbox']`. Die
+  Selektoren für Label und Schalter gelten jetzt zusätzlich für `.ruleGroup`, damit die
+  Regel-Verwaltung ohne Liste dieselben Schalter zeigt.
+- Phase 1: `rollingRulesFromStored` liest ein `switchedOff`, das keine Liste ist, als
+  „nichts ausgeschaltet“. Der Altwert `leftovers` zählt nur, solange `switchedOff` ganz
+  fehlt.
+- Phase 1: Die Regel-Verwaltung hat wie die anderen Unterseiten keine
+  Navigationsleiste. Der Weg zum Wochenplan führt über „Zurück zu den Einstellungen“.
 
 ## Verweise
 

@@ -1,6 +1,6 @@
 import type { Meal, MealId } from './meal'
 import { dateAfter } from './planPeriod'
-import type { RollingRules } from './randomPlanning'
+import { appliesIn, type RollingMode, type RollingRules } from './rollingRules'
 import type { Supply } from './supply'
 import {
   isLeftoverIn,
@@ -44,11 +44,12 @@ export function rolledInto(
   meals: readonly Meal[],
   supplies: readonly Supply[],
   rules: RollingRules,
+  mode: RollingMode,
 ): WeekPlan {
   const planned = withMealIn(plan, slot, meal.id)
   const leftoverSlot = leftoverSlotAfter(planned, slot)
   const leavesLeftovers =
-    rules.plansLeftovers &&
+    appliesIn(rules, 'leftovers', mode) &&
     meal.leftovers &&
     leftoverSlot !== null &&
     !isSuppliedIn(planned, slot, meals, supplies)

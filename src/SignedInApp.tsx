@@ -3,16 +3,11 @@ import type { MealsClient } from './meals/api/mealsClient'
 import type { SuppliesClient } from './meals/api/suppliesClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
 import {
-  mainMealTimeRuleName,
   mealWithoutItemsAnnouncement,
   weekPlanTransferAnnouncement,
 } from './meals/domain/announcements'
 import { unitsOfMeals, type Meal } from './meals/domain/meal'
-import {
-  isMainMealTimeRule,
-  MAIN_MEAL_TIME_RULES,
-  type RandomSource,
-} from './meals/domain/randomPlanning'
+import type { RandomSource } from './meals/domain/randomPlanning'
 import { withoutPortions } from './meals/domain/supply'
 import { planDateOf, type PlanDate } from './meals/domain/planDate'
 import { shownDayIn, weekOf } from './meals/domain/planPeriod'
@@ -25,6 +20,7 @@ import {
 import type { WeekPlanView } from './meals/domain/weekPlanView'
 import { CategoriesArea } from './meals/ui/CategoriesArea'
 import { MealsArea } from './meals/ui/MealsArea'
+import { RollingRulesPage } from './meals/ui/RollingRulesPage'
 import { SuppliesArea } from './meals/ui/SuppliesArea'
 import { useMeals } from './meals/ui/useMeals'
 import { useSupplies } from './meals/ui/useSupplies'
@@ -71,6 +67,7 @@ const AREAS = [
 
 type AreaId = (typeof AREAS)[number]['id']
 
+const ROLLING_RULES_ENTRY = 'rollingRules'
 const KNOWN_ITEMS_ENTRY = 'knownItems'
 const CATEGORIES_ENTRY = 'categories'
 const KNOWN_UNITS_ENTRY = 'knownUnits'
@@ -213,30 +210,7 @@ export function SignedInApp({
       enabled: appearance.invertedColors,
       onToggle: appearance.toggleInvertedColors,
     },
-    {
-      kind: 'choice',
-      id: 'mainMealTimeRule',
-      label: 'Hauptgericht würfeln',
-      options: MAIN_MEAL_TIME_RULES.map((rule) => ({
-        value: rule,
-        label: mainMealTimeRuleName(rule),
-      })),
-      chosen: weekPlanning.rollingRules.mainMealTime,
-      onChoose: (value) => {
-        if (isMainMealTimeRule(value))
-          weekPlanning.changeMainMealTimeRule(value)
-      },
-    },
-    {
-      kind: 'toggle',
-      id: 'leftoverPlanning',
-      label: 'Reste einplanen',
-      enabled: weekPlanning.rollingRules.plansLeftovers,
-      onToggle: () =>
-        weekPlanning.changeLeftoverPlanning(
-          !weekPlanning.rollingRules.plansLeftovers,
-        ),
-    },
+    { kind: 'page', id: ROLLING_RULES_ENTRY, label: 'Regel-Verwaltung' },
     { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel-Verwaltung' },
     { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },
     { kind: 'page', id: KNOWN_UNITS_ENTRY, label: 'Einheiten-Verwaltung' },
@@ -249,6 +223,16 @@ export function SignedInApp({
       onSelectArea={setActiveArea}
     />
   )
+
+  if (activeArea === 'settings' && settingsEntry === ROLLING_RULES_ENTRY)
+    return (
+      <RollingRulesPage
+        rollingRules={weekPlanning.rollingRules}
+        onChooseMainMealTime={weekPlanning.changeMainMealTimeRule}
+        onSwitchRule={weekPlanning.switchRule}
+        onBack={() => setSettingsEntry(null)}
+      />
+    )
 
   if (activeArea === 'settings' && settingsEntry === KNOWN_ITEMS_ENTRY)
     return (

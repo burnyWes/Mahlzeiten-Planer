@@ -377,9 +377,11 @@ test('rolls the main meal only in the evening when the household wants it so', a
   await signIn(page)
 
   await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Regel-Verwaltung')
   await page
-    .getByRole('combobox', { name: 'Hauptgericht würfeln' })
+    .getByRole('combobox', { name: 'Hauptgericht' })
     .selectOption({ label: 'Nur abends' })
+  await pressButton(page, 'Zurück zu den Einstellungen')
   await pressButton(page, 'Wochenplan')
   await expect(
     page.getByRole('button', {
@@ -413,9 +415,11 @@ test('rolls the leftovers of a meal into the next day', async ({ page }) => {
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Regel-Verwaltung')
   await page
-    .getByRole('combobox', { name: 'Hauptgericht würfeln' })
+    .getByRole('combobox', { name: 'Hauptgericht' })
     .selectOption({ label: 'Nur abends' })
+  await pressButton(page, 'Zurück zu den Einstellungen')
 
   await pressButton(page, 'Wochenplan')
   await pressButton(page, 'Zeitraum wählen')

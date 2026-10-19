@@ -8,7 +8,7 @@ import {
 import type { Meal } from './meal'
 import { toPlanDate, type PlanDate } from './planDate'
 import type { PlanPeriod } from './planPeriod'
-import type { RollingRules } from './randomPlanning'
+import type { RollingMode, RollingRules } from './rollingRules'
 import type { Supply } from './supply'
 import {
   emptyWeekPlan,
@@ -30,12 +30,27 @@ const EMPTY_PLAN = emptyWeekPlan(WEEK)
 
 const PLANNING_LEFTOVERS: RollingRules = {
   mainMealTime: 'lunchOrDinner',
-  plansLeftovers: true,
+  switchedOff: [],
 }
 
 const NOT_PLANNING_LEFTOVERS: RollingRules = {
   mainMealTime: 'lunchOrDinner',
-  plansLeftovers: false,
+  switchedOff: [
+    { rule: 'leftovers', mode: 'singleMeal' },
+    { rule: 'leftovers', mode: 'wholePlan' },
+  ],
+}
+
+function leftoversOnlyFor(mode: RollingMode): RollingRules {
+  return {
+    mainMealTime: 'lunchOrDinner',
+    switchedOff: [
+      {
+        rule: 'leftovers',
+        mode: mode === 'singleMeal' ? 'wholePlan' : 'singleMeal',
+      },
+    ],
+  }
 }
 
 function meal(id: string, leftovers: boolean): Meal {
@@ -67,8 +82,17 @@ function rolled(
   rolledMeal: Meal,
   supplies: readonly Supply[] = [],
   rules: RollingRules = PLANNING_LEFTOVERS,
+  mode: RollingMode = 'singleMeal',
 ): WeekPlan {
-  return rolledInto(plan, rolledSlot, rolledMeal, knownMeals, supplies, rules)
+  return rolledInto(
+    plan,
+    rolledSlot,
+    rolledMeal,
+    knownMeals,
+    supplies,
+    rules,
+    mode,
+  )
 }
 
 describe('leftoverSlotAfter', () => {
@@ -124,6 +148,30 @@ describe('rolledInto', () => {
 
     expect(mealIn(plan, slot(TUESDAY, 'dinner'))).toBeNull()
     expect(plan.leftoverSlots).toEqual([])
+  })
+
+  it('plans leftovers only in the mode they are switched on for', () => {
+    const modes = ['singleMeal', 'wholePlan'] as const
+
+    modes.forEach((mode) => {
+      const rules = leftoversOnlyFor(mode)
+      const otherMode = mode === 'singleMeal' ? 'wholePlan' : 'singleMeal'
+
+      expect(
+        rolled(EMPTY_PLAN, slot(MONDAY, 'dinner'), bolognese, [], rules, mode)
+          .leftoverSlots,
+      ).toEqual([slot(TUESDAY, 'dinner')])
+      expect(
+        rolled(
+          EMPTY_PLAN,
+          slot(MONDAY, 'dinner'),
+          bolognese,
+          [],
+          rules,
+          otherMode,
+        ).leftoverSlots,
+      ).toEqual([])
+    })
   })
 
   it('plans no leftovers on the last day of the period', () => {

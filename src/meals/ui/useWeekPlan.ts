@@ -4,9 +4,11 @@ import type { MealId } from '../domain/meal'
 import {
   DEFAULT_ROLLING_RULES,
   sameRollingRules,
+  withRuleSwitched,
   type MainMealTimeRule,
   type RollingRules,
-} from '../domain/randomPlanning'
+  type RuleInMode,
+} from '../domain/rollingRules'
 import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import type { PlanPeriod } from '../domain/planPeriod'
 import {
@@ -30,7 +32,7 @@ export type WeekPlanning = {
   replacePlan: (plan: WeekPlan) => void
   changeStage: (stage: WeekPlanStage) => void
   changeMainMealTimeRule: (rule: MainMealTimeRule) => void
-  changeLeftoverPlanning: (plansLeftovers: boolean) => void
+  switchRule: (ruleInMode: RuleInMode, on: boolean) => void
 }
 
 export function useWeekPlan(
@@ -125,9 +127,9 @@ export function useWeekPlan(
     [rollingRules, changeRollingRules],
   )
 
-  const changeLeftoverPlanning = useCallback(
-    (plansLeftovers: boolean) =>
-      changeRollingRules({ ...rollingRules, plansLeftovers }),
+  const switchRule = useCallback(
+    (ruleInMode: RuleInMode, on: boolean) =>
+      changeRollingRules(withRuleSwitched(rollingRules, ruleInMode, on)),
     [rollingRules, changeRollingRules],
   )
 
@@ -139,6 +141,6 @@ export function useWeekPlan(
     replacePlan,
     changeStage,
     changeMainMealTimeRule,
-    changeLeftoverPlanning,
+    switchRule,
   }
 }

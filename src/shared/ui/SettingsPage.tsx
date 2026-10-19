@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import { useHeadingFocus } from './useHeadingFocus'
 
-export type SettingsChoiceOption = { value: string; label: string }
-
 export type SettingsEntry =
   | { kind: 'page'; id: string; label: string }
   | {
@@ -11,14 +9,6 @@ export type SettingsEntry =
       label: string
       enabled: boolean
       onToggle: () => void
-    }
-  | {
-      kind: 'choice'
-      id: string
-      label: string
-      options: readonly SettingsChoiceOption[]
-      chosen: string
-      onChoose: (value: string) => void
     }
 
 type SettingsPageProps = {
@@ -47,23 +37,6 @@ export function SettingsPage({
               onChange={entry.onToggle}
             />
           </label>
-        )
-      case 'choice':
-        return (
-          <div className="settingsChoice">
-            <label htmlFor={entry.id}>{entry.label}</label>
-            <select
-              id={entry.id}
-              value={entry.chosen}
-              onChange={(event) => entry.onChoose(event.target.value)}
-            >
-              {entry.options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
         )
       case 'page':
         return (

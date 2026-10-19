@@ -1,4 +1,4 @@
-import type { RollingRules } from '../domain/randomPlanning'
+import type { RollingRules } from '../domain/rollingRules'
 import type { WeekPlan } from '../domain/weekPlan'
 import type { WeekPlanStage } from '../domain/weekPlanStage'
 

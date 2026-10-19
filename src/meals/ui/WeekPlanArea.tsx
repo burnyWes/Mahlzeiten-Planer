@@ -157,6 +157,7 @@ export function WeekPlanArea({
       meals,
       supplies,
       rollingRules,
+      'singleMeal',
     )
     weekPlanning.replacePlan(rolled)
     announce(rolledAnnouncement(rolled, slot, picked))

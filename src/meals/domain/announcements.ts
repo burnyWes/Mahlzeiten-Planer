@@ -14,7 +14,12 @@ import {
 } from './meal'
 import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import type { MealFilter } from './mealFilter'
-import type { MainMealTimeRule } from './randomPlanning'
+import type {
+  MainMealTimeRule,
+  RollingMode,
+  RuleInMode,
+  SwitchableRule,
+} from './rollingRules'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
 import {
   dayOfMonth,
@@ -101,6 +106,47 @@ const mainMealTimeRuleNames: Record<MainMealTimeRule, string> = {
 
 export function mainMealTimeRuleName(rule: MainMealTimeRule): string {
   return mainMealTimeRuleNames[rule]
+}
+
+export function rollingRulesHeading(): string {
+  return 'Regel-Verwaltung'
+}
+
+export function mainMealTimeHeading(): string {
+  return 'Hauptgericht'
+}
+
+export function mainMealTimeExplanation(): string {
+  return 'Genau ein Hauptgericht pro Tag, zu dieser Tageszeit.'
+}
+
+const switchableRuleNames: Record<SwitchableRule, string> = {
+  leftovers: 'Reste',
+}
+
+const switchableRuleExplanations: Record<SwitchableRule, string> = {
+  leftovers: 'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+}
+
+const rollingModeNames: Record<RollingMode, string> = {
+  singleMeal: 'Einzelgericht',
+  wholePlan: 'Gesamtplan',
+}
+
+export function switchableRuleName(rule: SwitchableRule): string {
+  return switchableRuleNames[rule]
+}
+
+export function switchableRuleExplanation(rule: SwitchableRule): string {
+  return switchableRuleExplanations[rule]
+}
+
+export function rollingModeName(mode: RollingMode): string {
+  return rollingModeNames[mode]
+}
+
+export function ruleSwitchName({ rule, mode }: RuleInMode): string {
+  return `${switchableRuleName(rule)}, ${rollingModeName(mode)}`
 }
 
 export function mealFilterAnnouncement(

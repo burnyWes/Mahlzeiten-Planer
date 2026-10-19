@@ -188,7 +188,24 @@ function shownShoppingItemNames() {
 }
 
 function mainMealTimeChoice() {
-  return screen.getByRole('combobox', { name: 'Hauptgericht würfeln' })
+  return screen.getByRole('combobox', { name: 'Hauptgericht' })
+}
+
+async function openRollingRules() {
+  await goToArea('Einstellungen')
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Regel-Verwaltung' }),
+  )
+}
+
+function ruleSwitch(name: string) {
+  return screen.getByRole('switch', { name })
+}
+
+function backToTheSettings() {
+  return userEvent.click(
+    screen.getByRole('button', { name: 'Zurück zu den Einstellungen' }),
+  )
 }
 
 function planOf(...ids: readonly string[]): WeekPlan {
@@ -1542,15 +1559,14 @@ describe('SignedInApp', () => {
     ).toBeInTheDocument()
   })
 
-  it('offers to invert the colours above the known items', async () => {
+  it('offers to invert the colours above the rule management', async () => {
     renderSignedInApp()
 
     await goToArea('Einstellungen')
 
     expect(shownItemNames()).toEqual([
       'Farben invertieren',
-      expect.stringMatching(/^Hauptgericht würfeln/),
-      'Reste einplanen',
+      'Regel-Verwaltung',
       'Artikel-Verwaltung',
       'Kategorie-Verwaltung',
       'Einheiten-Verwaltung',
@@ -1560,18 +1576,50 @@ describe('SignedInApp', () => {
     ).not.toBeChecked()
   })
 
-  it('offers the main meal time below the inverted colours', async () => {
+  it('opens the rule management from the settings and puts the focus on its heading', async () => {
     renderSignedInApp()
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
 
-    const rows = within(screen.getByRole('main')).getAllByRole('listitem')
-    const mainMealTime = within(rows[1]).getByRole('combobox', {
-      name: 'Hauptgericht würfeln',
-    })
-    expect(mainMealTime).toHaveDisplayValue('Mittags oder abends')
     expect(
-      within(mainMealTime)
+      screen.getByRole('heading', { level: 1, name: 'Regel-Verwaltung' }),
+    ).toHaveFocus()
+  })
+
+  it('leads from the rule management back to the settings', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+    await backToTheSettings()
+
+    expect(
+      screen.getByRole('heading', { name: 'Einstellungen' }),
+    ).toBeInTheDocument()
+  })
+
+  it('groups the rules under their headings', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(
+      screen
+        .getAllByRole('heading', { level: 2 })
+        .map((heading) => heading.textContent),
+    ).toEqual(['Hauptgericht', 'Reste'])
+  })
+
+  it('offers the main meal time with its explanation', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(mainMealTimeChoice()).toHaveDisplayValue('Mittags oder abends')
+    expect(mainMealTimeChoice()).toHaveAccessibleDescription(
+      'Genau ein Hauptgericht pro Tag, zu dieser Tageszeit.',
+    )
+    expect(
+      within(mainMealTimeChoice())
         .getAllByRole('option')
         .map((option) => option.textContent),
     ).toEqual(['Mittags oder abends', 'Nur mittags', 'Nur abends'])
@@ -1580,7 +1628,7 @@ describe('SignedInApp', () => {
   it('remembers the main meal time for the household', async () => {
     const { weekPlanClient } = renderSignedInApp()
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
     await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
 
     expect(mainMealTimeChoice()).toHaveDisplayValue('Nur abends')
@@ -1590,66 +1638,79 @@ describe('SignedInApp', () => {
   it('shows the main meal time chosen on the other device', async () => {
     const { weekPlanClient } = renderSignedInApp()
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
     act(() =>
       weekPlanClient.rollingRulesArriveFromElsewhere({
         mainMealTime: 'lunch',
-        plansLeftovers: true,
+        switchedOff: [],
       }),
     )
 
     expect(mainMealTimeChoice()).toHaveDisplayValue('Nur mittags')
   })
 
-  it('offers to plan leftovers below the main meal time, switched on', async () => {
+  it('offers the leftovers for a single meal and for the whole plan, switched on', async () => {
     renderSignedInApp()
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
 
-    const rows = within(screen.getByRole('main')).getAllByRole('listitem')
-    expect(
-      within(rows[2]).getByRole('switch', { name: 'Reste einplanen' }),
-    ).toBeChecked()
+    expect(ruleSwitch('Reste, Einzelgericht')).toBeChecked()
+    expect(ruleSwitch('Reste, Gesamtplan')).toBeChecked()
+    expect(ruleSwitch('Reste, Einzelgericht')).toHaveAccessibleDescription(
+      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+    )
+    expect(ruleSwitch('Reste, Gesamtplan')).toHaveAccessibleDescription(
+      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+    )
   })
 
-  it('switches off planning leftovers for the household and keeps the main meal time', async () => {
+  it('shows the way of rolling beside each switch', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(
+      within(screen.getByRole('region', { name: 'Reste' }))
+        .getAllByText(/^(Einzelgericht|Gesamtplan)$/)
+        .map((label) => label.textContent),
+    ).toEqual(['Einzelgericht', 'Gesamtplan'])
+  })
+
+  it('switches off the leftovers for a single meal only and keeps the main meal time', async () => {
     const weekPlanClient = createInMemoryWeekPlanClient(EMPTY_PLAN, undefined, {
       mainMealTime: 'dinner',
-      plansLeftovers: true,
+      switchedOff: [],
     })
     renderSignedInApp([], [], undefined, undefined, weekPlanClient)
 
-    await goToArea('Einstellungen')
-    await userEvent.click(
-      screen.getByRole('switch', { name: 'Reste einplanen' }),
-    )
+    await openRollingRules()
+    await userEvent.click(ruleSwitch('Reste, Einzelgericht'))
 
-    expect(
-      screen.getByRole('switch', { name: 'Reste einplanen' }),
-    ).not.toBeChecked()
+    expect(ruleSwitch('Reste, Einzelgericht')).not.toBeChecked()
+    expect(ruleSwitch('Reste, Gesamtplan')).toBeChecked()
     expect(weekPlanClient.storedRollingRules()).toEqual({
       mainMealTime: 'dinner',
-      plansLeftovers: false,
+      switchedOff: [{ rule: 'leftovers', mode: 'singleMeal' }],
     })
   })
 
-  it('keeps the leftover planning when the main meal time changes', async () => {
+  it('keeps the rules switched off when the main meal time changes', async () => {
     const weekPlanClient = createInMemoryWeekPlanClient(EMPTY_PLAN, undefined, {
       mainMealTime: 'lunchOrDinner',
-      plansLeftovers: false,
+      switchedOff: [{ rule: 'leftovers', mode: 'wholePlan' }],
     })
     renderSignedInApp([], [], undefined, undefined, weekPlanClient)
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
     await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
 
     expect(weekPlanClient.storedRollingRules()).toEqual({
       mainMealTime: 'dinner',
-      plansLeftovers: false,
+      switchedOff: [{ rule: 'leftovers', mode: 'wholePlan' }],
     })
   })
 
-  it('rolls the main meal of the week at the time chosen in the settings', async () => {
+  it('rolls the main meal of the week at the time chosen in the rule management', async () => {
     const { weekPlanClient } = renderSignedInApp(
       [],
       [
@@ -1658,8 +1719,9 @@ describe('SignedInApp', () => {
       ],
     )
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
     await userEvent.selectOptions(mainMealTimeChoice(), 'Nur abends')
+    await backToTheSettings()
     await goToArea('Wochenplan')
     await userEvent.click(
       screen.getByRole('button', { name: 'Zufallsauswahl generieren' }),
@@ -1676,10 +1738,31 @@ describe('SignedInApp', () => {
   it('says nothing of its own when the main meal time changes', async () => {
     const { announcements } = renderSignedInApp()
 
-    await goToArea('Einstellungen')
+    await openRollingRules()
     await userEvent.selectOptions(mainMealTimeChoice(), 'Nur mittags')
 
     expect(announcements).toEqual([])
+  })
+
+  it('has no accessibility violations on the rule management', async () => {
+    const { rendered } = renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the inverted rule management', async () => {
+    const { rendered } = renderSignedInApp(
+      [],
+      [],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(true),
+    )
+
+    await openRollingRules()
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('remembers the inverted colours on this device', async () => {

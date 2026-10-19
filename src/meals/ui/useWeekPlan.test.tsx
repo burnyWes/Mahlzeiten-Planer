@@ -5,7 +5,8 @@ import { withLeftoversIn } from '../domain/leftovers'
 import {
   DEFAULT_ROLLING_RULES,
   type RollingRules,
-} from '../domain/randomPlanning'
+  type RuleInMode,
+} from '../domain/rollingRules'
 import { toPlanDate } from '../domain/planDate'
 import type { PlanPeriod } from '../domain/planPeriod'
 import {
@@ -25,6 +26,10 @@ import { useWeekPlan } from './useWeekPlan'
 const MONDAY = toPlanDate('2026-09-21')
 const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
 const EMPTY_PLAN = emptyWeekPlan(WEEK)
+const LEFTOVERS_FOR_A_SINGLE_MEAL: RuleInMode = {
+  rule: 'leftovers',
+  mode: 'singleMeal',
+}
 
 type LaggingWeekPlanClient = WeekPlanClient & {
   deliverNextSnapshot(): void
@@ -200,13 +205,13 @@ describe('useWeekPlan', () => {
     const weekPlan = weekPlanOf(
       createLaggingWeekPlanClient({
         mainMealTime: 'dinner',
-        plansLeftovers: false,
+        switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL],
       }),
     )
 
     expect(weekPlan.current.rollingRules).toEqual({
       mainMealTime: 'dinner',
-      plansLeftovers: false,
+      switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL],
     })
   })
 
@@ -229,52 +234,66 @@ describe('useWeekPlan', () => {
     act(() =>
       client.rulesArriveFromElsewhere({
         mainMealTime: 'dinner',
-        plansLeftovers: true,
+        switchedOff: [],
       }),
     )
 
     expect(weekPlan.current.rollingRules.mainMealTime).toBe('dinner')
   })
 
-  it('keeps the leftovers when the time of the main meal changes', () => {
+  it('keeps the rules switched off when the time of the main meal changes', () => {
     const client = createLaggingWeekPlanClient({
       mainMealTime: 'lunchOrDinner',
-      plansLeftovers: false,
+      switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL],
     })
     const weekPlan = weekPlanOf(client)
 
     act(() => weekPlan.current.changeMainMealTimeRule('dinner'))
 
     expect(client.writtenRules()).toEqual([
-      { mainMealTime: 'dinner', plansLeftovers: false },
+      { mainMealTime: 'dinner', switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL] },
     ])
   })
 
-  it('keeps the time of the main meal when the leftovers change', () => {
+  it('keeps the time of the main meal when a rule is switched', () => {
     const client = createLaggingWeekPlanClient({
       mainMealTime: 'dinner',
-      plansLeftovers: true,
+      switchedOff: [],
     })
     const weekPlan = weekPlanOf(client)
 
-    act(() => weekPlan.current.changeLeftoverPlanning(false))
+    act(() => weekPlan.current.switchRule(LEFTOVERS_FOR_A_SINGLE_MEAL, false))
 
     expect(weekPlan.current.rollingRules).toEqual({
       mainMealTime: 'dinner',
-      plansLeftovers: false,
+      switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL],
     })
     expect(client.writtenRules()).toEqual([
-      { mainMealTime: 'dinner', plansLeftovers: false },
+      { mainMealTime: 'dinner', switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL] },
     ])
   })
 
-  it('keeps its own leftover planning when a late snapshot arrives', () => {
+  it('switches a rule on again', () => {
+    const client = createLaggingWeekPlanClient({
+      mainMealTime: 'dinner',
+      switchedOff: [LEFTOVERS_FOR_A_SINGLE_MEAL],
+    })
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.switchRule(LEFTOVERS_FOR_A_SINGLE_MEAL, true))
+
+    expect(weekPlan.current.rollingRules.switchedOff).toEqual([])
+  })
+
+  it('keeps its own switched rule when a late snapshot arrives', () => {
     const client = createLaggingWeekPlanClient()
     const weekPlan = weekPlanOf(client)
 
-    act(() => weekPlan.current.changeLeftoverPlanning(false))
+    act(() => weekPlan.current.switchRule(LEFTOVERS_FOR_A_SINGLE_MEAL, false))
     act(() => client.rulesArriveFromElsewhere(DEFAULT_ROLLING_RULES))
 
-    expect(weekPlan.current.rollingRules.plansLeftovers).toBe(false)
+    expect(weekPlan.current.rollingRules.switchedOff).toEqual([
+      LEFTOVERS_FOR_A_SINGLE_MEAL,
+    ])
   })
 })

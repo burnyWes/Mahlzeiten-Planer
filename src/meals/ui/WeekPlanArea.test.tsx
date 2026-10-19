@@ -12,11 +12,12 @@ import type { MealsClient } from '../api/mealsClient'
 import { mealTimeName } from '../domain/announcements'
 import { withLeftoversIn } from '../domain/leftovers'
 import type { Meal, MealKind } from '../domain/meal'
+import type { RandomSource } from '../domain/randomPlanning'
 import type {
   MainMealTimeRule,
-  RandomSource,
   RollingRules,
-} from '../domain/randomPlanning'
+  RuleInMode,
+} from '../domain/rollingRules'
 import type { Supply } from '../domain/supply'
 import { toPlanDate, type PlanDate } from '../domain/planDate'
 import { datesOf, shownDayIn, type PlanPeriod } from '../domain/planPeriod'
@@ -254,7 +255,7 @@ function renderWeekPlanAreaRolling(
     MONDAY,
     'day',
     'lunch',
-    { mainMealTime: rule, plansLeftovers: true },
+    { mainMealTime: rule, switchedOff: [] },
   )
 }
 
@@ -1036,7 +1037,7 @@ describe('WeekPlanArea', () => {
     act(() =>
       weekPlanClient.rollingRulesArriveFromElsewhere({
         mainMealTime: 'lunch',
-        plansLeftovers: true,
+        switchedOff: [],
       }),
     )
 
@@ -2233,7 +2234,16 @@ describe('WeekPlanArea with leftovers', () => {
     'bolognese',
   )
 
-  function renderRollingAtDinner(plansLeftovers: boolean) {
+  const leftoversForASingleMeal: RuleInMode = {
+    rule: 'leftovers',
+    mode: 'singleMeal',
+  }
+  const leftoversForTheWholePlan: RuleInMode = {
+    rule: 'leftovers',
+    mode: 'wholePlan',
+  }
+
+  function renderRollingAtDinner(switchedOff: readonly RuleInMode[] = []) {
     return renderWeekPlanArea(
       [leavingLeftovers],
       EMPTY_PLAN,
@@ -2243,12 +2253,12 @@ describe('WeekPlanArea with leftovers', () => {
       MONDAY,
       'day',
       'lunch',
-      { mainMealTime: 'dinner', plansLeftovers },
+      { mainMealTime: 'dinner', switchedOff },
     )
   }
 
   it('plans the leftovers of a rolled meal on the next day and names both slots', async () => {
-    const { weekPlanClient, announcements } = renderRollingAtDinner(true)
+    const { weekPlanClient, announcements } = renderRollingAtDinner()
 
     await shuffleSlot('Abendessen')
 
@@ -2266,7 +2276,10 @@ describe('WeekPlanArea with leftovers', () => {
   })
 
   it('plans no leftovers while the household does not want them', async () => {
-    const { weekPlanClient, announcements } = renderRollingAtDinner(false)
+    const { weekPlanClient, announcements } = renderRollingAtDinner([
+      leftoversForASingleMeal,
+      leftoversForTheWholePlan,
+    ])
 
     await shuffleSlot('Abendessen')
 
@@ -2275,8 +2288,26 @@ describe('WeekPlanArea with leftovers', () => {
     expect(mealIn(weekPlanClient.storedWeekPlan(), tuesdayDinner)).toBeNull()
   })
 
+  it('plans no leftovers of a single rolled meal while they are switched off for a single meal', async () => {
+    const { weekPlanClient } = renderRollingAtDinner([leftoversForASingleMeal])
+
+    await shuffleSlot('Abendessen')
+
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([])
+  })
+
+  it('plans the leftovers of a single rolled meal while they are switched off for the whole plan only', async () => {
+    const { weekPlanClient } = renderRollingAtDinner([leftoversForTheWholePlan])
+
+    await shuffleSlot('Abendessen')
+
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([
+      tuesdayDinner,
+    ])
+  })
+
   it('plans the leftovers when the whole week is rolled', async () => {
-    const { weekPlanClient } = renderRollingAtDinner(true)
+    const { weekPlanClient } = renderRollingAtDinner()
 
     await shuffleWeek()
 

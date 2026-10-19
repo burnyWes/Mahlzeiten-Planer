@@ -298,24 +298,49 @@ export async function weekPlanStageOnServer(): Promise<WeekPlanStageOnServer> {
 type StoredRollingRules = {
   fields?: {
     mainMealTime?: { stringValue?: string }
+    switchedOff?: {
+      arrayValue?: { values?: readonly { stringValue?: string }[] }
+    }
     leftovers?: { booleanValue?: boolean }
   }
 }
 
-export async function rollingRulesOnServer(): Promise<{
+export type RollingRulesOnServer = {
   mainMealTime: string | null
+  switchedOff: readonly string[] | null
   leftovers: boolean | null
-}> {
-  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/rollingRules`
-  const response = await fetch(url, {
+}
+
+const ROLLING_RULES_DOCUMENT = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/weekPlan/rollingRules`
+
+export async function rollingRulesOnServer(): Promise<RollingRulesOnServer> {
+  const response = await fetch(ROLLING_RULES_DOCUMENT, {
     headers: { Authorization: 'Bearer owner' },
   })
-  if (!response.ok) return { mainMealTime: null, leftovers: null }
+  if (!response.ok)
+    return { mainMealTime: null, switchedOff: null, leftovers: null }
   const stored = (await response.json()) as StoredRollingRules
+  const switchedOff = stored.fields?.switchedOff?.arrayValue
   return {
     mainMealTime: stored.fields?.mainMealTime?.stringValue ?? null,
+    switchedOff:
+      switchedOff === undefined
+        ? null
+        : (switchedOff.values ?? []).map((key) => key.stringValue ?? ''),
     leftovers: stored.fields?.leftovers?.booleanValue ?? null,
   }
+}
+
+export async function storeRollingRulesOnServer(rules: {
+  mainMealTime: string
+  leftovers: boolean
+}): Promise<void> {
+  await callEmulator(ROLLING_RULES_DOCUMENT, 'PATCH', {
+    fields: {
+      mainMealTime: { stringValue: rules.mainMealTime },
+      leftovers: { booleanValue: rules.leftovers },
+    },
+  })
 }
 
 export async function storeItemOnServer(

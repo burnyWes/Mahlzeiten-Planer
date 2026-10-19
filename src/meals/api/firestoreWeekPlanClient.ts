@@ -21,10 +21,10 @@ import {
   type PlanPeriod,
 } from '../domain/planPeriod'
 import {
-  DEFAULT_MAIN_MEAL_TIME_RULE,
-  isMainMealTimeRule,
+  rollingRulesFromStored,
+  ruleInModeKey,
   type RollingRules,
-} from '../domain/randomPlanning'
+} from '../domain/rollingRules'
 import {
   dateOfWeekday,
   MEAL_TIMES,
@@ -155,19 +155,13 @@ function fromWeekPlanStage(stage: WeekPlanStage): DocumentData {
 }
 
 function toRollingRules(stored: DocumentData | undefined): RollingRules {
-  const storedRule: unknown = stored?.mainMealTime
-  return {
-    mainMealTime: isMainMealTimeRule(storedRule)
-      ? storedRule
-      : DEFAULT_MAIN_MEAL_TIME_RULE,
-    plansLeftovers: stored?.leftovers !== false,
-  }
+  return rollingRulesFromStored(stored ?? {})
 }
 
 function fromRollingRules(rules: RollingRules): DocumentData {
   return {
     mainMealTime: rules.mainMealTime,
-    leftovers: rules.plansLeftovers,
+    switchedOff: rules.switchedOff.map(ruleInModeKey),
   }
 }
 

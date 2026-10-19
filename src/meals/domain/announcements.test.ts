@@ -23,7 +23,14 @@ import {
   mealsHeading,
   mealFilterAnnouncement,
   mealFilterName,
+  mainMealTimeExplanation,
+  mainMealTimeHeading,
   mainMealTimeRuleName,
+  rollingModeName,
+  rollingRulesHeading,
+  ruleSwitchName,
+  switchableRuleExplanation,
+  switchableRuleName,
   planDateHeading,
   planDateMark,
   planDateName,
@@ -162,6 +169,58 @@ describe('mainMealTimeRuleName', () => {
     expect(mainMealTimeRuleName('lunchOrDinner')).toBe('Mittags oder abends')
     expect(mainMealTimeRuleName('lunch')).toBe('Nur mittags')
     expect(mainMealTimeRuleName('dinner')).toBe('Nur abends')
+  })
+})
+
+describe('rollingRulesHeading', () => {
+  it('names the page of the rules', () => {
+    expect(rollingRulesHeading()).toBe('Regel-Verwaltung')
+  })
+})
+
+describe('mainMealTimeHeading', () => {
+  it('names the rule for the time of the main meal', () => {
+    expect(mainMealTimeHeading()).toBe('Hauptgericht')
+  })
+})
+
+describe('mainMealTimeExplanation', () => {
+  it('explains the rule for the time of the main meal', () => {
+    expect(mainMealTimeExplanation()).toBe(
+      'Genau ein Hauptgericht pro Tag, zu dieser Tageszeit.',
+    )
+  })
+})
+
+describe('switchableRuleName', () => {
+  it('names the leftovers', () => {
+    expect(switchableRuleName('leftovers')).toBe('Reste')
+  })
+})
+
+describe('switchableRuleExplanation', () => {
+  it('explains the leftovers', () => {
+    expect(switchableRuleExplanation('leftovers')).toBe(
+      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+    )
+  })
+})
+
+describe('rollingModeName', () => {
+  it('names each way of rolling', () => {
+    expect(rollingModeName('singleMeal')).toBe('Einzelgericht')
+    expect(rollingModeName('wholePlan')).toBe('Gesamtplan')
+  })
+})
+
+describe('ruleSwitchName', () => {
+  it('names the rule and the way of rolling it applies to', () => {
+    expect(ruleSwitchName({ rule: 'leftovers', mode: 'singleMeal' })).toBe(
+      'Reste, Einzelgericht',
+    )
+    expect(ruleSwitchName({ rule: 'leftovers', mode: 'wholePlan' })).toBe(
+      'Reste, Gesamtplan',
+    )
   })
 })
 
