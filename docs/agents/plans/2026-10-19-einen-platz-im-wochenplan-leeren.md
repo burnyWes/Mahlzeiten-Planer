@@ -5,7 +5,7 @@ branch: main
 story: MZP-042
 topic: "Einen Platz im Wochenplan leeren"
 tags: [plan, meals, weekPlan, ui, announcements]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-042 — Einen Platz im Wochenplan leeren
@@ -321,13 +321,13 @@ Domäne wird test-getrieben entwickelt: erst der fehlschlagende Test, dann der C
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem Handy, Tages- und Wochenansicht: Der Radiergummi steht zwischen Textfeld
+- [x] Auf dem Handy, Tages- und Wochenansicht: Der Radiergummi steht zwischen Textfeld
   und Würfel. Die Zeile bricht nicht um, und das Textfeld bleibt gut lesbar, auch mit
   umgekehrten Farben.
-- [ ] Mit VoiceOver: Nach dem Textfeld kommt „Mittagessen leeren, Taste“. Nach dem
+- [x] Mit VoiceOver: Nach dem Textfeld kommt „Mittagessen leeren, Taste“. Nach dem
   Doppeltippen kommt „Mittagessen, nichts geplant.“, der Fokus bleibt auf dem Knopf, und
   der Knopf wird als abgeblendet gemeldet.
-- [ ] Nach dem Leeren zeigt ein zweites Gerät den Platz leer.
+- [x] Nach dem Leeren zeigt ein zweites Gerät den Platz leer.
 
 ## Notizen zur Umsetzung
 
