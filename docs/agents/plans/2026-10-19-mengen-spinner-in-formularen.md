@@ -5,7 +5,7 @@ branch: main
 story: MZP-040
 topic: "Mengen-Spinner in den Formularen"
 tags: [plan, shopping, meals, quantity, supply, ui, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-040 — Mengen-Spinner in den Formularen
@@ -408,15 +408,15 @@ bekommen den Spinner zwischen Menge und Einheit, dazu die graue `1`.
 - [x] `npm run lint` meldet keinen Verstoß gegen `no-restricted-imports`.
 
 **Manuelle Verifikation** (iPhone, installierte PWA):
-- [ ] „Artikel hinzufügen“ mit VoiceOver: Die Reihenfolge ist „Menge, Textfeld, 1“ →
+- [x] „Artikel hinzufügen“ mit VoiceOver: Die Reihenfolge ist „Menge, Textfeld, 1“ →
       „Menge ändern, 1, anpassbar“ → „Einheit, Textfeld“. Nach oben wischen ergibt
       `2`, `3`, …
-- [ ] `2,5` tippen, dann zum Spinner und nach oben wischen: VoiceOver sagt „3,5“, und
+- [x] `2,5` tippen, dann zum Spinner und nach oben wischen: VoiceOver sagt „3,5“, und
       das Feld zeigt `3,5`.
-- [ ] Im Artikel-Formular eines Gerichts verhält sich der Spinner genauso.
-- [ ] Die drei Elemente passen auf schmalen iPhones nebeneinander, ohne waagerecht zu
+- [x] Im Artikel-Formular eines Gerichts verhält sich der Spinner genauso.
+- [x] Die drei Elemente passen auf schmalen iPhones nebeneinander, ohne waagerecht zu
       scrollen; die Einheiten-Vorschläge erscheinen wie bisher darunter.
-- [ ] Einkaufsliste, Vorräte-Übersicht und Zeitraum-Seite sehen aus und verhalten sich
+- [x] Einkaufsliste, Vorräte-Übersicht und Zeitraum-Seite sehen aus und verhalten sich
       wie vorher.
 
 ## Notizen zur Umsetzung
