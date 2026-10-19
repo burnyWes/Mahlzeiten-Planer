@@ -5,7 +5,7 @@ branch: main
 story: MZP-041
 topic: "Regel-Verwaltung für die Zufallsauswahl"
 tags: [plan, meals, randomPlanning, rollingRules, leftovers, WeekPlanArea, SettingsPage, RollingRulesPage, firestoreWeekPlanClient, voiceover, e2e]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-041 — Regel-Verwaltung für die Zufallsauswahl
@@ -586,10 +586,10 @@ E2E:
 - [x] `grep -n "PLANNING_RULES" -r src` findet nichts mehr
 
 **Manuelle Verifikation**:
-- [ ] Mit VoiceOver alle sechs Gruppen durchgehen: Namen, Erklärungen und
+- [x] Mit VoiceOver alle sechs Gruppen durchgehen: Namen, Erklärungen und
       Schalterzustände werden korrekt angesagt, „Anderes Gericht“ hat nur einen
       Schalter.
-- [ ] „Kategorien, Gesamtplan“ ausschalten und „Zufallsauswahl generieren“: Gerichte
+- [x] „Kategorien, Gesamtplan“ ausschalten und „Zufallsauswahl generieren“: Gerichte
       gleicher Kategorie dürfen nun aufeinanderfolgen. Würfelt man danach einen
       einzelnen Platz, achtet das Einzelgericht weiter auf Kategorien.
 
