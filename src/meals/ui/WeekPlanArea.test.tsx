@@ -2423,3 +2423,47 @@ describe('WeekPlanArea with leftovers', () => {
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 })
+
+describe('WeekPlanArea with the other meal switched off', () => {
+  const muesliNowAndPorridgeTwice = planWith(
+    [slot(MONDAY, 'breakfast'), 'muesli'],
+    [slot(FRIDAY, 'breakfast'), 'porridge'],
+    [slot(SUNDAY, 'breakfast'), 'porridge'],
+  )
+
+  function renderRollingTheBreakfast(switchedOff: readonly RuleInMode[]) {
+    return renderWeekPlanArea(
+      [muesli, porridge],
+      muesliNowAndPorridgeTwice,
+      [],
+      alwaysFirst,
+      undefined,
+      MONDAY,
+      'day',
+      'lunch',
+      { mainMealTime: 'lunchOrDinner', switchedOff },
+    )
+  }
+
+  it('may roll the planned meal again', async () => {
+    const { weekPlanClient } = renderRollingTheBreakfast([
+      { rule: 'otherMeal', mode: 'singleMeal' },
+    ])
+
+    await shuffleSlot('Frühstück')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
+    ).toBe('muesli')
+  })
+
+  it('rolls another meal while it is switched on', async () => {
+    const { weekPlanClient } = renderRollingTheBreakfast([])
+
+    await shuffleSlot('Frühstück')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
+    ).toBe('porridge')
+  })
+})

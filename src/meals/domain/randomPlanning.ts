@@ -3,10 +3,14 @@ import type { Meal, MealKind } from './meal'
 import { sameCategory } from './mealCategory'
 import type { PlanDate } from './planDate'
 import { dateAfter, dateBefore, datesOf, type PlanPeriod } from './planPeriod'
-import type {
-  MainMealTime,
-  MainMealTimeRule,
-  RollingRules,
+import {
+  appliesIn,
+  MODES_OF_RULE,
+  type MainMealTime,
+  type MainMealTimeRule,
+  type RollingMode,
+  type RollingRules,
+  type SwitchableRule,
 } from './rollingRules'
 import type { Supply } from './supply'
 import {
@@ -218,12 +222,31 @@ export const stayingLikeTheDayBefore: PlanningRule = (
     : candidates.filter((meal) => meal !== yesterdays)
 }
 
-export const PLANNING_RULES: readonly PlanningRule[] = [
-  otherThanPlanned,
-  apartFromSameCategory,
-  stayingLikeTheDayBefore,
-  rarestInThePlan,
+type NarrowingRule = Exclude<SwitchableRule, 'leftovers'>
+
+const PLANNING_RULE_OF: Record<NarrowingRule, PlanningRule> = {
+  otherMeal: otherThanPlanned,
+  categories: apartFromSameCategory,
+  repeatingBreakfastAndSnack: stayingLikeTheDayBefore,
+  variety: rarestInThePlan,
+}
+
+const PLANNING_RULE_ORDER: readonly NarrowingRule[] = [
+  'otherMeal',
+  'categories',
+  'repeatingBreakfastAndSnack',
+  'variety',
 ]
+
+export function planningRulesFor(
+  rules: RollingRules,
+  mode: RollingMode,
+): readonly PlanningRule[] {
+  return PLANNING_RULE_ORDER.filter(
+    (rule) =>
+      MODES_OF_RULE[rule].includes(mode) && appliesIn(rules, rule, mode),
+  ).map((rule) => PLANNING_RULE_OF[rule])
+}
 
 export function narrowedBy(
   rules: readonly PlanningRule[],
@@ -244,12 +267,27 @@ export function pickMealFor(
   plan: WeekPlan,
   slot: PlanSlot,
   random: RandomSource,
-  rule: MainMealTimeRule,
+  rules: RollingRules,
+  mode: RollingMode,
   mainMealTime: MainMealTime | null = null,
 ): Meal | null {
-  const allowed = allowedFor(meals, plan, slot, random, rule, mainMealTime)
+  const allowed = allowedFor(
+    meals,
+    plan,
+    slot,
+    random,
+    rules.mainMealTime,
+    mainMealTime,
+  )
   if (allowed.length === 0) return null
-  const left = narrowedBy(PLANNING_RULES, allowed, plan, slot, random, meals)
+  const left = narrowedBy(
+    planningRulesFor(rules, mode),
+    allowed,
+    plan,
+    slot,
+    random,
+    meals,
+  )
   return left[Math.min(Math.floor(random() * left.length), left.length - 1)]
 }
 
@@ -261,12 +299,20 @@ function filledDay(
   rules: RollingRules,
   supplies: readonly Supply[],
 ): WeekPlan {
-  const rule = rules.mainMealTime
-  const mainMealTime = fixedMainMealTime(rule) ?? mainMealTimeOf(random)
+  const mainMealTime =
+    fixedMainMealTime(rules.mainMealTime) ?? mainMealTimeOf(random)
   return MEAL_TIMES.reduce((filled, time) => {
     const slot = { date, time }
     if (isLeftoverIn(filled, slot)) return filled
-    const picked = pickMealFor(meals, filled, slot, random, rule, mainMealTime)
+    const picked = pickMealFor(
+      meals,
+      filled,
+      slot,
+      random,
+      rules,
+      'wholePlan',
+      mainMealTime,
+    )
     return picked === null
       ? filled
       : rolledInto(filled, slot, picked, meals, supplies, rules, 'wholePlan')

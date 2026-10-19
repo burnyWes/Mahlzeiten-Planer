@@ -193,15 +193,33 @@ describe('mainMealTimeExplanation', () => {
 })
 
 describe('switchableRuleName', () => {
-  it('names the leftovers', () => {
+  it('names every rule', () => {
+    expect(switchableRuleName('categories')).toBe('Kategorien')
     expect(switchableRuleName('leftovers')).toBe('Reste')
+    expect(switchableRuleName('repeatingBreakfastAndSnack')).toBe(
+      'Frühstück und Snack wiederholen',
+    )
+    expect(switchableRuleName('variety')).toBe('Abwechslung')
+    expect(switchableRuleName('otherMeal')).toBe('Anderes Gericht')
   })
 })
 
 describe('switchableRuleExplanation', () => {
-  it('explains the leftovers', () => {
+  it('explains every rule', () => {
+    expect(switchableRuleExplanation('categories')).toBe(
+      'Hauptgerichte und Gerichte ohne Art mit gleicher Kategorie kommen nicht an zwei Tagen hintereinander.',
+    )
     expect(switchableRuleExplanation('leftovers')).toBe(
       'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+    )
+    expect(switchableRuleExplanation('repeatingBreakfastAndSnack')).toBe(
+      'Frühstück und Snack bleiben gern wie am Vortag.',
+    )
+    expect(switchableRuleExplanation('variety')).toBe(
+      'Bevorzugt Gerichte, die im Plan noch selten vorkommen.',
+    )
+    expect(switchableRuleExplanation('otherMeal')).toBe(
+      'Neu würfeln bringt ein anderes Gericht als das bisherige.',
     )
   })
 })

@@ -84,6 +84,27 @@ test('switches off leftovers for a single meal only', async ({ page }) => {
   await expect(ruleSwitch(page, 'Reste, Gesamtplan')).toBeChecked()
 })
 
+test('switches off the category rule for the whole plan', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await openRollingRules(page)
+  await expect(ruleSwitch(page, 'Kategorien, Gesamtplan')).toBeChecked()
+  await ruleSwitch(page, 'Kategorien, Gesamtplan').focus()
+  await page.keyboard.press('Space')
+  await settleWrites(page)
+
+  await expect
+    .poll(async () => (await rollingRulesOnServer()).switchedOff)
+    .toEqual(['categories.wholePlan'])
+
+  await page.reload()
+  await openRollingRules(page)
+
+  await expect(ruleSwitch(page, 'Kategorien, Gesamtplan')).not.toBeChecked()
+  await expect(ruleSwitch(page, 'Kategorien, Einzelgericht')).toBeChecked()
+})
+
 test('takes over leftovers switched off before the update', async ({
   page,
 }) => {

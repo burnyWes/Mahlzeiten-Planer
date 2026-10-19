@@ -4,6 +4,8 @@ import {
   DEFAULT_ROLLING_RULES,
   isMainMealTimeRule,
   MAIN_MEAL_TIME_RULES,
+  MODES_OF_RULE,
+  SWITCHABLE_RULES,
   rollingRulesFromStored,
   ruleInModeKey,
   sameRollingRules,
@@ -107,6 +109,41 @@ describe('withRuleSwitched', () => {
 
     expect(withRuleSwitched(rules, unknownMode, false)).toEqual(rules)
   })
+
+  it('switches the other meal off for a single meal only', () => {
+    const rules = switchedOff()
+
+    expect(
+      withRuleSwitched(rules, { rule: 'otherMeal', mode: 'wholePlan' }, false),
+    ).toEqual(rules)
+    expect(
+      withRuleSwitched(rules, { rule: 'otherMeal', mode: 'singleMeal' }, false),
+    ).toEqual(switchedOff({ rule: 'otherMeal', mode: 'singleMeal' }))
+  })
+})
+
+describe('SWITCHABLE_RULES', () => {
+  it('lists the rules in the order of the rule management', () => {
+    expect(SWITCHABLE_RULES).toEqual([
+      'categories',
+      'leftovers',
+      'repeatingBreakfastAndSnack',
+      'variety',
+      'otherMeal',
+    ])
+  })
+
+  it('offers every rule for both ways of rolling but the other meal for a single meal only', () => {
+    expect(SWITCHABLE_RULES.map((rule) => [rule, MODES_OF_RULE[rule]])).toEqual(
+      [
+        ['categories', ['singleMeal', 'wholePlan']],
+        ['leftovers', ['singleMeal', 'wholePlan']],
+        ['repeatingBreakfastAndSnack', ['singleMeal', 'wholePlan']],
+        ['variety', ['singleMeal', 'wholePlan']],
+        ['otherMeal', ['singleMeal']],
+      ],
+    )
+  })
 })
 
 describe('sameRollingRules', () => {
@@ -185,6 +222,13 @@ describe('rollingRulesFromStored', () => {
         switchedOff: ['otherMeal.wholePlan', 'foo', 42, 'leftovers.wholePlan'],
       }).switchedOff,
     ).toEqual([LEFTOVERS_FOR_THE_WHOLE_PLAN])
+  })
+
+  it('reads the categories switched off for the whole plan', () => {
+    expect(
+      rollingRulesFromStored({ switchedOff: ['categories.wholePlan'] })
+        .switchedOff,
+    ).toEqual([{ rule: 'categories', mode: 'wholePlan' }])
   })
 
   it('reads anything but a list of keys as nothing switched off', () => {

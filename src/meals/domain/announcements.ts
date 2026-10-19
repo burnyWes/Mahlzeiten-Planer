@@ -121,11 +121,20 @@ export function mainMealTimeExplanation(): string {
 }
 
 const switchableRuleNames: Record<SwitchableRule, string> = {
+  categories: 'Kategorien',
   leftovers: 'Reste',
+  repeatingBreakfastAndSnack: 'Frühstück und Snack wiederholen',
+  variety: 'Abwechslung',
+  otherMeal: 'Anderes Gericht',
 }
 
 const switchableRuleExplanations: Record<SwitchableRule, string> = {
+  categories:
+    'Hauptgerichte und Gerichte ohne Art mit gleicher Kategorie kommen nicht an zwei Tagen hintereinander.',
   leftovers: 'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+  repeatingBreakfastAndSnack: 'Frühstück und Snack bleiben gern wie am Vortag.',
+  variety: 'Bevorzugt Gerichte, die im Plan noch selten vorkommen.',
+  otherMeal: 'Neu würfeln bringt ein anderes Gericht als das bisherige.',
 }
 
 const rollingModeNames: Record<RollingMode, string> = {

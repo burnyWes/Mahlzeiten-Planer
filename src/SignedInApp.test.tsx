@@ -1606,7 +1606,38 @@ describe('SignedInApp', () => {
       screen
         .getAllByRole('heading', { level: 2 })
         .map((heading) => heading.textContent),
-    ).toEqual(['Hauptgericht', 'Reste'])
+    ).toEqual([
+      'Hauptgericht',
+      'Kategorien',
+      'Reste',
+      'Frühstück und Snack wiederholen',
+      'Abwechslung',
+      'Anderes Gericht',
+    ])
+  })
+
+  it('offers the other meal for a single meal only', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(ruleSwitch('Anderes Gericht, Einzelgericht')).toBeChecked()
+    expect(
+      screen.queryByRole('switch', { name: 'Anderes Gericht, Gesamtplan' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('remembers the categories switched off for the whole plan', async () => {
+    const { weekPlanClient } = renderSignedInApp()
+
+    await openRollingRules()
+    await userEvent.click(ruleSwitch('Kategorien, Gesamtplan'))
+
+    expect(ruleSwitch('Kategorien, Gesamtplan')).not.toBeChecked()
+    expect(ruleSwitch('Kategorien, Einzelgericht')).toBeChecked()
+    expect(weekPlanClient.storedRollingRules().switchedOff).toEqual([
+      { rule: 'categories', mode: 'wholePlan' },
+    ])
   })
 
   it('offers the main meal time with its explanation', async () => {

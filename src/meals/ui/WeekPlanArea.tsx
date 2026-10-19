@@ -144,7 +144,8 @@ export function WeekPlanArea({
       weekPlanning.plan,
       slot,
       random,
-      rollingRules.mainMealTime,
+      rollingRules,
+      'singleMeal',
     )
     if (picked === null) {
       announce(noMatchingMealAnnouncement(slot, slotNamingIn(shownView)))

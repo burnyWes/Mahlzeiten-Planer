@@ -20,12 +20,27 @@ export type RollingMode = 'singleMeal' | 'wholePlan'
 
 export const ROLLING_MODES: readonly RollingMode[] = ['singleMeal', 'wholePlan']
 
-export type SwitchableRule = 'leftovers'
+export type SwitchableRule =
+  | 'categories'
+  | 'leftovers'
+  | 'repeatingBreakfastAndSnack'
+  | 'variety'
+  | 'otherMeal'
 
-export const SWITCHABLE_RULES: readonly SwitchableRule[] = ['leftovers']
+export const SWITCHABLE_RULES: readonly SwitchableRule[] = [
+  'categories',
+  'leftovers',
+  'repeatingBreakfastAndSnack',
+  'variety',
+  'otherMeal',
+]
 
 export const MODES_OF_RULE: Record<SwitchableRule, readonly RollingMode[]> = {
+  categories: ROLLING_MODES,
   leftovers: ROLLING_MODES,
+  repeatingBreakfastAndSnack: ROLLING_MODES,
+  variety: ROLLING_MODES,
+  otherMeal: ['singleMeal'],
 }
 
 export type RuleInMode = { rule: SwitchableRule; mode: RollingMode }

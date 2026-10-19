@@ -482,11 +482,11 @@ Dokumentation:
       findet nichts
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver: Einstellungen → Regel-Verwaltung. Die Überschrift
+- [x] Auf dem iPhone mit VoiceOver: Einstellungen → Regel-Verwaltung. Die Überschrift
       wird angesagt, die Schalter werden als „Reste, Einzelgericht, Schalter, ein“ mit
       der Erklärung danach vorgelesen, der Rotor springt über die Überschriften.
-- [ ] Auf dem zweiten Gerät erscheint ein umgelegter Schalter ohne Neuladen.
-- [ ] Mit invertierten Farben ist die Seite gut lesbar, Trennlinien und Schalter sind
+- [x] Auf dem zweiten Gerät erscheint ein umgelegter Schalter ohne Neuladen.
+- [x] Mit invertierten Farben ist die Seite gut lesbar, Trennlinien und Schalter sind
       erkennbar.
 
 ### Phase 2: Kategorien, Frühstück und Snack, Abwechslung, Anderes Gericht schaltbar
@@ -501,7 +501,7 @@ jeweiligen Modus an.
 
 Domäne (test-getrieben):
 
-- [ ] `src/meals/domain/rollingRules.ts`: Union und Konstanten erweitern.
+- [x] `src/meals/domain/rollingRules.ts`: Union und Konstanten erweitern.
   ```ts
   export type SwitchableRule =
     | 'categories'
@@ -522,7 +522,7 @@ Domäne (test-getrieben):
   ```
   Tests: `rollingRulesFromStored` liest `'categories.wholePlan'` und verwirft weiter
   `'otherMeal.wholePlan'`. `withRuleSwitched` ignoriert `otherMeal` im Gesamtplan.
-- [ ] `src/meals/domain/randomPlanning.ts`: `PLANNING_RULES` ersetzen durch
+- [x] `src/meals/domain/randomPlanning.ts`: `PLANNING_RULES` ersetzen durch
   ```ts
   const PLANNING_RULE_OF: Record<Exclude<SwitchableRule, 'leftovers'>, PlanningRule> = {
     otherMeal: otherThanPlanned,
@@ -538,7 +538,7 @@ Domäne (test-getrieben):
   - alles ein: die Liste gleicht der heutigen Reihenfolge
   - `categories` nur im Gesamtplan aus: fehlt dort, im Einzelgericht vorhanden
   - `otherMeal` erscheint im Gesamtplan nie (wirkungslos, aber eindeutig)
-- [ ] `pickMealFor(meals, plan, slot, random, rules: RollingRules, mode: RollingMode, mainMealTime = null)`
+- [x] `pickMealFor(meals, plan, slot, random, rules: RollingRules, mode: RollingMode, mainMealTime = null)`
       nutzt `rules.mainMealTime` und `planningRulesFor(rules, mode)`.
       `filledDay` übergibt `'wholePlan'`. Die vorhandenen Tests übergeben
       `rollingRules(…)` und `'singleMeal'`/`'wholePlan'` passend zum bisherigen Aufruf.
@@ -552,20 +552,20 @@ Domäne (test-getrieben):
     ein seltener geplantes zur Wahl steht.
   - Anderes Gericht aus (Einzelgericht): neu würfeln darf dasselbe Gericht bringen.
   - Gegenprobe: das Ausschalten im jeweils anderen Modus ändert das Ergebnis nicht.
-- [ ] `src/meals/domain/announcements.ts`: Namen und Erklärungen der vier Regeln laut
+- [x] `src/meals/domain/announcements.ts`: Namen und Erklärungen der vier Regeln laut
       Tabelle in den Akzeptanzkriterien, mit Tests.
 
 Oberfläche:
 
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `shuffleSlot` ruft
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `shuffleSlot` ruft
       `pickMealFor(meals, plan, slot, random, rollingRules, 'singleMeal')`.
       Neuer Test in `WeekPlanArea.test.tsx`: mit „Anderes Gericht“ aus und nur einem
       passenden Gericht plus einem bereits geplanten bringt neues Würfeln das
       geplante. Die Gegenprobe mit „Anderes Gericht“ an liefert ein anderes Gericht.
-- [ ] `src/meals/ui/RollingRulesPage.tsx`: braucht keine Änderung, weil sie aus
+- [x] `src/meals/ui/RollingRulesPage.tsx`: braucht keine Änderung, weil sie aus
       `SWITCHABLE_RULES` und `MODES_OF_RULE` rendert. Falls doch etwas fehlt, hier
       nachziehen.
-- [ ] `src/SignedInApp.test.tsx`: die Gruppen-Überschriften stehen in der Reihenfolge
+- [x] `src/SignedInApp.test.tsx`: die Gruppen-Überschriften stehen in der Reihenfolge
       Hauptgericht, Kategorien, Reste, Frühstück und Snack wiederholen, Abwechslung,
       Anderes Gericht. „Anderes Gericht“ hat nur „Anderes Gericht, Einzelgericht“, es
       gibt keinen Schalter „Anderes Gericht, Gesamtplan“. Ein umgelegter Schalter
@@ -573,17 +573,17 @@ Oberfläche:
 
 E2E:
 
-- [ ] `e2e/settings.spec.ts`: neuer Test „switches off the category rule for the whole
+- [x] `e2e/settings.spec.ts`: neuer Test „switches off the category rule for the whole
       plan“. Schalter per Leertaste, auf dem Server steht
       `switchedOff: ['categories.wholePlan']`, nach dem Neuladen ist er aus.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`: grün, darunter die neuen Regel-Szenarien in
+- [x] `npm run test`: grün, darunter die neuen Regel-Szenarien in
       `randomPlanning.test.ts` und die Seiten-Tests in `SignedInApp.test.tsx`
-- [ ] `npm run lint`: ohne Befund
-- [ ] `npm run build`: übersetzt
-- [ ] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
-- [ ] `grep -n "PLANNING_RULES" -r src` findet nichts mehr
+- [x] `npm run lint`: ohne Befund
+- [x] `npm run build`: übersetzt
+- [x] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
+- [x] `grep -n "PLANNING_RULES" -r src` findet nichts mehr
 
 **Manuelle Verifikation**:
 - [ ] Mit VoiceOver alle sechs Gruppen durchgehen: Namen, Erklärungen und
@@ -605,6 +605,9 @@ Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalt
   fehlt.
 - Phase 1: Die Regel-Verwaltung hat wie die anderen Unterseiten keine
   Navigationsleiste. Der Weg zum Wochenplan führt über „Zurück zu den Einstellungen“.
+- Phase 2: `planningRulesFor` lässt `otherThanPlanned` im Gesamtplan ganz weg. Das
+  Würfeln ändert sich dadurch nicht, weil `filledWeekPlan` jeden Platz leer vorfindet.
+  Alle bisherigen Tests in `randomPlanning.test.ts` blieben grün.
 
 ## Verweise
 

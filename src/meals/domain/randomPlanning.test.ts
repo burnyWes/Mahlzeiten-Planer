@@ -7,13 +7,19 @@ import {
   narrowedBy,
   otherThanPlanned,
   pickMealFor,
+  planningRulesFor,
   randomCandidates,
   rarestInThePlan,
   stayingLikeTheDayBefore,
   type PlanningRule,
   type RandomSource,
 } from './randomPlanning'
-import type { MainMealTimeRule, RollingRules } from './rollingRules'
+import type {
+  MainMealTimeRule,
+  RollingMode,
+  RollingRules,
+  SwitchableRule,
+} from './rollingRules'
 import { toPlanDate, type PlanDate } from './planDate'
 import { datesOf, type PlanPeriod } from './planPeriod'
 import type { Supply } from './supply'
@@ -44,6 +50,10 @@ const NO_SUPPLIES: readonly Supply[] = []
 
 function rollingRules(mainMealTime: MainMealTimeRule): RollingRules {
   return { mainMealTime, switchedOff: [] }
+}
+
+function switchedOff(rule: SwitchableRule, mode: RollingMode): RollingRules {
+  return { mainMealTime: 'lunchOrDinner', switchedOff: [{ rule, mode }] }
 }
 
 function meal(
@@ -288,7 +298,8 @@ describe('otherThanPlanned', () => {
         plan,
         slot(MONDAY, 'breakfast'),
         sequence([0.99]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(muesli)
   })
@@ -302,7 +313,8 @@ describe('otherThanPlanned', () => {
         withMealIn(plan, slot(FRIDAY, 'breakfast'), 'muesli'),
         slot(MONDAY, 'breakfast'),
         sequence([0.99]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(muesli)
   })
@@ -465,7 +477,8 @@ describe('apartFromSameCategory', () => {
         plan,
         slot(TUESDAY, 'lunch'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(rice)
   })
@@ -487,7 +500,8 @@ describe('apartFromSameCategory', () => {
         plan,
         slot(TUESDAY, 'lunch'),
         sequence([0.99]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(pasta)
   })
@@ -516,7 +530,8 @@ describe('stayingLikeTheDayBefore', () => {
         mondayMuesli,
         slot(TUESDAY, 'breakfast'),
         sequence([0, 0.99]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(muesli)
   })
@@ -531,7 +546,8 @@ describe('stayingLikeTheDayBefore', () => {
           mondayMuesli,
           slot(TUESDAY, 'breakfast'),
           sequence([coin, 0]),
-          'lunchOrDinner',
+          rollingRules('lunchOrDinner'),
+          'singleMeal',
         ),
       ).toEqual(porridge),
     )
@@ -547,7 +563,8 @@ describe('stayingLikeTheDayBefore', () => {
         plan,
         slot(TUESDAY, 'snack'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -629,7 +646,8 @@ describe('stayingLikeTheDayBefore', () => {
         plan,
         slot(TUESDAY, 'breakfast'),
         sequence([0.99, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(porridge)
   })
@@ -703,7 +721,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toBeNull()
   })
@@ -715,7 +734,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0, 0.5]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(bolognese)
   })
@@ -727,7 +747,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(pizza)
   })
@@ -741,7 +762,8 @@ describe('pickMealFor', () => {
         plan,
         slot(MONDAY, 'breakfast'),
         sequence([0.9]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -755,7 +777,8 @@ describe('pickMealFor', () => {
         plan,
         slot(MONDAY, 'breakfast'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(muesli)
   })
@@ -769,7 +792,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'snack'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(snacks[0])
     expect(
@@ -778,7 +802,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'snack'),
         sequence([0.999999]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(snacks[2])
     expect(
@@ -787,7 +812,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'snack'),
         sequence([1]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(snacks[2])
   })
@@ -801,7 +827,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'breakfast'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(muesli)
     expect(
@@ -810,7 +837,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'breakfast'),
         sequence([0.99]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -822,7 +850,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'snack'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -839,7 +868,8 @@ describe('pickMealFor', () => {
             EMPTY_PLAN,
             slot(MONDAY, time),
             sequence([coin, 0]),
-            'lunchOrDinner',
+            rollingRules('lunchOrDinner'),
+            'singleMeal',
           ),
         ).toBeNull(),
       ),
@@ -856,7 +886,8 @@ describe('pickMealFor', () => {
         plan,
         slot(MONDAY, 'lunch'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
     expect(
@@ -865,7 +896,8 @@ describe('pickMealFor', () => {
         plan,
         slot(MONDAY, 'lunch'),
         sequence([0.99]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -880,7 +912,8 @@ describe('pickMealFor', () => {
           withMealIn(EMPTY_PLAN, slot(MONDAY, 'lunch'), beside),
           slot(MONDAY, 'dinner'),
           sequence([0.99]),
-          'lunchOrDinner',
+          rollingRules('lunchOrDinner'),
+          'singleMeal',
         ),
       ).toEqual(pizza),
     )
@@ -895,7 +928,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(pizza)
     expect(
@@ -904,7 +938,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0.5, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
     expect(
@@ -913,7 +948,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'dinner'),
         sequence([0, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
     expect(
@@ -922,7 +958,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'dinner'),
         sequence([0.5, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(pizza)
   })
@@ -934,7 +971,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
         'dinner',
       ),
     ).toEqual(bread)
@@ -947,7 +985,8 @@ describe('pickMealFor', () => {
         withMealIn(EMPTY_PLAN, slot(MONDAY, 'dinner'), 'bolognese'),
         slot(MONDAY, 'lunch'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
   })
@@ -961,7 +1000,8 @@ describe('pickMealFor', () => {
         plan,
         slot(MONDAY, 'lunch'),
         sequence([0, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(pizza)
     expect(
@@ -970,7 +1010,8 @@ describe('pickMealFor', () => {
         plan,
         slot(MONDAY, 'lunch'),
         sequence([0.5, 0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
   })
@@ -982,7 +1023,8 @@ describe('pickMealFor', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'breakfast'),
         sequence([0]),
-        'lunchOrDinner',
+        rollingRules('lunchOrDinner'),
+        'singleMeal',
       ),
     ).toBeNull()
   })
@@ -1361,7 +1403,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'dinner'),
         sequence([0]),
-        'lunch',
+        rollingRules('lunch'),
+        'singleMeal',
       ),
     ).toEqual(bread)
     expect(
@@ -1370,7 +1413,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'dinner'),
         sequence([0.99]),
-        'lunch',
+        rollingRules('lunch'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -1382,7 +1426,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         onlyAt('lunch', 'bread'),
         slot(MONDAY, 'dinner'),
         sequence([0]),
-        'lunch',
+        rollingRules('lunch'),
+        'singleMeal',
       ),
     ).toEqual(apple)
   })
@@ -1394,7 +1439,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'dinner'),
         sequence([0]),
-        'lunch',
+        rollingRules('lunch'),
+        'singleMeal',
       ),
     ).toBeNull()
   })
@@ -1403,7 +1449,14 @@ describe('pickMealFor with a fixed main meal time', () => {
     const { random, counted } = countingRandom()
 
     expect(
-      pickMealFor(stored, EMPTY_PLAN, slot(MONDAY, 'lunch'), random, 'lunch'),
+      pickMealFor(
+        stored,
+        EMPTY_PLAN,
+        slot(MONDAY, 'lunch'),
+        random,
+        rollingRules('lunch'),
+        'singleMeal',
+      ),
     ).toEqual(pizza)
     expect(counted.calls).toBe(1)
   })
@@ -1418,7 +1471,8 @@ describe('pickMealFor with a fixed main meal time', () => {
           onlyAt('dinner', beside),
           slot(MONDAY, 'lunch'),
           sequence([0.99]),
-          'lunch',
+          rollingRules('lunch'),
+          'singleMeal',
         ),
       ).toEqual(pizza),
     )
@@ -1431,7 +1485,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         onlyAt('dinner', 'bolognese'),
         slot(MONDAY, 'lunch'),
         sequence([0]),
-        'lunch',
+        rollingRules('lunch'),
+        'singleMeal',
       ),
     ).toEqual(bread)
   })
@@ -1443,7 +1498,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'lunch'),
         sequence([0]),
-        'dinner',
+        rollingRules('dinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
     expect(
@@ -1452,7 +1508,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'dinner'),
         sequence([0.99]),
-        'dinner',
+        rollingRules('dinner'),
+        'singleMeal',
       ),
     ).toEqual(pizza)
     expect(
@@ -1461,7 +1518,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         onlyAt('lunch', 'bolognese'),
         slot(MONDAY, 'dinner'),
         sequence([0]),
-        'dinner',
+        rollingRules('dinner'),
+        'singleMeal',
       ),
     ).toEqual(bread)
   })
@@ -1473,7 +1531,8 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'breakfast'),
         sequence([0]),
-        'lunch',
+        rollingRules('lunch'),
+        'singleMeal',
       ),
     ).toEqual(muesli)
     expect(
@@ -1482,8 +1541,267 @@ describe('pickMealFor with a fixed main meal time', () => {
         EMPTY_PLAN,
         slot(MONDAY, 'snack'),
         sequence([0]),
-        'dinner',
+        rollingRules('dinner'),
+        'singleMeal',
       ),
     ).toEqual(apple)
+  })
+})
+
+describe('planningRulesFor', () => {
+  it('applies every rule in the usual order while all are switched on', () => {
+    expect(
+      planningRulesFor(rollingRules('lunchOrDinner'), 'singleMeal'),
+    ).toEqual([
+      otherThanPlanned,
+      apartFromSameCategory,
+      stayingLikeTheDayBefore,
+      rarestInThePlan,
+    ])
+  })
+
+  it('leaves out the categories only in the mode they are switched off for', () => {
+    const rules = switchedOff('categories', 'wholePlan')
+
+    expect(planningRulesFor(rules, 'wholePlan')).not.toContain(
+      apartFromSameCategory,
+    )
+    expect(planningRulesFor(rules, 'singleMeal')).toContain(
+      apartFromSameCategory,
+    )
+  })
+
+  it('never looks for another meal than the planned one for the whole plan', () => {
+    expect(
+      planningRulesFor(rollingRules('lunchOrDinner'), 'wholePlan'),
+    ).toEqual([apartFromSameCategory, stayingLikeTheDayBefore, rarestInThePlan])
+  })
+})
+
+describe('pickMealFor with rules switched off', () => {
+  const lasagneOnMonday = withMealIn(
+    EMPTY_PLAN,
+    slot(MONDAY, 'dinner'),
+    'lasagne',
+  )
+  const mondayMuesli = withMealIn(
+    EMPTY_PLAN,
+    slot(MONDAY, 'breakfast'),
+    'muesli',
+  )
+  const muesliOnFriday = withMealIn(
+    EMPTY_PLAN,
+    slot(FRIDAY, 'breakfast'),
+    'muesli',
+  )
+  const muesliNowAndPorridgeTwice = withMealIn(
+    withMealIn(mondayMuesli, slot(FRIDAY, 'breakfast'), 'porridge'),
+    slot(SATURDAY, 'breakfast'),
+    'porridge',
+  )
+
+  function picked(
+    stored: readonly Meal[],
+    plan: WeekPlan,
+    rolled: PlanSlot,
+    rules: RollingRules,
+  ): Meal | null {
+    return pickMealFor(stored, plan, rolled, sequence([0]), rules, 'singleMeal')
+  }
+
+  it('may roll the same category beside it while the categories are switched off for a single meal', () => {
+    expect(
+      picked(
+        [lasagne, pasta, rice],
+        lasagneOnMonday,
+        slot(TUESDAY, 'lunch'),
+        switchedOff('categories', 'singleMeal'),
+      ),
+    ).toEqual(pasta)
+  })
+
+  it('keeps the categories apart for a single meal while they are switched off for the whole plan', () => {
+    expect(
+      picked(
+        [lasagne, pasta, rice],
+        lasagneOnMonday,
+        slot(TUESDAY, 'lunch'),
+        switchedOff('categories', 'wholePlan'),
+      ),
+    ).toEqual(rice)
+  })
+
+  it('does not prefer the breakfast of the day before while repeating is switched off for a single meal', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        mondayMuesli,
+        slot(TUESDAY, 'breakfast'),
+        switchedOff('repeatingBreakfastAndSnack', 'singleMeal'),
+      ),
+    ).toEqual(porridge)
+  })
+
+  it('still rolls the breakfast of the day before when nothing else suits', () => {
+    expect(
+      picked(
+        [muesli],
+        mondayMuesli,
+        slot(TUESDAY, 'breakfast'),
+        switchedOff('repeatingBreakfastAndSnack', 'singleMeal'),
+      ),
+    ).toEqual(muesli)
+  })
+
+  it('prefers the breakfast of the day before for a single meal while repeating is switched off for the whole plan', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        mondayMuesli,
+        slot(TUESDAY, 'breakfast'),
+        switchedOff('repeatingBreakfastAndSnack', 'wholePlan'),
+      ),
+    ).toEqual(muesli)
+  })
+
+  it('may roll a meal planned already while the variety is switched off for a single meal', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        muesliOnFriday,
+        slot(TUESDAY, 'breakfast'),
+        switchedOff('variety', 'singleMeal'),
+      ),
+    ).toEqual(muesli)
+  })
+
+  it('prefers the rarer meal for a single meal while the variety is switched off for the whole plan', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        muesliOnFriday,
+        slot(TUESDAY, 'breakfast'),
+        switchedOff('variety', 'wholePlan'),
+      ),
+    ).toEqual(porridge)
+  })
+
+  it('may roll the planned meal again while the other meal is switched off', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        muesliNowAndPorridgeTwice,
+        slot(MONDAY, 'breakfast'),
+        switchedOff('otherMeal', 'singleMeal'),
+      ),
+    ).toEqual(muesli)
+  })
+
+  it('rolls another meal than the planned one while the other meal is switched on', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        muesliNowAndPorridgeTwice,
+        slot(MONDAY, 'breakfast'),
+        rollingRules('lunchOrDinner'),
+      ),
+    ).toEqual(porridge)
+  })
+})
+
+describe('filledWeekPlan with rules switched off', () => {
+  const noodlesAndRice = [
+    pasta,
+    penne,
+    rice,
+    meal('risotto', 'mainMeal', ['Reis']),
+  ]
+
+  function lunchesOf(plan: WeekPlan): readonly (string | null)[] {
+    return WEEK_DATES.map((day) => mealIn(plan, slot(day, 'lunch')))
+  }
+
+  it('may plan the same category on two days in a row while the categories are switched off for the whole plan', () => {
+    const plan = filledWeekPlan(
+      noodlesAndRice,
+      WEEK,
+      sequence([0]),
+      switchedOff('categories', 'wholePlan'),
+      NO_SUPPLIES,
+    )
+
+    expect(lunchesOf(plan).slice(0, 2)).toEqual(['pasta', 'penne'])
+  })
+
+  it('keeps the categories apart in the whole plan while they are switched off for a single meal', () => {
+    const plan = filledWeekPlan(
+      noodlesAndRice,
+      WEEK,
+      sequence([0]),
+      switchedOff('categories', 'singleMeal'),
+      NO_SUPPLIES,
+    )
+
+    expect(lunchesOf(plan).slice(0, 2)).toEqual(['pasta', 'rice'])
+  })
+
+  it('changes the breakfast while repeating is switched off for the whole plan', () => {
+    const plan = filledWeekPlan(
+      meals(3, 'breakfast'),
+      WEEK,
+      sequence([0]),
+      switchedOff('repeatingBreakfastAndSnack', 'wholePlan'),
+      NO_SUPPLIES,
+    )
+
+    expect(
+      WEEK_DATES.map((day) => mealIn(plan, slot(day, 'breakfast'))),
+    ).toEqual([
+      'meal-1',
+      'meal-2',
+      'meal-3',
+      'meal-1',
+      'meal-2',
+      'meal-3',
+      'meal-1',
+    ])
+  })
+
+  it('keeps the breakfast in the whole plan while repeating is switched off for a single meal', () => {
+    const plan = filledWeekPlan(
+      meals(3, 'breakfast'),
+      WEEK,
+      sequence([0]),
+      switchedOff('repeatingBreakfastAndSnack', 'singleMeal'),
+      NO_SUPPLIES,
+    )
+
+    expect(
+      WEEK_DATES.map((day) => mealIn(plan, slot(day, 'breakfast'))),
+    ).toEqual(WEEK_DATES.map(() => 'meal-1'))
+  })
+
+  it('may plan the same meal again while the variety is switched off for the whole plan', () => {
+    const plan = filledWeekPlan(
+      meals(3, 'snack'),
+      WEEK,
+      sequence([0.99]),
+      switchedOff('variety', 'wholePlan'),
+      NO_SUPPLIES,
+    )
+
+    expect(timesPlannedIn(plan)).not.toEqual([7, 7, 7])
+  })
+
+  it('spreads the meals in the whole plan while the variety is switched off for a single meal', () => {
+    const plan = filledWeekPlan(
+      meals(3, 'snack'),
+      WEEK,
+      sequence([0.99]),
+      switchedOff('variety', 'singleMeal'),
+      NO_SUPPLIES,
+    )
+
+    expect(timesPlannedIn(plan)).toEqual([7, 7, 7])
   })
 })
