@@ -292,14 +292,14 @@ Schalter aus zieht „Auf die Einkaufsliste“ nichts mehr vom Vorrat ab.
 
 Domäne (test-getrieben, erst der rote Test):
 
-- [ ] `src/meals/domain/rollingRules.ts`: Umbenennungen laut *Abstraktionen*
+- [x] `src/meals/domain/rollingRules.ts`: Umbenennungen laut *Abstraktionen*
       durchziehen (Feld `mode` → `scope` in `RuleInScope`). Alle Importe und Tests
       anpassen (`rollingRules.test.ts`, `randomPlanning.test.ts`, `leftovers.test.ts`,
       `announcements.test.ts`, `useWeekPlan.test.tsx`, `WeekPlanArea.test.tsx`,
       `SignedInApp.test.tsx`) sowie den Adapter
       `src/meals/api/firestoreWeekPlanClient.ts:25,164` (`ruleInModeKey` →
       `ruleInScopeKey`). Die Tests bleiben inhaltlich gleich und grün.
-- [ ] `RuleScope` einführen und `SwitchableRule` um `'supplies'` erweitern. Zunächst
+- [x] `RuleScope` einführen und `SwitchableRule` um `'supplies'` erweitern. Zunächst
       gilt `SCOPES_OF_RULE.supplies = ['transfer']`, `leftovers` bleibt bei
       `ROLLING_MODES` (`'manualChoice'` folgt in Phase 2). `SWITCHABLE_RULES` bekommt
       `'supplies'` als letzten Eintrag. Tests:
@@ -307,11 +307,11 @@ Domäne (test-getrieben, erst der rote Test):
   - `rollingRulesFromStored` verwirft `'supplies.singleMeal'`
   - `withRuleSwitched` schaltet `{ rule: 'supplies', scope: 'transfer' }` aus und ein
   - `appliesIn(DEFAULT_ROLLING_RULES, 'supplies', 'transfer')` ist `true`
-- [ ] `src/meals/domain/randomPlanning.ts`: `NarrowingRule = Exclude<SwitchableRule,
+- [x] `src/meals/domain/randomPlanning.ts`: `NarrowingRule = Exclude<SwitchableRule,
       'leftovers' | 'supplies'>`, `planningRulesFor` mit `SCOPES_OF_RULE`. Test: Mit
       `supplies.transfer` aus gleicht `planningRulesFor(…, 'wholePlan')` der Liste mit
       allem an.
-- [ ] `src/meals/domain/weekPlan.ts`:
+- [x] `src/meals/domain/weekPlan.ts`:
   ```ts
   export type WeekPlanTransfer = {
     mealsToBuy: readonly Meal[]
@@ -325,7 +325,7 @@ Domäne (test-getrieben, erst der rote Test):
   `takesSupplies` wird durchgereicht, und bei `false` sind `mealsToBuy` und
   `spentSupplies` gleich wie bei `true`. Die neun bestehenden Aufrufe
   (`weekPlan.test.ts:689-786`) bekommen `true` und erwarten `takesSupplies: true`.
-- [ ] `src/meals/domain/announcements.ts`:
+- [x] `src/meals/domain/announcements.ts`:
   - `switchableRuleName('supplies')` → `'Vorrat'`
   - `switchableRuleExplanation('supplies')` → `'Auf die Einkaufsliste zieht die
     Gerichte aus dem Vorrat ab.'`
@@ -343,16 +343,16 @@ Domäne (test-getrieben, erst der rote Test):
 
 Oberfläche:
 
-- [ ] `src/meals/ui/useWeekPlan.ts`: `switchRule(ruleInScope: RuleInScope, on)`.
-- [ ] `src/meals/ui/RollingRulesPage.tsx`: Umbenennungen (`SCOPES_OF_RULE`, `scope`,
+- [x] `src/meals/ui/useWeekPlan.ts`: `switchRule(ruleInScope: RuleInScope, on)`.
+- [x] `src/meals/ui/RollingRulesPage.tsx`: Umbenennungen (`SCOPES_OF_RULE`, `scope`,
       `ruleScopeName`, Props-Typ `RuleInScope`).
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `addToShoppingList` ruft
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `addToShoppingList` ruft
       `weekPlanTransfer(plan, meals, supplies, appliesIn(rollingRules, 'supplies',
       'transfer'))`. In `WeekPlanArea.test.tsx` erwarten die bestehenden
       Transfer-Objekte (`:1195`, `:1214`, `:1231`, `:1255`, `:1274`, `:2574`, `:2591`)
       zusätzlich `takesSupplies: true`. Neuer Test: Mit `supplies.transfer` aus kommt
       bei `onAddToShoppingList` ein Transfer mit `takesSupplies: false` an.
-- [ ] `src/SignedInApp.tsx`: `addWeekPlanToShoppingList` bucht `spentSupplies` nur ab,
+- [x] `src/SignedInApp.tsx`: `addWeekPlanToShoppingList` bucht `spentSupplies` nur ab,
       wenn `transfer.takesSupplies`, und reicht `takesSupplies` an die Ansage weiter.
       Tests in `SignedInApp.test.tsx`:
   - Die Gruppen-Überschriften enden mit „Anderes Gericht“, „Vorrat“.
@@ -366,23 +366,23 @@ Oberfläche:
 
 E2E:
 
-- [ ] `e2e/settings.spec.ts`: neuer Test „switches off taking meals from the supply“.
+- [x] `e2e/settings.spec.ts`: neuer Test „switches off taking meals from the supply“.
       Schalter „Vorrat, Auf die Einkaufsliste“ per Leertaste ausschalten. Auf dem
       Server steht `switchedOff: ['supplies.transfer']`, nach dem Neuladen ist er aus.
-- [ ] `e2e/weekPlan.spec.ts`: neuer Test „keeps the supply when the household does not
+- [x] `e2e/weekPlan.spec.ts`: neuer Test „keeps the supply when the household does not
       want it taken“. Aufbau wie „buys only the meal that the supply no longer covers“
       (`:103`), vorher über die Regel-Verwaltung den Vorrat-Schalter aus. Danach ist
       die Ansage „Wochenplan, 2 Artikel hinzugefügt. 1 Gericht aus dem Vorrat
       gedeckt.“ und `supplyCountsOnServer` ist weiter `[1]`.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`: grün, darunter die neuen Tests in `rollingRules.test.ts`,
+- [x] `npm run test`: grün, darunter die neuen Tests in `rollingRules.test.ts`,
       `weekPlan.test.ts`, `announcements.test.ts`, `WeekPlanArea.test.tsx` und
       `SignedInApp.test.tsx`
-- [ ] `npm run lint`: ohne Befund
-- [ ] `npm run build`: übersetzt
-- [ ] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
-- [ ] `grep -rn "RuleInMode\|MODES_OF_RULE\|ruleInModeKey\|rollingModeName" src e2e`
+- [x] `npm run lint`: ohne Befund
+- [x] `npm run build`: übersetzt
+- [x] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
+- [x] `grep -rn "RuleInMode\|MODES_OF_RULE\|ruleInModeKey\|rollingModeName" src e2e`
       findet nichts
 
 **Manuelle Verifikation**:
@@ -539,6 +539,14 @@ E2E:
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- Phase 1: `ruleScopeName('manualChoice')` → „Von Hand“ steht schon in Phase 1, weil
+  `Record<RuleScope, string>` vollständig sein muss. Ein Schalter erscheint dafür erst
+  mit Phase 2, weil `SCOPES_OF_RULE.leftovers` noch bei `ROLLING_MODES` bleibt.
+- Phase 1: In `e2e/weekPlan.spec.ts` sind der Aufbau (Gerichte und Vorrat) und das
+  Planen aus „buys only the meal that the supply no longer covers“ in die Helfer
+  `keepBologneseInStoreBesideChili` und `planBologneseTwiceAndChili` gewandert, damit
+  der neue Test sie mitnutzt.
 
 ## Verweise
 

@@ -105,6 +105,28 @@ test('switches off the category rule for the whole plan', async ({ page }) => {
   await expect(ruleSwitch(page, 'Kategorien, Einzelgericht')).toBeChecked()
 })
 
+test('switches off taking meals from the supply', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await openRollingRules(page)
+  await expect(ruleSwitch(page, 'Vorrat, Auf die Einkaufsliste')).toBeChecked()
+  await ruleSwitch(page, 'Vorrat, Auf die Einkaufsliste').focus()
+  await page.keyboard.press('Space')
+  await settleWrites(page)
+
+  await expect
+    .poll(async () => (await rollingRulesOnServer()).switchedOff)
+    .toEqual(['supplies.transfer'])
+
+  await page.reload()
+  await openRollingRules(page)
+
+  await expect(
+    ruleSwitch(page, 'Vorrat, Auf die Einkaufsliste'),
+  ).not.toBeChecked()
+})
+
 test('takes over leftovers switched off before the update', async ({
   page,
 }) => {

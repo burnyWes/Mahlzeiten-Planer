@@ -16,8 +16,8 @@ import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
 import type { MealFilter } from './mealFilter'
 import type {
   MainMealTimeRule,
-  RollingMode,
-  RuleInMode,
+  RuleInScope,
+  RuleScope,
   SwitchableRule,
 } from './rollingRules'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
@@ -126,6 +126,7 @@ const switchableRuleNames: Record<SwitchableRule, string> = {
   repeatingBreakfastAndSnack: 'Frühstück und Snack wiederholen',
   variety: 'Abwechslung',
   otherMeal: 'Anderes Gericht',
+  supplies: 'Vorrat',
 }
 
 const switchableRuleExplanations: Record<SwitchableRule, string> = {
@@ -135,11 +136,14 @@ const switchableRuleExplanations: Record<SwitchableRule, string> = {
   repeatingBreakfastAndSnack: 'Frühstück und Snack bleiben gern wie am Vortag.',
   variety: 'Bevorzugt Gerichte, die im Plan noch selten vorkommen.',
   otherMeal: 'Neu würfeln bringt ein anderes Gericht als das bisherige.',
+  supplies: 'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
 }
 
-const rollingModeNames: Record<RollingMode, string> = {
+const ruleScopeNames: Record<RuleScope, string> = {
   singleMeal: 'Einzelgericht',
   wholePlan: 'Gesamtplan',
+  manualChoice: 'Von Hand',
+  transfer: 'Auf die Einkaufsliste',
 }
 
 export function switchableRuleName(rule: SwitchableRule): string {
@@ -150,12 +154,12 @@ export function switchableRuleExplanation(rule: SwitchableRule): string {
   return switchableRuleExplanations[rule]
 }
 
-export function rollingModeName(mode: RollingMode): string {
-  return rollingModeNames[mode]
+export function ruleScopeName(scope: RuleScope): string {
+  return ruleScopeNames[scope]
 }
 
-export function ruleSwitchName({ rule, mode }: RuleInMode): string {
-  return `${switchableRuleName(rule)}, ${rollingModeName(mode)}`
+export function ruleSwitchName({ rule, scope }: RuleInScope): string {
+  return `${switchableRuleName(rule)}, ${ruleScopeName(scope)}`
 }
 
 export function mealFilterAnnouncement(
@@ -505,8 +509,15 @@ export function weekPlanClearedAnnouncement(): string {
   return 'Wochenplan geleert.'
 }
 
-function suppliedMealPhrase(suppliedMeals: number): string {
-  return `${mealTotalPhrase(suppliedMeals)} aus dem Vorrat entnommen.`
+function supplyVerb(takesSupplies: boolean): string {
+  return takesSupplies ? 'entnommen' : 'gedeckt'
+}
+
+function suppliedMealPhrase(
+  suppliedMeals: number,
+  takesSupplies: boolean,
+): string {
+  return `${mealTotalPhrase(suppliedMeals)} aus dem Vorrat ${supplyVerb(takesSupplies)}.`
 }
 
 function additionsPhrase(additions: string): string {
@@ -517,6 +528,7 @@ export function weekPlanTransferAnnouncement(
   additions: string,
   mealsWithoutItems: readonly NewMeal[],
   suppliedMeals: number,
+  takesSupplies: boolean,
 ): string {
   const hints = mealsWithoutItems.map(mealWithoutItemsAnnouncement)
   if (suppliedMeals === 0)
@@ -524,10 +536,10 @@ export function weekPlanTransferAnnouncement(
       ? hints.join(' ')
       : [`Wochenplan, ${additions}`, ...hints].join(' ')
   if (additions === '' && hints.length === 0)
-    return 'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.'
+    return `Wochenplan, alle Gerichte aus dem Vorrat ${supplyVerb(takesSupplies)}, nichts hinzugefügt.`
   return [
     `Wochenplan, ${additionsPhrase(additions)}`,
-    suppliedMealPhrase(suppliedMeals),
+    suppliedMealPhrase(suppliedMeals, takesSupplies),
     ...hints,
   ].join(' ')
 }

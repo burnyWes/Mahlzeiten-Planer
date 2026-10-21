@@ -16,7 +16,7 @@ import type { RandomSource } from '../domain/randomPlanning'
 import type {
   MainMealTimeRule,
   RollingRules,
-  RuleInMode,
+  RuleInScope,
 } from '../domain/rollingRules'
 import type { Supply } from '../domain/supply'
 import { toPlanDate, type PlanDate } from '../domain/planDate'
@@ -1192,7 +1192,11 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [pizza, bolognese], spentSupplies: [] },
+      {
+        mealsToBuy: [pizza, bolognese],
+        spentSupplies: [],
+        takesSupplies: true,
+      },
     ])
   })
 
@@ -1211,7 +1215,11 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [pizza, bolognese, soup], spentSupplies: [] },
+      {
+        mealsToBuy: [pizza, bolognese, soup],
+        spentSupplies: [],
+        takesSupplies: true,
+      },
     ])
   })
 
@@ -1228,7 +1236,7 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [bolognese], spentSupplies: [] },
+      { mealsToBuy: [bolognese], spentSupplies: [], takesSupplies: true },
     ])
     expect(mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'lunch'))).toBe(
       'gone',
@@ -1253,6 +1261,7 @@ describe('WeekPlanArea', () => {
       {
         mealsToBuy: [pizza, bolognese],
         spentSupplies: [supply('bolognese', 1)],
+        takesSupplies: true,
       },
     ])
   })
@@ -1271,7 +1280,39 @@ describe('WeekPlanArea', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [], spentSupplies: [supply('bolognese', 1)] },
+      {
+        mealsToBuy: [],
+        spentSupplies: [supply('bolognese', 1)],
+        takesSupplies: true,
+      },
+    ])
+  })
+
+  it('hands over that the supply is not taken while it is switched off', async () => {
+    const { transferred } = renderWeekPlanArea(
+      [bolognese],
+      planWith([slot(MONDAY, 'lunch'), 'bolognese']),
+      [supply('bolognese', 1)],
+      alwaysFirst,
+      undefined,
+      MONDAY,
+      'day',
+      'lunch',
+      {
+        mainMealTime: 'lunchOrDinner',
+        switchedOff: [{ rule: 'supplies', scope: 'transfer' }],
+      },
+    )
+
+    await fixPlan()
+    await addToShoppingList()
+
+    expect(transferred).toEqual([
+      {
+        mealsToBuy: [],
+        spentSupplies: [supply('bolognese', 1)],
+        takesSupplies: false,
+      },
     ])
   })
 
@@ -2382,16 +2423,16 @@ describe('WeekPlanArea with leftovers', () => {
     'bolognese',
   )
 
-  const leftoversForASingleMeal: RuleInMode = {
+  const leftoversForASingleMeal: RuleInScope = {
     rule: 'leftovers',
-    mode: 'singleMeal',
+    scope: 'singleMeal',
   }
-  const leftoversForTheWholePlan: RuleInMode = {
+  const leftoversForTheWholePlan: RuleInScope = {
     rule: 'leftovers',
-    mode: 'wholePlan',
+    scope: 'wholePlan',
   }
 
-  function renderRollingAtDinner(switchedOff: readonly RuleInMode[] = []) {
+  function renderRollingAtDinner(switchedOff: readonly RuleInScope[] = []) {
     return renderWeekPlanArea(
       [leavingLeftovers],
       EMPTY_PLAN,
@@ -2572,6 +2613,7 @@ describe('WeekPlanArea with leftovers', () => {
       {
         mealsToBuy: [],
         spentSupplies: [supply('bolognese', 1)],
+        takesSupplies: true,
       },
     ])
     expect(markedMealTimes()).toEqual(['Abendessen'])
@@ -2588,7 +2630,11 @@ describe('WeekPlanArea with leftovers', () => {
     await addToShoppingList()
 
     expect(transferred).toEqual([
-      { mealsToBuy: [leavingLeftovers], spentSupplies: [] },
+      {
+        mealsToBuy: [leavingLeftovers],
+        spentSupplies: [],
+        takesSupplies: true,
+      },
     ])
   })
 
@@ -2610,7 +2656,7 @@ describe('WeekPlanArea with the other meal switched off', () => {
     [slot(SUNDAY, 'breakfast'), 'porridge'],
   )
 
-  function renderRollingTheBreakfast(switchedOff: readonly RuleInMode[]) {
+  function renderRollingTheBreakfast(switchedOff: readonly RuleInScope[]) {
     return renderWeekPlanArea(
       [muesli, porridge],
       muesliNowAndPorridgeTwice,
@@ -2626,7 +2672,7 @@ describe('WeekPlanArea with the other meal switched off', () => {
 
   it('may roll the planned meal again', async () => {
     const { weekPlanClient } = renderRollingTheBreakfast([
-      { rule: 'otherMeal', mode: 'singleMeal' },
+      { rule: 'otherMeal', scope: 'singleMeal' },
     ])
 
     await shuffleSlot('Frühstück')

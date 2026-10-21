@@ -16,8 +16,8 @@ import {
 } from './randomPlanning'
 import type {
   MainMealTimeRule,
-  RollingMode,
   RollingRules,
+  RuleScope,
   SwitchableRule,
 } from './rollingRules'
 import { toPlanDate, type PlanDate } from './planDate'
@@ -52,8 +52,8 @@ function rollingRules(mainMealTime: MainMealTimeRule): RollingRules {
   return { mainMealTime, switchedOff: [] }
 }
 
-function switchedOff(rule: SwitchableRule, mode: RollingMode): RollingRules {
-  return { mainMealTime: 'lunchOrDinner', switchedOff: [{ rule, mode }] }
+function switchedOff(rule: SwitchableRule, scope: RuleScope): RollingRules {
+  return { mainMealTime: 'lunchOrDinner', switchedOff: [{ rule, scope }] }
 }
 
 function meal(
@@ -1114,7 +1114,7 @@ describe('filledWeekPlan', () => {
         sequence([0]),
         {
           mainMealTime: 'dinner',
-          switchedOff: [{ rule: 'leftovers', mode: 'wholePlan' }],
+          switchedOff: [{ rule: 'leftovers', scope: 'wholePlan' }],
         },
         NO_SUPPLIES,
       )
@@ -1129,7 +1129,7 @@ describe('filledWeekPlan', () => {
         sequence([0]),
         {
           mainMealTime: 'dinner',
-          switchedOff: [{ rule: 'leftovers', mode: 'singleMeal' }],
+          switchedOff: [{ rule: 'leftovers', scope: 'singleMeal' }],
         },
         NO_SUPPLIES,
       )
@@ -1575,6 +1575,12 @@ describe('planningRulesFor', () => {
     expect(
       planningRulesFor(rollingRules('lunchOrDinner'), 'wholePlan'),
     ).toEqual([apartFromSameCategory, stayingLikeTheDayBefore, rarestInThePlan])
+  })
+
+  it('rolls the same way while taking the supply is switched off', () => {
+    expect(
+      planningRulesFor(switchedOff('supplies', 'transfer'), 'wholePlan'),
+    ).toEqual(planningRulesFor(rollingRules('lunchOrDinner'), 'wholePlan'))
   })
 })
 

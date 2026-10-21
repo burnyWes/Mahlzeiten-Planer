@@ -686,18 +686,28 @@ describe('weekPlanTransfer', () => {
     )
 
     it('buys the meal of the leftovers only once', () => {
-      expect(weekPlanTransfer(bologneseWithLeftovers, knownMeals, [])).toEqual({
+      expect(
+        weekPlanTransfer(bologneseWithLeftovers, knownMeals, [], true),
+      ).toEqual({
         mealsToBuy: [bolognese],
         spentSupplies: [],
+        takesSupplies: true,
       })
     })
 
     it('spends no supply on the leftovers', () => {
       expect(
-        weekPlanTransfer(soupLeftoversBeforeSoup, knownMeals, [
-          supply('soup', 1),
-        ]),
-      ).toEqual({ mealsToBuy: [], spentSupplies: [supply('soup', 1)] })
+        weekPlanTransfer(
+          soupLeftoversBeforeSoup,
+          knownMeals,
+          [supply('soup', 1)],
+          true,
+        ),
+      ).toEqual({
+        mealsToBuy: [],
+        spentSupplies: [supply('soup', 1)],
+        takesSupplies: true,
+      })
     })
   })
 
@@ -707,9 +717,10 @@ describe('weekPlanTransfer', () => {
       [slot(MONDAY, 'dinner'), 'bolognese'],
     )
 
-    expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
+    expect(weekPlanTransfer(plan, knownMeals, [], true)).toEqual({
       mealsToBuy: [pizza, bolognese],
       spentSupplies: [],
+      takesSupplies: true,
     })
   })
 
@@ -720,9 +731,12 @@ describe('weekPlanTransfer', () => {
       [slot(FRIDAY, 'lunch'), 'pizza'],
     )
 
-    expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 2)])).toEqual({
+    expect(
+      weekPlanTransfer(plan, knownMeals, [supply('pizza', 2)], true),
+    ).toEqual({
       mealsToBuy: [pizza],
       spentSupplies: [supply('pizza', 2)],
+      takesSupplies: true,
     })
   })
 
@@ -732,9 +746,12 @@ describe('weekPlanTransfer', () => {
       [slot(WEDNESDAY, 'lunch'), 'pizza'],
     )
 
-    expect(weekPlanTransfer(plan, knownMeals, [supply('pizza', 1)])).toEqual({
+    expect(
+      weekPlanTransfer(plan, knownMeals, [supply('pizza', 1)], true),
+    ).toEqual({
       mealsToBuy: [pizza],
       spentSupplies: [supply('pizza', 1)],
+      takesSupplies: true,
     })
   })
 
@@ -745,13 +762,16 @@ describe('weekPlanTransfer', () => {
     )
 
     expect(
-      weekPlanTransfer(plan, knownMeals, [
-        supply('pizza', 1),
-        supply('soup', 1),
-      ]),
+      weekPlanTransfer(
+        plan,
+        knownMeals,
+        [supply('pizza', 1), supply('soup', 1)],
+        true,
+      ),
     ).toEqual({
       mealsToBuy: [],
       spentSupplies: [supply('pizza', 1), supply('soup', 1)],
+      takesSupplies: true,
     })
   })
 
@@ -762,10 +782,12 @@ describe('weekPlanTransfer', () => {
     )
 
     expect(
-      weekPlanTransfer(plan, knownMeals, [
-        supply('pizza', 1),
-        supply('soup', 1),
-      ]).spentSupplies,
+      weekPlanTransfer(
+        plan,
+        knownMeals,
+        [supply('pizza', 1), supply('soup', 1)],
+        true,
+      ).spentSupplies,
     ).toEqual([supply('soup', 1), supply('pizza', 1)])
   })
 
@@ -773,8 +795,30 @@ describe('weekPlanTransfer', () => {
     const plan = planWith([slot(MONDAY, 'lunch'), 'pizza'])
 
     expect(
-      weekPlanTransfer(plan, knownMeals, [supply('bolognese', 3)]),
-    ).toEqual({ mealsToBuy: [pizza], spentSupplies: [] })
+      weekPlanTransfer(plan, knownMeals, [supply('bolognese', 3)], true),
+    ).toEqual({ mealsToBuy: [pizza], spentSupplies: [], takesSupplies: true })
+  })
+
+  it('tells whether the household wants the supply taken', () => {
+    const plan = planWith([slot(MONDAY, 'lunch'), 'pizza'])
+
+    expect(weekPlanTransfer(plan, knownMeals, [], false).takesSupplies).toBe(
+      false,
+    )
+  })
+
+  it('covers the same slots while the supply is not taken', () => {
+    const plan = planWith(
+      [slot(MONDAY, 'lunch'), 'pizza'],
+      [slot(MONDAY, 'dinner'), 'bolognese'],
+    )
+    const supplies = [supply('pizza', 1)]
+
+    const kept = weekPlanTransfer(plan, knownMeals, supplies, false)
+    const taken = weekPlanTransfer(plan, knownMeals, supplies, true)
+
+    expect(kept.mealsToBuy).toEqual(taken.mealsToBuy)
+    expect(kept.spentSupplies).toEqual(taken.spentSupplies)
   })
 
   it('skips a slot whose meal was deleted meanwhile', () => {
@@ -783,16 +827,23 @@ describe('weekPlanTransfer', () => {
       [slot(SUNDAY, 'lunch'), 'soup'],
     )
 
-    expect(weekPlanTransfer(plan, knownMeals, [])).toEqual({
+    expect(weekPlanTransfer(plan, knownMeals, [], true)).toEqual({
       mealsToBuy: [soup],
       spentSupplies: [],
+      takesSupplies: true,
     })
   })
 })
 
 describe('suppliedMealCount', () => {
   it('counts no meal while nothing was spent', () => {
-    expect(suppliedMealCount({ mealsToBuy: [], spentSupplies: [] })).toBe(0)
+    expect(
+      suppliedMealCount({
+        mealsToBuy: [],
+        spentSupplies: [],
+        takesSupplies: true,
+      }),
+    ).toBe(0)
   })
 
   it('counts the single meal of a single portion', () => {
@@ -800,6 +851,7 @@ describe('suppliedMealCount', () => {
       suppliedMealCount({
         mealsToBuy: [],
         spentSupplies: [supply('pizza', 1)],
+        takesSupplies: true,
       }),
     ).toBe(1)
   })
@@ -809,6 +861,7 @@ describe('suppliedMealCount', () => {
       suppliedMealCount({
         mealsToBuy: [],
         spentSupplies: [supply('bolognese', 2), supply('pizza', 1)],
+        takesSupplies: true,
       }),
     ).toBe(3)
   })

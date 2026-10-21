@@ -776,6 +776,39 @@ describe('SignedInApp', () => {
     expect(shownShoppingItemNames()).toEqual(['Bohnen'])
   })
 
+  it('keeps the supply while the household does not want it taken', async () => {
+    const { announcements, suppliesClient } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese', [
+          { name: 'Hackfleisch', quantity: { amount: 500, unit: 'g' } },
+        ]),
+        meal('chili', 'Chili', [{ name: 'Bohnen', quantity: null }]),
+      ],
+      createInMemoryKnownItemsClient(),
+      createInMemoryAppearanceClient(),
+      createInMemoryWeekPlanClient(planOf('bolognese', 'chili')),
+      createInMemorySuppliesClient([{ mealId: 'bolognese', count: 1 }]),
+    )
+
+    await openRollingRules()
+    await userEvent.click(ruleSwitch('Vorrat, Auf die Einkaufsliste'))
+    await backToTheSettings()
+    await goToArea('Wochenplan')
+    await transferTheWeekPlan()
+
+    expect(announcements).toContain(
+      'Wochenplan, 1 Artikel hinzugefügt. 1 Gericht aus dem Vorrat gedeckt.',
+    )
+    expect(suppliesClient.storedSupplies()).toEqual([
+      { mealId: 'bolognese', count: 1 },
+    ])
+
+    await goToArea('Einkaufsliste')
+
+    expect(shownShoppingItemNames()).toEqual(['Bohnen'])
+  })
+
   it('buys the meal that the supply no longer reaches', async () => {
     const { announcements } = renderSignedInApp(
       [],
@@ -1613,6 +1646,32 @@ describe('SignedInApp', () => {
       'Frühstück und Snack wiederholen',
       'Abwechslung',
       'Anderes Gericht',
+      'Vorrat',
+    ])
+  })
+
+  it('offers to take the meals from the supply on the transfer, switched on', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(ruleSwitch('Vorrat, Auf die Einkaufsliste')).toBeChecked()
+    expect(
+      ruleSwitch('Vorrat, Auf die Einkaufsliste'),
+    ).toHaveAccessibleDescription(
+      'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
+    )
+  })
+
+  it('remembers taking the supply switched off', async () => {
+    const { weekPlanClient } = renderSignedInApp()
+
+    await openRollingRules()
+    await userEvent.click(ruleSwitch('Vorrat, Auf die Einkaufsliste'))
+
+    expect(ruleSwitch('Vorrat, Auf die Einkaufsliste')).not.toBeChecked()
+    expect(weekPlanClient.storedRollingRules().switchedOff).toEqual([
+      { rule: 'supplies', scope: 'transfer' },
     ])
   })
 
@@ -1636,7 +1695,7 @@ describe('SignedInApp', () => {
     expect(ruleSwitch('Kategorien, Gesamtplan')).not.toBeChecked()
     expect(ruleSwitch('Kategorien, Einzelgericht')).toBeChecked()
     expect(weekPlanClient.storedRollingRules().switchedOff).toEqual([
-      { rule: 'categories', mode: 'wholePlan' },
+      { rule: 'categories', scope: 'wholePlan' },
     ])
   })
 
@@ -1721,14 +1780,14 @@ describe('SignedInApp', () => {
     expect(ruleSwitch('Reste, Gesamtplan')).toBeChecked()
     expect(weekPlanClient.storedRollingRules()).toEqual({
       mainMealTime: 'dinner',
-      switchedOff: [{ rule: 'leftovers', mode: 'singleMeal' }],
+      switchedOff: [{ rule: 'leftovers', scope: 'singleMeal' }],
     })
   })
 
   it('keeps the rules switched off when the main meal time changes', async () => {
     const weekPlanClient = createInMemoryWeekPlanClient(EMPTY_PLAN, undefined, {
       mainMealTime: 'lunchOrDinner',
-      switchedOff: [{ rule: 'leftovers', mode: 'wholePlan' }],
+      switchedOff: [{ rule: 'leftovers', scope: 'wholePlan' }],
     })
     renderSignedInApp([], [], undefined, undefined, weekPlanClient)
 
@@ -1737,7 +1796,7 @@ describe('SignedInApp', () => {
 
     expect(weekPlanClient.storedRollingRules()).toEqual({
       mainMealTime: 'dinner',
-      switchedOff: [{ rule: 'leftovers', mode: 'wholePlan' }],
+      switchedOff: [{ rule: 'leftovers', scope: 'wholePlan' }],
     })
   })
 

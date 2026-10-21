@@ -156,15 +156,17 @@ export function SignedInApp({
       items.length === 0
         ? ''
         : additionsAnnouncement(shoppingList.addItems(items))
-    for (const spent of transfer.spentSupplies)
-      supplies.changeSupply(spent.mealId, (supply) =>
-        withoutPortions(supply, spent.count),
-      )
+    if (transfer.takesSupplies)
+      for (const spent of transfer.spentSupplies)
+        supplies.changeSupply(spent.mealId, (supply) =>
+          withoutPortions(supply, spent.count),
+        )
     announce(
       weekPlanTransferAnnouncement(
         additions,
         mealsWithoutItems(transfer.mealsToBuy),
         suppliedMealCount(transfer),
+        transfer.takesSupplies,
       ),
     )
   }

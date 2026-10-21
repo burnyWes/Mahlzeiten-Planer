@@ -24,6 +24,7 @@ import {
 } from '../domain/randomPlanning'
 import type { PlanDate } from '../domain/planDate'
 import type { PlanPeriod } from '../domain/planPeriod'
+import { appliesIn } from '../domain/rollingRules'
 import type { Supply } from '../domain/supply'
 import {
   coveredSlotsOf,
@@ -208,7 +209,14 @@ export function WeekPlanArea({
     weekPlanning.changeStage(
       transferredStage(coveredSlotsOf(plan, meals, supplies)),
     )
-    onAddToShoppingList(weekPlanTransfer(plan, meals, supplies))
+    onAddToShoppingList(
+      weekPlanTransfer(
+        plan,
+        meals,
+        supplies,
+        appliesIn(rollingRules, 'supplies', 'transfer'),
+      ),
+    )
   }
 
   function openPeriod() {

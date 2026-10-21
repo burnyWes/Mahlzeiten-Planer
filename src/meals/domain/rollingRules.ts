@@ -20,12 +20,15 @@ export type RollingMode = 'singleMeal' | 'wholePlan'
 
 export const ROLLING_MODES: readonly RollingMode[] = ['singleMeal', 'wholePlan']
 
+export type RuleScope = RollingMode | 'manualChoice' | 'transfer'
+
 export type SwitchableRule =
   | 'categories'
   | 'leftovers'
   | 'repeatingBreakfastAndSnack'
   | 'variety'
   | 'otherMeal'
+  | 'supplies'
 
 export const SWITCHABLE_RULES: readonly SwitchableRule[] = [
   'categories',
@@ -33,25 +36,27 @@ export const SWITCHABLE_RULES: readonly SwitchableRule[] = [
   'repeatingBreakfastAndSnack',
   'variety',
   'otherMeal',
+  'supplies',
 ]
 
-export const MODES_OF_RULE: Record<SwitchableRule, readonly RollingMode[]> = {
+export const SCOPES_OF_RULE: Record<SwitchableRule, readonly RuleScope[]> = {
   categories: ROLLING_MODES,
   leftovers: ROLLING_MODES,
   repeatingBreakfastAndSnack: ROLLING_MODES,
   variety: ROLLING_MODES,
   otherMeal: ['singleMeal'],
+  supplies: ['transfer'],
 }
 
-export type RuleInMode = { rule: SwitchableRule; mode: RollingMode }
+export type RuleInScope = { rule: SwitchableRule; scope: RuleScope }
 
-const SWITCHES: readonly RuleInMode[] = SWITCHABLE_RULES.flatMap((rule) =>
-  MODES_OF_RULE[rule].map((mode) => ({ rule, mode })),
+const SWITCHES: readonly RuleInScope[] = SWITCHABLE_RULES.flatMap((rule) =>
+  SCOPES_OF_RULE[rule].map((scope) => ({ rule, scope })),
 )
 
 export type RollingRules = {
   mainMealTime: MainMealTimeRule
-  switchedOff: readonly RuleInMode[]
+  switchedOff: readonly RuleInScope[]
 }
 
 export const DEFAULT_ROLLING_RULES: RollingRules = {
@@ -59,38 +64,38 @@ export const DEFAULT_ROLLING_RULES: RollingRules = {
   switchedOff: [],
 }
 
-function sameRuleInMode(one: RuleInMode, other: RuleInMode): boolean {
-  return one.rule === other.rule && one.mode === other.mode
+function sameRuleInScope(one: RuleInScope, other: RuleInScope): boolean {
+  return one.rule === other.rule && one.scope === other.scope
 }
 
-function isSwitchedOff(rules: RollingRules, ruleInMode: RuleInMode): boolean {
-  return rules.switchedOff.some((off) => sameRuleInMode(off, ruleInMode))
+function isSwitchedOff(rules: RollingRules, ruleInScope: RuleInScope): boolean {
+  return rules.switchedOff.some((off) => sameRuleInScope(off, ruleInScope))
 }
 
-function hasSwitch(ruleInMode: RuleInMode): boolean {
-  return SWITCHES.some((each) => sameRuleInMode(each, ruleInMode))
+function hasSwitch(ruleInScope: RuleInScope): boolean {
+  return SWITCHES.some((each) => sameRuleInScope(each, ruleInScope))
 }
 
 export function appliesIn(
   rules: RollingRules,
   rule: SwitchableRule,
-  mode: RollingMode,
+  scope: RuleScope,
 ): boolean {
-  return !isSwitchedOff(rules, { rule, mode })
+  return !isSwitchedOff(rules, { rule, scope })
 }
 
 export function withRuleSwitched(
   rules: RollingRules,
-  ruleInMode: RuleInMode,
+  ruleInScope: RuleInScope,
   on: boolean,
 ): RollingRules {
-  if (!hasSwitch(ruleInMode)) return rules
+  if (!hasSwitch(ruleInScope)) return rules
   const others = rules.switchedOff.filter(
-    (off) => !sameRuleInMode(off, ruleInMode),
+    (off) => !sameRuleInScope(off, ruleInScope),
   )
   return {
     ...rules,
-    switchedOff: on ? others : [...others, ruleInMode],
+    switchedOff: on ? others : [...others, ruleInScope],
   }
 }
 
@@ -105,8 +110,8 @@ export function sameRollingRules(
   )
 }
 
-export function ruleInModeKey({ rule, mode }: RuleInMode): string {
-  return `${rule}.${mode}`
+export function ruleInScopeKey({ rule, scope }: RuleInScope): string {
+  return `${rule}.${scope}`
 }
 
 export type StoredRollingRules = {
@@ -115,14 +120,14 @@ export type StoredRollingRules = {
   leftovers?: unknown
 }
 
-function switchedOffFromKeys(keys: unknown): readonly RuleInMode[] {
+function switchedOffFromKeys(keys: unknown): readonly RuleInScope[] {
   if (!Array.isArray(keys)) return []
-  return SWITCHES.filter((each) => keys.includes(ruleInModeKey(each)))
+  return SWITCHES.filter((each) => keys.includes(ruleInScopeKey(each)))
 }
 
 function switchedOffBeforeTheSwitches(
   leftovers: unknown,
-): readonly RuleInMode[] {
+): readonly RuleInScope[] {
   return leftovers === false
     ? SWITCHES.filter((each) => each.rule === 'leftovers')
     : []

@@ -3,7 +3,7 @@ import {
   mainMealTimeExplanation,
   mainMealTimeHeading,
   mainMealTimeRuleName,
-  rollingModeName,
+  ruleScopeName,
   rollingRulesHeading,
   ruleSwitchName,
   switchableRuleExplanation,
@@ -13,18 +13,18 @@ import {
   appliesIn,
   isMainMealTimeRule,
   MAIN_MEAL_TIME_RULES,
-  MODES_OF_RULE,
+  SCOPES_OF_RULE,
   SWITCHABLE_RULES,
   type MainMealTimeRule,
   type RollingRules,
-  type RuleInMode,
+  type RuleInScope,
   type SwitchableRule,
 } from '../domain/rollingRules'
 
 type RollingRulesPageProps = {
   rollingRules: RollingRules
   onChooseMainMealTime: (rule: MainMealTimeRule) => void
-  onSwitchRule: (ruleInMode: RuleInMode, on: boolean) => void
+  onSwitchRule: (ruleInScope: RuleInScope, on: boolean) => void
   onBack: () => void
 }
 
@@ -85,17 +85,17 @@ export function RollingRulesPage({
         >
           <h2 id={headingIdOf(rule)}>{switchableRuleName(rule)}</h2>
           <p id={explanationIdOf(rule)}>{switchableRuleExplanation(rule)}</p>
-          {MODES_OF_RULE[rule].map((mode) => (
-            <label key={mode} className="settingsToggle">
-              <span>{rollingModeName(mode)}</span>
+          {SCOPES_OF_RULE[rule].map((scope) => (
+            <label key={scope} className="settingsToggle">
+              <span>{ruleScopeName(scope)}</span>
               <input
                 type="checkbox"
                 role="switch"
-                aria-label={ruleSwitchName({ rule, mode })}
+                aria-label={ruleSwitchName({ rule, scope })}
                 aria-describedby={explanationIdOf(rule)}
-                checked={appliesIn(rollingRules, rule, mode)}
+                checked={appliesIn(rollingRules, rule, scope)}
                 onChange={(event) =>
-                  onSwitchRule({ rule, mode }, event.target.checked)
+                  onSwitchRule({ rule, scope }, event.target.checked)
                 }
               />
             </label>

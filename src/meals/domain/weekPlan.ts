@@ -236,6 +236,7 @@ export function plannedMeals(
 export type WeekPlanTransfer = {
   mealsToBuy: readonly Meal[]
   spentSupplies: readonly Supply[]
+  takesSupplies: boolean
 }
 
 function portionsPerMeal(planned: readonly PlannedSlot[]): readonly Supply[] {
@@ -251,6 +252,7 @@ export function weekPlanTransfer(
   plan: WeekPlan,
   meals: readonly Meal[],
   supplies: readonly Supply[],
+  takesSupplies: boolean,
 ): WeekPlanTransfer {
   const planned = transferredSlots(plan, meals)
   const coveredSlots = coveredSlotsOf(plan, meals, supplies)
@@ -261,6 +263,7 @@ export function weekPlanTransfer(
       .filter((each) => !isCovered(each))
       .map(({ meal }) => meal),
     spentSupplies: portionsPerMeal(planned.filter(isCovered)),
+    takesSupplies,
   }
 }
 

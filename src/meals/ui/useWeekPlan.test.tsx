@@ -5,7 +5,7 @@ import { withLeftoversIn } from '../domain/leftovers'
 import {
   DEFAULT_ROLLING_RULES,
   type RollingRules,
-  type RuleInMode,
+  type RuleInScope,
 } from '../domain/rollingRules'
 import { toPlanDate } from '../domain/planDate'
 import type { PlanPeriod } from '../domain/planPeriod'
@@ -26,9 +26,9 @@ import { useWeekPlan } from './useWeekPlan'
 const MONDAY = toPlanDate('2026-09-21')
 const WEEK: PlanPeriod = { start: MONDAY, days: 7 }
 const EMPTY_PLAN = emptyWeekPlan(WEEK)
-const LEFTOVERS_FOR_A_SINGLE_MEAL: RuleInMode = {
+const LEFTOVERS_FOR_A_SINGLE_MEAL: RuleInScope = {
   rule: 'leftovers',
-  mode: 'singleMeal',
+  scope: 'singleMeal',
 }
 
 type LaggingWeekPlanClient = WeekPlanClient & {

@@ -7,7 +7,7 @@ import {
   withRuleSwitched,
   type MainMealTimeRule,
   type RollingRules,
-  type RuleInMode,
+  type RuleInScope,
 } from '../domain/rollingRules'
 import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import type { PlanPeriod } from '../domain/planPeriod'
@@ -32,7 +32,7 @@ export type WeekPlanning = {
   replacePlan: (plan: WeekPlan) => void
   changeStage: (stage: WeekPlanStage) => void
   changeMainMealTimeRule: (rule: MainMealTimeRule) => void
-  switchRule: (ruleInMode: RuleInMode, on: boolean) => void
+  switchRule: (ruleInScope: RuleInScope, on: boolean) => void
 }
 
 export function useWeekPlan(
@@ -128,8 +128,8 @@ export function useWeekPlan(
   )
 
   const switchRule = useCallback(
-    (ruleInMode: RuleInMode, on: boolean) =>
-      changeRollingRules(withRuleSwitched(rollingRules, ruleInMode, on)),
+    (ruleInScope: RuleInScope, on: boolean) =>
+      changeRollingRules(withRuleSwitched(rollingRules, ruleInScope, on)),
     [rollingRules, changeRollingRules],
   )
 

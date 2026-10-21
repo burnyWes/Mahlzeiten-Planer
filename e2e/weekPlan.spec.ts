@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import {
   hiddenMealNamesOnServer,
   itemQuantitiesOnServer,
@@ -100,12 +100,7 @@ test('plans a week and puts its items on the shopping list', async ({
     .toEqual(['Hackfleisch, 3500 g', 'Spaghetti, 7'])
 })
 
-test('buys only the meal that the supply no longer covers', async ({
-  page,
-}) => {
-  await page.goto('/')
-  await signIn(page)
-
+async function keepBologneseInStoreBesideChili(page: Page) {
   await pressButton(page, 'Gerichte')
   await pressButton(page, 'Gericht hinzufügen')
   await typeInto(page, 'Name', 'Bolognese')
@@ -123,12 +118,23 @@ test('buys only the meal that the supply no longer covers', async ({
   await chooseSuggestion(page, 'Gericht', 'bolo', 'Bolognese')
   await page.getByLabel('Menge', { exact: true }).fill('1')
   await pressButton(page, 'Speichern')
+}
 
+async function planBologneseTwiceAndChili(page: Page) {
   await pressButton(page, 'Wochenplan')
   await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
   await chooseSuggestion(page, 'Abendessen', 'chi', 'Chili')
   await stepToDay(page, 'Dienstag, 22. September')
   await chooseSuggestion(page, 'Mittagessen', 'bolo', 'Bolognese')
+}
+
+test('buys only the meal that the supply no longer covers', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+  await keepBologneseInStoreBesideChili(page)
+  await planBologneseTwiceAndChili(page)
 
   await expect(page.getByLabel('Mittagessen', { exact: true })).toHaveValue(
     'Bolognese',
@@ -153,6 +159,31 @@ test('buys only the meal that the supply no longer covers', async ({
   await expect
     .poll(() => shownShoppingItems(page))
     .toEqual(['Bohnen', 'Hackfleisch, 500 g'])
+})
+
+test('keeps the supply when the household does not want it taken', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Regel-Verwaltung')
+  await page
+    .getByRole('switch', { name: 'Vorrat, Auf die Einkaufsliste' })
+    .focus()
+  await page.keyboard.press('Space')
+  await pressButton(page, 'Zurück zu den Einstellungen')
+  await keepBologneseInStoreBesideChili(page)
+  await planBologneseTwiceAndChili(page)
+
+  await pressButton(page, 'Plan festlegen')
+  await pressButton(page, 'Auf die Einkaufsliste')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Wochenplan, 2 Artikel hinzugefügt. 1 Gericht aus dem Vorrat gedeckt.',
+  )
+  await settleWrites(page)
+  await expect.poll(supplyCountsOnServer).toEqual([1])
 })
 
 test('keeps the week plan after a reload', async ({ page }) => {

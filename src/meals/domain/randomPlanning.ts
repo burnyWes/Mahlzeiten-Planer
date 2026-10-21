@@ -5,7 +5,7 @@ import type { PlanDate } from './planDate'
 import { dateAfter, dateBefore, datesOf, type PlanPeriod } from './planPeriod'
 import {
   appliesIn,
-  MODES_OF_RULE,
+  SCOPES_OF_RULE,
   type MainMealTime,
   type MainMealTimeRule,
   type RollingMode,
@@ -222,7 +222,7 @@ export const stayingLikeTheDayBefore: PlanningRule = (
     : candidates.filter((meal) => meal !== yesterdays)
 }
 
-type NarrowingRule = Exclude<SwitchableRule, 'leftovers'>
+type NarrowingRule = Exclude<SwitchableRule, 'leftovers' | 'supplies'>
 
 const PLANNING_RULE_OF: Record<NarrowingRule, PlanningRule> = {
   otherMeal: otherThanPlanned,
@@ -244,7 +244,7 @@ export function planningRulesFor(
 ): readonly PlanningRule[] {
   return PLANNING_RULE_ORDER.filter(
     (rule) =>
-      MODES_OF_RULE[rule].includes(mode) && appliesIn(rules, rule, mode),
+      SCOPES_OF_RULE[rule].includes(mode) && appliesIn(rules, rule, mode),
   ).map((rule) => PLANNING_RULE_OF[rule])
 }
 

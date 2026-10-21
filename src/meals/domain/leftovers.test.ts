@@ -36,8 +36,8 @@ const PLANNING_LEFTOVERS: RollingRules = {
 const NOT_PLANNING_LEFTOVERS: RollingRules = {
   mainMealTime: 'lunchOrDinner',
   switchedOff: [
-    { rule: 'leftovers', mode: 'singleMeal' },
-    { rule: 'leftovers', mode: 'wholePlan' },
+    { rule: 'leftovers', scope: 'singleMeal' },
+    { rule: 'leftovers', scope: 'wholePlan' },
   ],
 }
 
@@ -47,7 +47,7 @@ function leftoversOnlyFor(mode: RollingMode): RollingRules {
     switchedOff: [
       {
         rule: 'leftovers',
-        mode: mode === 'singleMeal' ? 'wholePlan' : 'singleMeal',
+        scope: mode === 'singleMeal' ? 'wholePlan' : 'singleMeal',
       },
     ],
   }

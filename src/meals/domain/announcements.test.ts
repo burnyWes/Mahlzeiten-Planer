@@ -26,7 +26,7 @@ import {
   mainMealTimeExplanation,
   mainMealTimeHeading,
   mainMealTimeRuleName,
-  rollingModeName,
+  ruleScopeName,
   rollingRulesHeading,
   ruleSwitchName,
   switchableRuleExplanation,
@@ -203,6 +203,7 @@ describe('switchableRuleName', () => {
     )
     expect(switchableRuleName('variety')).toBe('Abwechslung')
     expect(switchableRuleName('otherMeal')).toBe('Anderes Gericht')
+    expect(switchableRuleName('supplies')).toBe('Vorrat')
   })
 })
 
@@ -223,23 +224,31 @@ describe('switchableRuleExplanation', () => {
     expect(switchableRuleExplanation('otherMeal')).toBe(
       'Neu würfeln bringt ein anderes Gericht als das bisherige.',
     )
+    expect(switchableRuleExplanation('supplies')).toBe(
+      'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
+    )
   })
 })
 
-describe('rollingModeName', () => {
-  it('names each way of rolling', () => {
-    expect(rollingModeName('singleMeal')).toBe('Einzelgericht')
-    expect(rollingModeName('wholePlan')).toBe('Gesamtplan')
+describe('ruleScopeName', () => {
+  it('names each place a rule works in', () => {
+    expect(ruleScopeName('singleMeal')).toBe('Einzelgericht')
+    expect(ruleScopeName('wholePlan')).toBe('Gesamtplan')
+    expect(ruleScopeName('manualChoice')).toBe('Von Hand')
+    expect(ruleScopeName('transfer')).toBe('Auf die Einkaufsliste')
   })
 })
 
 describe('ruleSwitchName', () => {
-  it('names the rule and the way of rolling it applies to', () => {
-    expect(ruleSwitchName({ rule: 'leftovers', mode: 'singleMeal' })).toBe(
+  it('names the rule and the place it works in', () => {
+    expect(ruleSwitchName({ rule: 'leftovers', scope: 'singleMeal' })).toBe(
       'Reste, Einzelgericht',
     )
-    expect(ruleSwitchName({ rule: 'leftovers', mode: 'wholePlan' })).toBe(
+    expect(ruleSwitchName({ rule: 'leftovers', scope: 'wholePlan' })).toBe(
       'Reste, Gesamtplan',
+    )
+    expect(ruleSwitchName({ rule: 'supplies', scope: 'transfer' })).toBe(
+      'Vorrat, Auf die Einkaufsliste',
     )
   })
 })
@@ -1092,46 +1101,71 @@ describe('weekPlanTransferAnnouncement', () => {
         '14 Artikel hinzugefügt. 3 zusammengefasst.',
         [],
         0,
+        true,
       ),
     ).toBe('Wochenplan, 14 Artikel hinzugefügt. 3 zusammengefasst.')
   })
 
   it('names a planned meal that carries no item', () => {
     expect(
-      weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [soup], 0),
+      weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [soup], 0, true),
     ).toBe(
       'Wochenplan, 6 Artikel hinzugefügt. Suppe hat keine Einkaufs-Artikel.',
     )
   })
 
   it('says only what is missing when nothing was added', () => {
-    expect(weekPlanTransferAnnouncement('', [soup], 0)).toBe(
+    expect(weekPlanTransferAnnouncement('', [soup], 0, true)).toBe(
       'Suppe hat keine Einkaufs-Artikel.',
     )
   })
 
   it('counts the meals that the supply covered', () => {
-    expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 2)).toBe(
+    expect(
+      weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 2, true),
+    ).toBe(
       'Wochenplan, 6 Artikel hinzugefügt. 2 Gerichte aus dem Vorrat entnommen.',
     )
   })
 
   it('speaks of a single covered meal in the singular', () => {
-    expect(weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 1)).toBe(
+    expect(
+      weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 1, true),
+    ).toBe(
       'Wochenplan, 6 Artikel hinzugefügt. 1 Gericht aus dem Vorrat entnommen.',
     )
   })
 
   it('says that the whole week came out of the supply', () => {
-    expect(weekPlanTransferAnnouncement('', [], 4)).toBe(
+    expect(weekPlanTransferAnnouncement('', [], 4, true)).toBe(
       'Wochenplan, alle Gerichte aus dem Vorrat entnommen, nichts hinzugefügt.',
     )
   })
 
   it('names the week plan first when only a hint is left', () => {
-    expect(weekPlanTransferAnnouncement('', [soup], 2)).toBe(
+    expect(weekPlanTransferAnnouncement('', [soup], 2, true)).toBe(
       'Wochenplan, nichts hinzugefügt. 2 Gerichte aus dem Vorrat entnommen. Suppe hat keine Einkaufs-Artikel.',
     )
+  })
+
+  it('says the supply only covered the meals while it is not taken', () => {
+    expect(
+      weekPlanTransferAnnouncement('2 Artikel hinzugefügt.', [], 1, false),
+    ).toBe(
+      'Wochenplan, 2 Artikel hinzugefügt. 1 Gericht aus dem Vorrat gedeckt.',
+    )
+  })
+
+  it('says the supply covered the whole week while it is not taken', () => {
+    expect(weekPlanTransferAnnouncement('', [], 4, false)).toBe(
+      'Wochenplan, alle Gerichte aus dem Vorrat gedeckt, nichts hinzugefügt.',
+    )
+  })
+
+  it('says nothing of the supply while it covered nothing and is not taken', () => {
+    expect(
+      weekPlanTransferAnnouncement('6 Artikel hinzugefügt.', [], 0, false),
+    ).toBe('Wochenplan, 6 Artikel hinzugefügt.')
   })
 })
 

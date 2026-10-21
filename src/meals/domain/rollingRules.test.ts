@@ -4,28 +4,33 @@ import {
   DEFAULT_ROLLING_RULES,
   isMainMealTimeRule,
   MAIN_MEAL_TIME_RULES,
-  MODES_OF_RULE,
+  SCOPES_OF_RULE,
   SWITCHABLE_RULES,
   rollingRulesFromStored,
-  ruleInModeKey,
+  ruleInScopeKey,
   sameRollingRules,
   withRuleSwitched,
   type RollingRules,
-  type RuleInMode,
+  type RuleInScope,
 } from './rollingRules'
 
-const LEFTOVERS_FOR_A_SINGLE_MEAL: RuleInMode = {
+const LEFTOVERS_FOR_A_SINGLE_MEAL: RuleInScope = {
   rule: 'leftovers',
-  mode: 'singleMeal',
+  scope: 'singleMeal',
 }
 
-const LEFTOVERS_FOR_THE_WHOLE_PLAN: RuleInMode = {
+const LEFTOVERS_FOR_THE_WHOLE_PLAN: RuleInScope = {
   rule: 'leftovers',
-  mode: 'wholePlan',
+  scope: 'wholePlan',
 }
 
-function switchedOff(...rulesInModes: readonly RuleInMode[]): RollingRules {
-  return { mainMealTime: 'dinner', switchedOff: rulesInModes }
+const SUPPLIES_ON_THE_TRANSFER: RuleInScope = {
+  rule: 'supplies',
+  scope: 'transfer',
+}
+
+function switchedOff(...rulesInScopes: readonly RuleInScope[]): RollingRules {
+  return { mainMealTime: 'dinner', switchedOff: rulesInScopes }
 }
 
 describe('isMainMealTimeRule', () => {
@@ -51,21 +56,25 @@ describe('DEFAULT_ROLLING_RULES', () => {
 })
 
 describe('appliesIn', () => {
-  it('applies every rule in every mode while nothing is switched off', () => {
+  it('applies every rule in every scope while nothing is switched off', () => {
     expect(appliesIn(switchedOff(), 'leftovers', 'singleMeal')).toBe(true)
     expect(appliesIn(switchedOff(), 'leftovers', 'wholePlan')).toBe(true)
   })
 
-  it('leaves out a rule only in the mode it is switched off for', () => {
+  it('leaves out a rule only in the scope it is switched off for', () => {
     const rules = switchedOff(LEFTOVERS_FOR_A_SINGLE_MEAL)
 
     expect(appliesIn(rules, 'leftovers', 'singleMeal')).toBe(false)
     expect(appliesIn(rules, 'leftovers', 'wholePlan')).toBe(true)
   })
+
+  it('takes the meals from the supply on the transfer by default', () => {
+    expect(appliesIn(DEFAULT_ROLLING_RULES, 'supplies', 'transfer')).toBe(true)
+  })
 })
 
 describe('withRuleSwitched', () => {
-  it('switches a rule off in one mode', () => {
+  it('switches a rule off in one scope', () => {
     expect(
       withRuleSwitched(switchedOff(), LEFTOVERS_FOR_A_SINGLE_MEAL, false),
     ).toEqual(switchedOff(LEFTOVERS_FOR_A_SINGLE_MEAL))
@@ -86,7 +95,7 @@ describe('withRuleSwitched', () => {
     )
 
     expect(
-      withRuleSwitched(rules, { rule: 'leftovers', mode: 'singleMeal' }, true),
+      withRuleSwitched(rules, { rule: 'leftovers', scope: 'singleMeal' }, true),
     ).toEqual(switchedOff(LEFTOVERS_FOR_THE_WHOLE_PLAN))
   })
 
@@ -100,25 +109,42 @@ describe('withRuleSwitched', () => {
     ).toBe('lunch')
   })
 
-  it('changes nothing for a mode the rule has no switch in', () => {
+  it('changes nothing for a scope the rule has no switch in', () => {
     const rules = switchedOff()
-    const unknownMode = {
+    const unknownScope = {
       rule: 'leftovers',
-      mode: 'everyOtherDay',
-    } as unknown as RuleInMode
+      scope: 'everyOtherDay',
+    } as unknown as RuleInScope
 
-    expect(withRuleSwitched(rules, unknownMode, false)).toEqual(rules)
+    expect(withRuleSwitched(rules, unknownScope, false)).toEqual(rules)
+  })
+
+  it('switches taking the supply off and on again', () => {
+    const rules = withRuleSwitched(
+      switchedOff(),
+      SUPPLIES_ON_THE_TRANSFER,
+      false,
+    )
+
+    expect(rules).toEqual(switchedOff(SUPPLIES_ON_THE_TRANSFER))
+    expect(withRuleSwitched(rules, SUPPLIES_ON_THE_TRANSFER, true)).toEqual(
+      switchedOff(),
+    )
   })
 
   it('switches the other meal off for a single meal only', () => {
     const rules = switchedOff()
 
     expect(
-      withRuleSwitched(rules, { rule: 'otherMeal', mode: 'wholePlan' }, false),
+      withRuleSwitched(rules, { rule: 'otherMeal', scope: 'wholePlan' }, false),
     ).toEqual(rules)
     expect(
-      withRuleSwitched(rules, { rule: 'otherMeal', mode: 'singleMeal' }, false),
-    ).toEqual(switchedOff({ rule: 'otherMeal', mode: 'singleMeal' }))
+      withRuleSwitched(
+        rules,
+        { rule: 'otherMeal', scope: 'singleMeal' },
+        false,
+      ),
+    ).toEqual(switchedOff({ rule: 'otherMeal', scope: 'singleMeal' }))
   })
 })
 
@@ -130,19 +156,21 @@ describe('SWITCHABLE_RULES', () => {
       'repeatingBreakfastAndSnack',
       'variety',
       'otherMeal',
+      'supplies',
     ])
   })
 
-  it('offers every rule for both ways of rolling but the other meal for a single meal only', () => {
-    expect(SWITCHABLE_RULES.map((rule) => [rule, MODES_OF_RULE[rule]])).toEqual(
-      [
-        ['categories', ['singleMeal', 'wholePlan']],
-        ['leftovers', ['singleMeal', 'wholePlan']],
-        ['repeatingBreakfastAndSnack', ['singleMeal', 'wholePlan']],
-        ['variety', ['singleMeal', 'wholePlan']],
-        ['otherMeal', ['singleMeal']],
-      ],
-    )
+  it('offers every rule for both ways of rolling but the other meal for a single meal only and the supply on the transfer', () => {
+    expect(
+      SWITCHABLE_RULES.map((rule) => [rule, SCOPES_OF_RULE[rule]]),
+    ).toEqual([
+      ['categories', ['singleMeal', 'wholePlan']],
+      ['leftovers', ['singleMeal', 'wholePlan']],
+      ['repeatingBreakfastAndSnack', ['singleMeal', 'wholePlan']],
+      ['variety', ['singleMeal', 'wholePlan']],
+      ['otherMeal', ['singleMeal']],
+      ['supplies', ['transfer']],
+    ])
   })
 })
 
@@ -184,9 +212,9 @@ describe('sameRollingRules', () => {
   })
 })
 
-describe('ruleInModeKey', () => {
-  it('joins the rule and the mode with a dot', () => {
-    expect(ruleInModeKey(LEFTOVERS_FOR_THE_WHOLE_PLAN)).toBe(
+describe('ruleInScopeKey', () => {
+  it('joins the rule and the scope with a dot', () => {
+    expect(ruleInScopeKey(LEFTOVERS_FOR_THE_WHOLE_PLAN)).toBe(
       'leftovers.wholePlan',
     )
   })
@@ -224,11 +252,25 @@ describe('rollingRulesFromStored', () => {
     ).toEqual([LEFTOVERS_FOR_THE_WHOLE_PLAN])
   })
 
+  it('reads taking the supply switched off', () => {
+    expect(
+      rollingRulesFromStored({ switchedOff: ['supplies.transfer'] })
+        .switchedOff,
+    ).toEqual([SUPPLIES_ON_THE_TRANSFER])
+  })
+
+  it('passes over the supply in a way of rolling', () => {
+    expect(
+      rollingRulesFromStored({ switchedOff: ['supplies.singleMeal'] })
+        .switchedOff,
+    ).toEqual([])
+  })
+
   it('reads the categories switched off for the whole plan', () => {
     expect(
       rollingRulesFromStored({ switchedOff: ['categories.wholePlan'] })
         .switchedOff,
-    ).toEqual([{ rule: 'categories', mode: 'wholePlan' }])
+    ).toEqual([{ rule: 'categories', scope: 'wholePlan' }])
   })
 
   it('reads anything but a list of keys as nothing switched off', () => {

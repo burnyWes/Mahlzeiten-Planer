@@ -22,7 +22,7 @@ import {
 } from '../domain/planPeriod'
 import {
   rollingRulesFromStored,
-  ruleInModeKey,
+  ruleInScopeKey,
   type RollingRules,
 } from '../domain/rollingRules'
 import {
@@ -161,7 +161,7 @@ function toRollingRules(stored: DocumentData | undefined): RollingRules {
 function fromRollingRules(rules: RollingRules): DocumentData {
   return {
     mainMealTime: rules.mainMealTime,
-    switchedOff: rules.switchedOff.map(ruleInModeKey),
+    switchedOff: rules.switchedOff.map(ruleInScopeKey),
   }
 }
 
