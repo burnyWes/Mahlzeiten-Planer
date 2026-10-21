@@ -105,6 +105,26 @@ test('switches off the category rule for the whole plan', async ({ page }) => {
   await expect(ruleSwitch(page, 'Kategorien, Einzelgericht')).toBeChecked()
 })
 
+test('switches off leftovers chosen by hand', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await openRollingRules(page)
+  await expect(ruleSwitch(page, 'Reste, Von Hand')).toBeChecked()
+  await ruleSwitch(page, 'Reste, Von Hand').focus()
+  await page.keyboard.press('Space')
+  await settleWrites(page)
+
+  await expect
+    .poll(async () => (await rollingRulesOnServer()).switchedOff)
+    .toEqual(['leftovers.manualChoice'])
+
+  await page.reload()
+  await openRollingRules(page)
+
+  await expect(ruleSwitch(page, 'Reste, Von Hand')).not.toBeChecked()
+})
+
 test('switches off taking meals from the supply', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
@@ -141,6 +161,7 @@ test('takes over leftovers switched off before the update', async ({
 
   await expect(ruleSwitch(page, 'Reste, Einzelgericht')).not.toBeChecked()
   await expect(ruleSwitch(page, 'Reste, Gesamtplan')).not.toBeChecked()
+  await expect(ruleSwitch(page, 'Reste, Von Hand')).toBeChecked()
 })
 
 test('merges a misspelt unit into the right one', async ({ page }) => {

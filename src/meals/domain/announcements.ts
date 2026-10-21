@@ -132,7 +132,8 @@ const switchableRuleNames: Record<SwitchableRule, string> = {
 const switchableRuleExplanations: Record<SwitchableRule, string> = {
   categories:
     'Hauptgerichte und Gerichte ohne Art mit gleicher Kategorie kommen nicht an zwei Tagen hintereinander.',
-  leftovers: 'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+  leftovers:
+    'Ein Gericht mit Resten kommt am nächsten Tag noch einmal. Von Hand: steht es an zwei Tagen hintereinander, ist der zweite Reste.',
   repeatingBreakfastAndSnack: 'Frühstück und Snack bleiben gern wie am Vortag.',
   variety: 'Bevorzugt Gerichte, die im Plan noch selten vorkommen.',
   otherMeal: 'Neu würfeln bringt ein anderes Gericht als das bisherige.',

@@ -1739,19 +1739,35 @@ describe('SignedInApp', () => {
     expect(mainMealTimeChoice()).toHaveDisplayValue('Nur mittags')
   })
 
-  it('offers the leftovers for a single meal and for the whole plan, switched on', async () => {
+  it('offers the leftovers for a single meal, for the whole plan and by hand, switched on', async () => {
     renderSignedInApp()
 
     await openRollingRules()
 
-    expect(ruleSwitch('Reste, Einzelgericht')).toBeChecked()
-    expect(ruleSwitch('Reste, Gesamtplan')).toBeChecked()
-    expect(ruleSwitch('Reste, Einzelgericht')).toHaveAccessibleDescription(
-      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
-    )
-    expect(ruleSwitch('Reste, Gesamtplan')).toHaveAccessibleDescription(
-      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
-    )
+    const leftoverSwitches = within(
+      screen.getByRole('region', { name: 'Reste' }),
+    ).getAllByRole('switch')
+    expect(
+      leftoverSwitches.map((each) => each.getAttribute('aria-label')),
+    ).toEqual(['Reste, Einzelgericht', 'Reste, Gesamtplan', 'Reste, Von Hand'])
+    for (const each of leftoverSwitches) {
+      expect(each).toBeChecked()
+      expect(each).toHaveAccessibleDescription(
+        'Ein Gericht mit Resten kommt am nächsten Tag noch einmal. Von Hand: steht es an zwei Tagen hintereinander, ist der zweite Reste.',
+      )
+    }
+  })
+
+  it('remembers the leftovers by hand switched off', async () => {
+    const { weekPlanClient } = renderSignedInApp()
+
+    await openRollingRules()
+    await userEvent.click(ruleSwitch('Reste, Von Hand'))
+
+    expect(ruleSwitch('Reste, Von Hand')).not.toBeChecked()
+    expect(weekPlanClient.storedRollingRules().switchedOff).toEqual([
+      { rule: 'leftovers', scope: 'manualChoice' },
+    ])
   })
 
   it('shows the way of rolling beside each switch', async () => {

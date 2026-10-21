@@ -2446,6 +2446,74 @@ describe('WeekPlanArea with leftovers', () => {
     )
   }
 
+  function renderChoosingOn(
+    day: PlanDate,
+    initialPlan: WeekPlan,
+    switchedOff: readonly RuleInScope[] = [],
+  ) {
+    return renderWeekPlanArea(
+      [leavingLeftovers],
+      initialPlan,
+      [],
+      alwaysFirst,
+      undefined,
+      day,
+      'day',
+      'dinner',
+      { mainMealTime: 'lunchOrDinner', switchedOff },
+    )
+  }
+
+  async function chooseBologneseForDinner() {
+    await typeIntoMealTime('Abendessen', 'bo')
+    await userEvent.click(suggestionsFor('Abendessen')[0])
+  }
+
+  it('makes leftovers of the meal chosen by hand the day after the same meal', async () => {
+    const { weekPlanClient, announcements } = renderChoosingOn(
+      TUESDAY,
+      planWith([mondayDinner, 'bolognese']),
+    )
+
+    await chooseBologneseForDinner()
+
+    expect(announcements).toEqual(['Abendessen, Bolognese, Reste.'])
+    expect(mealTimeField('Abendessen, Reste')).toHaveValue('Bolognese')
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([
+      tuesdayDinner,
+    ])
+  })
+
+  it('names the leftovers on the next day when the same meal is chosen by hand the day before', async () => {
+    const { weekPlanClient, announcements } = renderChoosingOn(
+      MONDAY,
+      planWith([tuesdayDinner, 'bolognese']),
+    )
+
+    await chooseBologneseForDinner()
+
+    expect(announcements).toEqual([
+      'Abendessen, Bolognese. Dienstag, 22. September, Abendessen, Reste von Bolognese.',
+    ])
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([
+      tuesdayDinner,
+    ])
+  })
+
+  it('makes no leftovers by hand while the household does not want them', async () => {
+    const { weekPlanClient, announcements } = renderChoosingOn(
+      TUESDAY,
+      planWith([mondayDinner, 'bolognese']),
+      [{ rule: 'leftovers', scope: 'manualChoice' }],
+    )
+
+    await chooseBologneseForDinner()
+
+    expect(announcements).toEqual(['Abendessen, Bolognese.'])
+    expect(mealTimeField('Abendessen')).toHaveValue('Bolognese')
+    expect(weekPlanClient.storedWeekPlan().leftoverSlots).toEqual([])
+  })
+
   it('plans the leftovers of a rolled meal on the next day and names both slots', async () => {
     const { weekPlanClient, announcements } = renderRollingAtDinner()
 

@@ -213,7 +213,7 @@ describe('switchableRuleExplanation', () => {
       'Hauptgerichte und Gerichte ohne Art mit gleicher Kategorie kommen nicht an zwei Tagen hintereinander.',
     )
     expect(switchableRuleExplanation('leftovers')).toBe(
-      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal.',
+      'Ein Gericht mit Resten kommt am nächsten Tag noch einmal. Von Hand: steht es an zwei Tagen hintereinander, ist der zweite Reste.',
     )
     expect(switchableRuleExplanation('repeatingBreakfastAndSnack')).toBe(
       'Frühstück und Snack bleiben gern wie am Vortag.',
@@ -246,6 +246,9 @@ describe('ruleSwitchName', () => {
     )
     expect(ruleSwitchName({ rule: 'leftovers', scope: 'wholePlan' })).toBe(
       'Reste, Gesamtplan',
+    )
+    expect(ruleSwitchName({ rule: 'leftovers', scope: 'manualChoice' })).toBe(
+      'Reste, Von Hand',
     )
     expect(ruleSwitchName({ rule: 'supplies', scope: 'transfer' })).toBe(
       'Vorrat, Auf die Einkaufsliste',

@@ -41,7 +41,7 @@ export const SWITCHABLE_RULES: readonly SwitchableRule[] = [
 
 export const SCOPES_OF_RULE: Record<SwitchableRule, readonly RuleScope[]> = {
   categories: ROLLING_MODES,
-  leftovers: ROLLING_MODES,
+  leftovers: [...ROLLING_MODES, 'manualChoice'],
   repeatingBreakfastAndSnack: ROLLING_MODES,
   variety: ROLLING_MODES,
   otherMeal: ['singleMeal'],
@@ -129,7 +129,7 @@ function switchedOffBeforeTheSwitches(
   leftovers: unknown,
 ): readonly RuleInScope[] {
   return leftovers === false
-    ? SWITCHES.filter((each) => each.rule === 'leftovers')
+    ? ROLLING_MODES.map((scope) => ({ rule: 'leftovers', scope }))
     : []
 }
 

@@ -68,6 +68,12 @@ describe('appliesIn', () => {
     expect(appliesIn(rules, 'leftovers', 'wholePlan')).toBe(true)
   })
 
+  it('makes leftovers of a meal chosen by hand by default', () => {
+    expect(appliesIn(DEFAULT_ROLLING_RULES, 'leftovers', 'manualChoice')).toBe(
+      true,
+    )
+  })
+
   it('takes the meals from the supply on the transfer by default', () => {
     expect(appliesIn(DEFAULT_ROLLING_RULES, 'supplies', 'transfer')).toBe(true)
   })
@@ -160,12 +166,12 @@ describe('SWITCHABLE_RULES', () => {
     ])
   })
 
-  it('offers every rule for both ways of rolling but the other meal for a single meal only and the supply on the transfer', () => {
+  it('offers every rule for both ways of rolling but the other meal for a single meal only, the leftovers also by hand and the supply on the transfer', () => {
     expect(
       SWITCHABLE_RULES.map((rule) => [rule, SCOPES_OF_RULE[rule]]),
     ).toEqual([
       ['categories', ['singleMeal', 'wholePlan']],
-      ['leftovers', ['singleMeal', 'wholePlan']],
+      ['leftovers', ['singleMeal', 'wholePlan', 'manualChoice']],
       ['repeatingBreakfastAndSnack', ['singleMeal', 'wholePlan']],
       ['variety', ['singleMeal', 'wholePlan']],
       ['otherMeal', ['singleMeal']],
@@ -250,6 +256,13 @@ describe('rollingRulesFromStored', () => {
         switchedOff: ['otherMeal.wholePlan', 'foo', 42, 'leftovers.wholePlan'],
       }).switchedOff,
     ).toEqual([LEFTOVERS_FOR_THE_WHOLE_PLAN])
+  })
+
+  it('reads the leftovers chosen by hand switched off', () => {
+    expect(
+      rollingRulesFromStored({ switchedOff: ['leftovers.manualChoice'] })
+        .switchedOff,
+    ).toEqual([{ rule: 'leftovers', scope: 'manualChoice' }])
   })
 
   it('reads taking the supply switched off', () => {

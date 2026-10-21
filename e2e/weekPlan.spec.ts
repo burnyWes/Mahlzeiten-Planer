@@ -491,6 +491,39 @@ test('rolls the leftovers of a meal into the next day', async ({ page }) => {
   await expect.poll(supplyCountsOnServer).toEqual([])
 })
 
+test('marks a meal chosen by hand as leftovers of the day before', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await takeOverItem(page, 'Hackfleisch', '500', 'g')
+  await switchCheckbox(page, 'Reste')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Wochenplan')
+  await chooseSuggestion(page, 'Abendessen', 'bolo', 'Bolognese')
+  await stepToDay(page, 'Dienstag, 22. September')
+  await chooseSuggestion(page, 'Abendessen', 'bolo', 'Bolognese')
+
+  await expect(
+    page.getByLabel('Abendessen, Reste', { exact: true }),
+  ).toHaveValue('Bolognese')
+  await expect.poll(leftoverSlotsOnServer).toEqual(['2026-09-22.dinner'])
+
+  await pressButton(page, 'Plan festlegen')
+  await pressButton(page, 'Auf die Einkaufsliste')
+
+  await expect(page.getByRole('status')).toContainText(
+    'Wochenplan, 1 Artikel hinzugefügt.',
+  )
+  await expect.poll(itemQuantitiesOnServer).toEqual(['Hackfleisch, 500 g'])
+})
+
 test('lines the meal time field up with its shuffle button', async ({
   page,
 }) => {

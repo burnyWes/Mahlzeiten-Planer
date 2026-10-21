@@ -386,10 +386,10 @@ E2E:
       findet nichts
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver: Regel-Verwaltung bis zum Ende wischen. „Vorrat,
+- [x] Auf dem iPhone mit VoiceOver: Regel-Verwaltung bis zum Ende wischen. „Vorrat,
       Überschrift Ebene 2“, dann die Erklärung, dann „Vorrat, Auf die Einkaufsliste,
       Schalter, ein“ samt Erklärung.
-- [ ] Schalter aus, einen Plan mit Vorrats-Gericht festlegen und übertragen: Die
+- [x] Schalter aus, einen Plan mit Vorrats-Gericht festlegen und übertragen: Die
       Vorräte-Seite zeigt die alte Zahl, die Ansage sagt „gedeckt“.
 
 ### Phase 2: Schalter „Reste, Von Hand“
@@ -403,16 +403,16 @@ Tag das Reste-Icon, in welcher Reihenfolge auch immer.
 
 Domäne (test-getrieben):
 
-- [ ] `src/meals/domain/rollingRules.ts`: `SCOPES_OF_RULE.leftovers = [...ROLLING_MODES,
+- [x] `src/meals/domain/rollingRules.ts`: `SCOPES_OF_RULE.leftovers = [...ROLLING_MODES,
       'manualChoice']`. Tests: `rollingRulesFromStored` liest
       `'leftovers.manualChoice'`, und `appliesIn` ist für `manualChoice`
       standardmäßig `true`.
-- [ ] `switchedOffBeforeTheSwitches` (`rollingRules.ts:123-129`) schaltet beim Altfeld
+- [x] `switchedOffBeforeTheSwitches` (`rollingRules.ts:123-129`) schaltet beim Altfeld
       `leftovers: false` nur die Reste-Schalter der Würfelarten aus
       (`ROLLING_MODES`), nicht `manualChoice`. Der Test „takes over leftovers switched
       off before …“ (`rollingRules.test.ts:241-246`) erwartet weiter genau
       `[singleMeal, wholePlan]` und bleibt so grün.
-- [ ] `src/meals/domain/leftovers.ts`: gemeinsame Prüfung
+- [x] `src/meals/domain/leftovers.ts`: gemeinsame Prüfung
   ```ts
   function leavesLeftoversFrom(
     plan: WeekPlan,
@@ -425,9 +425,9 @@ Domäne (test-getrieben):
   `original` kein Reste-Platz ist und `!isSuppliedIn(plan, original, meals, supplies)`
   gilt. `rolledInto` nutzt sie für seine Bedingungen (Häkchen, Vorrat). Die
   bestehenden Tests in `leftovers.test.ts` bleiben grün.
-- [ ] `leftoverSlotBefore(plan, slot): PlanSlot | null` über `dateBefore(plan.period,
+- [x] `leftoverSlotBefore(plan, slot): PlanSlot | null` über `dateBefore(plan.period,
       slot.date)`, entsprechend `leftoverSlotAfter`.
-- [ ] `chosenInto`:
+- [x] `chosenInto`:
   ```ts
   export function chosenInto(
     plan: WeekPlan,
@@ -473,7 +473,7 @@ Domäne (test-getrieben):
     Reste-Platz, Di bleibt ohne Kennzeichen
   - Die Helfer in `leftovers.test.ts:39-50` bleiben für das Würfeln. Für die neuen
     Tests kommt ein Helfer dazu, der `manualChoice` ausschaltet.
-- [ ] `src/meals/domain/announcements.ts`: `switchableRuleExplanation('leftovers')` →
+- [x] `src/meals/domain/announcements.ts`: `switchableRuleExplanation('leftovers')` →
       „Ein Gericht mit Resten kommt am nächsten Tag noch einmal. Von Hand: steht es an
       zwei Tagen hintereinander, ist der zweite Reste.“ `ruleScopeName('manualChoice')`
       → „Von Hand“, sofern nicht schon in Phase 1 gesetzt. Tests anpassen, dazu
@@ -481,7 +481,7 @@ Domäne (test-getrieben):
 
 Oberfläche:
 
-- [ ] `src/meals/ui/WeekPlanArea.tsx`:
+- [x] `src/meals/ui/WeekPlanArea.tsx`:
   ```ts
   function chooseMeal(slot: PlanSlot, id: MealId | null) {
     const planned = chosenInto(weekPlanning.plan, slot, id, meals, supplies, rollingRules)
@@ -500,20 +500,20 @@ Oberfläche:
     Bolognese.“
   - Mit `leftovers.manualChoice` aus entsteht kein Reste-Platz, und die Ansage ist wie
     heute.
-- [ ] `src/meals/ui/useWeekPlan.ts`: Wird `chooseMeal` nach der Änderung nur noch von
+- [x] `src/meals/ui/useWeekPlan.ts`: Wird `chooseMeal` nach der Änderung nur noch von
       `clearSlot` gebraucht, bleibt die Funktion. Fällt ihr letzter Nutzer weg,
       entfernen und `useWeekPlan.test.tsx` anpassen.
-- [ ] `src/SignedInApp.test.tsx`: Die Reste-Gruppe hat die Schalter „Reste,
+- [x] `src/SignedInApp.test.tsx`: Die Reste-Gruppe hat die Schalter „Reste,
       Einzelgericht“, „Reste, Gesamtplan“, „Reste, Von Hand“ in dieser Reihenfolge und
       die neue Erklärung als Beschreibung. Ausschalten speichert `{ rule: 'leftovers',
       scope: 'manualChoice' }`.
 
 E2E:
 
-- [ ] `e2e/settings.spec.ts`: neuer Test „switches off leftovers chosen by hand“.
+- [x] `e2e/settings.spec.ts`: neuer Test „switches off leftovers chosen by hand“.
       Schalter „Reste, Von Hand“ per Leertaste ausschalten. Auf dem Server steht
       `switchedOff: ['leftovers.manualChoice']`, nach dem Neuladen ist er aus.
-- [ ] `e2e/weekPlan.spec.ts`: neuer Test „marks a meal chosen by hand as leftovers of
+- [x] `e2e/weekPlan.spec.ts`: neuer Test „marks a meal chosen by hand as leftovers of
       the day before“. Bolognese mit Häkchen „Reste“ und nur dem
       Artikel „Hackfleisch, 500 g“ anlegen, Montag Abendessen von
       Hand Bolognese, zum Dienstag wechseln, Abendessen von Hand Bolognese. Das Feld
@@ -522,12 +522,12 @@ E2E:
       „Wochenplan, 1 Artikel hinzugefügt.“ mit `Hackfleisch, 500 g`.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`: grün, darunter die neuen Szenarien in `leftovers.test.ts`,
+- [x] `npm run test`: grün, darunter die neuen Szenarien in `leftovers.test.ts`,
       `WeekPlanArea.test.tsx` und `SignedInApp.test.tsx`
-- [ ] `npm run lint`: ohne Befund
-- [ ] `npm run build`: übersetzt
-- [ ] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
-- [ ] `grep -n "rolledAnnouncement" -r src` findet nichts
+- [x] `npm run lint`: ohne Befund
+- [x] `npm run build`: übersetzt
+- [x] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
+- [x] `grep -n "rolledAnnouncement" -r src` findet nichts
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone mit VoiceOver: Montag abends Bolognese von Hand, Dienstag abends
