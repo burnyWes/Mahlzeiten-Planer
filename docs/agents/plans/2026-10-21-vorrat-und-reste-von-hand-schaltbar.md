@@ -5,7 +5,7 @@ branch: main
 story: MZP-043
 topic: "Vorrat abziehen und Reste von Hand als schaltbare Regeln"
 tags: [plan, meals, rollingRules, leftovers, weekPlan, supplies, announcements, WeekPlanArea, RollingRulesPage, SignedInApp, voiceover, e2e]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-043 — Vorrat abziehen und Reste von Hand als schaltbare Regeln
@@ -530,11 +530,11 @@ E2E:
 - [x] `grep -n "rolledAnnouncement" -r src` findet nichts
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver: Montag abends Bolognese von Hand, Dienstag abends
+- [x] Auf dem iPhone mit VoiceOver: Montag abends Bolognese von Hand, Dienstag abends
       Bolognese von Hand. VoiceOver sagt „, Reste“ an, und das Box-Icon erscheint.
-- [ ] Umgekehrte Reihenfolge (erst Dienstag, dann Montag): Die Ansage nennt den
+- [x] Umgekehrte Reihenfolge (erst Dienstag, dann Montag): Die Ansage nennt den
       Dienstag als Reste, und dort erscheint das Box-Icon.
-- [ ] Auf dem zweiten Gerät erscheint das Box-Icon ohne Neuladen.
+- [x] Auf dem zweiten Gerät erscheint das Box-Icon ohne Neuladen.
 
 ## Notizen zur Umsetzung
 
