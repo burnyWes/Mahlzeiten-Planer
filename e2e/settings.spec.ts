@@ -147,6 +147,30 @@ test('switches off taking meals from the supply', async ({ page }) => {
   ).not.toBeChecked()
 })
 
+test('switches off remembering the meals already rolled', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await openRollingRules(page)
+  const alreadyRolled = ruleSwitch(
+    page,
+    'Schon gewürfelte Gerichte, Einzelgericht',
+  )
+  await expect(alreadyRolled).toBeChecked()
+  await alreadyRolled.focus()
+  await page.keyboard.press('Space')
+  await settleWrites(page)
+
+  await expect
+    .poll(async () => (await rollingRulesOnServer()).switchedOff)
+    .toEqual(['alreadyRolled.singleMeal'])
+
+  await page.reload()
+  await openRollingRules(page)
+
+  await expect(alreadyRolled).not.toBeChecked()
+})
+
 test('takes over leftovers switched off before the update', async ({
   page,
 }) => {

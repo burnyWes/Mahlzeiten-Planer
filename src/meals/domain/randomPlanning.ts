@@ -1,5 +1,5 @@
 import { rolledInto } from './leftovers'
-import type { Meal, MealKind } from './meal'
+import type { Meal, MealId, MealKind } from './meal'
 import { sameCategory } from './mealCategory'
 import type { PlanDate } from './planDate'
 import { dateAfter, dateBefore, datesOf, type PlanPeriod } from './planPeriod'
@@ -12,6 +12,7 @@ import {
   type RollingRules,
   type SwitchableRule,
 } from './rollingRules'
+import { rememberedRoll, rolledAt, type RollMemory } from './rollMemory'
 import type { Supply } from './supply'
 import {
   emptyWeekPlan,
@@ -34,6 +35,7 @@ export type PlanningRule = (
   slot: PlanSlot,
   random: RandomSource,
   meals: readonly Meal[],
+  rolledBefore: readonly MealId[],
 ) => readonly Meal[]
 
 const EVEN_CHANCE = 0.5
@@ -222,11 +224,28 @@ export const stayingLikeTheDayBefore: PlanningRule = (
     : candidates.filter((meal) => meal !== yesterdays)
 }
 
+export const notRolledBefore: PlanningRule = (
+  candidates,
+  plan,
+  slot,
+  _random,
+  _meals,
+  rolledBefore,
+) => {
+  const planned = mealIn(plan, slot)
+  const notRolled = candidates.filter(
+    (meal) => meal.id !== planned && !rolledBefore.includes(meal.id),
+  )
+  if (notRolled.length > 0) return notRolled
+  return candidates.filter((meal) => meal.id !== planned)
+}
+
 type NarrowingRule = Exclude<SwitchableRule, 'leftovers' | 'supplies'>
 
 const PLANNING_RULE_OF: Record<NarrowingRule, PlanningRule> = {
   otherMeal: otherThanPlanned,
   categories: apartFromSameCategory,
+  alreadyRolled: notRolledBefore,
   repeatingBreakfastAndSnack: stayingLikeTheDayBefore,
   variety: rarestInThePlan,
 }
@@ -234,6 +253,7 @@ const PLANNING_RULE_OF: Record<NarrowingRule, PlanningRule> = {
 const PLANNING_RULE_ORDER: readonly NarrowingRule[] = [
   'otherMeal',
   'categories',
+  'alreadyRolled',
   'repeatingBreakfastAndSnack',
   'variety',
 ]
@@ -255,9 +275,10 @@ export function narrowedBy(
   slot: PlanSlot,
   random: RandomSource,
   meals: readonly Meal[],
+  rolledBefore: readonly MealId[],
 ): readonly Meal[] {
   return rules.reduce((left, rule) => {
-    const narrowed = rule(left, plan, slot, random, meals)
+    const narrowed = rule(left, plan, slot, random, meals, rolledBefore)
     return narrowed.length === 0 ? left : narrowed
   }, candidates)
 }
@@ -270,6 +291,7 @@ export function pickMealFor(
   rules: RollingRules,
   mode: RollingMode,
   mainMealTime: MainMealTime | null = null,
+  rolledBefore: readonly MealId[] = [],
 ): Meal | null {
   const allowed = allowedFor(
     meals,
@@ -287,8 +309,42 @@ export function pickMealFor(
     slot,
     random,
     meals,
+    rolledBefore,
   )
   return left[Math.min(Math.floor(random() * left.length), left.length - 1)]
+}
+
+export type SingleRoll = {
+  meal: Meal
+  memory: RollMemory
+  startedOver: boolean
+}
+
+export function rollSingleMeal(
+  meals: readonly Meal[],
+  plan: WeekPlan,
+  slot: PlanSlot,
+  random: RandomSource,
+  rules: RollingRules,
+  memory: RollMemory,
+): SingleRoll | null {
+  const picked = pickMealFor(
+    meals,
+    plan,
+    slot,
+    random,
+    rules,
+    'singleMeal',
+    null,
+    rolledAt(memory, slot),
+  )
+  if (picked === null) return null
+  if (!appliesIn(rules, 'alreadyRolled', 'singleMeal'))
+    return { meal: picked, memory, startedOver: false }
+  return {
+    meal: picked,
+    ...rememberedRoll(memory, slot, mealIn(plan, slot), picked.id),
+  }
 }
 
 function filledDay(

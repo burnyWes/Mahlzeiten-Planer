@@ -126,6 +126,7 @@ const switchableRuleNames: Record<SwitchableRule, string> = {
   repeatingBreakfastAndSnack: 'Frühstück und Snack wiederholen',
   variety: 'Abwechslung',
   otherMeal: 'Anderes Gericht',
+  alreadyRolled: 'Schon gewürfelte Gerichte',
   supplies: 'Vorrat',
 }
 
@@ -137,6 +138,8 @@ const switchableRuleExplanations: Record<SwitchableRule, string> = {
   repeatingBreakfastAndSnack: 'Frühstück und Snack bleiben gern wie am Vortag.',
   variety: 'Bevorzugt Gerichte, die im Plan noch selten vorkommen.',
   otherMeal: 'Neu würfeln bringt ein anderes Gericht als das bisherige.',
+  alreadyRolled:
+    'Neu würfeln bringt erst alle anderen passenden Gerichte, bevor eines wiederkommt. Gilt je Platz, bis der Plan festgelegt wird.',
   supplies: 'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
 }
 
@@ -497,6 +500,10 @@ export function weekPlanShuffledAnnouncement(
   slotCount: number,
 ): string {
   return `Wochenplan neu gewürfelt, ${plannedMealsPhrase(plannedMeals, slotCount)} Gerichten.`
+}
+
+export function allMealsRolledAnnouncement(): string {
+  return 'Alle passenden Gerichte waren schon dran.'
 }
 
 export function noMatchingMealAnnouncement(

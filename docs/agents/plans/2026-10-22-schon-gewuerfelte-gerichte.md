@@ -281,7 +281,7 @@ Abhängigkeiten: keine
 
 Domäne (test-getrieben, erst der rote Test):
 
-- [ ] `src/meals/domain/rollMemory.ts` mit Tests in `rollMemory.test.ts`:
+- [x] `src/meals/domain/rollMemory.ts` mit Tests in `rollMemory.test.ts`:
   - `rolledAt(EMPTY_ROLL_MEMORY, slot)` ist `[]`
   - Erster Wurf in einen leeren Platz: `rememberedRoll(EMPTY, mo, null, 'g2')` →
     gemerkt `['g2']`, `startedOver: false`
@@ -294,7 +294,7 @@ Domäne (test-getrieben, erst der rote Test):
     `startedOver: true`
   - Andere Plätze bleiben unberührt: Gedächtnis für Mo Mittag und Di Mittag, Wurf an Mo
     Mittag ändert Di Mittag nicht, und Mo Abend bleibt `[]`
-- [ ] `src/meals/domain/rollingRules.ts`: `'alreadyRolled'` ergänzen (siehe
+- [x] `src/meals/domain/rollingRules.ts`: `'alreadyRolled'` ergänzen (siehe
       *Abstraktionen*). Tests in `rollingRules.test.ts`:
   - die Listen-Erwartungen an `SWITCHABLE_RULES` (`:164`) und `SCOPES_OF_RULE`
     (`:177`) um `alreadyRolled` mit `['singleMeal']` hinter `otherMeal` ergänzen
@@ -302,7 +302,7 @@ Domäne (test-getrieben, erst der rote Test):
   - `rollingRulesFromStored` liest `'alreadyRolled.singleMeal'` und verwirft
     `'alreadyRolled.wholePlan'`
   - `withRuleSwitched` ignoriert `{ rule: 'alreadyRolled', scope: 'wholePlan' }`
-- [ ] `src/meals/domain/randomPlanning.ts`: `PlanningRule` um `rolledBefore`,
+- [x] `src/meals/domain/randomPlanning.ts`: `PlanningRule` um `rolledBefore`,
       `notRolledBefore`, Reihenfolge, `narrowedBy`, `pickMealFor`, `rollSingleMeal`
       (siehe *Zielbild*). Tests in `randomPlanning.test.ts`:
   - `notRolledBefore` lässt nur ungewürfelte Kandidaten übrig
@@ -334,7 +334,7 @@ Domäne (test-getrieben, erst der rote Test):
   - Mit `alreadyRolled.singleMeal` aus: Gedächtnis kommt unverändert zurück,
     `startedOver: false`, gemerkte Gerichte können wieder kommen
   - Kein passendes Gericht → `null`
-- [ ] `src/meals/domain/announcements.ts` mit Tests in `announcements.test.ts`:
+- [x] `src/meals/domain/announcements.ts` mit Tests in `announcements.test.ts`:
   - `switchableRuleName('alreadyRolled')` → `'Schon gewürfelte Gerichte'`
   - `switchableRuleExplanation('alreadyRolled')` → `'Neu würfeln bringt erst alle
     anderen passenden Gerichte, bevor eines wiederkommt. Gilt je Platz, bis der Plan
@@ -345,7 +345,7 @@ Domäne (test-getrieben, erst der rote Test):
 
 Oberfläche:
 
-- [ ] `src/meals/ui/useWeekPlan.ts`: `rollMemory` (Start `EMPTY_ROLL_MEMORY`) und
+- [x] `src/meals/ui/useWeekPlan.ts`: `rollMemory` (Start `EMPTY_ROLL_MEMORY`) und
       `rememberRolls`. Leeren bei festgelegter Stufe in `changeStage` und im
       `observeStage`-Rückruf (nach der `isStaleSnapshot`-Prüfung). Tests in
       `useWeekPlan.test.tsx`:
@@ -353,7 +353,7 @@ Oberfläche:
   - `changeStage(FIXED_STAGE)` leert es, `changeStage(EDITING_STAGE)` nicht
   - Eine festgelegte Stufe, die über den Client ankommt (anderes Gerät), leert es
   - `replacePlan` und `chooseMeal` lassen es stehen
-- [ ] `src/meals/ui/WeekPlanArea.tsx`: `shuffleSlot` laut *Zielbild*, mit
+- [x] `src/meals/ui/WeekPlanArea.tsx`: `shuffleSlot` laut *Zielbild*, mit
       `allMealsRolledAnnouncement()` und Leerzeichen vor der gewohnten Ansage. Tests in
       `WeekPlanArea.test.tsx` (Würfel-Block um `:769`, Zufall `alwaysFirst`):
   - Drei Hauptgerichte, Mittagessen viermal würfeln: Die ersten drei Würfe bringen
@@ -371,7 +371,7 @@ Oberfläche:
     Würfeln verhält sich wie heute
   - Bestehende Tests, die einen Platz mehr als zweimal würfeln, erwarten notfalls
     das neue Verhalten. Jede Anpassung kommt in die *Notizen zur Umsetzung*.
-- [ ] `src/SignedInApp.test.tsx`:
+- [x] `src/SignedInApp.test.tsx`:
   - Die Überschriften der Regel-Verwaltung (`:1642`) lauten nun „Hauptgericht“,
     „Kategorien“, „Reste“, „Frühstück und Snack wiederholen“, „Abwechslung“,
     „Anderes Gericht“, „Schon gewürfelte Gerichte“, „Vorrat“.
@@ -381,15 +381,15 @@ Oberfläche:
   - Das Gedächtnis übersteht den Bereichswechsel: zweimal Mittagessen würfeln, zur
     Einkaufsliste und zurück, das dritte Würfeln bringt das noch nicht gewürfelte
     Gericht.
-- [ ] `docs/architektur/05-bausteinsicht.md:176`: `rollMemory` im Knoten `weekPlan`.
+- [x] `docs/architektur/05-bausteinsicht.md:176`: `rollMemory` im Knoten `weekPlan`.
 
 E2E:
 
-- [ ] `e2e/settings.spec.ts`: neuer Test „switches off remembering the meals already
+- [x] `e2e/settings.spec.ts`: neuer Test „switches off remembering the meals already
       rolled“. Schalter „Schon gewürfelte Gerichte, Einzelgericht“ per Leertaste
       ausschalten. Auf dem Server steht `switchedOff: ['alreadyRolled.singleMeal']`,
       nach dem Neuladen ist er aus.
-- [ ] `e2e/weekPlan.spec.ts`: neuer Test „rolls every other meal before one comes
+- [x] `e2e/weekPlan.spec.ts`: neuer Test „rolls every other meal before one comes
       again“. Zwei Snacks per `storeMealOnServer('Apfel', { snack: true })` und
       `storeMealOnServer('Banane', { snack: true })` anlegen. Am Montag (erster Tag,
       also ohne „wie am Vortag“) dreimal „Zufallsgericht für Snack“ drücken. Der Snack-Platz
@@ -400,13 +400,13 @@ E2E:
       Neustart-Satz.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test`: grün, darunter die neuen Tests in `rollMemory.test.ts`,
+- [x] `npm run test`: grün, darunter die neuen Tests in `rollMemory.test.ts`,
       `rollingRules.test.ts`, `randomPlanning.test.ts`, `announcements.test.ts`,
       `useWeekPlan.test.tsx`, `WeekPlanArea.test.tsx` und `SignedInApp.test.tsx`
-- [ ] `npm run lint`: ohne Befund
-- [ ] `npm run build`: übersetzt
-- [ ] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
-- [ ] `grep -rn "pickMealFor" src/meals/ui` findet nichts
+- [x] `npm run lint`: ohne Befund
+- [x] `npm run build`: übersetzt
+- [x] `npx playwright test e2e/settings.spec.ts e2e/weekPlan.spec.ts`: grün
+- [x] `grep -rn "pickMealFor" src/meals/ui` findet nichts
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone mit VoiceOver: einen Platz so oft würfeln, bis alle passenden
@@ -421,6 +421,31 @@ E2E:
 ## Notizen zur Umsetzung
 
 Hier während der Umsetzung Rückmeldungen, Probleme und Entscheidungen festhalten.
+
+- **Das Gericht im Platz zählt als schon gewürfelt, auch vor dem ersten Wurf.** Die
+  Skizze von `notRolledBefore` im *Zielbild* prüfte nur das Gedächtnis. Damit wären die
+  geplanten Tests „Ersetztes zählt“ (bei abgeschaltetem „Anderes Gericht“) und „Einziges
+  Gericht im Platz → `startedOver: true`“ nicht aufgegangen. Umgesetzt nach
+  Akzeptanzkriterium 1 und Entscheidung 1: `notRolledBefore` schließt Gedächtnis und
+  Gericht im Platz aus, beim Neustart nur das Gericht im Platz. `rememberedRoll` meldet
+  `startedOver` auch, wenn das gezogene Gericht das ersetzte ist.
+- Folge: Abgeschaltetes „Anderes Gericht“ allein bringt das Gericht im Platz nicht mehr
+  sofort zurück, solange das Gedächtnis an ist. Angepasst:
+  `randomPlanning.test.ts` („may roll the planned meal again …“ schaltet nun beide
+  Regeln ab, neuer Gegentest mit nur „Anderes Gericht“ aus) und
+  `WeekPlanArea.test.tsx` („WeekPlanArea with the other meal switched off“, gleiche
+  Anpassung).
+- Der Test „Ersetztes zählt“ würfelt mit Zufall 0,99 zweimal und erwartet
+  `meal-2`, `meal-1`, nie `meal-3` (statt „zwei beliebige Würfe“).
+- Die Gerichte kommen in der Oberfläche alphabetisch an („Ährensuppe“ vor
+  „Bolognese“). Die Erwartungen der neuen `WeekPlanArea`-Tests folgen dieser
+  Reihenfolge.
+- `renderSignedInApp` hat als letzten Parameter eine optionale `RandomSource` bekommen,
+  damit der Bereichswechsel-Test deterministisch ist.
+- `e2e/weekPlan.spec.ts`: Der neue Test wartet wie seine Nachbarn, bis
+  „Zufallsauswahl generieren“ aktiv ist, sonst sind die Gerichte noch nicht geladen.
+- Die 12 direkten Regel-Aufrufe in `randomPlanning.test.ts` übergeben `[]` als
+  `rolledBefore`. `narrowedBy` hat den Parameter als Pflicht.
 
 ## Verweise
 

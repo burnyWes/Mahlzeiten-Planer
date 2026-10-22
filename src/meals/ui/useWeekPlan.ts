@@ -9,6 +9,7 @@ import {
   type RollingRules,
   type RuleInScope,
 } from '../domain/rollingRules'
+import { EMPTY_ROLL_MEMORY, type RollMemory } from '../domain/rollMemory'
 import { isStaleSnapshot } from '../domain/unconfirmedWrite'
 import type { PlanPeriod } from '../domain/planPeriod'
 import {
@@ -20,6 +21,7 @@ import {
 } from '../domain/weekPlan'
 import {
   EDITING_STAGE,
+  isFixed,
   sameStage,
   type WeekPlanStage,
 } from '../domain/weekPlanStage'
@@ -28,6 +30,8 @@ export type WeekPlanning = {
   plan: WeekPlan
   stage: WeekPlanStage
   rollingRules: RollingRules
+  rollMemory: RollMemory
+  rememberRolls: (memory: RollMemory) => void
   chooseMeal: (slot: PlanSlot, id: MealId | null) => void
   replacePlan: (plan: WeekPlan) => void
   changeStage: (stage: WeekPlanStage) => void
@@ -47,6 +51,11 @@ export function useWeekPlan(
     DEFAULT_ROLLING_RULES,
   )
   const unconfirmedRollingRules = useRef<RollingRules | null>(null)
+  const [rollMemory, setRollMemory] = useState<RollMemory>(EMPTY_ROLL_MEMORY)
+
+  const forgetRollsOnceFixed = useCallback((changed: WeekPlanStage) => {
+    if (isFixed(changed)) setRollMemory(EMPTY_ROLL_MEMORY)
+  }, [])
 
   useEffect(
     () =>
@@ -66,8 +75,9 @@ export function useWeekPlan(
           return
         unconfirmedStage.current = null
         setStage(arriving)
+        forgetRollsOnceFixed(arriving)
       }),
-    [client],
+    [client, forgetRollsOnceFixed],
   )
 
   useEffect(
@@ -107,9 +117,10 @@ export function useWeekPlan(
     (written: WeekPlanStage) => {
       unconfirmedStage.current = written
       setStage(written)
+      forgetRollsOnceFixed(written)
       client.writeStage(written)
     },
-    [client],
+    [client, forgetRollsOnceFixed],
   )
 
   const changeRollingRules = useCallback(
@@ -137,6 +148,8 @@ export function useWeekPlan(
     plan,
     stage,
     rollingRules,
+    rollMemory,
+    rememberRolls: setRollMemory,
     chooseMeal,
     replacePlan,
     changeStage,

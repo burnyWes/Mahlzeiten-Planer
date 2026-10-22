@@ -8,6 +8,7 @@ import {
   type RuleInScope,
 } from '../domain/rollingRules'
 import { toPlanDate } from '../domain/planDate'
+import type { RollMemory } from '../domain/rollMemory'
 import type { PlanPeriod } from '../domain/planPeriod'
 import {
   emptyWeekPlan,
@@ -36,6 +37,7 @@ type LaggingWeekPlanClient = WeekPlanClient & {
   deliverNextStageSnapshot(): void
   deliverNextRulesSnapshot(): void
   weekPlanArrivesFromElsewhere(plan: WeekPlan): void
+  stageArrivesFromElsewhere(stage: WeekPlanStage): void
   rulesArriveFromElsewhere(rules: RollingRules): void
   storedWeekPlan(): WeekPlan
   writtenRules(): readonly RollingRules[]
@@ -95,6 +97,10 @@ function createLaggingWeekPlanClient(
       plan = arriving
       onPlan(arriving)
     },
+    stageArrivesFromElsewhere(arriving) {
+      stage = arriving
+      onStage(arriving)
+    },
     rulesArriveFromElsewhere(arriving) {
       onRules(arriving)
     },
@@ -110,6 +116,10 @@ function createLaggingWeekPlanClient(
 const mondayLunch: PlanSlot = { date: MONDAY, time: 'lunch' }
 const mondayDinner: PlanSlot = { date: MONDAY, time: 'dinner' }
 const tuesdayLunch: PlanSlot = { date: toPlanDate('2026-09-22'), time: 'lunch' }
+
+const bologneseAndChiliRolled: RollMemory = [
+  { slot: mondayLunch, meals: ['bolognese', 'chili'] },
+]
 
 function weekPlanOf(client: WeekPlanClient) {
   return renderHook(() => useWeekPlan(client, WEEK)).result
@@ -199,6 +209,62 @@ describe('useWeekPlan', () => {
     act(() => client.deliverNextStageSnapshot())
 
     expect(weekPlan.current.stage).toEqual(transferredStage([mondayLunch]))
+  })
+
+  it('remembers nothing rolled at first', () => {
+    const weekPlan = weekPlanOf(createLaggingWeekPlanClient())
+
+    expect(weekPlan.current.rollMemory).toEqual([])
+  })
+
+  it('remembers the meals rolled', () => {
+    const weekPlan = weekPlanOf(createLaggingWeekPlanClient())
+
+    act(() => weekPlan.current.rememberRolls(bologneseAndChiliRolled))
+
+    expect(weekPlan.current.rollMemory).toEqual(bologneseAndChiliRolled)
+  })
+
+  it('forgets the meals rolled once the plan is fixed', () => {
+    const weekPlan = weekPlanOf(createLaggingWeekPlanClient())
+
+    act(() => weekPlan.current.rememberRolls(bologneseAndChiliRolled))
+    act(() => weekPlan.current.changeStage(FIXED_STAGE))
+
+    expect(weekPlan.current.rollMemory).toEqual([])
+  })
+
+  it('keeps the meals rolled while the plan becomes editable', () => {
+    const weekPlan = weekPlanOf(createLaggingWeekPlanClient())
+
+    act(() => weekPlan.current.rememberRolls(bologneseAndChiliRolled))
+    act(() => weekPlan.current.changeStage(EDITING_STAGE))
+
+    expect(weekPlan.current.rollMemory).toEqual(bologneseAndChiliRolled)
+  })
+
+  it('forgets the meals rolled once the plan is fixed on the other device', () => {
+    const client = createLaggingWeekPlanClient()
+    const weekPlan = weekPlanOf(client)
+
+    act(() => weekPlan.current.rememberRolls(bologneseAndChiliRolled))
+    act(() => client.stageArrivesFromElsewhere(FIXED_STAGE))
+
+    expect(weekPlan.current.rollMemory).toEqual([])
+  })
+
+  it('keeps the meals rolled while meals are planned', () => {
+    const weekPlan = weekPlanOf(createLaggingWeekPlanClient())
+
+    act(() => weekPlan.current.rememberRolls(bologneseAndChiliRolled))
+    act(() =>
+      weekPlan.current.replacePlan(
+        withMealIn(EMPTY_PLAN, mondayLunch, 'bolognese'),
+      ),
+    )
+    act(() => weekPlan.current.chooseMeal(mondayDinner, 'chili'))
+
+    expect(weekPlan.current.rollMemory).toEqual(bologneseAndChiliRolled)
   })
 
   it('takes the rolling rules from the server', () => {

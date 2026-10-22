@@ -48,6 +48,7 @@ import {
   lessSupplyLabel,
   moreSupplyLabel,
   noMatchingMealAnnouncement,
+  allMealsRolledAnnouncement,
   planEditableAnnouncement,
   planFixedAnnouncement,
   randomMealLabel,
@@ -203,6 +204,9 @@ describe('switchableRuleName', () => {
     )
     expect(switchableRuleName('variety')).toBe('Abwechslung')
     expect(switchableRuleName('otherMeal')).toBe('Anderes Gericht')
+    expect(switchableRuleName('alreadyRolled')).toBe(
+      'Schon gewürfelte Gerichte',
+    )
     expect(switchableRuleName('supplies')).toBe('Vorrat')
   })
 })
@@ -223,6 +227,9 @@ describe('switchableRuleExplanation', () => {
     )
     expect(switchableRuleExplanation('otherMeal')).toBe(
       'Neu würfeln bringt ein anderes Gericht als das bisherige.',
+    )
+    expect(switchableRuleExplanation('alreadyRolled')).toBe(
+      'Neu würfeln bringt erst alle anderen passenden Gerichte, bevor eines wiederkommt. Gilt je Platz, bis der Plan festgelegt wird.',
     )
     expect(switchableRuleExplanation('supplies')).toBe(
       'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
@@ -252,6 +259,9 @@ describe('ruleSwitchName', () => {
     )
     expect(ruleSwitchName({ rule: 'supplies', scope: 'transfer' })).toBe(
       'Vorrat, Auf die Einkaufsliste',
+    )
+    expect(ruleSwitchName({ rule: 'alreadyRolled', scope: 'singleMeal' })).toBe(
+      'Schon gewürfelte Gerichte, Einzelgericht',
     )
   })
 })
@@ -1062,6 +1072,14 @@ describe('weekPlanShuffledAnnouncement', () => {
   it('says that no slot was filled', () => {
     expect(weekPlanShuffledAnnouncement(0, 28)).toBe(
       'Wochenplan neu gewürfelt, keine von 28 Gerichten.',
+    )
+  })
+})
+
+describe('allMealsRolledAnnouncement', () => {
+  it('tells that every suiting meal came already', () => {
+    expect(allMealsRolledAnnouncement()).toBe(
+      'Alle passenden Gerichte waren schon dran.',
     )
   })
 })

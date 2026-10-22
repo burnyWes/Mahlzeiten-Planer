@@ -2738,9 +2738,10 @@ describe('WeekPlanArea with the other meal switched off', () => {
     )
   }
 
-  it('may roll the planned meal again', async () => {
+  it('may roll the planned meal again while the meals already rolled are switched off as well', async () => {
     const { weekPlanClient } = renderRollingTheBreakfast([
       { rule: 'otherMeal', scope: 'singleMeal' },
+      { rule: 'alreadyRolled', scope: 'singleMeal' },
     ])
 
     await shuffleSlot('Frühstück')
@@ -2758,5 +2759,107 @@ describe('WeekPlanArea with the other meal switched off', () => {
     expect(
       mealIn(weekPlanClient.storedWeekPlan(), slot(MONDAY, 'breakfast')),
     ).toBe('porridge')
+  })
+})
+
+describe('WeekPlanArea remembering the meals already rolled', () => {
+  const startedOver = 'Alle passenden Gerichte waren schon dran.'
+  const mondayLunch = slot(MONDAY, 'lunch')
+
+  function renderRollingTheLunch(switchedOff: readonly RuleInScope[] = []) {
+    return renderWeekPlanArea(
+      [bolognese, pizza, soup],
+      EMPTY_PLAN,
+      [],
+      alwaysFirst,
+      undefined,
+      MONDAY,
+      'day',
+      'lunch',
+      { mainMealTime: 'lunchOrDinner', switchedOff },
+    )
+  }
+
+  async function lunchesRolled(
+    weekPlanClient: InMemoryWeekPlanClient,
+    times: number,
+  ): Promise<readonly (string | null)[]> {
+    const rolled: (string | null)[] = []
+    for (let roll = 0; roll < times; roll += 1) {
+      await shuffleSlot('Mittagessen')
+      rolled.push(mealIn(weekPlanClient.storedWeekPlan(), mondayLunch))
+    }
+    return rolled
+  }
+
+  it('rolls every suiting meal before one comes again', async () => {
+    const { weekPlanClient, announcements } = renderRollingTheLunch()
+
+    const [first, second, third, fourth] = await lunchesRolled(
+      weekPlanClient,
+      4,
+    )
+
+    expect(new Set([first, second, third]).size).toBe(3)
+    expect([first, second]).toContain(fourth)
+    expect(announcements).toEqual([
+      'Mittagessen, Ährensuppe.',
+      'Mittagessen, Bolognese.',
+      'Mittagessen, Pizza.',
+      `${startedOver} Mittagessen, Ährensuppe.`,
+    ])
+  })
+
+  it('remembers the meals for each slot on its own', async () => {
+    const { weekPlanClient } = renderRollingTheLunch()
+
+    await lunchesRolled(weekPlanClient, 2)
+    await userEvent.click(nextDayButton())
+    await shuffleSlot('Mittagessen')
+
+    expect(
+      mealIn(weekPlanClient.storedWeekPlan(), slot(TUESDAY, 'lunch')),
+    ).toBe('soup')
+  })
+
+  it('forgets the meals rolled once the plan is fixed', async () => {
+    const { weekPlanClient, announcements } = renderRollingTheLunch()
+
+    await lunchesRolled(weekPlanClient, 2)
+    await fixPlan()
+    await editPlan()
+    await shuffleSlot('Mittagessen')
+
+    expect(mealIn(weekPlanClient.storedWeekPlan(), mondayLunch)).toBe('soup')
+    expect(announcements.at(-1)).toBe('Mittagessen, Ährensuppe.')
+  })
+
+  it('keeps the meals rolled while the plan is cleared and rolled as a whole', async () => {
+    const { weekPlanClient, announcements } = renderRollingTheLunch()
+
+    await lunchesRolled(weekPlanClient, 2)
+    await clearPlan()
+    await shuffleSlot('Mittagessen')
+
+    expect(mealIn(weekPlanClient.storedWeekPlan(), mondayLunch)).toBe('pizza')
+
+    await shuffleWeek()
+    await shuffleSlot('Mittagessen')
+
+    expect(announcements.at(-1)).toMatch(new RegExp(`^${startedOver} `))
+  })
+
+  it('rolls as before while the meals already rolled are switched off', async () => {
+    const { weekPlanClient, announcements } = renderRollingTheLunch([
+      { rule: 'alreadyRolled', scope: 'singleMeal' },
+    ])
+
+    expect(await lunchesRolled(weekPlanClient, 4)).toEqual([
+      'soup',
+      'bolognese',
+      'soup',
+      'bolognese',
+    ])
+    expect(announcements.some((text) => text.includes(startedOver))).toBe(false)
   })
 })

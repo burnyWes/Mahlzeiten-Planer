@@ -28,6 +28,7 @@ export type SwitchableRule =
   | 'repeatingBreakfastAndSnack'
   | 'variety'
   | 'otherMeal'
+  | 'alreadyRolled'
   | 'supplies'
 
 export const SWITCHABLE_RULES: readonly SwitchableRule[] = [
@@ -36,6 +37,7 @@ export const SWITCHABLE_RULES: readonly SwitchableRule[] = [
   'repeatingBreakfastAndSnack',
   'variety',
   'otherMeal',
+  'alreadyRolled',
   'supplies',
 ]
 
@@ -45,6 +47,7 @@ export const SCOPES_OF_RULE: Record<SwitchableRule, readonly RuleScope[]> = {
   repeatingBreakfastAndSnack: ROLLING_MODES,
   variety: ROLLING_MODES,
   otherMeal: ['singleMeal'],
+  alreadyRolled: ['singleMeal'],
   supplies: ['transfer'],
 }
 

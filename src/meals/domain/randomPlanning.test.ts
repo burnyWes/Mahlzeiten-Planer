@@ -5,18 +5,23 @@ import {
   filledWeekPlan,
   mainMealTimeOf,
   narrowedBy,
+  notRolledBefore,
   otherThanPlanned,
   pickMealFor,
   planningRulesFor,
   randomCandidates,
   rarestInThePlan,
+  rollSingleMeal,
   stayingLikeTheDayBefore,
   type PlanningRule,
   type RandomSource,
+  type SingleRoll,
 } from './randomPlanning'
+import { EMPTY_ROLL_MEMORY, rolledAt, type RollMemory } from './rollMemory'
 import type {
   MainMealTimeRule,
   RollingRules,
+  RuleInScope,
   RuleScope,
   SwitchableRule,
 } from './rollingRules'
@@ -180,6 +185,7 @@ describe('rarestInThePlan', () => {
         slot(MONDAY, 'dinner'),
         anyRandom,
         [bolognese, pizza, soup],
+        [],
       ),
     ).toEqual([soup])
   })
@@ -192,6 +198,7 @@ describe('rarestInThePlan', () => {
         slot(MONDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza],
+        [],
       ),
     ).toEqual([bolognese, pizza])
   })
@@ -206,6 +213,7 @@ describe('rarestInThePlan', () => {
         slot(MONDAY, 'breakfast'),
         anyRandom,
         [bolognese, pizza],
+        [],
       ),
     ).toEqual([pizza])
   })
@@ -224,6 +232,7 @@ describe('rarestInThePlan', () => {
         slot(FRIDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza, soup],
+        [],
       ),
     ).toEqual([soup])
   })
@@ -241,6 +250,7 @@ describe('narrowedBy', () => {
         slot(MONDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza],
+        [],
       ),
     ).toEqual([bolognese, pizza])
   })
@@ -257,6 +267,7 @@ describe('narrowedBy', () => {
         slot(MONDAY, 'lunch'),
         anyRandom,
         [bolognese, pizza, soup],
+        [],
       ),
     ).toEqual([soup])
   })
@@ -273,6 +284,7 @@ describe('otherThanPlanned', () => {
         slot(MONDAY, 'breakfast'),
         anyRandom,
         [muesli, porridge],
+        [],
       ),
     ).toEqual([porridge])
   })
@@ -285,6 +297,7 @@ describe('otherThanPlanned', () => {
         slot(MONDAY, 'breakfast'),
         anyRandom,
         [muesli, porridge],
+        [],
       ),
     ).toEqual([muesli, porridge])
   })
@@ -320,6 +333,62 @@ describe('otherThanPlanned', () => {
   })
 })
 
+describe('notRolledBefore', () => {
+  const mondayLunch = slot(MONDAY, 'lunch')
+
+  it('keeps only the meals not rolled before', () => {
+    expect(
+      notRolledBefore(
+        [bolognese, pizza, soup],
+        EMPTY_PLAN,
+        mondayLunch,
+        anyRandom,
+        [bolognese, pizza, soup],
+        ['bolognese'],
+      ),
+    ).toEqual([pizza, soup])
+  })
+
+  it('takes the meal in the slot as rolled before', () => {
+    expect(
+      notRolledBefore(
+        [bolognese, pizza],
+        withMealIn(EMPTY_PLAN, mondayLunch, 'bolognese'),
+        mondayLunch,
+        anyRandom,
+        [bolognese, pizza],
+        [],
+      ),
+    ).toEqual([pizza])
+  })
+
+  it('starts over with every meal but the one in the slot once all were rolled', () => {
+    expect(
+      notRolledBefore(
+        [bolognese, pizza, soup],
+        withMealIn(EMPTY_PLAN, mondayLunch, 'soup'),
+        mondayLunch,
+        anyRandom,
+        [bolognese, pizza, soup],
+        ['bolognese', 'pizza', 'soup'],
+      ),
+    ).toEqual([bolognese, pizza])
+  })
+
+  it('leaves nothing when only the meal in the slot suits', () => {
+    expect(
+      notRolledBefore(
+        [soup],
+        withMealIn(EMPTY_PLAN, mondayLunch, 'soup'),
+        mondayLunch,
+        anyRandom,
+        [soup],
+        ['soup'],
+      ),
+    ).toEqual([])
+  })
+})
+
 describe('apartFromSameCategory', () => {
   function apartFor(
     plan: WeekPlan,
@@ -327,7 +396,14 @@ describe('apartFromSameCategory', () => {
     candidates: readonly Meal[] = [pasta, rice],
     stored: readonly Meal[] = [lasagne, ...candidates],
   ): readonly Meal[] {
-    return apartFromSameCategory(candidates, plan, rolled, anyRandom, stored)
+    return apartFromSameCategory(
+      candidates,
+      plan,
+      rolled,
+      anyRandom,
+      stored,
+      [],
+    )
   }
 
   function planned(at: PlanSlot, id: string): WeekPlan {
@@ -579,6 +655,7 @@ describe('stayingLikeTheDayBefore', () => {
         slot(MONDAY, 'breakfast'),
         random,
         [muesli, porridge],
+        [],
       ),
     ).toEqual([muesli, porridge])
     expect(tossed).toEqual([])
@@ -594,6 +671,7 @@ describe('stayingLikeTheDayBefore', () => {
         slot(TUESDAY, 'breakfast'),
         random,
         [muesli, porridge],
+        [],
       ),
     ).toEqual([muesli, porridge])
     expect(tossed).toEqual([])
@@ -609,6 +687,7 @@ describe('stayingLikeTheDayBefore', () => {
         slot(TUESDAY, 'breakfast'),
         random,
         [bolognese, muesli, porridge],
+        [],
       ),
     ).toEqual([muesli, porridge])
     expect(tossed).toEqual([])
@@ -631,6 +710,7 @@ describe('stayingLikeTheDayBefore', () => {
           slot(TUESDAY, time),
           random,
           [bread, apple],
+          [],
         ),
       ).toEqual([bread, apple]),
     )
@@ -1555,6 +1635,21 @@ describe('planningRulesFor', () => {
     ).toEqual([
       otherThanPlanned,
       apartFromSameCategory,
+      notRolledBefore,
+      stayingLikeTheDayBefore,
+      rarestInThePlan,
+    ])
+  })
+
+  it('leaves out the meals already rolled while they are switched off for a single meal', () => {
+    expect(
+      planningRulesFor(
+        switchedOff('alreadyRolled', 'singleMeal'),
+        'singleMeal',
+      ),
+    ).toEqual([
+      otherThanPlanned,
+      apartFromSameCategory,
       stayingLikeTheDayBefore,
       rarestInThePlan,
     ])
@@ -1692,7 +1787,24 @@ describe('pickMealFor with rules switched off', () => {
     ).toEqual(porridge)
   })
 
-  it('may roll the planned meal again while the other meal is switched off', () => {
+  it('may roll the planned meal again while the other meal and the meals already rolled are switched off', () => {
+    expect(
+      picked(
+        [muesli, porridge],
+        muesliNowAndPorridgeTwice,
+        slot(MONDAY, 'breakfast'),
+        {
+          mainMealTime: 'lunchOrDinner',
+          switchedOff: [
+            { rule: 'otherMeal', scope: 'singleMeal' },
+            { rule: 'alreadyRolled', scope: 'singleMeal' },
+          ],
+        },
+      ),
+    ).toEqual(muesli)
+  })
+
+  it('rolls another meal than the planned one while only the other meal is switched off', () => {
     expect(
       picked(
         [muesli, porridge],
@@ -1700,7 +1812,7 @@ describe('pickMealFor with rules switched off', () => {
         slot(MONDAY, 'breakfast'),
         switchedOff('otherMeal', 'singleMeal'),
       ),
-    ).toEqual(muesli)
+    ).toEqual(porridge)
   })
 
   it('rolls another meal than the planned one while the other meal is switched on', () => {
@@ -1809,5 +1921,201 @@ describe('filledWeekPlan with rules switched off', () => {
     )
 
     expect(timesPlannedIn(plan)).toEqual([7, 7, 7])
+  })
+})
+
+describe('rollSingleMeal', () => {
+  const mondayLunch = slot(MONDAY, 'lunch')
+  const mondaySnack = slot(MONDAY, 'snack')
+  const nut = meal('nut', 'snack')
+  const toast = meal('toast', 'breakfast')
+
+  function rulesWithout(
+    ...rulesInScopes: readonly RuleInScope[]
+  ): RollingRules {
+    return { mainMealTime: 'lunch', switchedOff: rulesInScopes }
+  }
+
+  function rolledOneAfterAnother(
+    stored: readonly Meal[],
+    rolled: PlanSlot,
+    randoms: readonly RandomSource[],
+    rules: RollingRules,
+    plan: WeekPlan = EMPTY_PLAN,
+  ): readonly SingleRoll[] {
+    const rolls: SingleRoll[] = []
+    randoms.reduce(
+      ({ planned, memory }, random) => {
+        const roll = rollSingleMeal(
+          stored,
+          planned,
+          rolled,
+          random,
+          rules,
+          memory,
+        )
+        if (roll === null) throw new Error('nothing rolled')
+        rolls.push(roll)
+        return {
+          planned: withMealIn(planned, rolled, roll.meal.id),
+          memory: roll.memory,
+        }
+      },
+      { planned: plan, memory: EMPTY_ROLL_MEMORY },
+    )
+    return rolls
+  }
+
+  function idsOf(rolls: readonly SingleRoll[]): readonly string[] {
+    return rolls.map((roll) => roll.meal.id)
+  }
+
+  it('rolls every suiting meal before one comes again', () => {
+    const rolls = rolledOneAfterAnother(
+      [bolognese, pizza, soup],
+      mondayLunch,
+      [anyRandom, anyRandom, anyRandom, anyRandom],
+      rulesWithout(),
+    )
+    const [first, second, third, fourth] = idsOf(rolls)
+
+    expect(new Set([first, second, third]).size).toBe(3)
+    expect(rolls.map((roll) => roll.startedOver)).toEqual([
+      false,
+      false,
+      false,
+      true,
+    ])
+    expect([first, second]).toContain(fourth)
+    expect(rolledAt(rolls[3].memory, mondayLunch)).toEqual([third, fourth])
+  })
+
+  const pennePlannedBesideRice = withMealIn(
+    withMealIn(EMPTY_PLAN, slot(TUESDAY, 'lunch'), 'rice'),
+    mondayLunch,
+    'penne',
+  )
+  const pastaAndPenneRolled: RollMemory = [
+    { slot: mondayLunch, meals: ['pasta', 'penne'] },
+  ]
+
+  it('keeps the categories apart before it rolls a meal not rolled yet', () => {
+    const roll = rollSingleMeal(
+      [pasta, penne, rice],
+      pennePlannedBesideRice,
+      mondayLunch,
+      anyRandom,
+      rulesWithout(),
+      pastaAndPenneRolled,
+    )
+
+    expect(roll?.meal).toEqual(pasta)
+    expect(roll?.startedOver).toBe(true)
+  })
+
+  it('rolls the meal not rolled yet while the categories are switched off for a single meal', () => {
+    const roll = rollSingleMeal(
+      [pasta, penne, rice],
+      pennePlannedBesideRice,
+      mondayLunch,
+      anyRandom,
+      rulesWithout({ rule: 'categories', scope: 'singleMeal' }),
+      pastaAndPenneRolled,
+    )
+
+    expect(roll?.meal).toEqual(rice)
+    expect(roll?.startedOver).toBe(false)
+  })
+
+  it('prefers the breakfast of the day before only among the meals not rolled yet', () => {
+    const tuesdayBreakfast = slot(TUESDAY, 'breakfast')
+    const plan = withMealIn(
+      withMealIn(EMPTY_PLAN, slot(MONDAY, 'breakfast'), 'muesli'),
+      tuesdayBreakfast,
+      'toast',
+    )
+
+    const roll = rollSingleMeal(
+      [muesli, porridge, toast],
+      plan,
+      tuesdayBreakfast,
+      anyRandom,
+      rulesWithout(),
+      [{ slot: tuesdayBreakfast, meals: ['muesli', 'toast'] }],
+    )
+
+    expect(roll?.meal).toEqual(porridge)
+    expect(roll?.startedOver).toBe(false)
+  })
+
+  it('prefers the rarer meal only among the meals not rolled yet', () => {
+    const roll = rollSingleMeal(
+      [apple, nut],
+      withMealIn(EMPTY_PLAN, slot(FRIDAY, 'snack'), 'nut'),
+      mondaySnack,
+      anyRandom,
+      rulesWithout(),
+      [{ slot: mondaySnack, meals: ['apple'] }],
+    )
+
+    expect(roll?.meal).toEqual(nut)
+    expect(roll?.startedOver).toBe(false)
+  })
+
+  it('never rolls the replaced meal again while the other meal is switched off', () => {
+    const rolls = rolledOneAfterAnother(
+      meals(3, 'snack'),
+      mondaySnack,
+      [sequence([0.99]), sequence([0.99])],
+      rulesWithout(
+        { rule: 'otherMeal', scope: 'singleMeal' },
+        { rule: 'variety', scope: 'singleMeal' },
+      ),
+      withMealIn(EMPTY_PLAN, mondaySnack, 'meal-3'),
+    )
+
+    expect(idsOf(rolls)).toEqual(['meal-2', 'meal-1'])
+  })
+
+  it('rolls the only suiting meal again as a new round', () => {
+    const roll = rollSingleMeal(
+      [apple],
+      withMealIn(EMPTY_PLAN, mondaySnack, 'apple'),
+      mondaySnack,
+      anyRandom,
+      rulesWithout(),
+      EMPTY_ROLL_MEMORY,
+    )
+
+    expect(roll?.meal).toEqual(apple)
+    expect(roll?.startedOver).toBe(true)
+  })
+
+  it('neither applies nor changes the memory while the meals already rolled are switched off', () => {
+    const memory: RollMemory = [{ slot: mondaySnack, meals: ['apple'] }]
+
+    const roll = rollSingleMeal(
+      [apple, nut],
+      EMPTY_PLAN,
+      mondaySnack,
+      anyRandom,
+      rulesWithout({ rule: 'alreadyRolled', scope: 'singleMeal' }),
+      memory,
+    )
+
+    expect(roll).toEqual({ meal: apple, memory, startedOver: false })
+  })
+
+  it('rolls nothing when no meal suits', () => {
+    expect(
+      rollSingleMeal(
+        [],
+        EMPTY_PLAN,
+        mondayLunch,
+        anyRandom,
+        rulesWithout(),
+        EMPTY_ROLL_MEMORY,
+      ),
+    ).toBeNull()
   })
 })

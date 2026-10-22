@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import {
+  allMealsRolledAnnouncement,
   dayShownAnnouncement,
   dayViewShownAnnouncement,
   leftoversPlannedAnnouncement,
@@ -22,8 +23,8 @@ import {
 import type { Meal, MealId } from '../domain/meal'
 import {
   filledWeekPlan,
-  pickMealFor,
   randomCandidates,
+  rollSingleMeal,
   type RandomSource,
 } from '../domain/randomPlanning'
 import type { PlanDate } from '../domain/planDate'
@@ -149,29 +150,35 @@ export function WeekPlanArea({
   }
 
   function shuffleSlot(slot: PlanSlot) {
-    const picked = pickMealFor(
+    const roll = rollSingleMeal(
       meals,
       weekPlanning.plan,
       slot,
       random,
       rollingRules,
-      'singleMeal',
+      weekPlanning.rollMemory,
     )
-    if (picked === null) {
+    if (roll === null) {
       announce(noMatchingMealAnnouncement(slot, slotNamingIn(shownView)))
       return
     }
+    weekPlanning.rememberRolls(roll.memory)
     const rolled = rolledInto(
       weekPlanning.plan,
       slot,
-      picked,
+      roll.meal,
       meals,
       supplies,
       rollingRules,
       'singleMeal',
     )
     weekPlanning.replacePlan(rolled)
-    announce(plannedAnnouncement(rolled, slot, picked))
+    const rolledAnnouncement = plannedAnnouncement(rolled, slot, roll.meal)
+    announce(
+      roll.startedOver
+        ? `${allMealsRolledAnnouncement()} ${rolledAnnouncement}`
+        : rolledAnnouncement,
+    )
   }
 
   function shuffleWeek() {

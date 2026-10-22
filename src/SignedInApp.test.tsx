@@ -8,6 +8,7 @@ import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient
 import { withLeftoversIn } from './meals/domain/leftovers'
 import { toPlanDate } from './meals/domain/planDate'
 import type { PlanPeriod } from './meals/domain/planPeriod'
+import type { RandomSource } from './meals/domain/randomPlanning'
 import {
   emptyWeekPlan,
   mealIn,
@@ -71,6 +72,7 @@ function renderSignedInApp(
   knownUnitsClient = createInMemoryKnownUnitsClient(
     DEFAULT_UNITS.map((name) => ({ name, lastUsedAt: 0, timesUsed: 0 })),
   ),
+  random?: RandomSource,
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -84,6 +86,7 @@ function renderSignedInApp(
       createKnownUnitsClient={() => knownUnitsClient}
       appearanceClient={appearanceClient}
       clock={clock}
+      random={random}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -1646,8 +1649,75 @@ describe('SignedInApp', () => {
       'Frühstück und Snack wiederholen',
       'Abwechslung',
       'Anderes Gericht',
+      'Schon gewürfelte Gerichte',
       'Vorrat',
     ])
+  })
+
+  it('offers to remember the meals already rolled for a single meal only, switched on', async () => {
+    renderSignedInApp()
+
+    await openRollingRules()
+
+    expect(ruleSwitch('Schon gewürfelte Gerichte, Einzelgericht')).toBeChecked()
+    expect(
+      ruleSwitch('Schon gewürfelte Gerichte, Einzelgericht'),
+    ).toHaveAccessibleDescription(
+      'Neu würfeln bringt erst alle anderen passenden Gerichte, bevor eines wiederkommt. Gilt je Platz, bis der Plan festgelegt wird.',
+    )
+    expect(
+      screen.queryByRole('switch', {
+        name: 'Schon gewürfelte Gerichte, Gesamtplan',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('remembers the meals already rolled switched off', async () => {
+    const { weekPlanClient } = renderSignedInApp()
+
+    await openRollingRules()
+    await userEvent.click(
+      ruleSwitch('Schon gewürfelte Gerichte, Einzelgericht'),
+    )
+
+    expect(
+      ruleSwitch('Schon gewürfelte Gerichte, Einzelgericht'),
+    ).not.toBeChecked()
+    expect(weekPlanClient.storedRollingRules().switchedOff).toEqual([
+      { rule: 'alreadyRolled', scope: 'singleMeal' },
+    ])
+  })
+
+  it('remembers the meals already rolled while another area is open', async () => {
+    const { weekPlanClient } = renderSignedInApp(
+      [],
+      [
+        meal('bolognese', 'Bolognese'),
+        meal('chili', 'Chili'),
+        meal('pizza', 'Pizza'),
+      ],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      () => 0,
+    )
+    const mondayLunch = { date: MONDAY, time: 'lunch' } as const
+    const rollTheLunch = () =>
+      userEvent.click(
+        screen.getByRole('button', { name: 'Zufallsgericht für Mittagessen' }),
+      )
+
+    await goToArea('Wochenplan')
+    await rollTheLunch()
+    await rollTheLunch()
+    await goToArea('Einkaufsliste')
+    await goToArea('Wochenplan')
+    await rollTheLunch()
+
+    expect(mealIn(weekPlanClient.storedWeekPlan(), mondayLunch)).toBe('pizza')
   })
 
   it('offers to take the meals from the supply on the transfer, switched on', async () => {

@@ -74,6 +74,12 @@ describe('appliesIn', () => {
     )
   })
 
+  it('remembers the meals already rolled for a single meal by default', () => {
+    expect(
+      appliesIn(DEFAULT_ROLLING_RULES, 'alreadyRolled', 'singleMeal'),
+    ).toBe(true)
+  })
+
   it('takes the meals from the supply on the transfer by default', () => {
     expect(appliesIn(DEFAULT_ROLLING_RULES, 'supplies', 'transfer')).toBe(true)
   })
@@ -152,6 +158,18 @@ describe('withRuleSwitched', () => {
       ),
     ).toEqual(switchedOff({ rule: 'otherMeal', scope: 'singleMeal' }))
   })
+
+  it('switches remembering the meals already rolled off for a single meal only', () => {
+    const rules = switchedOff()
+
+    expect(
+      withRuleSwitched(
+        rules,
+        { rule: 'alreadyRolled', scope: 'wholePlan' },
+        false,
+      ),
+    ).toEqual(rules)
+  })
 })
 
 describe('SWITCHABLE_RULES', () => {
@@ -162,11 +180,12 @@ describe('SWITCHABLE_RULES', () => {
       'repeatingBreakfastAndSnack',
       'variety',
       'otherMeal',
+      'alreadyRolled',
       'supplies',
     ])
   })
 
-  it('offers every rule for both ways of rolling but the other meal for a single meal only, the leftovers also by hand and the supply on the transfer', () => {
+  it('offers every rule for both ways of rolling but the other meal and the meals already rolled for a single meal only, the leftovers also by hand and the supply on the transfer', () => {
     expect(
       SWITCHABLE_RULES.map((rule) => [rule, SCOPES_OF_RULE[rule]]),
     ).toEqual([
@@ -175,6 +194,7 @@ describe('SWITCHABLE_RULES', () => {
       ['repeatingBreakfastAndSnack', ['singleMeal', 'wholePlan']],
       ['variety', ['singleMeal', 'wholePlan']],
       ['otherMeal', ['singleMeal']],
+      ['alreadyRolled', ['singleMeal']],
       ['supplies', ['transfer']],
     ])
   })
@@ -270,6 +290,14 @@ describe('rollingRulesFromStored', () => {
       rollingRulesFromStored({ switchedOff: ['supplies.transfer'] })
         .switchedOff,
     ).toEqual([SUPPLIES_ON_THE_TRANSFER])
+  })
+
+  it('reads remembering the meals already rolled switched off for a single meal only', () => {
+    expect(
+      rollingRulesFromStored({
+        switchedOff: ['alreadyRolled.singleMeal', 'alreadyRolled.wholePlan'],
+      }).switchedOff,
+    ).toEqual([{ rule: 'alreadyRolled', scope: 'singleMeal' }])
   })
 
   it('passes over the supply in a way of rolling', () => {

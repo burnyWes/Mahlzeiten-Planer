@@ -524,6 +524,47 @@ test('marks a meal chosen by hand as leftovers of the day before', async ({
   await expect.poll(itemQuantitiesOnServer).toEqual(['Hackfleisch, 500 g'])
 })
 
+test('rolls every other meal before one comes again', async ({ page }) => {
+  await storeMealOnServer('Apfel', { snack: true })
+  await storeMealOnServer('Banane', { snack: true })
+  await page.goto('/')
+  await signIn(page)
+  await pressButton(page, 'Wochenplan')
+  const snack = page.getByLabel('Snack', { exact: true })
+  const status = page.getByRole('status')
+  await expect(
+    page.getByRole('button', {
+      name: 'Zufallsauswahl generieren',
+      exact: true,
+    }),
+  ).toBeEnabled()
+
+  await pressButton(page, 'Zufallsgericht für Snack')
+  await expect(snack).not.toHaveValue('')
+  const first = await snack.inputValue()
+  const second = first === 'Apfel' ? 'Banane' : 'Apfel'
+  await expect(status).toHaveText(`Snack, ${first}.`)
+
+  await pressButton(page, 'Zufallsgericht für Snack')
+
+  await expect(snack).toHaveValue(second)
+  await expect(status).toHaveText(`Snack, ${second}.`)
+
+  await pressButton(page, 'Zufallsgericht für Snack')
+
+  await expect(snack).toHaveValue(first)
+  await expect(status).toHaveText(
+    `Alle passenden Gerichte waren schon dran. Snack, ${first}.`,
+  )
+
+  await pressButton(page, 'Plan festlegen')
+  await pressButton(page, 'Plan bearbeiten')
+  await pressButton(page, 'Zufallsgericht für Snack')
+
+  await expect(snack).toHaveValue(second)
+  await expect(status).toHaveText(`Snack, ${second}.`)
+})
+
 test('lines the meal time field up with its shuffle button', async ({
   page,
 }) => {
