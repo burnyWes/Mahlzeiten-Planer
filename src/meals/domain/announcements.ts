@@ -140,7 +140,7 @@ const switchableRuleExplanations: Record<SwitchableRule, string> = {
   otherMeal: 'Neu würfeln bringt ein anderes Gericht als das bisherige.',
   alreadyRolled:
     'Neu würfeln bringt erst alle anderen passenden Gerichte, bevor eines wiederkommt. Gilt je Platz, bis der Plan festgelegt wird.',
-  supplies: 'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
+  supplies: '„Auf die Einkaufsliste“ zieht die Gerichte aus dem Vorrat ab.',
 }
 
 const ruleScopeNames: Record<RuleScope, string> = {

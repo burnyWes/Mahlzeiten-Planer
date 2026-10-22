@@ -232,7 +232,7 @@ describe('switchableRuleExplanation', () => {
       'Neu würfeln bringt erst alle anderen passenden Gerichte, bevor eines wiederkommt. Gilt je Platz, bis der Plan festgelegt wird.',
     )
     expect(switchableRuleExplanation('supplies')).toBe(
-      'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
+      '„Auf die Einkaufsliste“ zieht die Gerichte aus dem Vorrat ab.',
     )
   })
 })

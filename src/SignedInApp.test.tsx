@@ -1729,7 +1729,7 @@ describe('SignedInApp', () => {
     expect(
       ruleSwitch('Vorrat, Auf die Einkaufsliste'),
     ).toHaveAccessibleDescription(
-      'Auf die Einkaufsliste zieht die Gerichte aus dem Vorrat ab.',
+      '„Auf die Einkaufsliste“ zieht die Gerichte aus dem Vorrat ab.',
     )
   })
 
