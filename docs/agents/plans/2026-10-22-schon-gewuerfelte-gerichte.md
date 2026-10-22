@@ -5,7 +5,7 @@ branch: main
 story: MZP-044
 topic: "Schon gewürfelte Gerichte beim Einzelwürfeln merken"
 tags: [plan, meals, randomPlanning, rollingRules, rollMemory, useWeekPlan, WeekPlanArea, RollingRulesPage, announcements, voiceover, e2e]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-044 — Schon gewürfelte Gerichte beim Einzelwürfeln merken
@@ -409,13 +409,13 @@ E2E:
 - [x] `grep -rn "pickMealFor" src/meals/ui` findet nichts
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver: einen Platz so oft würfeln, bis alle passenden
+- [x] Auf dem iPhone mit VoiceOver: einen Platz so oft würfeln, bis alle passenden
       Gerichte dran waren. Kein Gericht kommt doppelt, und beim nächsten Würfeln sagt
       VoiceOver „Alle passenden Gerichte waren schon dran.“ vor dem Gericht.
-- [ ] Zwischendurch in die Gerichte und zurück: Das Gedächtnis ist noch da.
-- [ ] „Plan festlegen“ und „Plan bearbeiten“: Danach können die alten Gerichte sofort
+- [x] Zwischendurch in die Gerichte und zurück: Das Gedächtnis ist noch da.
+- [x] „Plan festlegen“ und „Plan bearbeiten“: Danach können die alten Gerichte sofort
       wieder kommen.
-- [ ] Regel-Verwaltung: VoiceOver liest „Schon gewürfelte Gerichte, Überschrift Ebene
+- [x] Regel-Verwaltung: VoiceOver liest „Schon gewürfelte Gerichte, Überschrift Ebene
       2“, die Erklärung und „Schon gewürfelte Gerichte, Einzelgericht, Schalter, ein“.
 
 ## Notizen zur Umsetzung
