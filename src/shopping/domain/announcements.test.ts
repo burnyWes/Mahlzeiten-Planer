@@ -25,11 +25,18 @@ import {
   itemCategorySavedAnnouncement,
   knownItemCreatedAnnouncement,
   knownItemDeletedAnnouncement,
+  knownItemFilterAnnouncement,
+  knownItemFilterName,
+  knownItemFilterResetAnnouncement,
   knownItemFormHeading,
+  knownItemInMealsNote,
   knownItemRowLabel,
   knownItemSavedAnnouncement,
   itemRemovedAnnouncement,
   knownItemsHeading,
+  itemRemovedFromMealAnnouncement,
+  usingMealsHeading,
+  shownKnownItemsCount,
   knownUnitCreatedAnnouncement,
   knownUnitDeletedAnnouncement,
   knownUnitSavedAnnouncement,
@@ -175,6 +182,65 @@ describe('knownItemsHeading', () => {
   it('says that the catalog is empty', () => {
     expect(knownItemsHeading(0)).toBe('Artikel, keine')
   })
+
+  it('speaks the shown items of all while filtered', () => {
+    expect(knownItemsHeading(5, 57)).toBe('Artikel, 5 von 57')
+    expect(knownItemsHeading(0, 57)).toBe('Artikel, 0 von 57')
+  })
+})
+
+describe('shownKnownItemsCount', () => {
+  it('shows the count alone without a filter', () => {
+    expect(shownKnownItemsCount(5, null)).toBe('5')
+  })
+
+  it('shows the shown items of all while filtered', () => {
+    expect(shownKnownItemsCount(5, 57)).toBe('5 / 57')
+  })
+})
+
+describe('knownItemFilterName', () => {
+  const catalog = {
+    categories: [{ id: 'c1', name: 'Backen' }],
+    sortByCategory: true,
+  }
+
+  it('names the chosen category', () => {
+    expect(
+      knownItemFilterName(catalog, { by: 'category', categoryId: 'c1' }),
+    ).toBe('Backen')
+  })
+
+  it('names the items without a category', () => {
+    expect(knownItemFilterName(catalog, { by: 'uncategorized' })).toBe(
+      'Ohne Kategorie',
+    )
+  })
+})
+
+describe('knownItemFilterAnnouncement', () => {
+  it('names the filter and the shown items of all', () => {
+    expect(knownItemFilterAnnouncement('Backen', 5, 57)).toBe(
+      'Backen, 5 von 57 Artikeln.',
+    )
+  })
+
+  it('speaks of a single item in total', () => {
+    expect(knownItemFilterAnnouncement('Backen', 1, 1)).toBe(
+      'Backen, 1 von 1 Artikel.',
+    )
+  })
+})
+
+describe('knownItemFilterResetAnnouncement', () => {
+  it('confirms the reset with all items', () => {
+    expect(knownItemFilterResetAnnouncement(57)).toBe(
+      'Filter zurückgesetzt, 57 Artikel.',
+    )
+    expect(knownItemFilterResetAnnouncement(1)).toBe(
+      'Filter zurückgesetzt, 1 Artikel.',
+    )
+  })
 })
 
 describe('knownItemDeletedAnnouncement', () => {
@@ -199,8 +265,38 @@ describe('knownItemDeletedAnnouncement', () => {
 
 describe('knownItemSavedAnnouncement', () => {
   it('confirms the saved name', () => {
-    expect(knownItemSavedAnnouncement('Hackfleisch')).toBe(
+    expect(knownItemSavedAnnouncement('Hackfleisch', 0)).toBe(
       'Hackfleisch gespeichert.',
+    )
+  })
+
+  it('counts the meals that were renamed', () => {
+    expect(knownItemSavedAnnouncement('Weizenmehl', 1)).toBe(
+      'Weizenmehl gespeichert, in 1 Gericht umbenannt.',
+    )
+    expect(knownItemSavedAnnouncement('Weizenmehl', 3)).toBe(
+      'Weizenmehl gespeichert, in 3 Gerichten umbenannt.',
+    )
+  })
+})
+
+describe('usingMealsHeading', () => {
+  it('counts the meals using the item', () => {
+    expect(usingMealsHeading(3)).toBe('Gerichte, 3')
+    expect(usingMealsHeading(0)).toBe('Gerichte, keine')
+  })
+})
+
+describe('itemRemovedFromMealAnnouncement', () => {
+  it('names the item, the meal and the remaining meals', () => {
+    expect(itemRemovedFromMealAnnouncement('Mehl', 'Pizza', 2)).toBe(
+      'Mehl aus Pizza entfernt, noch 2 Gerichte.',
+    )
+    expect(itemRemovedFromMealAnnouncement('Mehl', 'Pizza', 1)).toBe(
+      'Mehl aus Pizza entfernt, noch 1 Gericht.',
+    )
+    expect(itemRemovedFromMealAnnouncement('Mehl', 'Pizza', 0)).toBe(
+      'Mehl aus Pizza entfernt, in keinem Gericht mehr.',
     )
   })
 })
@@ -472,13 +568,32 @@ describe('knownItemRowLabel', () => {
   }
 
   it('names the item with its category', () => {
-    expect(knownItemRowLabel(apples, { id: 'k1', name: 'Obst/Gemüse' })).toBe(
-      'Äpfel (Obst/Gemüse)',
-    )
+    expect(
+      knownItemRowLabel(apples, { id: 'k1', name: 'Obst/Gemüse' }, 0),
+    ).toBe('Äpfel (Obst/Gemüse)')
   })
 
   it('names only the item without a category', () => {
-    expect(knownItemRowLabel(apples, null)).toBe('Äpfel')
+    expect(knownItemRowLabel(apples, null, 0)).toBe('Äpfel')
+  })
+
+  it('counts the meals using the item', () => {
+    expect(knownItemRowLabel(apples, { id: 'k1', name: 'Obst' }, 3)).toBe(
+      'Äpfel (Obst), 3 Gerichte',
+    )
+    expect(knownItemRowLabel(apples, null, 1)).toBe('Äpfel, 1 Gericht')
+    expect(knownItemRowLabel(apples, null, 0)).toBe('Äpfel')
+  })
+})
+
+describe('knownItemInMealsNote', () => {
+  it('says how many meals keep the item', () => {
+    expect(knownItemInMealsNote('Mehl', 3)).toBe(
+      'Mehl steht noch in 3 Gerichten und bleibt dort erhalten.',
+    )
+    expect(knownItemInMealsNote('Mehl', 1)).toBe(
+      'Mehl steht noch in 1 Gericht und bleibt dort erhalten.',
+    )
   })
 })
 

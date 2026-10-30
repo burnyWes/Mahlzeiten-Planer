@@ -9,6 +9,8 @@ import {
   knownItemToAdd,
   knownItemsByName,
   knownItemsFromHistory,
+  knownFilterIn,
+  knownItemsMatching,
   knownItemsInCategory,
   knownItemsWithoutCategory,
   planKnownItemRename,
@@ -512,5 +514,64 @@ describe('knownItemsWithoutCategory', () => {
         sortByCategory: true,
       }),
     ).toEqual([known('Äpfel', 1, 1, 'k1'), known('Kaffee')])
+  })
+})
+
+describe('knownItemsMatching', () => {
+  const catalog = {
+    categories: [
+      { id: 'c1', name: 'Backen' },
+      { id: 'c2', name: 'Drogerie' },
+    ],
+    sortByCategory: true,
+  }
+  const knownItems = [
+    known('Mehl', 1, 1, 'c1'),
+    known('Kaffee'),
+    known('Zahnpasta', 1, 1, 'c2'),
+    known('Backpapier', 1, 1, 'gone'),
+  ]
+
+  it('keeps every item without a filter', () => {
+    expect(knownItemsMatching(knownItems, catalog, null)).toBe(knownItems)
+  })
+
+  it('keeps only the items of the chosen category', () => {
+    expect(
+      knownItemsMatching(knownItems, catalog, {
+        by: 'category',
+        categoryId: 'c1',
+      }),
+    ).toEqual([known('Mehl', 1, 1, 'c1')])
+  })
+
+  it('keeps the items without a category and with a deleted one', () => {
+    expect(
+      knownItemsMatching(knownItems, catalog, { by: 'uncategorized' }),
+    ).toEqual([known('Kaffee'), known('Backpapier', 1, 1, 'gone')])
+  })
+})
+
+describe('knownFilterIn', () => {
+  const catalog = {
+    categories: [{ id: 'c1', name: 'Backen' }],
+    sortByCategory: true,
+  }
+
+  it('keeps a category that is still in the catalog', () => {
+    const chosen = { by: 'category', categoryId: 'c1' } as const
+    expect(knownFilterIn(catalog, chosen)).toBe(chosen)
+  })
+
+  it('drops a category that is gone', () => {
+    expect(
+      knownFilterIn(catalog, { by: 'category', categoryId: 'gone' }),
+    ).toBeNull()
+  })
+
+  it('keeps the uncategorized filter and no filter', () => {
+    const uncategorized = { by: 'uncategorized' } as const
+    expect(knownFilterIn(catalog, uncategorized)).toBe(uncategorized)
+    expect(knownFilterIn(catalog, null)).toBeNull()
   })
 })

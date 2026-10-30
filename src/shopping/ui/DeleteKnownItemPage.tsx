@@ -1,14 +1,17 @@
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
+import { knownItemInMealsNote } from '../domain/announcements'
 import type { KnownItem } from '../domain/knownItem'
 
 type DeleteKnownItemPageProps = {
   knownItem: KnownItem
+  mealCount: number
   onDelete: () => void
   onCancel: () => void
 }
 
 export function DeleteKnownItemPage({
   knownItem,
+  mealCount,
   onDelete,
   onCancel,
 }: DeleteKnownItemPageProps) {
@@ -26,6 +29,9 @@ export function DeleteKnownItemPage({
         Der Vorschlag wird für beide Geräte entfernt. Wird der Name wieder
         verwendet, entsteht er neu.
       </p>
+      {mealCount > 0 && (
+        <p>{knownItemInMealsNote(knownItem.name, mealCount)}</p>
+      )}
       <div className="pageActions">
         <button type="button" onClick={onDelete}>
           Löschen

@@ -2,14 +2,22 @@ import { useState } from 'react'
 import {
   knownItemCreatedAnnouncement,
   knownItemDeletedAnnouncement,
+  knownItemFilterAnnouncement,
+  knownItemFilterName,
+  knownItemFilterResetAnnouncement,
+  itemRemovedFromMealAnnouncement,
   knownItemSavedAnnouncement,
   withCreatedCategoryPhrase,
 } from '../domain/announcements'
 import { findItemCategory, suggestItemCategories } from '../domain/itemCategory'
 import {
+  knownFilterIn,
+  knownItemsMatching,
   knownItemToAdd,
   planKnownItemRename,
   type KnownItem,
+  type KnownItemFilter,
+  type MealUsingItem,
 } from '../domain/knownItem'
 import { normalizeItemName } from '../domain/shoppingItem'
 import { DeleteKnownItemPage } from './DeleteKnownItemPage'
@@ -27,6 +35,9 @@ type KnownItemsPage =
 type KnownItemsAreaProps = {
   knownItems: KnownItems
   itemCategories: ItemCategories
+  mealsUsingItem: (name: string) => readonly MealUsingItem[]
+  onRemoveItemFromMeal: (mealId: string, name: string) => void
+  onKnownItemRenamed: (from: string, to: string) => number
   announce: (text: string) => void
   onBack: () => void
 }
@@ -34,11 +45,18 @@ type KnownItemsAreaProps = {
 export function KnownItemsArea({
   knownItems,
   itemCategories,
+  mealsUsingItem,
+  onRemoveItemFromMeal,
+  onKnownItemRenamed,
   announce,
   onBack,
 }: KnownItemsAreaProps) {
   const [page, setPage] = useState<KnownItemsPage>({ kind: 'list' })
+  const [chosenFilter, setChosenFilter] = useState<KnownItemFilter | null>(null)
   const { catalog } = itemCategories
+  const activeFilter = knownFilterIn(catalog, chosenFilter)
+  const chosenFilterIsGone = chosenFilter !== null && activeFilter === null
+  if (chosenFilterIsGone) setChosenFilter(null)
 
   const addressedKnownItem =
     page.kind === 'form' || page.kind === 'delete'
@@ -54,6 +72,20 @@ export function KnownItemsArea({
 
   function showList() {
     setPage({ kind: 'list' })
+  }
+
+  function chooseFilter(filter: KnownItemFilter | null) {
+    const all = knownItems.knownItems
+    setChosenFilter(filter)
+    announce(
+      filter === null
+        ? knownItemFilterResetAnnouncement(all.length)
+        : knownItemFilterAnnouncement(
+            knownItemFilterName(catalog, filter),
+            knownItemsMatching(all, catalog, filter).length,
+            all.length,
+          ),
+    )
   }
 
   function deleteKnownItem(knownItem: KnownItem) {
@@ -85,11 +117,27 @@ export function KnownItemsArea({
     }
     itemCategories.applyCategoryAssignment(assignment)
     knownItems.renameKnownItem(rename)
+    const renamedMealCount = onKnownItemRenamed(
+      knownItem.name,
+      rename.written.name,
+    )
     showList()
     announce(
       withCreatedCategoryPhrase(
-        knownItemSavedAnnouncement(rename.written.name),
+        knownItemSavedAnnouncement(rename.written.name, renamedMealCount),
         assignment.created,
+      ),
+    )
+  }
+
+  function removeFromMeal(knownItem: KnownItem, usingMeal: MealUsingItem) {
+    const remainingMeals = mealsUsingItem(knownItem.name).length - 1
+    onRemoveItemFromMeal(usingMeal.mealId, knownItem.name)
+    announce(
+      itemRemovedFromMealAnnouncement(
+        knownItem.name,
+        usingMeal.mealName,
+        remainingMeals,
       ),
     )
   }
@@ -140,6 +188,11 @@ export function KnownItemsArea({
         }
         onBack={showList}
         announce={announce}
+        usedInMeals={{
+          usingMeals: mealsUsingItem(addressedKnownItem.name),
+          onRemoveFromMeal: (usingMeal) =>
+            removeFromMeal(addressedKnownItem, usingMeal),
+        }}
       />
     )
 
@@ -147,6 +200,7 @@ export function KnownItemsArea({
     return (
       <DeleteKnownItemPage
         knownItem={addressedKnownItem}
+        mealCount={mealsUsingItem(addressedKnownItem.name).length}
         onDelete={() => deleteKnownItem(addressedKnownItem)}
         onCancel={showList}
       />
@@ -154,8 +208,16 @@ export function KnownItemsArea({
 
   return (
     <KnownItemListPage
-      knownItems={knownItems.knownItems}
+      shownKnownItems={knownItemsMatching(
+        knownItems.knownItems,
+        catalog,
+        activeFilter,
+      )}
+      totalCount={knownItems.knownItems.length}
       catalog={catalog}
+      activeFilter={activeFilter}
+      onChooseFilter={chooseFilter}
+      mealsUsingItem={mealsUsingItem}
       onBack={onBack}
       onAddKnownItem={() => setPage({ kind: 'create' })}
       onOpenKnownItem={(knownItem) =>

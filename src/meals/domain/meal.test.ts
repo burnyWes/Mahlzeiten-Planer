@@ -8,12 +8,15 @@ import {
   formatMealItem,
   InvalidMeal,
   mealNamed,
+  mealsByItemName,
   newlyUsedNames,
   newlyUsedUnits,
   normalizeMealName,
   unitsOfMeals,
   withChosenKind,
   withHiding,
+  withItemRenamed,
+  withoutItem,
   type Meal,
   type MealDraft,
   type MealItem,
@@ -539,5 +542,114 @@ describe('newlyUsedUnits', () => {
 
   it('ignores items without a unit', () => {
     expect(newlyUsedUnits([], [item('Brot'), item('Eier', '6')])).toEqual([])
+  })
+})
+
+describe('mealsByItemName', () => {
+  function mealWith(name: string, ...itemNames: readonly string[]): Meal {
+    return { ...meal(name), items: itemNames.map((one) => item(one)) }
+  }
+
+  it('lists a meal once under the normalized name of its items', () => {
+    const pizza = mealWith('Pizza', 'Mehl', 'mehl ')
+
+    expect(mealsByItemName([pizza]).get('mehl')).toEqual([pizza])
+  })
+
+  it('keeps the order of the given meals', () => {
+    const pancakes = mealWith('Pfannkuchen', 'Mehl')
+    const pizza = mealWith('Pizza', 'Mehl')
+
+    expect(mealsByItemName([pancakes, pizza]).get('mehl')).toEqual([
+      pancakes,
+      pizza,
+    ])
+  })
+
+  it('includes hidden meals', () => {
+    const hidden = { ...mealWith('Zwiebelkuchen', 'Mehl'), hidden: true }
+
+    expect(mealsByItemName([hidden]).get('mehl')).toEqual([hidden])
+  })
+
+  it('lists a meal without items nowhere', () => {
+    expect(mealsByItemName([meal('Salat')]).size).toBe(0)
+  })
+})
+
+describe('withoutItem', () => {
+  const pizza: Meal = {
+    id: 'pizza',
+    name: 'Pizza',
+    items: [item('Mehl', '500', 'g'), item('Hefe'), item('mehl ', '100', 'g')],
+    ingredientNotes: 'Belag nach Lust',
+    recipe: 'Backen.',
+    categories: ['Ofen'],
+    hidden: true,
+    kind: 'snack',
+    leftovers: true,
+  }
+
+  it('takes every position of the item out of the meal', () => {
+    expect(withoutItem(pizza, 'MEHL').items).toEqual([item('Hefe')])
+  })
+
+  it('keeps everything else of the meal', () => {
+    expect(withoutItem(pizza, 'Hefe')).toEqual({
+      name: 'Pizza',
+      items: [item('Mehl', '500', 'g'), item('mehl ', '100', 'g')],
+      ingredientNotes: 'Belag nach Lust',
+      recipe: 'Backen.',
+      categories: ['Ofen'],
+      hidden: true,
+      kind: 'snack',
+      leftovers: true,
+    })
+  })
+})
+
+describe('withItemRenamed', () => {
+  function mealWith(id: string, ...items: readonly MealItem[]): Meal {
+    return { ...meal(id), items }
+  }
+
+  it('renames every position of the item and keeps its quantity', () => {
+    const pizza = mealWith('Pizza', item('mehl ', '500', 'g'), item('Hefe'))
+
+    expect(withItemRenamed([pizza], 'Mehl', 'Weizenmehl')).toEqual([
+      { ...pizza, items: [item('Weizenmehl', '500', 'g'), item('Hefe')] },
+    ])
+  })
+
+  it('keeps a position that already holds the new name apart', () => {
+    const pizza = mealWith(
+      'Pizza',
+      item('Mehl', '500', 'g'),
+      item('Weizenmehl', '100', 'g'),
+    )
+
+    expect(withItemRenamed([pizza], 'Mehl', 'Weizenmehl')[0].items).toEqual([
+      item('Weizenmehl', '500', 'g'),
+      item('Weizenmehl', '100', 'g'),
+    ])
+  })
+
+  it('corrects the spelling', () => {
+    const pizza = mealWith('Pizza', item('mehl'))
+
+    expect(withItemRenamed([pizza], 'mehl', 'Mehl')[0].items).toEqual([
+      item('Mehl'),
+    ])
+  })
+
+  it('returns only the meals that change', () => {
+    const pizza = mealWith('Pizza', item('Mehl'))
+    const salad = mealWith('Salat', item('Gurke'))
+    const bread = mealWith('Brot', item('Weizenmehl'))
+
+    expect(
+      withItemRenamed([pizza, salad, bread], 'Mehl', 'Weizenmehl'),
+    ).toEqual([{ ...pizza, items: [item('Weizenmehl')] }])
+    expect(withItemRenamed([bread], 'Weizenmehl', 'Weizenmehl')).toEqual([])
   })
 })

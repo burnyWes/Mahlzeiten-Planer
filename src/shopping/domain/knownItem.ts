@@ -24,6 +24,8 @@ export type KnownItem = CatalogEntry & { categoryId: ItemCategoryId | null }
 
 export type KnownItemRename = CatalogRename<KnownItem>
 
+export type MealUsingItem = { mealId: string; mealName: string }
+
 export class KnownItemAlreadyTaken extends Error {
   knownItem: string
 
@@ -171,4 +173,28 @@ export function suggestNames(
   typed: string,
 ): readonly string[] {
   return suggestFromCatalog(knownItems, typed, MINIMUM_TYPED_LENGTH)
+}
+
+export type KnownItemFilter =
+  { by: 'category'; categoryId: ItemCategoryId } | { by: 'uncategorized' }
+
+export function knownItemsMatching(
+  knownItems: readonly KnownItem[],
+  catalog: ItemCategoryCatalog,
+  filter: KnownItemFilter | null,
+): readonly KnownItem[] {
+  if (filter === null) return knownItems
+  return knownItems.filter((knownItem) =>
+    filter.by === 'category'
+      ? knownItem.categoryId === filter.categoryId
+      : findItemCategory(catalog, knownItem.categoryId) === null,
+  )
+}
+
+export function knownFilterIn(
+  catalog: ItemCategoryCatalog,
+  chosen: KnownItemFilter | null,
+): KnownItemFilter | null {
+  if (chosen?.by !== 'category') return chosen
+  return findItemCategory(catalog, chosen.categoryId) === null ? null : chosen
 }

@@ -7,7 +7,13 @@ import {
   settleWrites,
   storeRollingRulesOnServer,
 } from './emulatorHousehold.ts'
-import { pressButton, shownItems, signIn, typeInto } from './keyboard.ts'
+import {
+  pressButton,
+  shownItems,
+  signIn,
+  takeOverItem,
+  typeInto,
+} from './keyboard.ts'
 
 test.beforeEach(async () => {
   await prepareEmulators()
@@ -266,4 +272,36 @@ test('orders the item categories and keeps the order after a reload', async ({
     '4. Tiefkühlkost, 0 Artikel',
   ])
   await expect(ruleSwitch(page, 'Nach Kategorien sortieren')).not.toBeChecked()
+})
+
+test('removes an item from a meal in the item management', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Gericht hinzufügen')
+  await typeInto(page, 'Name', 'Bolognese')
+  await takeOverItem(page, 'Hackfleisch', '500', 'g')
+  await takeOverItem(page, 'Spaghetti')
+  await pressButton(page, 'Speichern')
+  await pressButton(page, 'Zurück zu den Gerichten')
+
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Artikel')
+  await pressButton(page, 'Hackfleisch, 1 Gericht')
+  await pressButton(page, 'Entfernen, Bolognese')
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Gerichte, keine' }),
+  ).toBeFocused()
+  await settleWrites(page)
+
+  await page.reload()
+  await pressButton(page, 'Gerichte')
+  await pressButton(page, 'Bolognese')
+
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Bolognese' }),
+  ).toBeVisible()
+  await expect(page.getByRole('main')).toContainText('Spaghetti')
+  await expect(page.getByRole('main')).not.toContainText('Hackfleisch')
 })

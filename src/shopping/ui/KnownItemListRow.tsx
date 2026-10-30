@@ -6,6 +6,7 @@ import type { KnownItem } from '../domain/knownItem'
 type KnownItemListRowProps = {
   knownItem: KnownItem
   category: ItemCategory | null
+  mealCount: number
   onOpenKnownItem: (knownItem: KnownItem) => void
   onDeleteKnownItem: (knownItem: KnownItem) => void
 }
@@ -13,6 +14,7 @@ type KnownItemListRowProps = {
 export function KnownItemListRow({
   knownItem,
   category,
+  mealCount,
   onOpenKnownItem,
   onDeleteKnownItem,
 }: KnownItemListRowProps) {
@@ -23,7 +25,7 @@ export function KnownItemListRow({
         className="mealNameButton"
         onClick={() => onOpenKnownItem(knownItem)}
       >
-        {knownItemRowLabel(knownItem, category)}
+        {knownItemRowLabel(knownItem, category, mealCount)}
       </button>
       <button
         type="button"

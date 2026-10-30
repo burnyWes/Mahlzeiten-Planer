@@ -44,9 +44,11 @@ flowchart TB
     shared -. Adapter .-> ls
 ```
 
-`shopping` und `meals` kennen einander nicht. Die einzige Verbindung – Gerichte und
-Wochenplan auf die Einkaufsliste übertragen – stellt die Kompositionswurzel in
-`SignedInApp.tsx` her.
+`shopping` und `meals` kennen einander nicht. Alle Verbindungen stellt die
+Kompositionswurzel in `SignedInApp.tsx` her: Sie überträgt Gerichte und Wochenplan auf
+die Einkaufsliste, reicht der Artikelverwaltung die Gerichte je Artikel als fertige
+Sicht (`MealUsingItem`) und zieht das Entfernen und Umbenennen von Artikeln in den
+Gerichten nach.
 
 ### Enthaltene Bausteine
 

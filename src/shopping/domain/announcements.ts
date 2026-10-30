@@ -11,9 +11,14 @@ import {
   type CategoryAssignment,
   type CategoryPlacement,
   type ItemCategory,
+  type ItemCategoryCatalog,
   type PlacedItemCategory,
 } from './itemCategory'
-import { KnownItemAlreadyTaken, type KnownItem } from './knownItem'
+import {
+  KnownItemAlreadyTaken,
+  type KnownItem,
+  type KnownItemFilter,
+} from './knownItem'
 import { KnownUnitAlreadyTaken } from './knownUnit'
 import {
   formatItemForAnnouncement,
@@ -78,17 +83,68 @@ export function listHeading(openCount: number): string {
     : `Einkaufsliste, ${openCount} offen`
 }
 
-export function knownItemsHeading(knownItemCount: number): string {
+export function knownItemsHeading(
+  knownItemCount: number,
+  filteredFromCount: number | null = null,
+): string {
+  if (filteredFromCount !== null)
+    return `Artikel, ${knownItemCount} von ${filteredFromCount}`
   return knownItemCount === 0 ? 'Artikel, keine' : `Artikel, ${knownItemCount}`
+}
+
+export function shownKnownItemsCount(
+  shownCount: number,
+  filteredFromCount: number | null,
+): string {
+  return filteredFromCount === null
+    ? `${shownCount}`
+    : `${shownCount} / ${filteredFromCount}`
+}
+
+export function knownItemFilterName(
+  catalog: ItemCategoryCatalog,
+  filter: KnownItemFilter,
+): string {
+  if (filter.by === 'uncategorized') return 'Ohne Kategorie'
+  return findItemCategory(catalog, filter.categoryId)?.name ?? ''
+}
+
+function knownItemsOfPhrase(totalCount: number): string {
+  return totalCount === 1 ? '1 Artikel' : `${totalCount} Artikeln`
+}
+
+export function knownItemFilterAnnouncement(
+  filterName: string,
+  shownCount: number,
+  totalCount: number,
+): string {
+  return `${filterName}, ${shownCount} von ${knownItemsOfPhrase(totalCount)}.`
+}
+
+export function knownItemFilterResetAnnouncement(totalCount: number): string {
+  return `Filter zurückgesetzt, ${totalCount} Artikel.`
+}
+
+function mealsPhrase(mealCount: number): string {
+  return mealCount === 1 ? '1 Gericht' : `${mealCount} Gerichte`
+}
+
+function inMealsPhrase(mealCount: number): string {
+  return mealCount === 1 ? 'in 1 Gericht' : `in ${mealCount} Gerichten`
 }
 
 export function knownItemRowLabel(
   knownItem: KnownItem,
   category: ItemCategory | null,
+  mealCount: number,
 ): string {
-  return category === null
-    ? knownItem.name
-    : `${knownItem.name} (${category.name})`
+  const named =
+    category === null ? knownItem.name : `${knownItem.name} (${category.name})`
+  return mealCount === 0 ? named : `${named}, ${mealsPhrase(mealCount)}`
+}
+
+export function knownItemInMealsNote(name: string, mealCount: number): string {
+  return `${name} steht noch ${inMealsPhrase(mealCount)} und bleibt dort erhalten.`
 }
 
 export type KnownItemFormMode = 'create' | 'edit'
@@ -116,8 +172,30 @@ export function withCreatedCategoryPhrase(
   return `${announcement} ${categoryCreatedPhrase(created.category.name, created.placement)}`
 }
 
-export function knownItemSavedAnnouncement(name: string): string {
-  return `${name} gespeichert.`
+export function knownItemSavedAnnouncement(
+  name: string,
+  renamedMealCount: number,
+): string {
+  if (renamedMealCount === 0) return `${name} gespeichert.`
+  return `${name} gespeichert, ${inMealsPhrase(renamedMealCount)} umbenannt.`
+}
+
+export function usingMealsHeading(mealCount: number): string {
+  return mealCount === 0 ? 'Gerichte, keine' : `Gerichte, ${mealCount}`
+}
+
+function remainingMealsPhrase(remainingMeals: number): string {
+  return remainingMeals === 0
+    ? 'in keinem Gericht mehr'
+    : `noch ${mealsPhrase(remainingMeals)}`
+}
+
+export function itemRemovedFromMealAnnouncement(
+  itemName: string,
+  mealName: string,
+  remainingMeals: number,
+): string {
+  return `${itemName} aus ${mealName} entfernt, ${remainingMealsPhrase(remainingMeals)}.`
 }
 
 function remainingKnownItemPhrase(remainingKnownItems: number): string {

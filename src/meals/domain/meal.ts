@@ -92,17 +92,21 @@ export function createMeal(
   }
 }
 
-export function withHiding(meal: Meal, hidden: boolean): NewMeal {
+function newMealOf(meal: Meal): NewMeal {
   return {
     name: meal.name,
     items: meal.items,
     ingredientNotes: meal.ingredientNotes,
     recipe: meal.recipe,
     categories: meal.categories,
-    hidden,
+    hidden: meal.hidden,
     kind: meal.kind,
     leftovers: meal.leftovers,
   }
+}
+
+export function withHiding(meal: Meal, hidden: boolean): NewMeal {
+  return { ...newMealOf(meal), hidden }
 }
 
 export function countHiddenMeals(meals: readonly NewMeal[]): number {
@@ -129,6 +133,60 @@ export function mealNamed(
   const wanted = normalizeMealName(written)
   if (wanted === '') return null
   return meals.find((meal) => normalizeMealName(meal.name) === wanted) ?? null
+}
+
+export function mealsByItemName(
+  meals: readonly Meal[],
+): ReadonlyMap<string, readonly Meal[]> {
+  const index = new Map<string, Meal[]>()
+  for (const meal of meals) {
+    const itemNames = new Set(
+      meal.items.map((item) => normalizeMealName(item.name)),
+    )
+    for (const itemName of itemNames) {
+      const usingMeals = index.get(itemName) ?? []
+      usingMeals.push(meal)
+      index.set(itemName, usingMeals)
+    }
+  }
+  return index
+}
+
+export function withoutItem(meal: Meal, name: string): NewMeal {
+  const removed = normalizeMealName(name)
+  return {
+    ...newMealOf(meal),
+    items: meal.items.filter(
+      (item) => normalizeMealName(item.name) !== removed,
+    ),
+  }
+}
+
+function withItemNameReplaced(
+  items: readonly MealItem[],
+  from: string,
+  to: string,
+): readonly MealItem[] {
+  const renamed = normalizeMealName(from)
+  return items.map((item) =>
+    item.name !== to && normalizeMealName(item.name) === renamed
+      ? { ...item, name: to }
+      : item,
+  )
+}
+
+export function withItemRenamed(
+  meals: readonly Meal[],
+  from: string,
+  to: string,
+): readonly Meal[] {
+  return meals.flatMap((meal) => {
+    const items = withItemNameReplaced(meal.items, from, to)
+    const changes = items.some(
+      (item, position) => item !== meal.items[position],
+    )
+    return changes ? [{ ...meal, items }] : []
+  })
 }
 
 export function byName(meals: readonly Meal[]): readonly Meal[] {

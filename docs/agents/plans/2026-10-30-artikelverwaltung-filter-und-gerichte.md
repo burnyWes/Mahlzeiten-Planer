@@ -373,7 +373,7 @@ Abhängigkeiten: keine
 Die Artikelliste lässt sich nach Kategorie und "Ohne Kategorie" filtern.
 
 **Aufgaben**:
-- [ ] Test zuerst (`src/shopping/domain/knownItem.test.ts`), danach Umsetzung in
+- [x] Test zuerst (`src/shopping/domain/knownItem.test.ts`), danach Umsetzung in
   `knownItem.ts`:
   - `knownItemsMatching(knownItems, catalog, null)` liefert alle unverändert
   - `{ by: 'category', categoryId: 'c1' }` liefert nur Artikel mit `c1`
@@ -398,7 +398,7 @@ Die Artikelliste lässt sich nach Kategorie und "Ohne Kategorie" filtern.
     )
   }
   ```
-- [ ] Test zuerst, dann Texte in `src/shopping/domain/announcements.ts`:
+- [x] Test zuerst, dann Texte in `src/shopping/domain/announcements.ts`:
   - `knownItemsHeading(57)` → "Artikel, 57", `knownItemsHeading(0)` → "Artikel,
     keine", `knownItemsHeading(5, 57)` → "Artikel, 5 von 57", `knownItemsHeading(0,
     57)` → "Artikel, 0 von 57"
@@ -409,11 +409,11 @@ Die Artikelliste lässt sich nach Kategorie und "Ohne Kategorie" filtern.
     bei einem Artikel insgesamt → "Backen, 1 von 1 Artikel."
   - `knownItemFilterResetAnnouncement(57)` → "Filter zurückgesetzt, 57 Artikel.",
     bei 1 → "Filter zurückgesetzt, 1 Artikel."
-- [ ] `src/meals/ui/CrossIcon.tsx` nach `src/shared/ui/CrossIcon.tsx` verschieben,
+- [x] `src/meals/ui/CrossIcon.tsx` nach `src/shared/ui/CrossIcon.tsx` verschieben,
   Import in `MealFilterSelect.tsx` anpassen.
-- [ ] `ManagementHeader`: optionale Prop `headingLabel?: string`, als `aria-label`
+- [x] `ManagementHeader`: optionale Prop `headingLabel?: string`, als `aria-label`
   der `h1`.
-- [ ] `src/shopping/ui/KnownItemFilterSelect.tsx` anlegen. Props: `catalog`,
+- [x] `src/shopping/ui/KnownItemFilterSelect.tsx` anlegen. Props: `catalog`,
   `activeFilter`, `onChooseFilter`. Werte: `''` für "Alle",
   `category:<id>` je Kategorie in `catalog.categories`-Reihenfolge innerhalb
   `<optgroup label="Kategorie">`, `uncategorized` für "Ohne Kategorie" am Ende
@@ -421,20 +421,20 @@ Die Artikelliste lässt sich nach Kategorie und "Ohne Kategorie" filtern.
   `div.mealFilter`. Bei aktivem Filter ein `iconButton` mit `CrossIcon` und
   `aria-label` "Filter zurücksetzen", der `onChooseFilter(null)` ruft und das
   Auswahlfeld fokussiert.
-- [ ] `KnownItemListPage`: Props `shownKnownItems` (gefiltert), `totalCount`,
+- [x] `KnownItemListPage`: Props `shownKnownItems` (gefiltert), `totalCount`,
   `activeFilter`, `onChooseFilter`. Überschrift sichtbar `Artikel,
   ${shownKnownItemsCount(...)}` bzw. ohne Filter `knownItemsHeading(totalCount)`,
   `headingLabel={knownItemsHeading(shown, totalCount)}` nur bei aktivem Filter.
   `KnownItemFilterSelect` nur bei `catalog.categories.length > 0`. Leertexte: bei
   `totalCount === 0` "Noch keine Vorschläge.", sonst bei leerer Auswahl "Keine
   Artikel in dieser Auswahl.".
-- [ ] `KnownItemsArea`: `const [chosenFilter, setChosenFilter] =
+- [x] `KnownItemsArea`: `const [chosenFilter, setChosenFilter] =
   useState<KnownItemFilter | null>(null)`, `activeFilter = knownFilterIn(catalog,
   chosenFilter)`, bei `chosenFilter !== null && activeFilter === null` während des
   Renderns `setChosenFilter(null)` wie `SuppliesArea.tsx:59`. `chooseFilter`
   setzt den Zustand und sagt an (`knownItemFilterAnnouncement` mit
   `knownItemFilterName` bzw. `knownItemFilterResetAnnouncement`).
-- [ ] UI-Tests in `src/shopping/ui/KnownItemsArea.test.tsx`:
+- [x] UI-Tests in `src/shopping/ui/KnownItemsArea.test.tsx`:
   - ohne Kategorien gibt es kein Auswahlfeld "Filter"
   - die Optionen lauten "Alle", die Kategorien in Katalogreihenfolge (auch eine
     ohne Artikel), "Ohne Kategorie"
@@ -450,10 +450,10 @@ Die Artikelliste lässt sich nach Kategorie und "Ohne Kategorie" filtern.
   - axe ohne Befund mit aktivem Filter
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` läuft grün, inklusive der bestehenden `MealsArea`- und
+- [x] `npm run test` läuft grün, inklusive der bestehenden `MealsArea`- und
   `SuppliesArea`-Tests nach dem Umzug von `CrossIcon`
-- [ ] `npm run lint` läuft durch (Architekturregel inklusive)
-- [ ] `npm run build` läuft durch
+- [x] `npm run lint` läuft durch (Architekturregel inklusive)
+- [x] `npm run build` läuft durch
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone mit VoiceOver: Das Auswahlfeld "Filter" öffnet die Liste mit
@@ -468,27 +468,27 @@ Die Artikelverwaltung erfährt über `SignedInApp`, welche Gerichte einen Artike
 enthalten, und zeigt die Zahl.
 
 **Aufgaben**:
-- [ ] Test zuerst (`src/meals/domain/meal.test.ts`), dann `mealsByItemName` in
+- [x] Test zuerst (`src/meals/domain/meal.test.ts`), dann `mealsByItemName` in
   `meal.ts`:
   - ein Gericht mit "Mehl" und "mehl " erscheint unter `mehl` genau einmal
   - zwei Gerichte erscheinen in der Reihenfolge der Eingabe
   - ausgeblendete Gerichte sind enthalten
   - ein Gericht ohne Artikel taucht nirgends auf
-- [ ] Test zuerst, dann in `src/shopping/domain/announcements.ts`:
+- [x] Test zuerst, dann in `src/shopping/domain/announcements.ts`:
   - `knownItemRowLabel(knownItem, category, 0)` wie heute,
     `knownItemRowLabel(mehl, backen, 3)` → "Mehl (Backen), 3 Gerichte",
     `(mehl, null, 1)` → "Mehl, 1 Gericht"
   - `knownItemInMealsNote('Mehl', 3)` → "Mehl steht noch in 3 Gerichten und bleibt
     dort erhalten.", bei 1 → "… in 1 Gericht …"
-- [ ] `MealUsingItem` in `src/shopping/domain/knownItem.ts` anlegen.
-- [ ] `KnownItemsArea`: neue Prop `mealsUsingItem: (name: string) => readonly
+- [x] `MealUsingItem` in `src/shopping/domain/knownItem.ts` anlegen.
+- [x] `KnownItemsArea`: neue Prop `mealsUsingItem: (name: string) => readonly
   MealUsingItem[]`. An `KnownItemListPage` reichen. `DeleteKnownItemPage` bekommt
   `mealCount={mealsUsingItem(addressedKnownItem.name).length}`.
-- [ ] `KnownItemListPage` reicht `mealCount={mealsUsingItem(knownItem.name).length}`
+- [x] `KnownItemListPage` reicht `mealCount={mealsUsingItem(knownItem.name).length}`
   an `KnownItemListRow`. Diese übergibt ihn an `knownItemRowLabel`.
-- [ ] `DeleteKnownItemPage`: Prop `mealCount`. Bei `> 0` ein zweiter `p` mit
+- [x] `DeleteKnownItemPage`: Prop `mealCount`. Bei `> 0` ein zweiter `p` mit
   `knownItemInMealsNote`.
-- [ ] `SignedInApp`:
+- [x] `SignedInApp`:
   ```tsx
   const mealsByItem = mealsByItemName(meals.meals)
 
@@ -500,24 +500,24 @@ enthalten, und zeigt die Zahl.
   }
   ```
   und `mealsUsingItem={mealsUsingItem}` an `KnownItemsArea`.
-- [ ] `KnownItemsArea.test.tsx`: `renderKnownItemsArea` nimmt optional eine Zuordnung
+- [x] `KnownItemsArea.test.tsx`: `renderKnownItemsArea` nimmt optional eine Zuordnung
   Artikelname → `MealUsingItem[]` und baut daraus eine einfache Funktion (kein Mock).
   Neue Fälle:
   - Zeile "Mehl (Backen), 3 Gerichte", "Hefe, 1 Gericht", ein Artikel ohne Gerichte
     ohne Zusatz, `aria-label` der Mülleimer unverändert "Löschen, Mehl"
   - Löschdialog mit Gerichten zeigt den Hinweis, ohne Gerichte nicht
-- [ ] `SignedInApp.test.tsx`: Ein Gericht "Pizza" mit "Mehl" im
+- [x] `SignedInApp.test.tsx`: Ein Gericht "Pizza" mit "Mehl" im
   In-Memory-`MealsClient`, ein Katalogartikel "mehl". In Einstellungen → Artikel
   lautet die Zeile "mehl, 1 Gericht".
-- [ ] `docs/architektur/05-bausteinsicht.md`, 5.1: Der Satz zur einzigen Verbindung
+- [x] `docs/architektur/05-bausteinsicht.md`, 5.1: Der Satz zur einzigen Verbindung
   wird erweitert. `SignedInApp` überträgt außerdem Gerichte auf die Einkaufsliste,
   reicht der Artikelverwaltung die Gerichte je Artikel und zieht das Entfernen und
   Umbenennen von Artikeln in den Gerichten nach.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` läuft grün
-- [ ] `npm run lint` läuft durch
-- [ ] `npm run build` läuft durch
+- [x] `npm run test` läuft grün
+- [x] `npm run lint` läuft durch
+- [x] `npm run build` läuft durch
 
 ### Phase 3: Gerichte auf "Artikel bearbeiten" mit Mülleimer
 
@@ -527,18 +527,18 @@ Auf der Bearbeiten-Seite stehen die Gerichte des Artikels, und ein Tipp auf den
 Mülleimer nimmt ihn aus dem Gericht.
 
 **Aufgaben**:
-- [ ] Test zuerst (`meal.test.ts`), dann `withoutItem(meal, name): NewMeal` in
+- [x] Test zuerst (`meal.test.ts`), dann `withoutItem(meal, name): NewMeal` in
   `meal.ts`: entfernt alle Positionen mit normalisiert gleichem Namen, alle anderen
   Felder (Name, Kategorien, Art, `hidden`, `leftovers`, Notizen, Rezept) und die
   übrigen Positionen samt Reihenfolge bleiben gleich. Der Aufbau des `NewMeal`
   folgt `withHiding` (`meal.ts:95`). Gemeinsames lässt sich in eine kleine Hilfe
   `newMealOf(meal)` ziehen, wenn sich das anbietet.
-- [ ] Test zuerst, dann in `announcements.ts`:
+- [x] Test zuerst, dann in `announcements.ts`:
   - `usingMealsHeading(0)` → "Gerichte, keine", `(3)` → "Gerichte, 3"
   - `itemRemovedFromMealAnnouncement('Mehl', 'Pizza', 2)` → "Mehl aus Pizza
     entfernt, noch 2 Gerichte.", `1` → "…, noch 1 Gericht.", `0` → "…, in keinem
     Gericht mehr."
-- [ ] `src/shopping/ui/UsingMeals.tsx` anlegen. Props: `usingMeals: readonly
+- [x] `src/shopping/ui/UsingMeals.tsx` anlegen. Props: `usingMeals: readonly
   MealUsingItem[]`, `onRemove: (usingMeal: MealUsingItem) => void`. Inhalt: `h2`
   mit `usingMealsHeading`, `tabIndex={-1}` und Ref als Fallback. Danach
   `ul.itemList` mit `li.mealItemRow` je Gericht (`key` = `mealId`): `span` mit
@@ -548,23 +548,23 @@ Mülleimer nimmt ihn aus dem Gericht.
   `keepRow` an den Mülleimer-Knöpfen. Beim Tipp `rowRemovedAt(position)`. Ist es
   das einzige Gericht der Liste, stattdessen `fallbackAfterRemoval()`. Danach
   `onRemove`.
-- [ ] `KnownItemFormPage`: optionale Prop `usingMeals` und `onRemoveFromMeal`. Ist
+- [x] `KnownItemFormPage`: optionale Prop `usingMeals` und `onRemoveFromMeal`. Ist
   sie gesetzt, steht `<UsingMeals …/>` nach der Fehlerzeile und vor der `BottomBar`.
   Die Feldzustände bleiben unberührt, da die Seite gemountet bleibt.
-- [ ] `KnownItemsArea`: neue Prop `onRemoveItemFromMeal: (mealId: string, name:
+- [x] `KnownItemsArea`: neue Prop `onRemoveItemFromMeal: (mealId: string, name:
   string) => void`. Im Fall `form` werden `usingMeals={mealsUsingItem(
   addressedKnownItem.name)}` und ein Handler übergeben. Der Handler ruft
   `onRemoveItemFromMeal(usingMeal.mealId, addressedKnownItem.name)` und sagt
   `itemRemovedFromMealAnnouncement(addressedKnownItem.name, usingMeal.mealName,
   usingMeals.length - 1)` an.
-- [ ] `SignedInApp`:
+- [x] `SignedInApp`:
   ```tsx
   function removeItemFromMeal(mealId: MealId, name: string) {
     const meal = meals.meals.find((one) => one.id === mealId)
     if (meal !== undefined) meals.changeMeal(mealId, withoutItem(meal, name))
   }
   ```
-- [ ] `KnownItemsArea.test.tsx`: Die Fake-Zuordnung aus Phase 2 wird zustandsbehaftet.
+- [x] `KnownItemsArea.test.tsx`: Die Fake-Zuordnung aus Phase 2 wird zustandsbehaftet.
   Der Test hält die Gerichte in einem kleinen Objekt, `onRemoveItemFromMeal` streicht
   daraus und rendert neu (`rerender`). Neue Fälle:
   - "Artikel bearbeiten" zeigt `h2` "Gerichte, 2" und "Pfannkuchen", "Pizza" in
@@ -577,20 +577,20 @@ Mülleimer nimmt ihn aus dem Gericht.
     verwendet."
   - vorher geänderter Name und Kategorie stehen nach dem Entfernen noch in den Feldern
   - axe ohne Befund mit Gerichteliste
-- [ ] `SignedInApp.test.tsx`: Gericht "Pizza" mit "Mehl, 500 g" und "Hefe" anlegen.
+- [x] `SignedInApp.test.tsx`: Gericht "Pizza" mit "Mehl, 500 g" und "Hefe" anlegen.
   Unter Einstellungen → Artikel → "Mehl" auf "Entfernen, Pizza" tippen. Danach
   enthält das Gericht im In-Memory-`MealsClient` nur noch "Hefe", die Art und die
   Kategorien sind unverändert.
-- [ ] `e2e/settings.spec.ts`: neuer Test "removes an item from a meal in the item
+- [x] `e2e/settings.spec.ts`: neuer Test "removes an item from a meal in the item
   management". Gericht mit zwei Artikeln anlegen, in Einstellungen → Artikel den
   einen öffnen und aus dem Gericht entfernen. Nach dem Neuladen zeigt das Gericht
   nur noch den anderen Artikel.
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` läuft grün
-- [ ] `npm run lint` läuft durch
-- [ ] `npm run build` läuft durch
-- [ ] `npm run test:e2e` läuft grün, inklusive des neuen Tests
+- [x] `npm run test` läuft grün
+- [x] `npm run lint` läuft durch
+- [x] `npm run build` läuft durch
+- [x] `npm run test:e2e` läuft grün, inklusive des neuen Tests
 
 **Manuelle Verifikation**:
 - [ ] Auf dem iPhone mit VoiceOver einen Artikel öffnen: Nach der Kategorie folgt
@@ -605,7 +605,7 @@ Abhängigkeiten: Phase 2
 Wer einen Artikel umbenennt, findet den neuen Namen auch in den Gerichten.
 
 **Aufgaben**:
-- [ ] Test zuerst (`meal.test.ts`), dann `withItemRenamed(meals, from, to):
+- [x] Test zuerst (`meal.test.ts`), dann `withItemRenamed(meals, from, to):
   readonly Meal[]` in `meal.ts`:
   - Positionen mit normalisiert gleichem `from` heißen danach exakt `to`, die Menge
     bleibt
@@ -614,16 +614,16 @@ Wer einen Artikel umbenennt, findet den neuen Namen auch in den Gerichten.
   - es werden nur Gerichte zurückgegeben, deren Positionen sich tatsächlich ändern.
     Steht dort schon exakt `to`, wird nichts geliefert.
   - die übrigen Felder bleiben unverändert, die `id` bleibt erhalten
-- [ ] Test zuerst, dann `knownItemSavedAnnouncement(name, renamedMealCount)` in
+- [x] Test zuerst, dann `knownItemSavedAnnouncement(name, renamedMealCount)` in
   `announcements.ts`: `0` → "Weizenmehl gespeichert.", `1` → "Weizenmehl
   gespeichert, in 1 Gericht umbenannt.", `3` → "…, in 3 Gerichten umbenannt.". Die
   bestehenden Aufrufer und Tests anpassen.
-- [ ] `KnownItemsArea`: neue Prop `onKnownItemRenamed: (from: string, to: string) =>
+- [x] `KnownItemsArea`: neue Prop `onKnownItemRenamed: (from: string, to: string) =>
   number`. In `changeKnownItem` nach `knownItems.renameKnownItem(rename)` aufrufen:
   `const renamedMealCount = onKnownItemRenamed(knownItem.name,
   rename.written.name)`. Die Zahl geht in `knownItemSavedAnnouncement`, das Ergebnis
   wie bisher durch `withCreatedCategoryPhrase`.
-- [ ] `SignedInApp`:
+- [x] `SignedInApp`:
   ```tsx
   function renameItemInMeals(from: string, to: string): number {
     const changed = withItemRenamed(meals.meals, from, to)
@@ -631,21 +631,21 @@ Wer einen Artikel umbenennt, findet den neuen Namen auch in den Gerichten.
     return changed.length
   }
   ```
-- [ ] `KnownItemsArea.test.tsx`: Der Fake zählt die Aufrufe und liefert eine
+- [x] `KnownItemsArea.test.tsx`: Der Fake zählt die Aufrufe und liefert eine
   vorgegebene Zahl. Neue Fälle:
   - Umbenennen ruft den Fake mit `('Mehl', 'Weizenmehl')` auf und sagt "Weizenmehl
     gespeichert, in 2 Gerichten umbenannt." an
   - bei 0 bleibt die Ansage "Weizenmehl gespeichert."
   - bei neu angelegter Kategorie folgt der Kategorie-Zusatz hinter "umbenannt."
-- [ ] `SignedInApp.test.tsx`: Zwei Gerichte mit "Mehl" (eines davon ausgeblendet) und
+- [x] `SignedInApp.test.tsx`: Zwei Gerichte mit "Mehl" (eines davon ausgeblendet) und
   eines ohne. "Mehl" in "Weizenmehl" umbenennen: Beide Gerichte enthalten
   "Weizenmehl" mit unveränderter Menge, das dritte bleibt unberührt, und die
   Artikelzeile lautet "Weizenmehl, 2 Gerichte".
 
 **Automatisierte Verifikation**:
-- [ ] `npm run test` läuft grün
-- [ ] `npm run lint` läuft durch
-- [ ] `npm run build` läuft durch
+- [x] `npm run test` läuft grün
+- [x] `npm run lint` läuft durch
+- [x] `npm run build` läuft durch
 
 **Manuelle Verifikation**:
 - [ ] Auf dem Gerät einen Artikel umbenennen, der in Gerichten steckt: Die Ansage
@@ -653,6 +653,11 @@ Wer einen Artikel umbenennt, findet den neuen Namen auch in den Gerichten.
   der alte Name nicht mehr in den Vorschlägen auf.
 
 ## Notizen zur Umsetzung
+
+- `KnownItemFormPage` bekommt `usingMeals` und `onRemoveFromMeal` gebündelt als eine
+  optionale Prop `usedInMeals`, damit nicht nur eine der beiden gesetzt sein kann.
+- Phase 3 und 4 wurden gemeinsam umgesetzt. Die manuellen Prüfungen aller Phasen
+  stehen gesammelt am Ende aus (Wunsch des Nutzers).
 
 ## Verweise
 

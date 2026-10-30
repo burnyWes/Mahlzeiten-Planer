@@ -1,9 +1,9 @@
 import { useRef } from 'react'
+import { CrossIcon } from '../../shared/ui/CrossIcon'
 import { mealFilterName } from '../domain/announcements'
 import type { ChosenMealKind } from '../domain/meal'
 import type { CategoryOverview } from '../domain/mealCategory'
 import type { MealFilter } from '../domain/mealFilter'
-import { CrossIcon } from './CrossIcon'
 
 const NO_FILTER = ''
 

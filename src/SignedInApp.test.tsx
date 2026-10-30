@@ -79,11 +79,12 @@ function renderSignedInApp(
   mealCategoriesClient = createInMemoryMealCategoriesClient(),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
+  const mealsClient = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
   const rendered = render(
     <SignedInAppWithAppearance
       createShoppingListClient={() => client}
-      createMealsClient={() => createInMemoryMealsClient(initialMeals)}
+      createMealsClient={() => mealsClient}
       createMealCategoriesClient={() => mealCategoriesClient}
       createWeekPlanClient={() => weekPlanClient}
       createSuppliesClient={() => suppliesClient}
@@ -106,6 +107,7 @@ function renderSignedInApp(
     weekPlanClient,
     suppliesClient,
     knownUnitsClient,
+    mealsClient,
   }
 }
 
@@ -2008,5 +2010,96 @@ describe('SignedInApp', () => {
     await goToArea('Gerichte')
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
+function knownItem(name: string) {
+  return { name, lastUsedAt: 1, timesUsed: 1, categoryId: null }
+}
+
+function renderWithKnownItems(
+  knownItems: readonly ReturnType<typeof knownItem>[],
+  initialMeals: readonly Meal[],
+) {
+  return renderSignedInApp(
+    [],
+    initialMeals,
+    createInMemoryKnownItemsClient(knownItems),
+  )
+}
+
+async function openKnownItems() {
+  await goToArea('Einstellungen')
+  await userEvent.click(screen.getByRole('button', { name: 'Artikel' }))
+}
+
+describe('SignedInApp item management', () => {
+  it('counts the meals that use a known item', async () => {
+    renderWithKnownItems(
+      [knownItem('mehl')],
+      [meal('pizza', 'Pizza', [{ name: 'Mehl', quantity: null }])],
+    )
+
+    await openKnownItems()
+
+    expect(
+      screen.getByRole('button', { name: 'mehl, 1 Gericht' }),
+    ).toBeInTheDocument()
+  })
+
+  it('takes an item out of a meal from the item management', async () => {
+    const flour = { name: 'Mehl', quantity: { amount: 500, unit: 'g' } }
+    const yeast = { name: 'Hefe', quantity: null }
+    const pizza = {
+      ...meal('pizza', 'Pizza', [flour, yeast]),
+      kind: 'snack' as const,
+      categories: ['Ofen'],
+    }
+    const { mealsClient } = renderWithKnownItems(
+      [knownItem('Mehl'), knownItem('Hefe')],
+      [pizza],
+    )
+
+    await openKnownItems()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Mehl, 1 Gericht' }),
+    )
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Entfernen, Pizza' }),
+    )
+
+    expect(mealsClient.storedMeals()).toEqual([{ ...pizza, items: [yeast] }])
+  })
+
+  it('renames an item in every meal using it', async () => {
+    const flour = { name: 'Mehl', quantity: { amount: 500, unit: 'g' } }
+    const { mealsClient } = renderWithKnownItems(
+      [knownItem('Mehl')],
+      [
+        meal('pizza', 'Pizza', [flour]),
+        { ...meal('bread', 'Brot', [flour]), hidden: true },
+        meal('salad', 'Salat', [{ name: 'Gurke', quantity: null }]),
+      ],
+    )
+
+    await openKnownItems()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Mehl, 2 Gerichte' }),
+    )
+    await userEvent.clear(screen.getByLabelText('Name'))
+    await userEvent.type(screen.getByLabelText('Name'), 'Weizenmehl')
+    await userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+
+    const renamedFlour = { ...flour, name: 'Weizenmehl' }
+    expect(mealsClient.storedMeals().map((one) => [one.id, one.items])).toEqual(
+      [
+        ['pizza', [renamedFlour]],
+        ['bread', [renamedFlour]],
+        ['salad', [{ name: 'Gurke', quantity: null }]],
+      ],
+    )
+    expect(
+      screen.getByRole('button', { name: 'Weizenmehl, 2 Gerichte' }),
+    ).toBeInTheDocument()
   })
 })

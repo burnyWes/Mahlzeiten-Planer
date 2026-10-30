@@ -7,7 +7,14 @@ import {
   knownItemFormHeading,
   type KnownItemFormMode,
 } from '../domain/announcements'
+import type { MealUsingItem } from '../domain/knownItem'
 import { ItemCategoryField } from './ItemCategoryField'
+import { UsingMeals } from './UsingMeals'
+
+type UsedInMeals = {
+  usingMeals: readonly MealUsingItem[]
+  onRemoveFromMeal: (usingMeal: MealUsingItem) => void
+}
 
 type KnownItemFormPageProps = {
   mode: KnownItemFormMode
@@ -17,6 +24,7 @@ type KnownItemFormPageProps = {
   onSave: (name: string, categoryText: string) => void
   onBack: () => void
   announce: (text: string) => void
+  usedInMeals?: UsedInMeals
 }
 
 export function KnownItemFormPage({
@@ -27,6 +35,7 @@ export function KnownItemFormPage({
   onSave,
   onBack,
   announce,
+  usedInMeals,
 }: KnownItemFormPageProps) {
   const heading = useHeadingFocus()
   const [name, setName] = useState(initialName)
@@ -77,6 +86,12 @@ export function KnownItemFormPage({
       <p id="knownItemFailure" className="failure">
         {failureMessage}
       </p>
+      {usedInMeals !== undefined && (
+        <UsingMeals
+          usingMeals={usedInMeals.usingMeals}
+          onRemove={usedInMeals.onRemoveFromMeal}
+        />
+      )}
       <BottomBar>
         <button
           type="button"

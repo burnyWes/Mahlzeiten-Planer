@@ -7,7 +7,15 @@ import {
   mealWithoutItemsAnnouncement,
   weekPlanTransferAnnouncement,
 } from './meals/domain/announcements'
-import { unitsOfMeals, type Meal } from './meals/domain/meal'
+import {
+  mealsByItemName,
+  normalizeMealName,
+  unitsOfMeals,
+  withItemRenamed,
+  withoutItem,
+  type Meal,
+  type MealId,
+} from './meals/domain/meal'
 import type { RandomSource } from './meals/domain/randomPlanning'
 import { withoutPortions } from './meals/domain/supply'
 import { planDateOf, type PlanDate } from './meals/domain/planDate'
@@ -48,6 +56,7 @@ import {
   isKnownName,
   suggestNames,
   withNamesInUse,
+  type MealUsingItem,
 } from './shopping/domain/knownItem'
 import {
   canonicalUnit,
@@ -162,6 +171,7 @@ export function SignedInApp({
   const [shownView, setShownView] = useState<WeekPlanView>('day')
   const [shownTime, setShownTime] = useState<MealTime>('lunch')
   const [settingsEntry, setSettingsEntry] = useState<string | null>(null)
+  const mealsByItem = mealsByItemName(meals.meals)
 
   function addMealToShoppingList(meal: Meal) {
     if (meal.items.length === 0) {
@@ -191,6 +201,24 @@ export function SignedInApp({
         transfer.takesSupplies,
       ),
     )
+  }
+
+  function mealsUsingItem(name: string): readonly MealUsingItem[] {
+    return (mealsByItem.get(normalizeMealName(name)) ?? []).map((meal) => ({
+      mealId: meal.id,
+      mealName: meal.name,
+    }))
+  }
+
+  function removeItemFromMeal(mealId: MealId, name: string) {
+    const meal = meals.meals.find((one) => one.id === mealId)
+    if (meal !== undefined) meals.changeMeal(mealId, withoutItem(meal, name))
+  }
+
+  function renameItemInMeals(from: string, to: string): number {
+    const changed = withItemRenamed(meals.meals, from, to)
+    meals.changeMeals(changed)
+    return changed.length
   }
 
   function suggestKnownNames(typed: string, alsoInUse: readonly string[]) {
@@ -264,6 +292,9 @@ export function SignedInApp({
       <KnownItemsArea
         knownItems={knownItems}
         itemCategories={itemCategories}
+        mealsUsingItem={mealsUsingItem}
+        onRemoveItemFromMeal={removeItemFromMeal}
+        onKnownItemRenamed={renameItemInMeals}
         announce={announce}
         onBack={() => setSettingsEntry(null)}
       />
