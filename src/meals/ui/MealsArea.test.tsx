@@ -32,6 +32,7 @@ type MealsAreaUnderTestProps = {
   suggestUnits: Suggest
   canonicalUnit: (typed: string) => string
   onItemsUsed: (names: readonly string[], units: readonly string[]) => void
+  catalogCategories: readonly string[]
 }
 
 type Suggest = (
@@ -48,10 +49,12 @@ function MealsAreaUnderTest({
   suggestUnits,
   canonicalUnit,
   onItemsUsed,
+  catalogCategories,
 }: MealsAreaUnderTestProps) {
   return (
     <MealsArea
       meals={useMeals(client)}
+      catalogCategories={catalogCategories}
       announce={announce}
       navigation={<div data-testid="navigation" />}
       onAddToShoppingList={onAddToShoppingList}
@@ -98,6 +101,7 @@ function renderMealsArea(
   initialMeals: readonly Meal[] = [],
   suggestableNames: readonly string[] = [],
   knownUnits: readonly string[] = [],
+  catalogCategories: readonly string[] = [],
 ) {
   const client = createInMemoryMealsClient(initialMeals)
   const announcements: string[] = []
@@ -122,6 +126,7 @@ function renderMealsArea(
       onItemsUsed={(names, units) => {
         itemsUsed.push({ names, units })
       }}
+      catalogCategories={catalogCategories}
     />,
   )
   return {
@@ -1959,5 +1964,29 @@ describe('MealsArea', () => {
       screen.getByRole('list', { name: 'Einheiten-Vorschläge' }),
     ).toBeInTheDocument()
     expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('suggests a category of the catalog that no meal carries yet', async () => {
+    renderMealsArea([meal('soup', 'Linsensuppe')], [], [], ['Pasta'])
+
+    await openMealForm()
+    await userEvent.type(categoryField(), 'pas')
+
+    expect(
+      within(screen.getByRole('list', { name: 'Vorschläge' }))
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Pasta'])
+  })
+
+  it('offers no catalog category without meals to filter by', () => {
+    renderMealsArea(
+      [meal('soup', 'Linsensuppe', { categories: ['Suppe'], kind: 'none' })],
+      [],
+      [],
+      ['Pasta'],
+    )
+
+    expect(offeredFilters()).toEqual(['Alle', 'Suppe'])
   })
 })

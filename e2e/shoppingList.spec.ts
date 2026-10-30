@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
+  itemCategoriesOnServer,
   itemNamesOnServer,
+  knownItemNamesOnServer,
   itemQuantitiesOnServer,
   knownUnitNamesOnServer,
   prepareEmulators,
@@ -24,12 +26,27 @@ test.afterEach(async ({ page }) => {
   await settleWrites(page)
 })
 
-async function addItem(page: Page, name: string, amount = '', unit = '') {
+async function fillAndSubmitItem(
+  page: Page,
+  name: string,
+  amount: string,
+  unit: string,
+) {
   await pressButton(page, 'Artikel hinzufügen')
   await typeInto(page, 'Name', name)
   if (amount !== '') await typeInto(page, 'Menge', amount)
   if (unit !== '') await typeInto(page, 'Einheit', unit)
   await pressButton(page, 'Hinzufügen')
+}
+
+async function addNewItem(page: Page, name: string, amount = '', unit = '') {
+  await fillAndSubmitItem(page, name, amount, unit)
+  await pressButton(page, 'Ohne Kategorie hinzufügen')
+  await pressButton(page, 'Zurück zur Liste')
+}
+
+async function addKnownItem(page: Page, name: string, amount = '', unit = '') {
+  await fillAndSubmitItem(page, name, amount, unit)
   await pressButton(page, 'Zurück zur Liste')
 }
 
@@ -64,8 +81,8 @@ test('sign in, add, check off and clean up using the keyboard only', async ({
     page.getByRole('heading', { name: /^Einkaufsliste/ }),
   ).toBeVisible()
 
-  await addItem(page, 'Brot')
-  await addItem(page, 'Milch', '2', 'l')
+  await addNewItem(page, 'Brot')
+  await addNewItem(page, 'Milch', '2', 'l')
 
   await expect
     .poll(() => shownShoppingItems(page))
@@ -101,8 +118,9 @@ test('counts a second item of the same name into the first', async ({
   await page.goto('/')
   await signIn(page)
 
-  await addItem(page, 'Milch', '2', 'l')
-  await addItem(page, 'Milch', '1', 'l')
+  await addNewItem(page, 'Milch', '2', 'l')
+  await expect.poll(knownItemNamesOnServer).toContain('Milch')
+  await addKnownItem(page, 'Milch', '1', 'l')
 
   await expect.poll(() => shownShoppingItems(page)).toEqual(['Milch, 3 l'])
   await expect(
@@ -116,7 +134,7 @@ test('counts a second item of the same name into the first', async ({
 test('keeps the added item after a reload', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
-  await addItem(page, 'Käse')
+  await addNewItem(page, 'Käse')
   await expect.poll(() => shownShoppingItems(page)).toEqual(['Käse'])
   await expect.poll(itemNamesOnServer).toContain('Käse')
 
@@ -158,7 +176,7 @@ test('suggests an item from the history taken over at start', async ({
 test('suggests an item that was added before', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
-  await addItem(page, 'Brot')
+  await addNewItem(page, 'Brot')
 
   await openAddItemPageUntilSuggested(page, 'br', 'Brot')
 })
@@ -178,8 +196,9 @@ test('suggests a unit and takes over its spelling', async ({ page }) => {
     page.getByRole('button', { name: 'Hinzufügen', exact: true }),
   ).toBeFocused()
   await page.keyboard.press('Enter')
+  await pressButton(page, 'Ohne Kategorie hinzufügen')
   await pressButton(page, 'Zurück zur Liste')
-  await addItem(page, 'Zucker', '500', 'G')
+  await addNewItem(page, 'Zucker', '500', 'G')
 
   await expect
     .poll(() => shownShoppingItems(page))
@@ -189,7 +208,7 @@ test('suggests a unit and takes over its spelling', async ({ page }) => {
 test('changes the quantity of an item at its row', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
-  await addItem(page, 'Milch', '2', 'l')
+  await addNewItem(page, 'Milch', '2', 'l')
 
   await pressButton(page, 'Mehr, Milch')
   await pressButton(page, 'Mehr, Milch')
@@ -213,6 +232,7 @@ test('steps the amount of a new item with the spin button', async ({
   await page.keyboard.press('ArrowUp')
   await typeInto(page, 'Einheit', 'kg')
   await pressButton(page, 'Hinzufügen')
+  await pressButton(page, 'Ohne Kategorie hinzufügen')
   await pressButton(page, 'Zurück zur Liste')
 
   await expect.poll(() => shownShoppingItems(page)).toEqual(['Mehl, 3 kg'])
@@ -222,8 +242,8 @@ test('steps the amount of a new item with the spin button', async ({
 test('removes an item with its last unit', async ({ page }) => {
   await page.goto('/')
   await signIn(page)
-  await addItem(page, 'Brot')
-  await addItem(page, 'Milch')
+  await addNewItem(page, 'Brot')
+  await addNewItem(page, 'Milch')
 
   await pressButton(page, 'Weniger, Brot')
   await expect(
@@ -251,7 +271,7 @@ test('lets go of an item the other device removed during an own step', async ({
 }) => {
   await page.goto('/')
   await signIn(page)
-  await addItem(page, 'Milch')
+  await addNewItem(page, 'Milch')
   await settleWrites(page)
 
   await page.context().setOffline(true)
@@ -266,4 +286,97 @@ test('lets go of an item the other device removed during an own step', async ({
     'Konnte nicht gespeichert werden.',
   )
   await expect.poll(itemNamesOnServer).toEqual([])
+})
+
+async function createItemCategory(page: Page, name: string) {
+  await pressButton(page, 'Artikelkategorie anlegen')
+  await typeInto(page, 'Name', name)
+  await pressButton(page, 'Speichern')
+}
+
+async function createKnownItem(page: Page, name: string, category: string) {
+  await pressButton(page, 'Artikel anlegen')
+  await typeInto(page, 'Name', name)
+  await typeInto(page, 'Kategorie', category)
+  await pressButton(page, 'Speichern')
+}
+
+function sectionHeadings(page: Page) {
+  return page.getByRole('main').getByRole('heading', { level: 2 })
+}
+
+test('groups the list by the order of the item categories', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Artikelkategorien')
+  await createItemCategory(page, 'Obst/Gemüse')
+  await createItemCategory(page, 'Tiefkühlkost')
+  await pressButton(page, 'Zurück zu den Einstellungen')
+  await pressButton(page, 'Artikel')
+  await createKnownItem(page, 'Pizza', 'Tiefkühlkost')
+  await createKnownItem(page, 'Äpfel', 'Obst/Gemüse')
+  await expect
+    .poll(knownItemNamesOnServer)
+    .toEqual(expect.arrayContaining(['Pizza', 'Äpfel']))
+  await pressButton(page, 'Zurück zu den Einstellungen')
+  await pressButton(page, 'Einkaufsliste')
+
+  await addKnownItem(page, 'Pizza')
+  await addNewItem(page, 'Batterien')
+  await addKnownItem(page, 'Äpfel')
+
+  await expect(sectionHeadings(page)).toHaveText([
+    'Obst/Gemüse',
+    'Tiefkühlkost',
+    'Ohne Kategorie',
+  ])
+  expect(await shownShoppingItems(page)).toEqual([
+    'Äpfel',
+    'Pizza',
+    'Batterien',
+  ])
+
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Artikelkategorien')
+  await page.getByRole('switch', { name: 'Nach Kategorien sortieren' }).focus()
+  await page.keyboard.press('Space')
+  await pressButton(page, 'Zurück zu den Einstellungen')
+  await pressButton(page, 'Einkaufsliste')
+
+  await expect(sectionHeadings(page)).toHaveCount(0)
+  expect(await shownShoppingItems(page)).toEqual([
+    'Pizza',
+    'Batterien',
+    'Äpfel',
+  ])
+})
+
+test('asks for the category of a new item', async ({ page }) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await fillAndSubmitItem(page, 'Bananen', '3', '')
+
+  await expect(
+    page.getByRole('heading', { name: 'Kategorie für Bananen' }),
+  ).toBeVisible()
+  await expect(page.getByLabel('Kategorie', { exact: true })).toBeFocused()
+  await typeInto(page, 'Kategorie', 'Obst/Gemüse')
+  await pressButton(page, 'Mit Kategorie hinzufügen')
+
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused()
+  await expect(page.getByRole('status')).toContainText(
+    'Bananen, 3 hinzugefügt. Kategorie Obst/Gemüse neu angelegt, Position 1.',
+  )
+  await pressButton(page, 'Zurück zur Liste')
+
+  await expect(sectionHeadings(page)).toHaveText(['Obst/Gemüse'])
+  expect(await shownShoppingItems(page)).toEqual(['Bananen, 3'])
+  await expect
+    .poll(async () => (await itemCategoriesOnServer()).names)
+    .toEqual(['Obst/Gemüse'])
 })

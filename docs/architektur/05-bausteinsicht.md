@@ -15,8 +15,8 @@ flowchart TB
 
         subgraph kontexte["Fachliche Kontexte"]
             direction LR
-            shopping["<b>shopping</b><br/>Einkaufsliste, bekannte Artikel,<br/>bekannte Einheiten"]
-            meals["<b>meals</b><br/>Gerichte, Kategorien,<br/>Wochenplan, Vorräte"]
+            shopping["<b>shopping</b><br/>Einkaufsliste, bekannte Artikel,<br/>Artikelkategorien, bekannte Einheiten"]
+            meals["<b>meals</b><br/>Gerichte, Kategorien-Katalog,<br/>Wochenplan, Vorräte"]
         end
 
         shared["<b>shared</b><br/>auth · appearance · appUpdate<br/>domain · ui"]
@@ -53,8 +53,8 @@ Wochenplan auf die Einkaufsliste übertragen – stellt die Kompositionswurzel i
 | Baustein | Verantwortung |
 | --- | --- |
 | **Kompositionswurzel** | `main.tsx` erzeugt die echten Adapter (Firestore, Firebase Auth, Service Worker, localStorage) und reicht sie an `App` durch. `App` regelt Anmeldung, Darstellung und App-Update. `SignedInApp` setzt die Bereiche zusammen, steuert die Navigation und übersetzt zwischen `meals` und `shopping`. |
-| **shopping** | Die gemeinsame Einkaufsliste: Artikel anlegen, Menge ändern, abhaken, aufräumen. Pflegt die bekannten Artikel und Einheiten für Vorschläge beim Tippen. |
-| **meals** | Die Gerichte des Haushalts mit Kategorien und Kennzeichnungen, der Wochenplan samt Zufallsauswahl und Regeln sowie die Vorräte. |
+| **shopping** | Die gemeinsame Einkaufsliste: Artikel anlegen, Menge ändern, abhaken, aufräumen, nach Ladenreihenfolge gruppieren. Pflegt die bekannten Artikel samt Artikelkategorie, die Artikelkategorien in ihrer Reihenfolge und die Einheiten für Vorschläge beim Tippen. |
+| **meals** | Die Gerichte des Haushalts mit Kategorien (samt eigenem Katalog, damit leere Kategorien bestehen bleiben) und Kennzeichnungen, der Wochenplan samt Zufallsauswahl und Regeln sowie die Vorräte. |
 | **shared** | Kontextübergreifendes: Anmeldung, Darstellung (Farbumkehr), App-Update, gemeinsame Domänenwerte (`Quantity`, `Clock`) und Bedienelemente für Navigation, Fokus und Ansagen. |
 
 ### Schnittstellen nach außen
@@ -86,8 +86,8 @@ flowchart TB
         domain["<b>domain</b><br/>Entitäten, Wertobjekte,<br/>reine Fachfunktionen"]
     end
 
-    sharedDomain["shared/domain<br/>Quantity · Clock"]
-    sharedUi["shared/ui<br/>BottomBar · Stepper · SpinButton · AmountSpinner · Fokus · Ansagen"]
+    sharedDomain["shared/domain<br/>Quantity · Clock · unconfirmedWrite"]
+    sharedUi["shared/ui<br/>BottomBar · ManagementHeader · Stepper · SpinButton · AmountSpinner · Fokus · Ansagen"]
     firestore[("Cloud Firestore")]
 
     ui --> port
@@ -113,40 +113,47 @@ flowchart TB
 flowchart TB
     subgraph ui["ui"]
         direction LR
-        shoppingArea["ShoppingArea<br/>ShoppingListPage · AddItemPage · RemoveItemPage"]
+        shoppingArea["ShoppingArea<br/>ShoppingListPage · AddItemPage<br/>ChooseItemCategoryPage · RemoveItemPage"]
         knownItemsArea["KnownItemsArea<br/>KnownItemListPage · KnownItemFormPage"]
+        itemCategoriesArea["ItemCategoriesArea<br/>ItemCategoryListPage · ItemCategoryFormPage"]
         knownUnitsArea["KnownUnitsArea<br/>KnownUnitListPage · KnownUnitFormPage"]
-        hooks["useShoppingList · useKnownItems · useKnownUnits"]
+        hooks["useShoppingList · useKnownItems<br/>useItemCategories · useKnownUnits"]
     end
 
     subgraph api["api"]
         direction LR
         shoppingListClient["ShoppingListClient"]
         knownItemsClient["KnownItemsClient"]
+        itemCategoriesClient["ItemCategoriesClient"]
         knownUnitsClient["KnownUnitsClient"]
     end
 
     subgraph domain["domain"]
         direction LR
         shoppingItem["shoppingItem<br/>addition"]
-        knownItem["knownItem"]
+        knownItem["catalogEntry · knownItem"]
+        itemCategory["itemCategory"]
         knownUnit["knownUnit"]
-        support["stableList · unconfirmedWrites<br/>announcements"]
+        support["stableList · categorizedList<br/>unconfirmedWrites · announcements"]
     end
 
     shoppingArea --> hooks
     knownItemsArea --> hooks
+    itemCategoriesArea --> hooks
     knownUnitsArea --> hooks
     hooks --> shoppingListClient
     hooks --> knownItemsClient
+    hooks --> itemCategoriesClient
     hooks --> knownUnitsClient
     hooks --> domain
     shoppingListClient --> shoppingItem
     knownItemsClient --> knownItem
+    itemCategoriesClient --> itemCategory
     knownUnitsClient --> knownUnit
 
     shoppingListClient -.-> items[("items")]
     knownItemsClient -.-> knownItems[("knownItems")]
+    itemCategoriesClient -.-> itemCategories[("itemCategories")]
     knownUnitsClient -.-> knownUnits[("units")]
 ```
 
@@ -160,12 +167,13 @@ flowchart TB
         categoriesArea["CategoriesArea<br/>CategoryListPage · CategoryFormPage"]
         weekPlanArea["WeekPlanArea<br/>WeekPlanPage · PeriodPage"]
         suppliesArea["SuppliesArea<br/>SupplyListPage · SupplyPage"]
-        hooks["useMeals · useWeekPlan · useSupplies"]
+        hooks["useMeals · useMealCategories<br/>useWeekPlan · useSupplies"]
     end
 
     subgraph api["api"]
         direction LR
         mealsClient["MealsClient"]
+        mealCategoriesClient["MealCategoriesClient"]
         weekPlanClient["WeekPlanClient"]
         suppliesClient["SuppliesClient"]
     end
@@ -175,7 +183,7 @@ flowchart TB
         meal["meal · mealCategory<br/>mealFilter · mealSuggestions"]
         weekPlan["weekPlan · weekPlanStage<br/>weekPlanView · randomPlanning<br/>rollingRules · rollMemory · leftovers<br/>planDate · planPeriod"]
         supply["supply · unconfirmedSupplies"]
-        support["text · unconfirmedWrite<br/>announcements"]
+        support["text · announcements"]
     end
 
     mealsArea --> hooks
@@ -183,14 +191,17 @@ flowchart TB
     weekPlanArea --> hooks
     suppliesArea --> hooks
     hooks --> mealsClient
+    hooks --> mealCategoriesClient
     hooks --> weekPlanClient
     hooks --> suppliesClient
     hooks --> domain
     mealsClient --> meal
+    mealCategoriesClient --> meal
     weekPlanClient --> weekPlan
     suppliesClient --> supply
 
     mealsClient -.-> meals[("meals")]
+    mealCategoriesClient -.-> mealCategoriesDocs[("mealCategories")]
     weekPlanClient -.-> weekPlanDocs[("weekPlan")]
     suppliesClient -.-> supplies[("supplies")]
 ```
@@ -204,8 +215,8 @@ flowchart LR
         auth["<b>auth</b><br/>AuthClient · useSession · SignInPage<br/>firebaseAuthClient · inMemoryAuthClient"]
         appearance["<b>appearance</b><br/>AppearanceClient · useAppearance<br/>localStorageAppearanceClient"]
         appUpdate["<b>appUpdate</b><br/>AppUpdateClient · useAppUpdate · AppUpdateOffer<br/>serviceWorkerAppUpdateClient"]
-        sdomain["<b>domain</b><br/>quantity · clock"]
-        sui["<b>ui</b><br/>NavigationBar · BottomBar · SettingsPage<br/>Announcer · Stepper · SpinButton · AmountSpinner · NameSuggestions<br/>useHeadingFocus · useFocusAfterRemoval"]
+        sdomain["<b>domain</b><br/>quantity · clock · unconfirmedWrite"]
+        sui["<b>ui</b><br/>NavigationBar · BottomBar · SettingsPage · ManagementHeader<br/>Announcer · Stepper · SpinButton · SpinArrow · AmountSpinner · NameSuggestions<br/>useHeadingFocus · useFocusAfterRemoval"]
     end
 
     auth -.-> fbauth[("Firebase Auth")]

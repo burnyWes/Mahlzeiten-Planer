@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { App } from './App'
 import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
 import { createInMemoryAppUpdateClient } from './shared/appUpdate/inMemoryAppUpdateClient'
+import { createInMemoryMealCategoriesClient } from './meals/api/inMemoryMealCategoriesClient'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
@@ -11,6 +12,7 @@ import { planDateOf } from './meals/domain/planDate'
 import { weekOf } from './meals/domain/planPeriod'
 import { emptyWeekPlan } from './meals/domain/weekPlan'
 import { createInMemoryAuthClient } from './shared/auth/inMemoryAuthClient'
+import { createInMemoryItemCategoriesClient } from './shopping/api/inMemoryItemCategoriesClient'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
 import { createInMemoryKnownUnitsClient } from './shopping/api/inMemoryKnownUnitsClient'
 import { createInMemoryShoppingListClient } from './shopping/api/inMemoryShoppingListClient'
@@ -32,6 +34,7 @@ function renderApp(
       authClient={createInMemoryAuthClient(household)}
       createShoppingListClient={() => createInMemoryShoppingListClient()}
       createMealsClient={() => createInMemoryMealsClient()}
+      createMealCategoriesClient={() => createInMemoryMealCategoriesClient()}
       createWeekPlanClient={() =>
         createInMemoryWeekPlanClient(
           emptyWeekPlan(weekOf(planDateOf(new Date()))),
@@ -44,6 +47,7 @@ function renderApp(
           DEFAULT_UNITS.map((name) => ({ name, lastUsedAt: 0, timesUsed: 0 })),
         )
       }
+      createItemCategoriesClient={() => createInMemoryItemCategoriesClient()}
       appUpdateClient={appUpdateClient}
       appearanceClient={appearanceClient}
       storageWarning={storageWarning}

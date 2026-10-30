@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { KnownItemsClient } from '../api/knownItemsClient'
 import type { KnownUnitsClient } from '../api/knownUnitsClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
@@ -9,7 +9,17 @@ import {
   type AdditionOutcome,
   type AdditionsSummary,
 } from '../domain/addition'
-import { canonicalName, type KnownItem } from '../domain/knownItem'
+import { canonicalName } from '../domain/catalogEntry'
+import {
+  groupingOf,
+  groupOfAddedItem,
+  type ListSection,
+} from '../domain/categorizedList'
+import type {
+  ItemCategoryCatalog,
+  ItemCategoryId,
+} from '../domain/itemCategory'
+import type { KnownItem } from '../domain/knownItem'
 import { withCanonicalUnit, type KnownUnit } from '../domain/knownUnit'
 import {
   additionAnnouncement,
@@ -33,13 +43,16 @@ import {
   type ShoppingItemDraft,
 } from '../domain/shoppingItem'
 import {
-  appendToFrozenOrder,
-  firstFrozenOrder,
-  nextFrozenOrder,
+  EMPTY_FROZEN_LIST,
+  firstFrozenList,
+  insertIntoFrozenList,
+  nextFrozenList,
   pendingChangeCount,
+  projectSections,
   projectStableList,
-  withoutFromFrozenOrder,
-  type FrozenOrder,
+  regroupFrozenList,
+  withoutFromFrozenList,
+  type FrozenList,
 } from '../domain/stableList'
 import {
   dropConfirmedRemovals,
@@ -56,9 +69,13 @@ import {
 
 export type ShoppingList = {
   items: readonly ShoppingItem[]
+  sections: readonly ListSection[]
   openCount: number
   pendingChanges: number
-  addItem: (draft: ShoppingItemDraft) => string
+  addItem: (
+    draft: ShoppingItemDraft,
+    categoryId?: ItemCategoryId | null,
+  ) => string
   addItems: (newItems: readonly NewShoppingItem[]) => AdditionsSummary
   toggleItem: (item: ShoppingItem) => string
   takeOneMore: (item: ShoppingItem) => string
@@ -73,15 +90,21 @@ export function useShoppingList(
   knownItems: readonly KnownItem[],
   knownUnitsClient: KnownUnitsClient,
   knownUnits: readonly KnownUnit[],
+  catalog: ItemCategoryCatalog,
+  catalogsLoaded: boolean,
 ): ShoppingList {
   const [liveItems, setLiveItems] = useState<readonly ShoppingItem[]>([])
-  const [frozenOrder, setFrozenOrder] = useState<FrozenOrder>([])
+  const [itemsLoaded, setItemsLoaded] = useState(false)
+  const [frozenList, setFrozenList] = useState<FrozenList>(EMPTY_FROZEN_LIST)
+  const [frozenOnFirstItems, setFrozenOnFirstItems] = useState(false)
+  const [frozenSortedByCategory, setFrozenSortedByCategory] = useState(
+    catalog.sortByCategory,
+  )
   const [unconfirmedWrites, setUnconfirmedWrites] = useState<UnconfirmedWrites>(
     [],
   )
   const [unconfirmedRemovals, setUnconfirmedRemovals] =
     useState<UnconfirmedRemovals>([])
-  const frozenOnFirstItems = useRef(false)
 
   useEffect(
     () =>
@@ -91,10 +114,7 @@ export function useShoppingList(
         setUnconfirmedRemovals((removals) =>
           dropConfirmedRemovals(removals, items),
         )
-        if (!frozenOnFirstItems.current) {
-          frozenOnFirstItems.current = true
-          setFrozenOrder((appended) => firstFrozenOrder(appended, items))
-        }
+        setItemsLoaded(true)
       }),
     [client],
   )
@@ -103,7 +123,23 @@ export function useShoppingList(
     withUnconfirmedWrites(liveItems, unconfirmedWrites),
     unconfirmedRemovals,
   )
-  const shownItems = projectStableList(frozenOrder, settledItems)
+  const grouping = useMemo(
+    () => groupingOf(catalog, knownItems),
+    [catalog, knownItems],
+  )
+
+  if (!frozenOnFirstItems && itemsLoaded && catalogsLoaded) {
+    setFrozenOnFirstItems(true)
+    setFrozenSortedByCategory(catalog.sortByCategory)
+    setFrozenList((appended) => firstFrozenList(appended, liveItems, grouping))
+  }
+
+  if (frozenOnFirstItems && frozenSortedByCategory !== catalog.sortByCategory) {
+    setFrozenSortedByCategory(catalog.sortByCategory)
+    setFrozenList((list) => regroupFrozenList(list, settledItems, grouping))
+  }
+
+  const shownItems = projectStableList(frozenList, settledItems)
   const openCount = shownItems.filter(isOpen).length
 
   const carryOut = useCallback(
@@ -130,10 +166,17 @@ export function useShoppingList(
   )
 
   const carryOutAll = useCallback(
-    (outcomes: readonly AdditionOutcome[]) => {
+    (
+      outcomes: readonly AdditionOutcome[],
+      chosenCategory: ItemCategoryId | null,
+    ) => {
       const written = outcomes.map(carryOut)
       outcomes.forEach(({ item }) => {
-        knownItemsClient.recordUse(item.name, item.createdAt)
+        knownItemsClient.recordUse(
+          item.name,
+          item.createdAt,
+          chosenCategory ?? undefined,
+        )
         const unit = item.quantity?.unit ?? null
         if (unit !== null) knownUnitsClient.recordUse(unit, item.createdAt)
       })
@@ -143,14 +186,20 @@ export function useShoppingList(
           writes,
         ),
       )
-      setFrozenOrder((order) =>
+      setFrozenList((list) =>
         written.reduce(
-          (sofar, write) => appendToFrozenOrder(sofar, write.written.id),
-          order,
+          (sofar, write) =>
+            insertIntoFrozenList(
+              sofar,
+              write.written.id,
+              groupOfAddedItem(grouping, write.written, chosenCategory),
+              grouping,
+            ),
+          list,
         ),
       )
     },
-    [carryOut, knownItemsClient, knownUnitsClient],
+    [carryOut, grouping, knownItemsClient, knownUnitsClient],
   )
 
   const underGroomedName = useCallback(
@@ -163,12 +212,12 @@ export function useShoppingList(
   )
 
   const addItem = useCallback(
-    (draft: ShoppingItemDraft) => {
+    (draft: ShoppingItemDraft, categoryId: ItemCategoryId | null = null) => {
       const outcome = planAddition(
         underGroomedName(createShoppingItem(draft, Date.now())),
         settledItems,
       )
-      carryOutAll([outcome])
+      carryOutAll([outcome], categoryId)
       return additionAnnouncement(outcome)
     },
     [carryOutAll, settledItems, underGroomedName],
@@ -180,7 +229,7 @@ export function useShoppingList(
         newItems.map(underGroomedName),
         settledItems,
       )
-      carryOutAll(outcomes)
+      carryOutAll(outcomes, null)
       return summarizeAdditions(outcomes)
     },
     [carryOutAll, settledItems, underGroomedName],
@@ -227,7 +276,7 @@ export function useShoppingList(
         rememberRemoval(removals, item.id, liveItems),
       )
       setUnconfirmedWrites((writes) => forgetWritesOf(writes, item.id))
-      setFrozenOrder((order) => withoutFromFrozenOrder(order, item.id))
+      setFrozenList((list) => withoutFromFrozenList(list, item.id))
       return itemRemovedAnnouncement(item, openCount - 1)
     },
     [client, liveItems, openCount],
@@ -243,15 +292,21 @@ export function useShoppingList(
   )
 
   const cleanUp = useCallback(() => {
-    const order = nextFrozenOrder(settledItems)
-    setFrozenOrder(order)
-    return cleanUpAnnouncement(order.length)
-  }, [settledItems])
+    const list = nextFrozenList(settledItems, grouping)
+    setFrozenList(list)
+    return cleanUpAnnouncement(list.ids.length)
+  }, [grouping, settledItems])
 
   return {
     items: shownItems,
+    sections: projectSections(
+      frozenList,
+      settledItems,
+      catalog,
+      catalog.sortByCategory,
+    ),
     openCount,
-    pendingChanges: pendingChangeCount(frozenOrder, settledItems),
+    pendingChanges: pendingChangeCount(frozenList, settledItems, grouping),
     addItem,
     addItems,
     toggleItem,

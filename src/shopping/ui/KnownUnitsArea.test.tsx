@@ -275,6 +275,53 @@ describe('KnownUnitsArea', () => {
     ).toBeInTheDocument()
   })
 
+  it('creates a unit through the plus button', async () => {
+    const { client, announcements } = renderKnownUnitsArea([known('g')])
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Einheit anlegen' }),
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Einheit anlegen' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+    await userEvent.type(screen.getByLabelText('Name'), 'Dose')
+    await save()
+
+    const created = client
+      .storedKnownUnits()
+      .find((knownUnit) => knownUnit.name === 'Dose')
+    expect(created?.timesUsed).toBe(0)
+    expect(created?.lastUsedAt).toBeGreaterThan(0)
+    expect(announcements).toContain('Dose angelegt.')
+    expect(screen.getByRole('heading', { name: 'Einheiten, 2' })).toHaveFocus()
+  })
+
+  it('refuses to create a unit that is already known', async () => {
+    const { client, announcements } = renderKnownUnitsArea([known('g')])
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Einheit anlegen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Name'), 'G')
+    await save()
+
+    expect(storedNames(client)).toEqual(['g'])
+    expect(screen.getByText('Die Einheit g gibt es schon.')).toBeInTheDocument()
+    expect(announcements).toContain('Die Einheit g gibt es schon.')
+  })
+
+  it('has no accessibility violations on the creation form', async () => {
+    const { rendered } = renderKnownUnitsArea([known('g')])
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Einheit anlegen' }),
+    )
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
   it('has no accessibility violations on the form', async () => {
     const { rendered } = renderKnownUnitsArea([known('Zehe')])
 

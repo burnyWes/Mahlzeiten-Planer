@@ -29,6 +29,8 @@ function toKnownItem(stored: DocumentData): KnownItem {
     name: String(stored.name ?? ''),
     lastUsedAt: Number(stored.lastUsedAt ?? 0),
     timesUsed: Number(stored.timesUsed ?? 0),
+    categoryId:
+      typeof stored.categoryId === 'string' ? stored.categoryId : null,
   }
 }
 
@@ -97,12 +99,22 @@ export function createFirestoreKnownItemsClient(
       )
     },
 
-    recordUse(name, usedAt) {
+    recordUse(name, usedAt, categoryId) {
+      const assignedCategory = categoryId === undefined ? {} : { categoryId }
       setDoc(
         knownItemDocument(name),
-        { name, lastUsedAt: usedAt, timesUsed: increment(1) },
+        {
+          name,
+          lastUsedAt: usedAt,
+          timesUsed: increment(1),
+          ...assignedCategory,
+        },
         { merge: true },
       ).catch(ignoreFailure)
+    },
+
+    addKnownItem(knownItem) {
+      setDoc(knownItemDocument(knownItem.name), knownItem).catch(ignoreFailure)
     },
 
     removeKnownItem(name) {
@@ -117,6 +129,7 @@ export function createFirestoreKnownItemsClient(
           name: written.name,
           lastUsedAt: written.lastUsedAt,
           timesUsed: increment(addedUses),
+          categoryId: written.categoryId,
         },
         { merge: true },
       )

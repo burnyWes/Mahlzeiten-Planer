@@ -1,7 +1,15 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, type ReactNode } from 'react'
 import { useFocusAfterRemoval } from '../../shared/ui/useFocusAfterRemoval'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { cleanUpLabel, listHeading } from '../domain/announcements'
+import {
+  cleanUpLabel,
+  listHeading,
+  listSectionHeading,
+} from '../domain/announcements'
+import {
+  showsSectionHeadings,
+  type ListSection,
+} from '../domain/categorizedList'
 import type { ItemId, ShoppingItem } from '../domain/shoppingItem'
 import { ShoppingItemRow } from './ShoppingItemRow'
 
@@ -13,6 +21,7 @@ export type ListFocus =
 type ShoppingListPageProps = {
   navigation: ReactNode
   items: readonly ShoppingItem[]
+  sections: readonly ListSection[]
   openCount: number
   pendingChanges: number
   focus: ListFocus
@@ -26,6 +35,7 @@ type ShoppingListPageProps = {
 export function ShoppingListPage({
   navigation,
   items,
+  sections,
   openCount,
   pendingChanges,
   focus,
@@ -86,19 +96,28 @@ export function ShoppingListPage({
         {items.length === 0 ? (
           <p>Die Liste ist leer.</p>
         ) : (
-          <ul className="itemList">
-            {items.map((item) => (
-              <ShoppingItemRow
-                key={item.id}
-                item={item}
-                checkbox={keepRow(item.id)}
-                lessButton={keepLessButton(item.id)}
-                onToggle={onToggleItem}
-                onLess={() => onLessItem(item)}
-                onMore={() => onMoreItem(item)}
-              />
-            ))}
-          </ul>
+          sections.map((section) => (
+            <Fragment key={section.items[0].id}>
+              {showsSectionHeadings(sections) && (
+                <h2 className="listSectionHeading">
+                  {listSectionHeading(section.category)}
+                </h2>
+              )}
+              <ul className="itemList">
+                {section.items.map((item) => (
+                  <ShoppingItemRow
+                    key={item.id}
+                    item={item}
+                    checkbox={keepRow(item.id)}
+                    lessButton={keepLessButton(item.id)}
+                    onToggle={onToggleItem}
+                    onLess={() => onLessItem(item)}
+                    onMore={() => onMoreItem(item)}
+                  />
+                ))}
+              </ul>
+            </Fragment>
+          ))
         )}
         {pendingChanges > 0 && (
           <button type="button" onClick={cleanUpAndReturnFocus}>

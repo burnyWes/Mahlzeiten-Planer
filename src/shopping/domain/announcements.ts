@@ -5,6 +5,17 @@ import {
 } from '../../shared/domain/quantity'
 import type { AdditionOutcome, AdditionsSummary } from './addition'
 import {
+  findItemCategory,
+  ItemCategoryAlreadyTaken,
+  ItemCategoryMissing,
+  type CategoryAssignment,
+  type CategoryPlacement,
+  type ItemCategory,
+  type PlacedItemCategory,
+} from './itemCategory'
+import { KnownItemAlreadyTaken, type KnownItem } from './knownItem'
+import { KnownUnitAlreadyTaken } from './knownUnit'
+import {
   formatItemForAnnouncement,
   InvalidShoppingItem,
   type InvalidReason,
@@ -25,6 +36,14 @@ export function additionFailureMessage(error: unknown): string | null {
     return invalidShoppingItemMessage(error.reason)
   if (error instanceof InvalidQuantity)
     return invalidQuantityMessage(error.reason)
+  if (error instanceof KnownUnitAlreadyTaken)
+    return `Die Einheit ${error.knownUnit} gibt es schon.`
+  if (error instanceof KnownItemAlreadyTaken)
+    return `Den Artikel ${error.knownItem} gibt es schon.`
+  if (error instanceof ItemCategoryMissing)
+    return 'Bitte eine Kategorie eingeben oder ohne Kategorie hinzufügen.'
+  if (error instanceof ItemCategoryAlreadyTaken)
+    return `Die Kategorie ${error.category} gibt es schon.`
   return null
 }
 
@@ -49,6 +68,10 @@ export function additionsAnnouncement(summary: AdditionsSummary): string {
   ].join(' ')
 }
 
+export function listSectionHeading(category: ItemCategory | null): string {
+  return category === null ? 'Ohne Kategorie' : category.name
+}
+
 export function listHeading(openCount: number): string {
   return openCount === 0
     ? 'Einkaufsliste, nichts offen'
@@ -57,6 +80,40 @@ export function listHeading(openCount: number): string {
 
 export function knownItemsHeading(knownItemCount: number): string {
   return knownItemCount === 0 ? 'Artikel, keine' : `Artikel, ${knownItemCount}`
+}
+
+export function knownItemRowLabel(
+  knownItem: KnownItem,
+  category: ItemCategory | null,
+): string {
+  return category === null
+    ? knownItem.name
+    : `${knownItem.name}, ${category.name}`
+}
+
+export type KnownItemFormMode = 'create' | 'edit'
+
+export function knownItemFormHeading(mode: KnownItemFormMode): string {
+  return mode === 'create' ? 'Artikel anlegen' : 'Artikel bearbeiten'
+}
+
+export function knownItemCreatedAnnouncement(name: string): string {
+  return `${name} angelegt.`
+}
+
+export function categoryCreatedPhrase(
+  name: string,
+  placement: CategoryPlacement,
+): string {
+  return `Kategorie ${name} neu angelegt, Position ${placement.position}.`
+}
+
+export function withCreatedCategoryPhrase(
+  announcement: string,
+  created: PlacedItemCategory | null,
+): string {
+  if (created === null) return announcement
+  return `${announcement} ${categoryCreatedPhrase(created.category.name, created.placement)}`
 }
 
 export function knownItemSavedAnnouncement(name: string): string {
@@ -81,6 +138,10 @@ export function knownUnitsHeading(knownUnitCount: number): string {
   return knownUnitCount === 0
     ? 'Einheiten, keine'
     : `Einheiten, ${knownUnitCount}`
+}
+
+export function knownUnitCreatedAnnouncement(name: string): string {
+  return `${name} angelegt.`
 }
 
 export function knownUnitSavedAnnouncement(name: string): string {
@@ -152,4 +213,82 @@ export function cleanUpAnnouncement(openCount: number): string {
   return openCount === 0
     ? 'Aufgeräumt, die Liste ist leer'
     : `Aufgeräumt, ${openCount} offen`
+}
+
+export function itemCategoriesHeading(categoryCount: number): string {
+  return categoryCount === 0
+    ? 'Artikelkategorien, keine'
+    : `Artikelkategorien, ${categoryCount}`
+}
+
+export function itemCategoryRowLabel(
+  category: ItemCategory,
+  placement: CategoryPlacement,
+  assignedCount: number,
+): string {
+  return `${placement.position}. ${category.name}, ${assignedCount} Artikel`
+}
+
+export function itemCategoryPositionText(placement: CategoryPlacement): string {
+  return `${placement.position} von ${placement.count}`
+}
+
+export function itemCategoryCreatedAnnouncement(
+  name: string,
+  placement: CategoryPlacement,
+): string {
+  return `${name} angelegt, Position ${itemCategoryPositionText(placement)}.`
+}
+
+export function itemCategorySavedAnnouncement(
+  name: string,
+  placement: CategoryPlacement,
+): string {
+  return `${name} gespeichert, Position ${itemCategoryPositionText(placement)}.`
+}
+
+export function itemCategoryDeletionNote(assignedCount: number): string {
+  if (assignedCount === 0)
+    return 'Kein Artikel ist dieser Kategorie zugeordnet.'
+  return assignedCount === 1
+    ? '1 Artikel hat dann keine Kategorie mehr.'
+    : `${assignedCount} Artikel haben dann keine Kategorie mehr.`
+}
+
+function remainingItemCategoryPhrase(remainingCategories: number): string {
+  if (remainingCategories === 0) return 'keine Kategorien mehr'
+  return remainingCategories === 1
+    ? 'noch 1 Kategorie'
+    : `noch ${remainingCategories} Kategorien`
+}
+
+export function itemCategoryDeletedAnnouncement(
+  name: string,
+  remainingCategories: number,
+): string {
+  return `${name} gelöscht, ${remainingItemCategoryPhrase(remainingCategories)}.`
+}
+
+export function deleteItemCategoryHeading(name: string): string {
+  return `${name} löschen?`
+}
+
+export function chooseCategoryHeading(name: string): string {
+  return `Kategorie für ${name}`
+}
+
+export function chooseCategoryQuestion(name: string): string {
+  return `${name} ist neu. In welche Kategorie?`
+}
+
+export function withAssignedCategoryPhrase(
+  announcement: string,
+  assignment: CategoryAssignment,
+): string {
+  if (assignment.created !== null)
+    return withCreatedCategoryPhrase(announcement, assignment.created)
+  const category = findItemCategory(assignment.catalog, assignment.categoryId)
+  return category === null
+    ? announcement
+    : `${announcement} Kategorie ${category.name}.`
 }

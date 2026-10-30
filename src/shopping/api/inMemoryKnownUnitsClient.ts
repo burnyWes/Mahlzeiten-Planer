@@ -41,6 +41,10 @@ export function createInMemoryKnownUnitsClient(
       knownUnits = recordUnitUse(knownUnits, unit, usedAt)
       publish()
     },
+    addKnownUnit(knownUnit) {
+      knownUnits = [...knownUnits, knownUnit]
+      publish()
+    },
     removeKnownUnit(unit) {
       const removedUnit = normalizeItemName(unit)
       knownUnits = knownUnits.filter(

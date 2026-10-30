@@ -2,26 +2,38 @@ import { useEffect, useRef, useState } from 'react'
 import { BottomBar } from '../../shared/ui/BottomBar'
 import { SaveIcon } from '../../shared/ui/SaveIcon'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { additionFailureMessage } from '../domain/announcements'
-import type { KnownItem } from '../domain/knownItem'
+import {
+  additionFailureMessage,
+  knownItemFormHeading,
+  type KnownItemFormMode,
+} from '../domain/announcements'
+import { ItemCategoryField } from './ItemCategoryField'
 
 type KnownItemFormPageProps = {
-  knownItem: KnownItem
-  onSave: (name: string) => void
+  mode: KnownItemFormMode
+  initialName: string
+  initialCategory: string
+  suggestCategories: (typed: string) => readonly string[]
+  onSave: (name: string, categoryText: string) => void
   onBack: () => void
   announce: (text: string) => void
 }
 
 export function KnownItemFormPage({
-  knownItem,
+  mode,
+  initialName,
+  initialCategory,
+  suggestCategories,
   onSave,
   onBack,
   announce,
 }: KnownItemFormPageProps) {
   const heading = useHeadingFocus()
-  const [name, setName] = useState(knownItem.name)
+  const [name, setName] = useState(initialName)
+  const [categoryText, setCategoryText] = useState(initialCategory)
   const [failureMessage, setFailureMessage] = useState('')
   const nameField = useRef<HTMLInputElement>(null)
+  const categoryField = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     nameField.current?.focus()
@@ -29,7 +41,7 @@ export function KnownItemFormPage({
 
   function saveKnownItem() {
     try {
-      onSave(name)
+      onSave(name, categoryText)
     } catch (error) {
       const message = additionFailureMessage(error)
       if (message === null) throw error
@@ -45,7 +57,7 @@ export function KnownItemFormPage({
         Zurück zu den Artikeln
       </button>
       <h1 ref={heading} tabIndex={-1}>
-        Vorschlag bearbeiten
+        {knownItemFormHeading(mode)}
       </h1>
       <p className="field">
         <label htmlFor="knownItemName">Name</label>
@@ -56,6 +68,12 @@ export function KnownItemFormPage({
           onChange={(event) => setName(event.target.value)}
         />
       </p>
+      <ItemCategoryField
+        value={categoryText}
+        onChange={setCategoryText}
+        suggestCategories={suggestCategories}
+        fieldRef={categoryField}
+      />
       <p id="knownItemFailure" className="failure">
         {failureMessage}
       </p>

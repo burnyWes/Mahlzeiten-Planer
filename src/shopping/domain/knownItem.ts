@@ -1,44 +1,63 @@
 import {
+  catalogEntryIdOf,
+  hasName,
+  entriesByName,
+  planCatalogRename,
+  recordCatalogUse,
+  suggestFromCatalog,
+  withCatalogNamesInUse,
+  type CatalogEntry,
+  type CatalogRename,
+} from './catalogEntry'
+import type { ItemCategoryId } from './itemCategory'
+import {
   createItemName,
   normalizeItemName,
   type ShoppingItem,
 } from './shoppingItem'
 
-export type KnownItem = { name: string; lastUsedAt: number; timesUsed: number }
+export type KnownItem = CatalogEntry & { categoryId: ItemCategoryId | null }
 
-export type KnownItemRename = {
-  written: KnownItem
-  removedName: string | null
-  addedUses: number
+export type KnownItemRename = CatalogRename<KnownItem>
+
+export class KnownItemAlreadyTaken extends Error {
+  knownItem: string
+
+  constructor(knownItem: string) {
+    super(knownItem)
+    this.name = 'KnownItemAlreadyTaken'
+    this.knownItem = knownItem
+  }
 }
 
 const MINIMUM_TYPED_LENGTH = 2
-const MAXIMUM_SUGGESTIONS = 5
 
-export function knownItemIdOf(name: string): string {
-  return encodeURIComponent(normalizeItemName(name)).replace(
-    /[._]/g,
-    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
-  )
+function newKnownItem(entry: CatalogEntry): KnownItem {
+  return { ...entry, categoryId: null }
 }
 
-function hasName(knownItem: KnownItem, name: string): boolean {
-  return normalizeItemName(knownItem.name) === normalizeItemName(name)
+function knownItemNamed(
+  knownItems: readonly KnownItem[],
+  name: string,
+): KnownItem | null {
+  return knownItems.find((knownItem) => hasName(knownItem, name)) ?? null
+}
+
+export function knownItemIdOf(name: string): string {
+  return catalogEntryIdOf(name)
 }
 
 export function recordUse(
   knownItems: readonly KnownItem[],
   name: string,
   usedAt: number,
+  categoryId?: ItemCategoryId,
 ): readonly KnownItem[] {
-  const position = knownItems.findIndex((knownItem) => hasName(knownItem, name))
-  if (position === -1)
-    return [...knownItems, { name, lastUsedAt: usedAt, timesUsed: 1 }]
-  return knownItems.with(position, {
-    name,
-    lastUsedAt: usedAt,
-    timesUsed: knownItems[position].timesUsed + 1,
-  })
+  const recorded = recordCatalogUse(knownItems, name, usedAt, newKnownItem)
+  if (categoryId === undefined) return recorded
+  return recorded.map((knownItem) =>
+    hasName(knownItem, name) ? { ...knownItem, categoryId } : knownItem,
+  )
 }
 
 function newestFirst(items: readonly ShoppingItem[]): readonly ShoppingItem[] {
@@ -51,11 +70,13 @@ export function knownItemsFromHistory(
   const gathered = new Map<string, KnownItem>()
   for (const item of newestFirst(items)) {
     const name = normalizeItemName(item.name)
-    const newest = gathered.get(name) ?? {
-      name: item.name,
-      lastUsedAt: item.createdAt,
-      timesUsed: 0,
-    }
+    const newest =
+      gathered.get(name) ??
+      newKnownItem({
+        name: item.name,
+        lastUsedAt: item.createdAt,
+        timesUsed: 0,
+      })
     gathered.set(name, { ...newest, timesUsed: newest.timesUsed + 1 })
   }
   return [...gathered.values()]
@@ -65,87 +86,60 @@ export function withNamesInUse(
   knownItems: readonly KnownItem[],
   names: readonly string[],
 ): readonly KnownItem[] {
-  const takenNames = new Set(
-    knownItems.map((knownItem) => normalizeItemName(knownItem.name)),
-  )
-  const gathered = [...knownItems]
-  for (const name of names) {
-    const normalizedName = normalizeItemName(name)
-    if (takenNames.has(normalizedName)) continue
-    takenNames.add(normalizedName)
-    gathered.push({ name, lastUsedAt: 0, timesUsed: 0 })
-  }
-  return gathered
-}
-
-export function canonicalName(
-  knownItems: readonly KnownItem[],
-  typed: string,
-): string {
-  return (
-    knownItems.find((knownItem) => hasName(knownItem, typed))?.name ?? typed
-  )
+  return withCatalogNamesInUse(knownItems, names, newKnownItem)
 }
 
 export function planKnownItemRename(
   knownItems: readonly KnownItem[],
   from: string,
   newName: string,
+  categoryId: ItemCategoryId | null,
 ): KnownItemRename | null {
-  const name = createItemName(newName)
-  const renamed = knownItems.find((knownItem) => hasName(knownItem, from))
-  if (renamed === undefined) return null
-
-  if (knownItemIdOf(renamed.name) === knownItemIdOf(name))
-    return {
-      written: { ...renamed, name },
-      removedName: null,
-      addedUses: 0,
-    }
-
-  const merged = knownItems.find((knownItem) => hasName(knownItem, name))
-  return {
-    written: {
-      name,
-      timesUsed: (merged?.timesUsed ?? 0) + renamed.timesUsed,
-      lastUsedAt: Math.max(merged?.lastUsedAt ?? 0, renamed.lastUsedAt),
-    },
-    removedName: renamed.name,
-    addedUses: renamed.timesUsed,
-  }
+  const rename = planCatalogRename(knownItems, from, newName)
+  if (rename === null) return null
+  return { ...rename, written: { ...rename.written, categoryId } }
 }
 
-export function applyRename(
+export function knownItemToAdd(
   knownItems: readonly KnownItem[],
-  { written, removedName }: KnownItemRename,
-): readonly KnownItem[] {
-  const kept = knownItems.filter(
-    (knownItem) =>
-      !hasName(knownItem, written.name) &&
-      (removedName === null || !hasName(knownItem, removedName)),
-  )
-  return [...kept, written]
+  written: string,
+  categoryId: ItemCategoryId | null,
+  now: number,
+): KnownItem {
+  const name = createItemName(written)
+  const taken = knownItemNamed(knownItems, name)
+  if (taken !== null) throw new KnownItemAlreadyTaken(taken.name)
+  return { name, lastUsedAt: now, timesUsed: 0, categoryId }
+}
+
+export function isKnownName(
+  knownItems: readonly KnownItem[],
+  name: string,
+): boolean {
+  return knownItemNamed(knownItems, name) !== null
+}
+
+export function categoryIdOfName(
+  knownItems: readonly KnownItem[],
+  name: string,
+): ItemCategoryId | null {
+  return knownItemNamed(knownItems, name)?.categoryId ?? null
+}
+
+export function assignedCounts(
+  knownItems: readonly KnownItem[],
+): ReadonlyMap<ItemCategoryId, number> {
+  const counts = new Map<ItemCategoryId, number>()
+  for (const { categoryId } of knownItems)
+    if (categoryId !== null)
+      counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1)
+  return counts
 }
 
 export function knownItemsByName(
   knownItems: readonly KnownItem[],
 ): readonly KnownItem[] {
-  return [...knownItems].sort((one, other) =>
-    one.name.localeCompare(other.name, 'de-DE'),
-  )
-}
-
-function startsWithTyped(knownItem: KnownItem, typed: string): boolean {
-  return normalizeItemName(knownItem.name).startsWith(typed)
-}
-
-function bySuggestionRank(typed: string) {
-  return (one: KnownItem, other: KnownItem) =>
-    Number(startsWithTyped(other, typed)) -
-      Number(startsWithTyped(one, typed)) ||
-    other.timesUsed - one.timesUsed ||
-    other.lastUsedAt - one.lastUsedAt ||
-    one.name.localeCompare(other.name, 'de-DE')
+  return entriesByName(knownItems)
 }
 
 export function suggestNames(
@@ -153,21 +147,4 @@ export function suggestNames(
   typed: string,
 ): readonly string[] {
   return suggestFromCatalog(knownItems, typed, MINIMUM_TYPED_LENGTH)
-}
-
-export function suggestFromCatalog(
-  knownItems: readonly KnownItem[],
-  typed: string,
-  minimumTypedLength: number,
-): readonly string[] {
-  const wanted = normalizeItemName(typed)
-  if (wanted.length < minimumTypedLength) return []
-  return knownItems
-    .filter((knownItem) => {
-      const name = normalizeItemName(knownItem.name)
-      return name.includes(wanted) && name !== wanted
-    })
-    .sort(bySuggestionRank(wanted))
-    .slice(0, MAXIMUM_SUGGESTIONS)
-    .map((knownItem) => knownItem.name)
 }

@@ -4,13 +4,19 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { Quantity } from '../../shared/domain/quantity'
 import { accessibilityViolations } from '../../testSupport/accessibility'
+import {
+  createInMemoryItemCategoriesClient,
+  type InMemoryItemCategoriesClient,
+} from '../api/inMemoryItemCategoriesClient'
 import { createInMemoryKnownItemsClient } from '../api/inMemoryKnownItemsClient'
 import type { KnownItemsClient } from '../api/knownItemsClient'
 import { createInMemoryKnownUnitsClient } from '../api/inMemoryKnownUnitsClient'
 import type { KnownUnitsClient } from '../api/knownUnitsClient'
 import { createInMemoryShoppingListClient } from '../api/inMemoryShoppingListClient'
 import type { ShoppingListClient } from '../api/shoppingListClient'
-import { suggestNames, type KnownItem } from '../domain/knownItem'
+import type { ItemCategoryCatalog } from '../domain/itemCategory'
+import { suggestItemCategories } from '../domain/itemCategory'
+import { isKnownName, suggestNames, type KnownItem } from '../domain/knownItem'
 import {
   DEFAULT_UNITS,
   suggestUnits,
@@ -18,6 +24,7 @@ import {
 } from '../domain/knownUnit'
 import type { ShoppingItem } from '../domain/shoppingItem'
 import { ShoppingArea } from './ShoppingArea'
+import { useItemCategories } from './useItemCategories'
 import { useKnownItems } from './useKnownItems'
 import { useKnownUnits } from './useKnownUnits'
 import { useShoppingList } from './useShoppingList'
@@ -42,13 +49,14 @@ function checkedOffItem(
 }
 
 function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
-  return { name, timesUsed, lastUsedAt }
+  return { name, timesUsed, lastUsedAt, categoryId: null }
 }
 
 type ShoppingAreaUnderTestProps = {
   client: ShoppingListClient
   knownItemsClient: KnownItemsClient
   knownUnitsClient?: KnownUnitsClient
+  itemCategoriesClient?: InMemoryItemCategoriesClient
   announce: (text: string) => void
 }
 
@@ -66,8 +74,13 @@ function ShoppingAreaUnderTest({
   client,
   knownItemsClient,
   knownUnitsClient: givenKnownUnitsClient,
+  itemCategoriesClient: givenItemCategoriesClient,
   announce,
 }: ShoppingAreaUnderTestProps) {
+  const [itemCategoriesClient] = useState(
+    () => givenItemCategoriesClient ?? createInMemoryItemCategoriesClient(),
+  )
+  const itemCategories = useItemCategories(itemCategoriesClient)
   const [knownUnitsClient] = useState(
     () =>
       givenKnownUnitsClient ??
@@ -81,10 +94,19 @@ function ShoppingAreaUnderTest({
     knownItems.knownItems,
     knownUnitsClient,
     knownUnits.knownUnits,
+    itemCategories.catalog,
+    knownItems.loaded && itemCategories.loaded,
   )
   return (
     <ShoppingArea
       shoppingList={shoppingList}
+      categoryChoice={{
+        isKnownName: (name) => isKnownName(knownItems.knownItems, name),
+        suggestCategories: (typed) =>
+          suggestItemCategories(itemCategories.catalog, typed),
+        planCategoryAssignment: itemCategories.planCategoryAssignment,
+        applyCategoryAssignment: itemCategories.applyCategoryAssignment,
+      }}
       announce={announce}
       navigation={null}
       suggestNames={(typed) => suggestNames(knownItems.knownItems, typed)}
@@ -173,6 +195,14 @@ async function addItem(name: string, amount = '', unit = '') {
     await userEvent.type(screen.getByLabelText('Einheit'), unit)
   }
   await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+  await addWithoutCategoryWhenAsked()
+}
+
+async function addWithoutCategoryWhenAsked() {
+  const withoutCategory = screen.queryByRole('button', {
+    name: 'Ohne Kategorie hinzufügen',
+  })
+  if (withoutCategory !== null) await userEvent.click(withoutCategory)
 }
 
 async function backToList() {
@@ -269,6 +299,7 @@ describe('ShoppingArea', () => {
 
     await userEvent.type(screen.getByLabelText('Einheit'), 'g')
     await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+    await addWithoutCategoryWhenAsked()
 
     expect(client.storedItems()[0].quantity).toEqual({ amount: 2, unit: 'g' })
   })
@@ -1230,6 +1261,430 @@ describe('asking before removing from the list', () => {
     const { rendered } = renderShoppingArea([openItem('bread', 'Brot', 1)])
 
     await takeOneLess('Brot')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
+function knownIn(name: string, categoryId: string | null): KnownItem {
+  return { name, timesUsed: 1, lastUsedAt: 1, categoryId }
+}
+
+const SHOP_CATALOG: ItemCategoryCatalog = {
+  categories: [
+    { id: 'fruit', name: 'Obst/Gemüse' },
+    { id: 'frozen', name: 'Tiefkühlkost' },
+  ],
+  sortByCategory: true,
+}
+
+const SHOP_KNOWN_ITEMS = [
+  knownIn('Äpfel', 'fruit'),
+  knownIn('Bananen', 'fruit'),
+  knownIn('Pizza', 'frozen'),
+  knownIn('Batterien', null),
+]
+
+function renderCategorizedList(
+  initialItems: readonly ShoppingItem[],
+  catalog: ItemCategoryCatalog = SHOP_CATALOG,
+  initialKnownItems: readonly KnownItem[] = SHOP_KNOWN_ITEMS,
+) {
+  const client = createInMemoryShoppingListClient(initialItems)
+  const knownItemsClient = createInMemoryKnownItemsClient(initialKnownItems)
+  const itemCategoriesClient = createInMemoryItemCategoriesClient(catalog)
+  const announcements: string[] = []
+  const rendered = render(
+    <ShoppingAreaUnderTest
+      client={client}
+      knownItemsClient={knownItemsClient}
+      itemCategoriesClient={itemCategoriesClient}
+      announce={(text) => {
+        announcements.push(text)
+      }}
+    />,
+  )
+  return {
+    client,
+    knownItemsClient,
+    itemCategoriesClient,
+    announcements,
+    rendered,
+  }
+}
+
+function shownSections() {
+  const main = screen.getByRole('main')
+  const headings = within(main)
+    .queryAllByRole('heading', { level: 2 })
+    .map((heading) => heading.textContent)
+  const lists = within(main)
+    .getAllByRole('list')
+    .map((list) =>
+      within(list)
+        .getAllByRole('checkbox')
+        .map((box) => box.getAttribute('aria-label')),
+    )
+  return { headings, lists }
+}
+
+const apples = openItem('apples', 'Äpfel', 1)
+const pizza = openItem('pizza', 'Pizza', 2)
+const batteries = openItem('batteries', 'Batterien', 3)
+const bananas = openItem('bananas', 'Bananen', 4)
+
+function cleanUpButton() {
+  return screen.queryByRole('button', { name: /^Aufräumen/ })
+}
+
+describe('the list sorted by categories', () => {
+  it('groups the items under headings in the order of the categories', () => {
+    renderCategorizedList([batteries, pizza, bananas, apples])
+
+    expect(shownSections()).toEqual({
+      headings: ['Obst/Gemüse', 'Tiefkühlkost', 'Ohne Kategorie'],
+      lists: [['Äpfel', 'Bananen'], ['Pizza'], ['Batterien']],
+    })
+    expect(cleanUpButton()).toBeNull()
+  })
+
+  it('shows no heading when no item has a category', () => {
+    renderCategorizedList([
+      openItem('bread', 'Brot', 1),
+      openItem('milk', 'Milch', 2),
+    ])
+
+    expect(shownSections()).toEqual({
+      headings: [],
+      lists: [['Brot', 'Milch']],
+    })
+  })
+
+  it('looks as before while the sorting is switched off', () => {
+    renderCategorizedList([batteries, pizza, bananas, apples], {
+      ...SHOP_CATALOG,
+      sortByCategory: false,
+    })
+
+    expect(shownSections()).toEqual({
+      headings: [],
+      lists: [['Äpfel', 'Pizza', 'Batterien', 'Bananen']],
+    })
+  })
+
+  it('puts an item added here at the end of its group at once', async () => {
+    renderCategorizedList([apples, pizza, batteries])
+
+    await openAddItemPage()
+    await addItem('Bananen')
+    await backToList()
+
+    expect(shownSections().lists).toEqual([
+      ['Äpfel', 'Bananen'],
+      ['Pizza'],
+      ['Batterien'],
+    ])
+    expect(cleanUpButton()).toBeNull()
+  })
+
+  it('opens the group of an added item at its place', async () => {
+    renderCategorizedList([pizza, batteries])
+
+    await openAddItemPage()
+    await addItem('Äpfel')
+    await backToList()
+
+    expect(shownSections()).toEqual({
+      headings: ['Obst/Gemüse', 'Tiefkühlkost', 'Ohne Kategorie'],
+      lists: [['Äpfel'], ['Pizza'], ['Batterien']],
+    })
+  })
+
+  it('keeps a category changed elsewhere in place until cleaning up', async () => {
+    const { knownItemsClient } = renderCategorizedList([apples, pizza])
+
+    await act(async () => {
+      knownItemsClient.recordUse('Pizza', 9, 'fruit')
+    })
+
+    expect(shownSections().lists).toEqual([['Äpfel'], ['Pizza']])
+    expect(cleanUpButton()).toHaveTextContent('Aufräumen, 1 Änderung')
+
+    await userEvent.click(cleanUpButton()!)
+
+    expect(shownSections()).toEqual({
+      headings: ['Obst/Gemüse'],
+      lists: [['Äpfel', 'Pizza']],
+    })
+  })
+
+  it('keeps a changed order of the categories in place until cleaning up', async () => {
+    const { itemCategoriesClient } = renderCategorizedList([apples, pizza])
+
+    await act(async () => {
+      itemCategoriesClient.catalogArrivesFromElsewhere({
+        ...SHOP_CATALOG,
+        categories: [...SHOP_CATALOG.categories].reverse(),
+      })
+    })
+
+    expect(shownSections().headings).toEqual(['Obst/Gemüse', 'Tiefkühlkost'])
+    expect(cleanUpButton()).toHaveTextContent('Aufräumen, 2 Änderungen')
+
+    await userEvent.click(cleanUpButton()!)
+
+    expect(shownSections().headings).toEqual(['Tiefkühlkost', 'Obst/Gemüse'])
+  })
+
+  it('applies the switch at once and keeps the checked off items', async () => {
+    const { itemCategoriesClient } = renderCategorizedList([
+      apples,
+      pizza,
+      bananas,
+    ])
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Pizza' }))
+
+    await act(async () => {
+      itemCategoriesClient.catalogArrivesFromElsewhere({
+        ...SHOP_CATALOG,
+        sortByCategory: false,
+      })
+    })
+
+    expect(shownSections()).toEqual({
+      headings: [],
+      lists: [['Äpfel', 'Pizza', 'Bananen']],
+    })
+
+    await act(async () => {
+      itemCategoriesClient.catalogArrivesFromElsewhere(SHOP_CATALOG)
+    })
+
+    expect(shownSections().lists).toEqual([['Äpfel', 'Bananen'], ['Pizza']])
+  })
+
+  it('keeps a group whose items are all checked off', async () => {
+    renderCategorizedList([apples, pizza])
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Pizza' }))
+
+    expect(shownSections().headings).toEqual(['Obst/Gemüse', 'Tiefkühlkost'])
+  })
+
+  it('moves the focus across a group boundary after removing', async () => {
+    renderCategorizedList([apples, pizza])
+
+    await takeOneLess('Äpfel')
+    await confirmRemoval()
+
+    expect(screen.getByRole('checkbox', { name: 'Pizza' })).toHaveFocus()
+  })
+
+  it('waits for the categories before freezing the list', async () => {
+    const itemCategoriesClient =
+      createInMemoryItemCategoriesClient(SHOP_CATALOG)
+    let deliverCatalog: () => void = () => {}
+    const laggingCategories: InMemoryItemCategoriesClient = {
+      ...itemCategoriesClient,
+      observeCatalog(onCatalog) {
+        deliverCatalog = () => onCatalog(itemCategoriesClient.storedCatalog())
+        return () => {}
+      },
+    }
+    render(
+      <ShoppingAreaUnderTest
+        client={createInMemoryShoppingListClient([batteries, pizza, apples])}
+        knownItemsClient={createInMemoryKnownItemsClient(SHOP_KNOWN_ITEMS)}
+        itemCategoriesClient={laggingCategories}
+        announce={() => {}}
+      />,
+    )
+
+    await act(async () => {
+      deliverCatalog()
+    })
+
+    expect(shownSections().lists).toEqual([['Äpfel'], ['Pizza'], ['Batterien']])
+    expect(cleanUpButton()).toBeNull()
+  })
+
+  it('has no accessibility violations', async () => {
+    const { rendered } = renderCategorizedList([apples, pizza, batteries])
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+})
+
+async function typeNewItem(name: string) {
+  await openAddItemPage()
+  await userEvent.type(screen.getByLabelText('Name'), name)
+  await userEvent.type(screen.getByLabelText('Menge'), '3')
+  await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+}
+
+async function chooseCategory(text: string) {
+  if (text !== '')
+    await userEvent.type(screen.getByLabelText('Kategorie'), text)
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Mit Kategorie hinzufügen' }),
+  )
+}
+
+describe('asking for the category of a new item', () => {
+  it('asks before writing anything', async () => {
+    const { client } = renderCategorizedList([])
+
+    await typeNewItem('Kirschen')
+
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie für Kirschen' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Kirschen ist neu. In welche Kategorie?'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Kategorie')).toHaveFocus()
+    expect(client.storedItems()).toEqual([])
+  })
+
+  it('does not ask for a known item, even without a category', async () => {
+    const { client } = renderCategorizedList([])
+
+    await typeNewItem('batterien')
+
+    expect(client.storedItems().map((stored) => stored.name)).toEqual([
+      'Batterien',
+    ])
+    expect(screen.getByRole('heading', { name: 'Artikel hinzufügen' }))
+  })
+
+  it('reports an empty name without asking', async () => {
+    const { announcements } = renderCategorizedList([])
+
+    await openAddItemPage()
+    await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+
+    expect(announcements).toContain('Bitte einen Namen eingeben.')
+    expect(
+      screen.queryByRole('button', { name: 'Mit Kategorie hinzufügen' }),
+    ).toBeNull()
+  })
+
+  it('adds the item into a known category and returns to an empty form', async () => {
+    const { client, knownItemsClient, announcements } = renderCategorizedList([
+      apples,
+      pizza,
+    ])
+
+    await typeNewItem('Kirschen')
+    await chooseCategory('obst/gemüse')
+
+    expect(announcements).toContain(
+      'Kirschen, 3 hinzugefügt. Kategorie Obst/Gemüse.',
+    )
+    expect(screen.getByLabelText('Name')).toHaveValue('')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+    expect(client.storedItems().map((stored) => stored.name)).toContain(
+      'Kirschen',
+    )
+    expect(
+      knownItemsClient
+        .storedKnownItems()
+        .find((knownItem) => knownItem.name === 'Kirschen')?.categoryId,
+    ).toBe('fruit')
+
+    await backToList()
+
+    expect(shownSections().lists).toEqual([['Äpfel', 'Kirschen, 3'], ['Pizza']])
+    expect(cleanUpButton()).toBeNull()
+  })
+
+  it('creates a typed category at the end of the order', async () => {
+    const { itemCategoriesClient, announcements } = renderCategorizedList([
+      apples,
+      batteries,
+    ])
+
+    await typeNewItem('Seife')
+    await chooseCategory('Drogerie')
+
+    expect(
+      itemCategoriesClient.storedCatalog().categories.map(({ name }) => name),
+    ).toEqual(['Obst/Gemüse', 'Tiefkühlkost', 'Drogerie'])
+    expect(announcements).toContain(
+      'Seife, 3 hinzugefügt. Kategorie Drogerie neu angelegt, Position 3.',
+    )
+
+    await backToList()
+
+    expect(shownSections()).toEqual({
+      headings: ['Obst/Gemüse', 'Drogerie', 'Ohne Kategorie'],
+      lists: [['Äpfel'], ['Seife, 3'], ['Batterien']],
+    })
+  })
+
+  it('adds the item without a category', async () => {
+    const { client, knownItemsClient, announcements } = renderCategorizedList(
+      [],
+    )
+
+    await typeNewItem('Seife')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Ohne Kategorie hinzufügen' }),
+    )
+
+    expect(client.storedItems().map((stored) => stored.name)).toEqual(['Seife'])
+    expect(
+      knownItemsClient
+        .storedKnownItems()
+        .find((knownItem) => knownItem.name === 'Seife')?.categoryId,
+    ).toBeNull()
+    expect(announcements).toContain('Seife, 3 hinzugefügt.')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+  })
+
+  it('leads back to the filled form without writing', async () => {
+    const { client, itemCategoriesClient } = renderCategorizedList([])
+
+    await typeNewItem('Seife')
+    await userEvent.type(screen.getByLabelText('Kategorie'), 'Drogerie')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zum Artikel' }),
+    )
+
+    expect(screen.getByLabelText('Name')).toHaveValue('Seife')
+    expect(screen.getByLabelText('Menge')).toHaveValue('3')
+    expect(client.storedItems()).toEqual([])
+    expect(itemCategoriesClient.storedCatalog()).toEqual(SHOP_CATALOG)
+  })
+
+  it('asks for a category when the field is empty', async () => {
+    const { client, announcements } = renderCategorizedList([])
+
+    await typeNewItem('Seife')
+    await chooseCategory('')
+
+    const message =
+      'Bitte eine Kategorie eingeben oder ohne Kategorie hinzufügen.'
+    expect(screen.getByText(message)).toBeInTheDocument()
+    expect(announcements).toContain(message)
+    expect(client.storedItems()).toEqual([])
+  })
+
+  it('asks also while the sorting is switched off', async () => {
+    renderCategorizedList([], { ...SHOP_CATALOG, sortByCategory: false })
+
+    await typeNewItem('Seife')
+
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie für Seife' }),
+    ).toBeInTheDocument()
+  })
+
+  it('has no accessibility violations', async () => {
+    const { rendered } = renderCategorizedList([])
+
+    await typeNewItem('Kirschen')
+    await userEvent.type(screen.getByLabelText('Kategorie'), 'o')
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

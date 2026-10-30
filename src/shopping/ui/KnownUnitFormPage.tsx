@@ -3,23 +3,23 @@ import { BottomBar } from '../../shared/ui/BottomBar'
 import { SaveIcon } from '../../shared/ui/SaveIcon'
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
 import { additionFailureMessage } from '../domain/announcements'
-import type { KnownUnit } from '../domain/knownUnit'
-
 type KnownUnitFormPageProps = {
-  knownUnit: KnownUnit
+  heading: string
+  initialName: string
   onSave: (name: string) => void
   onBack: () => void
   announce: (text: string) => void
 }
 
 export function KnownUnitFormPage({
-  knownUnit,
+  heading: headingText,
+  initialName,
   onSave,
   onBack,
   announce,
 }: KnownUnitFormPageProps) {
   const heading = useHeadingFocus()
-  const [name, setName] = useState(knownUnit.name)
+  const [name, setName] = useState(initialName)
   const [failureMessage, setFailureMessage] = useState('')
   const nameField = useRef<HTMLInputElement>(null)
 
@@ -45,7 +45,7 @@ export function KnownUnitFormPage({
         Zurück zu den Einheiten
       </button>
       <h1 ref={heading} tabIndex={-1}>
-        Einheit bearbeiten
+        {headingText}
       </h1>
       <p className="field">
         <label htmlFor="knownUnitName">Name</label>

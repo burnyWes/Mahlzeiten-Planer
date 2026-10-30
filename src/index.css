@@ -187,6 +187,11 @@ button[aria-disabled='true'] {
   margin: 1rem 0;
 }
 
+.listSectionHeading {
+  font-size: 1.125rem;
+  margin: 1.5rem 0 0;
+}
+
 .itemList li {
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--divider);
@@ -241,7 +246,8 @@ button[aria-disabled='true'] {
 }
 
 .itemList label,
-.ruleGroup label {
+.ruleGroup label,
+.sortSwitch label {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -251,6 +257,23 @@ button[aria-disabled='true'] {
 .settingsToggle {
   flex: 1;
   justify-content: space-between;
+}
+
+.sortSwitch {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.positionSpinner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  border-radius: 6px;
+}
+
+.positionValue {
+  min-width: 4rem;
 }
 
 .ruleGroup {

@@ -18,8 +18,8 @@ Build:   npm run build
 
 ## Fachliche Kontexte
 
-- **shopping** — die gemeinsame Einkaufsliste des Haushalts: Artikel anlegen, abhaken
-  und aufraeumen.
+- **shopping** — die gemeinsame Einkaufsliste des Haushalts: Artikel anlegen, abhaken,
+  aufraeumen und nach Ladenreihenfolge ordnen.
 - **meals** — die Gerichte des Haushalts: anlegen, nachschlagen, auf die
   Einkaufsliste uebertragen und als Vorrat vorhalten.
 

@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import {
+  knownUnitCreatedAnnouncement,
   knownUnitDeletedAnnouncement,
   knownUnitSavedAnnouncement,
 } from '../domain/announcements'
-import { planKnownUnitRename, type KnownUnit } from '../domain/knownUnit'
+import {
+  knownUnitToAdd,
+  planKnownUnitRename,
+  type KnownUnit,
+} from '../domain/knownUnit'
 import { normalizeItemName } from '../domain/shoppingItem'
 import { DeleteKnownUnitPage } from './DeleteKnownUnitPage'
 import { KnownUnitFormPage } from './KnownUnitFormPage'
@@ -12,6 +17,7 @@ import type { KnownUnits } from './useKnownUnits'
 
 type KnownUnitsPage =
   | { kind: 'list' }
+  | { kind: 'create' }
   | { kind: 'form'; name: string }
   | { kind: 'delete'; name: string }
 
@@ -29,7 +35,7 @@ export function KnownUnitsArea({
   const [page, setPage] = useState<KnownUnitsPage>({ kind: 'list' })
 
   const addressedKnownUnit =
-    page.kind === 'list'
+    page.kind === 'list' || page.kind === 'create'
       ? null
       : (knownUnits.knownUnits.find(
           (knownUnit) =>
@@ -66,10 +72,29 @@ export function KnownUnitsArea({
     announce(knownUnitSavedAnnouncement(rename.written.name))
   }
 
+  function createKnownUnit(name: string) {
+    const created = knownUnitToAdd(knownUnits.knownUnits, name, Date.now())
+    knownUnits.addKnownUnit(created)
+    showList()
+    announce(knownUnitCreatedAnnouncement(created.name))
+  }
+
+  if (page.kind === 'create')
+    return (
+      <KnownUnitFormPage
+        heading="Einheit anlegen"
+        initialName=""
+        onSave={createKnownUnit}
+        onBack={showList}
+        announce={announce}
+      />
+    )
+
   if (page.kind === 'form' && addressedKnownUnit !== null)
     return (
       <KnownUnitFormPage
-        knownUnit={addressedKnownUnit}
+        heading="Einheit bearbeiten"
+        initialName={addressedKnownUnit.name}
         onSave={(newName) => renameKnownUnit(addressedKnownUnit, newName)}
         onBack={showList}
         announce={announce}
@@ -89,6 +114,7 @@ export function KnownUnitsArea({
     <KnownUnitListPage
       knownUnits={knownUnits.knownUnits}
       onBack={onBack}
+      onAddKnownUnit={() => setPage({ kind: 'create' })}
       onOpenKnownUnit={(knownUnit) =>
         setPage({ kind: 'form', name: knownUnit.name })
       }

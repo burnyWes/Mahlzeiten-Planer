@@ -6,6 +6,7 @@ export type KnownUnits = {
   knownUnits: readonly KnownUnit[]
   removeKnownUnit: (unit: string) => void
   renameKnownUnit: (rename: KnownUnitRename) => void
+  addKnownUnit: (knownUnit: KnownUnit) => void
 }
 
 export function useKnownUnits(
@@ -38,5 +39,10 @@ export function useKnownUnits(
     [client],
   )
 
-  return { knownUnits, removeKnownUnit, renameKnownUnit }
+  const addKnownUnit = useCallback(
+    (knownUnit: KnownUnit) => client.addKnownUnit(knownUnit),
+    [client],
+  )
+
+  return { knownUnits, removeKnownUnit, renameKnownUnit, addKnownUnit }
 }

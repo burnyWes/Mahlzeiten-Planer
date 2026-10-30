@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
+  itemCategoriesOnServer,
   knownUnitNamesOnServer,
   prepareEmulators,
   rollingRulesOnServer,
@@ -198,6 +199,7 @@ test('merges a misspelt unit into the right one', async ({ page }) => {
   await typeInto(page, 'Menge', '500')
   await typeInto(page, 'Einheit', 'gr')
   await pressButton(page, 'Hinzufügen')
+  await pressButton(page, 'Ohne Kategorie hinzufügen')
   await pressButton(page, 'Zurück zur Liste')
   await expect.poll(knownUnitNamesOnServer).toContain('gr')
 
@@ -216,4 +218,52 @@ test('merges a misspelt unit into the right one', async ({ page }) => {
   ).toHaveCount(0)
   await expect.poll(knownUnitNamesOnServer).toContain('g')
   await expect.poll(knownUnitNamesOnServer).not.toContain('gr')
+})
+
+async function createItemCategory(page: Page, name: string, stepsForward = 0) {
+  await pressButton(page, 'Artikelkategorie anlegen')
+  await typeInto(page, 'Name', name)
+  await page.getByRole('spinbutton', { name: 'Position' }).focus()
+  for (let step = 0; step < stepsForward; step += 1)
+    await page.keyboard.press('ArrowDown')
+  await pressButton(page, 'Speichern')
+  await expect(
+    page.getByRole('heading', { name: /^Artikelkategorien, / }),
+  ).toBeVisible()
+}
+
+test('orders the item categories and keeps the order after a reload', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await signIn(page)
+
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Artikelkategorien')
+  await createItemCategory(page, 'Obst/Gemüse')
+  await createItemCategory(page, 'Backwaren')
+  await createItemCategory(page, 'Tiefkühlkost')
+  await createItemCategory(page, 'Drogerie', 2)
+  await ruleSwitch(page, 'Nach Kategorien sortieren').focus()
+  await page.keyboard.press('Space')
+  await settleWrites(page)
+
+  await expect.poll(itemCategoriesOnServer).toEqual({
+    names: ['Obst/Gemüse', 'Drogerie', 'Backwaren', 'Tiefkühlkost'],
+    sortByCategory: false,
+  })
+
+  await page.reload()
+  await pressButton(page, 'Einstellungen')
+  await pressButton(page, 'Artikelkategorien')
+
+  await expect(
+    shownItems(page).getByRole('button', { name: /^\d\. / }),
+  ).toHaveText([
+    '1. Obst/Gemüse, 0 Artikel',
+    '2. Drogerie, 0 Artikel',
+    '3. Backwaren, 0 Artikel',
+    '4. Tiefkühlkost, 0 Artikel',
+  ])
+  await expect(ruleSwitch(page, 'Nach Kategorien sortieren')).not.toBeChecked()
 })

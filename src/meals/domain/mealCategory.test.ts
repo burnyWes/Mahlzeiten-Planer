@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { InvalidMeal, type Meal } from './meal'
 import {
+  CatalogCategoryAlreadyTaken,
+  catalogCategoryToAdd,
+  catalogWithCategoryRenamed,
+  catalogWithoutCategory,
   CategoryAlreadyTaken,
+  mealCategoryNamesFromStored,
+  sameCatalogNames,
+  withCatalogCategories,
   categoryToAdd,
   knownCategory,
   mealCategories,
@@ -335,5 +342,94 @@ describe('knownCategory', () => {
 
   it('finds nothing when the chosen category is gone', () => {
     expect(knownCategory(known, 'Nudelgericht')).toBeNull()
+  })
+})
+
+describe('withCatalogCategories', () => {
+  it('adds the catalog categories without meals', () => {
+    expect(
+      withCatalogCategories(
+        [{ name: 'Suppe', mealCount: 2 }],
+        ['Pasta', 'suppe', 'Auflauf', 'pasta'],
+      ),
+    ).toEqual([
+      { name: 'Auflauf', mealCount: 0 },
+      { name: 'Pasta', mealCount: 0 },
+      { name: 'Suppe', mealCount: 2 },
+    ])
+  })
+})
+
+describe('catalogCategoryToAdd', () => {
+  it('takes a new category in its written form', () => {
+    expect(catalogCategoryToAdd(['Suppe'], ' Pasta ')).toBe('Pasta')
+  })
+
+  it('refuses a category that is already known', () => {
+    let refusal: unknown = null
+    try {
+      catalogCategoryToAdd(['Pasta'], 'pasta')
+    } catch (error) {
+      refusal = error
+    }
+
+    expect(refusal).toBeInstanceOf(CatalogCategoryAlreadyTaken)
+    expect((refusal as CatalogCategoryAlreadyTaken).category).toBe('Pasta')
+  })
+
+  it('refuses an empty category', () => {
+    expect(() => catalogCategoryToAdd([], '  ')).toThrowError(InvalidMeal)
+  })
+})
+
+describe('catalogWithoutCategory', () => {
+  it('removes the category in any spelling', () => {
+    expect(catalogWithoutCategory(['Pasta', 'Suppe'], 'pasta')).toEqual([
+      'Suppe',
+    ])
+  })
+})
+
+describe('catalogWithCategoryRenamed', () => {
+  it('renames the category', () => {
+    expect(
+      catalogWithCategoryRenamed(['Pasta', 'Suppe'], 'pasta', ' Nudeln '),
+    ).toEqual(['Nudeln', 'Suppe'])
+  })
+
+  it('keeps one entry when the new name is already in the catalog', () => {
+    expect(
+      catalogWithCategoryRenamed(
+        ['Pasta', 'Nudeln', 'Suppe'],
+        'Pasta',
+        'nudeln',
+      ),
+    ).toEqual(['nudeln', 'Suppe'])
+  })
+
+  it('refuses an empty name', () => {
+    expect(() =>
+      catalogWithCategoryRenamed(['Pasta'], 'Pasta', ' '),
+    ).toThrowError(InvalidMeal)
+  })
+})
+
+describe('mealCategoryNamesFromStored', () => {
+  it('reads the stored names', () => {
+    expect(
+      mealCategoryNamesFromStored({ names: ['Pasta', 3, 'Suppe'] }),
+    ).toEqual(['Pasta', 'Suppe'])
+  })
+
+  it('knows no names without a document', () => {
+    expect(mealCategoryNamesFromStored(undefined)).toEqual([])
+  })
+})
+
+describe('sameCatalogNames', () => {
+  it('compares the names in their order', () => {
+    expect(sameCatalogNames(['Pasta', 'Suppe'], ['Pasta', 'Suppe'])).toBe(true)
+    expect(sameCatalogNames(['Pasta', 'Suppe'], ['Suppe', 'Pasta'])).toBe(false)
+    expect(sameCatalogNames(['Pasta'], ['Pasta', 'Suppe'])).toBe(false)
   })
 })

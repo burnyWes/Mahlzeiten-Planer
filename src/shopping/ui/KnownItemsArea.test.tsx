@@ -2,43 +2,72 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
+import {
+  createInMemoryItemCategoriesClient,
+  type InMemoryItemCategoriesClient,
+} from '../api/inMemoryItemCategoriesClient'
 import { createInMemoryKnownItemsClient } from '../api/inMemoryKnownItemsClient'
 import type { KnownItemsClient } from '../api/knownItemsClient'
+import {
+  EMPTY_ITEM_CATEGORY_CATALOG,
+  type ItemCategoryCatalog,
+} from '../domain/itemCategory'
 import type { KnownItem } from '../domain/knownItem'
 import { KnownItemsArea } from './KnownItemsArea'
+import { useItemCategories } from './useItemCategories'
 import { useKnownItems } from './useKnownItems'
 
-function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
-  return { name, timesUsed, lastUsedAt }
+function known(
+  name: string,
+  timesUsed = 1,
+  lastUsedAt = 1,
+  categoryId: string | null = null,
+): KnownItem {
+  return { name, timesUsed, lastUsedAt, categoryId }
+}
+
+function catalogOf(...names: readonly string[]): ItemCategoryCatalog {
+  return {
+    categories: names.map((name, index) => ({ id: `c${index + 1}`, name })),
+    sortByCategory: true,
+  }
 }
 
 type KnownItemsAreaUnderTestProps = {
   client: KnownItemsClient
+  itemCategoriesClient: InMemoryItemCategoriesClient
   announce: (text: string) => void
   onBack: () => void
 }
 
 function KnownItemsAreaUnderTest({
   client,
+  itemCategoriesClient,
   announce,
   onBack,
 }: KnownItemsAreaUnderTestProps) {
   return (
     <KnownItemsArea
       knownItems={useKnownItems(client)}
+      itemCategories={useItemCategories(itemCategoriesClient)}
       announce={announce}
       onBack={onBack}
     />
   )
 }
 
-function renderKnownItemsArea(initialKnownItems: readonly KnownItem[] = []) {
+function renderKnownItemsArea(
+  initialKnownItems: readonly KnownItem[] = [],
+  catalog: ItemCategoryCatalog = EMPTY_ITEM_CATEGORY_CATALOG,
+) {
   const client = createInMemoryKnownItemsClient(initialKnownItems)
+  const itemCategoriesClient = createInMemoryItemCategoriesClient(catalog)
   const announcements: string[] = []
   const departures: string[] = []
   const rendered = render(
     <KnownItemsAreaUnderTest
       client={client}
+      itemCategoriesClient={itemCategoriesClient}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -47,7 +76,7 @@ function renderKnownItemsArea(initialKnownItems: readonly KnownItem[] = []) {
       }}
     />,
   )
-  return { client, announcements, departures, rendered }
+  return { client, itemCategoriesClient, announcements, departures, rendered }
 }
 
 function shownKnownItemNames() {
@@ -72,6 +101,12 @@ function openKnownItem(name: string) {
 
 function save() {
   return userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+}
+
+async function fillCategory(text: string) {
+  await userEvent.clear(screen.getByLabelText('Kategorie'))
+  if (text !== '')
+    await userEvent.type(screen.getByLabelText('Kategorie'), text)
 }
 
 async function renameTo(newName: string) {
@@ -244,7 +279,7 @@ describe('KnownItemsArea', () => {
     expect(announcements).toContain('Bitte einen Namen eingeben.')
     expect(screen.getByText('Bitte einen Namen eingeben.')).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: 'Vorschlag bearbeiten' }),
+      screen.getByRole('heading', { name: 'Artikel bearbeiten' }),
     ).toBeInTheDocument()
   })
 
@@ -272,6 +307,188 @@ describe('KnownItemsArea', () => {
     expect(
       screen.getByRole('heading', { name: 'Artikel, keine' }),
     ).toBeInTheDocument()
+  })
+
+  it('shows the category of each item', () => {
+    renderKnownItemsArea(
+      [
+        known('Äpfel', 1, 1, 'c1'),
+        known('Batterien'),
+        known('Pizza', 1, 1, 'gone'),
+      ],
+      catalogOf('Obst/Gemüse'),
+    )
+
+    expect(shownKnownItemNames()).toEqual([
+      'Äpfel, Obst/Gemüse',
+      'Batterien',
+      'Pizza',
+    ])
+  })
+
+  it('starts the form with the current category', async () => {
+    renderKnownItemsArea([known('Äpfel', 1, 1, 'c1')], catalogOf('Obst/Gemüse'))
+
+    await openKnownItem('Äpfel, Obst/Gemüse')
+
+    expect(
+      screen.getByRole('heading', { name: 'Artikel bearbeiten' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Kategorie')).toHaveValue('Obst/Gemüse')
+  })
+
+  it('suggests categories while typing', async () => {
+    renderKnownItemsArea(
+      [known('Äpfel')],
+      catalogOf('Tiefkühlkost', 'Kühlregal', 'Obst/Gemüse'),
+    )
+
+    await openKnownItem('Äpfel')
+    await fillCategory('k')
+
+    const suggestions = screen.getByRole('list', {
+      name: 'Kategorie-Vorschläge',
+    })
+    expect(
+      within(suggestions)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Kühlregal', 'Tiefkühlkost'])
+    await userEvent.click(
+      within(suggestions).getByRole('button', { name: 'Kühlregal' }),
+    )
+    expect(screen.getByLabelText('Kategorie')).toHaveValue('Kühlregal')
+  })
+
+  it('assigns a known category in its own spelling', async () => {
+    const { client, announcements } = renderKnownItemsArea(
+      [known('Äpfel', 2, 5)],
+      catalogOf('Backwaren', 'Obst/Gemüse'),
+    )
+
+    await openKnownItem('Äpfel')
+    await fillCategory('obst/gemüse')
+    await save()
+
+    expect(client.storedKnownItems()).toEqual([known('Äpfel', 2, 5, 'c2')])
+    expect(announcements).toContain('Äpfel gespeichert.')
+    expect(shownKnownItemNames()).toEqual(['Äpfel, Obst/Gemüse'])
+  })
+
+  it('creates an unknown category at the end of the order', async () => {
+    const { client, itemCategoriesClient, announcements } =
+      renderKnownItemsArea(
+        [known('Äpfel', 2, 5)],
+        catalogOf('Obst', 'Backwaren', 'Süßigkeiten', 'Tiefkühlkost'),
+      )
+
+    await openKnownItem('Äpfel')
+    await fillCategory('Drogerie')
+    await save()
+
+    expect(itemCategoriesClient.storedCatalog().categories.at(-1)).toEqual({
+      id: 'k1',
+      name: 'Drogerie',
+    })
+    expect(client.storedKnownItems()).toEqual([known('Äpfel', 2, 5, 'k1')])
+    expect(announcements).toContain(
+      'Äpfel gespeichert. Kategorie Drogerie neu angelegt, Position 5.',
+    )
+  })
+
+  it('takes the category away when the field is emptied', async () => {
+    const { client } = renderKnownItemsArea(
+      [known('Äpfel', 2, 5, 'c1')],
+      catalogOf('Obst'),
+    )
+
+    await openKnownItem('Äpfel, Obst')
+    await fillCategory('')
+    await save()
+
+    expect(client.storedKnownItems()).toEqual([known('Äpfel', 2, 5)])
+  })
+
+  it('creates no category when the name is refused', async () => {
+    const { itemCategoriesClient } = renderKnownItemsArea(
+      [known('Äpfel')],
+      catalogOf('Obst'),
+    )
+
+    await openKnownItem('Äpfel')
+    await fillCategory('Drogerie')
+    await renameTo('')
+
+    expect(
+      itemCategoriesClient.storedCatalog().categories.map(({ name }) => name),
+    ).toEqual(['Obst'])
+  })
+
+  it('keeps the category from the form when merging', async () => {
+    const { client } = renderKnownItemsArea(
+      [known('Apfel', 3, 7), known('Äpfel', 12, 9, 'c2')],
+      catalogOf('Obst', 'Backwaren'),
+    )
+
+    await openKnownItem('Apfel')
+    await fillCategory('Obst')
+    await renameTo('Äpfel')
+
+    expect(client.storedKnownItems()).toEqual([known('Äpfel', 15, 9, 'c1')])
+  })
+
+  it('creates an item through the plus button', async () => {
+    const { client, announcements } = renderKnownItemsArea(
+      [known('Brot')],
+      catalogOf('Obst'),
+    )
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikel anlegen' }),
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Artikel anlegen' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+    await userEvent.type(screen.getByLabelText('Name'), 'Äpfel')
+    await fillCategory('obst')
+    await save()
+
+    const created = client
+      .storedKnownItems()
+      .find((knownItem) => knownItem.name === 'Äpfel')
+    expect(created).toMatchObject({ timesUsed: 0, categoryId: 'c1' })
+    expect(created?.lastUsedAt).toBeGreaterThan(0)
+    expect(announcements).toContain('Äpfel angelegt.')
+    expect(screen.getByRole('heading', { name: 'Artikel, 2' })).toHaveFocus()
+  })
+
+  it('refuses to create an item that is already known', async () => {
+    const { client, announcements } = renderKnownItemsArea([known('Äpfel')])
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikel anlegen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Name'), 'äpfel')
+    await save()
+
+    expect(storedNames(client)).toEqual(['Äpfel'])
+    expect(
+      screen.getByText('Den Artikel Äpfel gibt es schon.'),
+    ).toBeInTheDocument()
+    expect(announcements).toContain('Den Artikel Äpfel gibt es schon.')
+  })
+
+  it('has no accessibility violations on the creation form', async () => {
+    const { rendered } = renderKnownItemsArea([], catalogOf('Obst', 'Ostern'))
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Artikel anlegen' }),
+    )
+    await fillCategory('o')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the form', async () => {

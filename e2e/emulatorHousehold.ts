@@ -81,6 +81,24 @@ export async function itemNamesOnServer(): Promise<readonly string[]> {
   )
 }
 
+type ListedKnownItems = {
+  documents?: readonly { fields: { name: { stringValue: string } } }[]
+}
+
+export async function knownItemNamesOnServer(): Promise<readonly string[]> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/knownItems`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed: ${await response.text()}`)
+  }
+  const listed = (await response.json()) as ListedKnownItems
+  return (listed.documents ?? []).map(
+    (document) => document.fields.name.stringValue,
+  )
+}
+
 type ListedKnownUnits = {
   documents?: readonly { fields: { name: { stringValue: string } } }[]
 }
@@ -565,4 +583,37 @@ export async function supplyCountsOnServer(): Promise<readonly number[]> {
   return (listed.documents ?? []).map((document) =>
     Number(document.fields.count.integerValue),
   )
+}
+
+type StoredItemCategoryCatalog = {
+  fields?: {
+    categories?: {
+      arrayValue?: {
+        values?: readonly {
+          mapValue?: { fields?: { name?: { stringValue?: string } } }
+        }[]
+      }
+    }
+    sortByCategory?: { booleanValue?: boolean }
+  }
+}
+
+export type ItemCategoriesOnServer = {
+  names: readonly string[]
+  sortByCategory: boolean | null
+}
+
+export async function itemCategoriesOnServer(): Promise<ItemCategoriesOnServer> {
+  const url = `${FIRESTORE_EMULATOR}/v1/projects/${PROJECT}/databases/(default)/documents/itemCategories/catalog`
+  const response = await fetch(url, {
+    headers: { Authorization: 'Bearer owner' },
+  })
+  if (!response.ok) return { names: [], sortByCategory: null }
+  const stored = (await response.json()) as StoredItemCategoryCatalog
+  return {
+    names: (stored.fields?.categories?.arrayValue?.values ?? []).map(
+      (category) => category.mapValue?.fields?.name?.stringValue ?? '',
+    ),
+    sortByCategory: stored.fields?.sortByCategory?.booleanValue ?? null,
+  }
 }

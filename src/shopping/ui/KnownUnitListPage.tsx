@@ -1,4 +1,4 @@
-import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
+import { ManagementHeader } from '../../shared/ui/ManagementHeader'
 import { knownUnitsHeading } from '../domain/announcements'
 import { knownUnitsByName, type KnownUnit } from '../domain/knownUnit'
 import { KnownUnitListRow } from './KnownUnitListRow'
@@ -6,6 +6,7 @@ import { KnownUnitListRow } from './KnownUnitListRow'
 type KnownUnitListPageProps = {
   knownUnits: readonly KnownUnit[]
   onBack: () => void
+  onAddKnownUnit: () => void
   onOpenKnownUnit: (knownUnit: KnownUnit) => void
   onDeleteKnownUnit: (knownUnit: KnownUnit) => void
 }
@@ -13,19 +14,20 @@ type KnownUnitListPageProps = {
 export function KnownUnitListPage({
   knownUnits,
   onBack,
+  onAddKnownUnit,
   onOpenKnownUnit,
   onDeleteKnownUnit,
 }: KnownUnitListPageProps) {
-  const heading = useHeadingFocus()
-
   return (
     <main className="page">
       <button type="button" onClick={onBack}>
         Zurück zu den Einstellungen
       </button>
-      <h1 ref={heading} tabIndex={-1}>
-        {knownUnitsHeading(knownUnits.length)}
-      </h1>
+      <ManagementHeader
+        heading={knownUnitsHeading(knownUnits.length)}
+        addLabel="Einheit anlegen"
+        onAdd={onAddKnownUnit}
+      />
       {knownUnits.length === 0 ? (
         <p>Noch keine Einheiten.</p>
       ) : (

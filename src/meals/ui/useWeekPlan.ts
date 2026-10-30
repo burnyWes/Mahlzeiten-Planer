@@ -10,7 +10,7 @@ import {
   type RuleInScope,
 } from '../domain/rollingRules'
 import { EMPTY_ROLL_MEMORY, type RollMemory } from '../domain/rollMemory'
-import { isStaleSnapshot } from '../domain/unconfirmedWrite'
+import { isStaleSnapshot } from '../../shared/domain/unconfirmedWrite'
 import type { PlanPeriod } from '../domain/planPeriod'
 import {
   emptyWeekPlan,

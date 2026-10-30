@@ -53,6 +53,8 @@ const knownItemsOf = collectionOf('knownItems')
 const knownUnitsOf = collectionOf('units')
 const suppliesOf = collectionOf('supplies')
 const weekPlanOf = collectionOf('weekPlan')
+const itemCategoriesOf = collectionOf('itemCategories')
+const mealCategoriesOf = collectionOf('mealCategories')
 
 const milk = { name: 'Milch', lastUsedAt: 1, timesUsed: 1 }
 
@@ -83,6 +85,13 @@ const bolognese = {
 }
 
 const supply = { count: 3 }
+
+const mealCategoryCatalog = { names: ['Pasta'] }
+
+const itemCategoryCatalog = {
+  categories: [{ id: 'k1', name: 'Obst/Gemüse' }],
+  sortByCategory: true,
+}
 
 describe('firestore security rules', () => {
   it('lets the household write an item', async () => {
@@ -226,6 +235,54 @@ describe('firestore security rules', () => {
   it('refuses an unauthenticated visitor on the supplies', async () => {
     await assertFails(getDoc(suppliesOf(null)('bolognese')))
     await assertFails(setDoc(suppliesOf(null)('bolognese'), supply))
+  })
+
+  it('lets the household write the item categories', async () => {
+    await assertSucceeds(
+      setDoc(itemCategoriesOf(householdUid)('catalog'), itemCategoryCatalog),
+    )
+  })
+
+  it('lets the household read the item categories', async () => {
+    await assertSucceeds(getDoc(itemCategoriesOf(householdUid)('catalog')))
+  })
+
+  it('refuses another account on the item categories', async () => {
+    await assertFails(getDoc(itemCategoriesOf(strangerUid)('catalog')))
+    await assertFails(
+      setDoc(itemCategoriesOf(strangerUid)('catalog'), itemCategoryCatalog),
+    )
+  })
+
+  it('refuses an unauthenticated visitor on the item categories', async () => {
+    await assertFails(getDoc(itemCategoriesOf(null)('catalog')))
+    await assertFails(
+      setDoc(itemCategoriesOf(null)('catalog'), itemCategoryCatalog),
+    )
+  })
+
+  it('lets the household write the meal categories', async () => {
+    await assertSucceeds(
+      setDoc(mealCategoriesOf(householdUid)('catalog'), mealCategoryCatalog),
+    )
+  })
+
+  it('lets the household read the meal categories', async () => {
+    await assertSucceeds(getDoc(mealCategoriesOf(householdUid)('catalog')))
+  })
+
+  it('refuses another account on the meal categories', async () => {
+    await assertFails(getDoc(mealCategoriesOf(strangerUid)('catalog')))
+    await assertFails(
+      setDoc(mealCategoriesOf(strangerUid)('catalog'), mealCategoryCatalog),
+    )
+  })
+
+  it('refuses an unauthenticated visitor on the meal categories', async () => {
+    await assertFails(getDoc(mealCategoriesOf(null)('catalog')))
+    await assertFails(
+      setDoc(mealCategoriesOf(null)('catalog'), mealCategoryCatalog),
+    )
   })
 
   it('refuses the household outside the released collections', async () => {

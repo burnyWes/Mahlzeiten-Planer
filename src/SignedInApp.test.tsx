@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps } from 'react'
 import { describe, expect, it } from 'vitest'
+import { createInMemoryMealCategoriesClient } from './meals/api/inMemoryMealCategoriesClient'
 import { createInMemoryMealsClient } from './meals/api/inMemoryMealsClient'
 import { createInMemorySuppliesClient } from './meals/api/inMemorySuppliesClient'
 import { createInMemoryWeekPlanClient } from './meals/api/inMemoryWeekPlanClient'
@@ -22,6 +23,7 @@ import type { Clock } from './shared/domain/clock'
 import { createInMemoryAppearanceClient } from './shared/appearance/inMemoryAppearanceClient'
 import { useAppearance } from './shared/appearance/useAppearance'
 import { SignedInApp } from './SignedInApp'
+import { createInMemoryItemCategoriesClient } from './shopping/api/inMemoryItemCategoriesClient'
 import { createInMemoryKnownItemsClient } from './shopping/api/inMemoryKnownItemsClient'
 import {
   createInMemoryKnownUnitsClient,
@@ -73,6 +75,8 @@ function renderSignedInApp(
     DEFAULT_UNITS.map((name) => ({ name, lastUsedAt: 0, timesUsed: 0 })),
   ),
   random?: RandomSource,
+  itemCategoriesClient = createInMemoryItemCategoriesClient(),
+  mealCategoriesClient = createInMemoryMealCategoriesClient(),
 ) {
   const client = createInMemoryShoppingListClient(initialItems)
   const announcements: string[] = []
@@ -80,10 +84,12 @@ function renderSignedInApp(
     <SignedInAppWithAppearance
       createShoppingListClient={() => client}
       createMealsClient={() => createInMemoryMealsClient(initialMeals)}
+      createMealCategoriesClient={() => mealCategoriesClient}
       createWeekPlanClient={() => weekPlanClient}
       createSuppliesClient={() => suppliesClient}
       createKnownItemsClient={() => knownItemsClient}
       createKnownUnitsClient={() => knownUnitsClient}
+      createItemCategoriesClient={() => itemCategoriesClient}
       appearanceClient={appearanceClient}
       clock={clock}
       random={random}
@@ -131,6 +137,14 @@ async function addShoppingItem(name: string, amount: string, unit = '') {
   await userEvent.type(screen.getByLabelText('Menge'), amount)
   if (unit !== '') await userEvent.type(screen.getByLabelText('Einheit'), unit)
   await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+  await addWithoutCategoryWhenAsked()
+}
+
+async function addWithoutCategoryWhenAsked() {
+  const withoutCategory = screen.queryByRole('button', {
+    name: 'Ohne Kategorie hinzufügen',
+  })
+  if (withoutCategory !== null) await userEvent.click(withoutCategory)
 }
 
 async function writeDownMeal(
@@ -1301,7 +1315,7 @@ describe('SignedInApp', () => {
         ]),
       ],
       createInMemoryKnownItemsClient([
-        { name: 'Hackfleisch', lastUsedAt: 1, timesUsed: 1 },
+        { name: 'Hackfleisch', lastUsedAt: 1, timesUsed: 1, categoryId: null },
       ]),
     )
 
@@ -1363,7 +1377,7 @@ describe('SignedInApp', () => {
       [],
       [],
       createInMemoryKnownItemsClient([
-        { name: 'Hafermilch', lastUsedAt: 1, timesUsed: 1 },
+        { name: 'Hafermilch', lastUsedAt: 1, timesUsed: 1, categoryId: null },
       ]),
     )
 
@@ -1516,7 +1530,7 @@ describe('SignedInApp', () => {
 
   it('keeps the catalog spelling of a name remembered from a meal', async () => {
     const knownItemsClient = createInMemoryKnownItemsClient([
-      { name: 'Hackfleisch', lastUsedAt: 1, timesUsed: 1 },
+      { name: 'Hackfleisch', lastUsedAt: 1, timesUsed: 1, categoryId: null },
     ])
     renderSignedInApp([], [], knownItemsClient)
 
@@ -1548,7 +1562,7 @@ describe('SignedInApp', () => {
       [],
       [],
       createInMemoryKnownItemsClient([
-        { name: 'Hafermilch', lastUsedAt: 1, timesUsed: 1 },
+        { name: 'Hafermilch', lastUsedAt: 1, timesUsed: 1, categoryId: null },
       ]),
     )
 
@@ -1598,6 +1612,7 @@ describe('SignedInApp', () => {
       'Farben invertieren',
       'Regeln',
       'Artikel',
+      'Artikelkategorien',
       'Einheiten',
       'Gerichtskategorien',
     ])

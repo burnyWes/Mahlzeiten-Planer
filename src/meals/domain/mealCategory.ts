@@ -155,3 +155,77 @@ export function withCategoryRenamed(
         !sameCategories(renamed.categories, meals[position].categories),
     )
 }
+
+export class CatalogCategoryAlreadyTaken extends Error {
+  category: string
+
+  constructor(category: string) {
+    super(category)
+    this.name = 'CatalogCategoryAlreadyTaken'
+    this.category = category
+  }
+}
+
+function distinctNames(names: readonly string[]): readonly string[] {
+  return names.filter(
+    (name, position) =>
+      names.findIndex((other) => sameCategory(other, name)) === position,
+  )
+}
+
+export function withCatalogCategories(
+  overviews: readonly CategoryOverview[],
+  catalogNames: readonly string[],
+): readonly CategoryOverview[] {
+  const withoutMeals = distinctNames(catalogNames)
+    .filter(
+      (name) =>
+        !overviews.some((overview) => sameCategory(overview.name, name)),
+    )
+    .map((name) => ({ name, mealCount: 0 }))
+  return [...overviews, ...withoutMeals].sort((one, other) =>
+    one.name.localeCompare(other.name, 'de-DE'),
+  )
+}
+
+export function catalogCategoryToAdd(
+  known: readonly string[],
+  written: string,
+): string {
+  const name = createName(written)
+  const taken = known.find((category) => sameCategory(category, name))
+  if (taken !== undefined) throw new CatalogCategoryAlreadyTaken(taken)
+  return name
+}
+
+export function catalogWithoutCategory(
+  catalogNames: readonly string[],
+  name: string,
+): readonly string[] {
+  return catalogNames.filter((category) => !sameCategory(category, name))
+}
+
+export function catalogWithCategoryRenamed(
+  catalogNames: readonly string[],
+  from: string,
+  newName: string,
+): readonly string[] {
+  return renamedCategories(catalogNames, from, createName(newName))
+}
+
+export function mealCategoryNamesFromStored(
+  stored: unknown,
+): readonly string[] {
+  if (typeof stored !== 'object' || stored === null) return []
+  const { names } = stored as Record<string, unknown>
+  return Array.isArray(names)
+    ? names.filter((name): name is string => typeof name === 'string')
+    : []
+}
+
+export function sameCatalogNames(
+  one: readonly string[],
+  other: readonly string[],
+): boolean {
+  return sameCategories(one, other)
+}

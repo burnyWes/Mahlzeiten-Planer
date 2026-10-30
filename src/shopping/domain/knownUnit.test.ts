@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   canonicalUnit,
   DEFAULT_UNITS,
+  KnownUnitAlreadyTaken,
   knownUnitsByName,
+  knownUnitToAdd,
   knownUnitsFromHistory,
   planKnownUnitRename,
   suggestUnits,
@@ -188,5 +190,31 @@ describe('knownUnitsByName', () => {
         (knownUnit) => knownUnit.name,
       ),
     ).toEqual(['Äpfel', 'g', 'Zehe'])
+  })
+})
+
+describe('knownUnitToAdd', () => {
+  it('creates an unused unit', () => {
+    expect(knownUnitToAdd([known('g')], ' Dose ', 500)).toEqual({
+      name: 'Dose',
+      lastUsedAt: 500,
+      timesUsed: 0,
+    })
+  })
+
+  it('refuses a unit that is already known', () => {
+    let refusal: unknown = null
+    try {
+      knownUnitToAdd([known('g')], 'G', 500)
+    } catch (error) {
+      refusal = error
+    }
+
+    expect(refusal).toBeInstanceOf(KnownUnitAlreadyTaken)
+    expect((refusal as KnownUnitAlreadyTaken).knownUnit).toBe('g')
+  })
+
+  it('refuses an empty unit', () => {
+    expect(() => knownUnitToAdd([], ' ', 500)).toThrowError(InvalidShoppingItem)
   })
 })

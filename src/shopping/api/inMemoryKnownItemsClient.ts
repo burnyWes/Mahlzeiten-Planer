@@ -1,5 +1,5 @@
+import { applyRename } from '../domain/catalogEntry'
 import {
-  applyRename,
   knownItemsFromHistory,
   recordUse,
   type KnownItem,
@@ -30,8 +30,12 @@ export function createInMemoryKnownItemsClient(
       onKnownItems(knownItems)
       return () => listeners.delete(onKnownItems)
     },
-    recordUse(name, usedAt) {
-      knownItems = recordUse(knownItems, name, usedAt)
+    recordUse(name, usedAt, categoryId) {
+      knownItems = recordUse(knownItems, name, usedAt, categoryId)
+      publish()
+    },
+    addKnownItem(knownItem) {
+      knownItems = [...knownItems, knownItem]
       publish()
     },
     removeKnownItem(name) {

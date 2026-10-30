@@ -4,15 +4,25 @@ import type { KnownItem, KnownItemRename } from '../domain/knownItem'
 
 export type KnownItems = {
   knownItems: readonly KnownItem[]
+  loaded: boolean
   removeKnownItem: (name: string) => void
   renameKnownItem: (rename: KnownItemRename) => void
+  addKnownItem: (knownItem: KnownItem) => void
 }
 
 export function useKnownItems(client: KnownItemsClient): KnownItems {
   const [knownItems, setKnownItems] = useState<readonly KnownItem[]>([])
+  const [loaded, setLoaded] = useState(false)
   const tookOverHistoryFor = useRef<KnownItemsClient | null>(null)
 
-  useEffect(() => client.observeKnownItems(setKnownItems), [client])
+  useEffect(
+    () =>
+      client.observeKnownItems((observed) => {
+        setKnownItems(observed)
+        setLoaded(true)
+      }),
+    [client],
+  )
 
   useEffect(() => {
     if (tookOverHistoryFor.current === client) return
@@ -30,5 +40,16 @@ export function useKnownItems(client: KnownItemsClient): KnownItems {
     [client],
   )
 
-  return { knownItems, removeKnownItem, renameKnownItem }
+  const addKnownItem = useCallback(
+    (knownItem: KnownItem) => client.addKnownItem(knownItem),
+    [client],
+  )
+
+  return {
+    knownItems,
+    loaded,
+    removeKnownItem,
+    renameKnownItem,
+    addKnownItem,
+  }
 }

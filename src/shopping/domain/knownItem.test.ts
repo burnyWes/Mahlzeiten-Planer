@@ -1,21 +1,29 @@
 import { describe, expect, it } from 'vitest'
+import { applyRename, canonicalName, suggestFromCatalog } from './catalogEntry'
 import {
-  applyRename,
-  canonicalName,
+  assignedCounts,
+  categoryIdOfName,
+  isKnownName,
+  KnownItemAlreadyTaken,
   knownItemIdOf,
+  knownItemToAdd,
   knownItemsByName,
   knownItemsFromHistory,
   planKnownItemRename,
   recordUse,
-  suggestFromCatalog,
   suggestNames,
   withNamesInUse,
   type KnownItem,
 } from './knownItem'
 import { InvalidShoppingItem, type ShoppingItem } from './shoppingItem'
 
-function known(name: string, timesUsed = 1, lastUsedAt = 1): KnownItem {
-  return { name, timesUsed, lastUsedAt }
+function known(
+  name: string,
+  timesUsed = 1,
+  lastUsedAt = 1,
+  categoryId: string | null = null,
+): KnownItem {
+  return { name, timesUsed, lastUsedAt, categoryId }
 }
 
 function historyItem(
@@ -113,6 +121,26 @@ describe('recordUse', () => {
   it('counts a known name up and keeps the newest spelling and use', () => {
     expect(recordUse([known('milch', 2, 1)], 'Milch', 500)).toEqual([
       known('Milch', 3, 500),
+    ])
+  })
+
+  it('assigns the given category', () => {
+    expect(
+      recordUse(
+        [known('milch', 2, 1, 'k1'), known('Brot')],
+        'Milch',
+        500,
+        'k2',
+      ),
+    ).toEqual([known('Milch', 3, 500, 'k2'), known('Brot')])
+    expect(recordUse([], 'Milch', 500, 'k2')).toEqual([
+      known('Milch', 1, 500, 'k2'),
+    ])
+  })
+
+  it('keeps the category of a known name', () => {
+    expect(recordUse([known('milch', 2, 1, 'k1')], 'Milch', 500)).toEqual([
+      known('Milch', 3, 500, 'k1'),
     ])
   })
 
@@ -219,6 +247,7 @@ describe('planKnownItemRename', () => {
       [known('hackfleisch', 3, 7)],
       'hackfleisch',
       'Hackfleisch',
+      null,
     )
 
     expect(rename).toEqual({
@@ -233,6 +262,7 @@ describe('planKnownItemRename', () => {
       [known('Hackfleish', 3, 7), known('Brot', 1, 2)],
       'Hackfleish',
       'Hackfleisch',
+      null,
     )
 
     expect(rename).toEqual({
@@ -247,6 +277,7 @@ describe('planKnownItemRename', () => {
       [known('Hackfleish', 3, 7), known('Hackfleisch', 12, 9)],
       'Hackfleish',
       'Hackfleisch',
+      null,
     )
 
     expect(rename).toEqual({
@@ -257,7 +288,12 @@ describe('planKnownItemRename', () => {
   })
 
   it('takes a name that did not change at all', () => {
-    const rename = planKnownItemRename([known('Brot', 2, 5)], 'Brot', ' Brot ')
+    const rename = planKnownItemRename(
+      [known('Brot', 2, 5)],
+      'Brot',
+      ' Brot ',
+      null,
+    )
 
     expect(rename).toEqual({
       written: known('Brot', 2, 5),
@@ -266,13 +302,48 @@ describe('planKnownItemRename', () => {
     })
   })
 
+  it('writes the given category', () => {
+    const rename = planKnownItemRename(
+      [known('Äpfel', 2, 5, 'k1')],
+      'Äpfel',
+      'Äpfel',
+      'k2',
+    )
+
+    expect(rename?.written).toEqual(known('Äpfel', 2, 5, 'k2'))
+  })
+
+  it('writes the given category also when merging', () => {
+    const rename = planKnownItemRename(
+      [known('Apfel', 3, 7, null), known('Äpfel', 12, 9, 'k1')],
+      'Apfel',
+      'Äpfel',
+      'k2',
+    )
+
+    expect(rename?.written).toEqual(known('Äpfel', 15, 9, 'k2'))
+  })
+
+  it('keeps no category when none is given', () => {
+    const rename = planKnownItemRename(
+      [known('Äpfel', 2, 5, 'k1')],
+      'Äpfel',
+      'Äpfel',
+      null,
+    )
+
+    expect(rename?.written.categoryId).toBeNull()
+  })
+
   it('knows nothing to rename when the entry is gone', () => {
-    expect(planKnownItemRename([known('Brot')], 'Milch', 'Milch ')).toBeNull()
+    expect(
+      planKnownItemRename([known('Brot')], 'Milch', 'Milch ', null),
+    ).toBeNull()
   })
 
   it('refuses a name the shopping list would refuse as well', () => {
     expect(() =>
-      planKnownItemRename([known('Brot')], 'Brot', '   '),
+      planKnownItemRename([known('Brot')], 'Brot', '   ', null),
     ).toThrowError(InvalidShoppingItem)
   })
 })
@@ -280,7 +351,12 @@ describe('planKnownItemRename', () => {
 describe('applyRename', () => {
   it('leaves one entry under the new name', () => {
     const knownItems = [known('Hackfleish', 3, 7), known('Hackfleisch', 12, 9)]
-    const rename = planKnownItemRename(knownItems, 'Hackfleish', 'Hackfleisch')!
+    const rename = planKnownItemRename(
+      knownItems,
+      'Hackfleish',
+      'Hackfleisch',
+      null,
+    )!
 
     expect(applyRename(knownItems, rename)).toEqual([
       known('Hackfleisch', 15, 9),
@@ -293,6 +369,7 @@ describe('applyRename', () => {
       knownItems,
       'hackfleisch',
       'Hackfleisch',
+      null,
     )!
 
     expect(applyRename(knownItems, rename)).toEqual([
@@ -322,5 +399,67 @@ describe('knownItemIdOf', () => {
 
   it('never looks like a reserved id with double underscores', () => {
     expect(knownItemIdOf('__milch__')).not.toMatch(/^__.*__$/)
+  })
+})
+
+describe('knownItemToAdd', () => {
+  it('creates an unused entry with its category', () => {
+    expect(knownItemToAdd([known('Brot')], ' Äpfel ', 'k1', 500)).toEqual(
+      known('Äpfel', 0, 500, 'k1'),
+    )
+  })
+
+  it('refuses a name that is already known', () => {
+    let refusal: unknown = null
+    try {
+      knownItemToAdd([known('Äpfel')], 'äpfel', null, 500)
+    } catch (error) {
+      refusal = error
+    }
+
+    expect(refusal).toBeInstanceOf(KnownItemAlreadyTaken)
+    expect((refusal as KnownItemAlreadyTaken).knownItem).toBe('Äpfel')
+  })
+
+  it('refuses a name the shopping list would refuse as well', () => {
+    expect(() => knownItemToAdd([], '  ', null, 500)).toThrowError(
+      InvalidShoppingItem,
+    )
+  })
+})
+
+describe('isKnownName', () => {
+  it('knows a name once normalized', () => {
+    expect(isKnownName([known('Äpfel')], ' äpfel')).toBe(true)
+    expect(isKnownName([known('Äpfel')], 'Bananen')).toBe(false)
+  })
+})
+
+describe('categoryIdOfName', () => {
+  it('answers with the category of the known name', () => {
+    expect(categoryIdOfName([known('Äpfel', 1, 1, 'k1')], 'äpfel')).toBe('k1')
+  })
+
+  it('answers with no category for an unknown name or one without', () => {
+    expect(categoryIdOfName([known('Äpfel')], 'Äpfel')).toBeNull()
+    expect(categoryIdOfName([], 'Äpfel')).toBeNull()
+  })
+})
+
+describe('assignedCounts', () => {
+  it('counts the items of each category', () => {
+    expect(
+      assignedCounts([
+        known('Äpfel', 1, 1, 'k1'),
+        known('Birnen', 1, 1, 'k1'),
+        known('Pizza', 1, 1, 'k2'),
+        known('Batterien'),
+      ]),
+    ).toEqual(
+      new Map([
+        ['k1', 2],
+        ['k2', 1],
+      ]),
+    )
   })
 })

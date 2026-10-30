@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { MealCategoriesClient } from './meals/api/mealCategoriesClient'
 import type { MealsClient } from './meals/api/mealsClient'
 import type { SuppliesClient } from './meals/api/suppliesClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
@@ -14,6 +15,7 @@ import { useSession } from './shared/auth/useSession'
 import { Announcer } from './shared/ui/Announcer'
 import { useAnnouncer } from './shared/ui/useAnnouncer'
 import { useConnectionAnnouncements } from './shared/ui/useConnectionAnnouncements'
+import type { ItemCategoriesClient } from './shopping/api/itemCategoriesClient'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
 import type { KnownUnitsClient } from './shopping/api/knownUnitsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
@@ -24,6 +26,9 @@ type AppProps = {
     onWriteFailure: (message: string) => void,
   ) => ShoppingListClient
   createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
+  createMealCategoriesClient: (
+    onWriteFailure: (message: string) => void,
+  ) => MealCategoriesClient
   createWeekPlanClient: (
     onWriteFailure: (message: string) => void,
   ) => WeekPlanClient
@@ -32,6 +37,7 @@ type AppProps = {
   ) => SuppliesClient
   createKnownItemsClient: () => KnownItemsClient
   createKnownUnitsClient: () => KnownUnitsClient
+  createItemCategoriesClient: () => ItemCategoriesClient
   appUpdateClient: AppUpdateClient
   appearanceClient: AppearanceClient
   storageWarning?: string
@@ -41,10 +47,12 @@ export function App({
   authClient,
   createShoppingListClient,
   createMealsClient,
+  createMealCategoriesClient,
   createWeekPlanClient,
   createSuppliesClient,
   createKnownItemsClient,
   createKnownUnitsClient,
+  createItemCategoriesClient,
   appUpdateClient,
   appearanceClient,
   storageWarning = '',
@@ -70,10 +78,12 @@ export function App({
         <SignedInApp
           createShoppingListClient={createShoppingListClient}
           createMealsClient={createMealsClient}
+          createMealCategoriesClient={createMealCategoriesClient}
           createWeekPlanClient={createWeekPlanClient}
           createSuppliesClient={createSuppliesClient}
           createKnownItemsClient={createKnownItemsClient}
           createKnownUnitsClient={createKnownUnitsClient}
+          createItemCategoriesClient={createItemCategoriesClient}
           appearance={appearance}
           announce={announce}
         />

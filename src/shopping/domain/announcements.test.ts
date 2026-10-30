@@ -7,22 +7,43 @@ import {
   additionsAnnouncement,
   checkOffAnnouncement,
   cleanUpAnnouncement,
+  categoryCreatedPhrase,
+  chooseCategoryHeading,
+  chooseCategoryQuestion,
+  withAssignedCategoryPhrase,
+  withCreatedCategoryPhrase,
   cleanUpLabel,
+  deleteItemCategoryHeading,
   invalidShoppingItemMessage,
+  itemCategoriesHeading,
+  itemCategoryCreatedAnnouncement,
+  itemCategoryDeletedAnnouncement,
+  itemCategoryDeletionNote,
+  itemCategoryPositionText,
+  itemCategoryRowLabel,
+  itemCategorySavedAnnouncement,
+  knownItemCreatedAnnouncement,
   knownItemDeletedAnnouncement,
+  knownItemFormHeading,
+  knownItemRowLabel,
   knownItemSavedAnnouncement,
   itemRemovedAnnouncement,
   knownItemsHeading,
+  knownUnitCreatedAnnouncement,
   knownUnitDeletedAnnouncement,
   knownUnitSavedAnnouncement,
   knownUnitsHeading,
   lessItemLabel,
   listHeading,
+  listSectionHeading,
   moreItemLabel,
   quantityChangedAnnouncement,
   removeItemHeading,
   reopenAnnouncement,
 } from './announcements'
+import { ItemCategoryAlreadyTaken, ItemCategoryMissing } from './itemCategory'
+import { KnownItemAlreadyTaken } from './knownItem'
+import { KnownUnitAlreadyTaken } from './knownUnit'
 import { InvalidShoppingItem, type ShoppingItem } from './shoppingItem'
 
 const added = {
@@ -85,6 +106,30 @@ describe('additionFailureMessage', () => {
     expect(
       additionFailureMessage(new InvalidQuantity('unitWithoutAmount')),
     ).toBe('Zur Einheit fehlt die Menge.')
+  })
+
+  it('names an item category that is already taken', () => {
+    expect(
+      additionFailureMessage(new ItemCategoryAlreadyTaken('Tiefkühlkost')),
+    ).toBe('Die Kategorie Tiefkühlkost gibt es schon.')
+  })
+
+  it('names a known item that is already taken', () => {
+    expect(additionFailureMessage(new KnownItemAlreadyTaken('Äpfel'))).toBe(
+      'Den Artikel Äpfel gibt es schon.',
+    )
+  })
+
+  it('asks for a category or the way without one', () => {
+    expect(additionFailureMessage(new ItemCategoryMissing())).toBe(
+      'Bitte eine Kategorie eingeben oder ohne Kategorie hinzufügen.',
+    )
+  })
+
+  it('names a unit that is already taken', () => {
+    expect(additionFailureMessage(new KnownUnitAlreadyTaken('g'))).toBe(
+      'Die Einheit g gibt es schon.',
+    )
   })
 
   it('keeps quiet about anything else', () => {
@@ -288,6 +333,18 @@ describe('the quantity stepper', () => {
   })
 })
 
+describe('listSectionHeading', () => {
+  it('names the category of the section', () => {
+    expect(listSectionHeading({ id: 'k1', name: 'Obst/Gemüse' })).toBe(
+      'Obst/Gemüse',
+    )
+  })
+
+  it('names the section without a category', () => {
+    expect(listSectionHeading(null)).toBe('Ohne Kategorie')
+  })
+})
+
 describe('removeItemHeading', () => {
   it('asks whether the item should be removed', () => {
     expect(removeItemHeading(openItem('Brot'))).toBe('Brot entfernen?')
@@ -305,5 +362,218 @@ describe('itemRemovedAnnouncement', () => {
     expect(itemRemovedAnnouncement(openItem('Milch'), 0)).toBe(
       'Milch entfernt, nichts mehr offen.',
     )
+  })
+})
+
+describe('itemCategoriesHeading', () => {
+  it('speaks the number of categories', () => {
+    expect(itemCategoriesHeading(4)).toBe('Artikelkategorien, 4')
+  })
+
+  it('says that there are no categories', () => {
+    expect(itemCategoriesHeading(0)).toBe('Artikelkategorien, keine')
+  })
+})
+
+describe('itemCategoryRowLabel', () => {
+  const fruit = { id: 'k1', name: 'Obst/Gemüse' }
+
+  it('names position, category and the number of items', () => {
+    expect(itemCategoryRowLabel(fruit, { position: 1, count: 4 }, 12)).toBe(
+      '1. Obst/Gemüse, 12 Artikel',
+    )
+  })
+
+  it('speaks a single item', () => {
+    expect(itemCategoryRowLabel(fruit, { position: 1, count: 4 }, 1)).toBe(
+      '1. Obst/Gemüse, 1 Artikel',
+    )
+  })
+})
+
+describe('itemCategoryPositionText', () => {
+  it('names the position among all categories', () => {
+    expect(itemCategoryPositionText({ position: 2, count: 4 })).toBe('2 von 4')
+  })
+})
+
+describe('itemCategoryCreatedAnnouncement', () => {
+  it('names the category and its position', () => {
+    expect(
+      itemCategoryCreatedAnnouncement('Drogerie', { position: 5, count: 5 }),
+    ).toBe('Drogerie angelegt, Position 5 von 5.')
+  })
+})
+
+describe('itemCategorySavedAnnouncement', () => {
+  it('names the category and its position', () => {
+    expect(
+      itemCategorySavedAnnouncement('Backwaren', { position: 2, count: 4 }),
+    ).toBe('Backwaren gespeichert, Position 2 von 4.')
+  })
+})
+
+describe('itemCategoryDeletionNote', () => {
+  it('counts the items losing their category', () => {
+    expect(itemCategoryDeletionNote(7)).toBe(
+      '7 Artikel haben dann keine Kategorie mehr.',
+    )
+  })
+
+  it('speaks a single item', () => {
+    expect(itemCategoryDeletionNote(1)).toBe(
+      '1 Artikel hat dann keine Kategorie mehr.',
+    )
+  })
+
+  it('says that no item belongs to the category', () => {
+    expect(itemCategoryDeletionNote(0)).toBe(
+      'Kein Artikel ist dieser Kategorie zugeordnet.',
+    )
+  })
+})
+
+describe('itemCategoryDeletedAnnouncement', () => {
+  it('names the remaining categories', () => {
+    expect(itemCategoryDeletedAnnouncement('Tiefkühlkost', 3)).toBe(
+      'Tiefkühlkost gelöscht, noch 3 Kategorien.',
+    )
+  })
+
+  it('speaks a single remaining category', () => {
+    expect(itemCategoryDeletedAnnouncement('Tiefkühlkost', 1)).toBe(
+      'Tiefkühlkost gelöscht, noch 1 Kategorie.',
+    )
+  })
+
+  it('says that no category is left', () => {
+    expect(itemCategoryDeletedAnnouncement('Tiefkühlkost', 0)).toBe(
+      'Tiefkühlkost gelöscht, keine Kategorien mehr.',
+    )
+  })
+})
+
+describe('deleteItemCategoryHeading', () => {
+  it('asks whether the category should be deleted', () => {
+    expect(deleteItemCategoryHeading('Tiefkühlkost')).toBe(
+      'Tiefkühlkost löschen?',
+    )
+  })
+})
+
+describe('knownItemRowLabel', () => {
+  const apples = {
+    name: 'Äpfel',
+    lastUsedAt: 1,
+    timesUsed: 1,
+    categoryId: 'k1',
+  }
+
+  it('names the item with its category', () => {
+    expect(knownItemRowLabel(apples, { id: 'k1', name: 'Obst/Gemüse' })).toBe(
+      'Äpfel, Obst/Gemüse',
+    )
+  })
+
+  it('names only the item without a category', () => {
+    expect(knownItemRowLabel(apples, null)).toBe('Äpfel')
+  })
+})
+
+describe('knownItemFormHeading', () => {
+  it('names creating and editing an item', () => {
+    expect(knownItemFormHeading('create')).toBe('Artikel anlegen')
+    expect(knownItemFormHeading('edit')).toBe('Artikel bearbeiten')
+  })
+})
+
+describe('knownItemCreatedAnnouncement', () => {
+  it('confirms the created item', () => {
+    expect(knownItemCreatedAnnouncement('Äpfel')).toBe('Äpfel angelegt.')
+  })
+})
+
+describe('categoryCreatedPhrase', () => {
+  it('names the new category and its position', () => {
+    expect(categoryCreatedPhrase('Drogerie', { position: 5, count: 5 })).toBe(
+      'Kategorie Drogerie neu angelegt, Position 5.',
+    )
+  })
+})
+
+describe('withCreatedCategoryPhrase', () => {
+  it('adds the newly created category', () => {
+    expect(
+      withCreatedCategoryPhrase('Äpfel gespeichert.', {
+        category: { id: 'k5', name: 'Drogerie' },
+        placement: { position: 5, count: 5 },
+      }),
+    ).toBe('Äpfel gespeichert. Kategorie Drogerie neu angelegt, Position 5.')
+  })
+
+  it('keeps the announcement without a new category', () => {
+    expect(withCreatedCategoryPhrase('Äpfel gespeichert.', null)).toBe(
+      'Äpfel gespeichert.',
+    )
+  })
+})
+
+describe('chooseCategoryHeading', () => {
+  it('names the new item', () => {
+    expect(chooseCategoryHeading('Bananen')).toBe('Kategorie für Bananen')
+  })
+})
+
+describe('chooseCategoryQuestion', () => {
+  it('asks for the category of the new item', () => {
+    expect(chooseCategoryQuestion('Bananen')).toBe(
+      'Bananen ist neu. In welche Kategorie?',
+    )
+  })
+})
+
+describe('withAssignedCategoryPhrase', () => {
+  const catalog = {
+    categories: [{ id: 'k1', name: 'Obst/Gemüse' }],
+    sortByCategory: true,
+  }
+
+  it('names the assigned category', () => {
+    expect(
+      withAssignedCategoryPhrase('Bananen hinzugefügt.', {
+        catalog,
+        categoryId: 'k1',
+        created: null,
+      }),
+    ).toBe('Bananen hinzugefügt. Kategorie Obst/Gemüse.')
+  })
+
+  it('names a newly created category with its position', () => {
+    expect(
+      withAssignedCategoryPhrase('Seife hinzugefügt.', {
+        catalog,
+        categoryId: 'k5',
+        created: {
+          category: { id: 'k5', name: 'Drogerie' },
+          placement: { position: 5, count: 5 },
+        },
+      }),
+    ).toBe('Seife hinzugefügt. Kategorie Drogerie neu angelegt, Position 5.')
+  })
+
+  it('keeps the announcement without a category', () => {
+    expect(
+      withAssignedCategoryPhrase('Seife hinzugefügt.', {
+        catalog,
+        categoryId: null,
+        created: null,
+      }),
+    ).toBe('Seife hinzugefügt.')
+  })
+})
+
+describe('knownUnitCreatedAnnouncement', () => {
+  it('confirms the created unit', () => {
+    expect(knownUnitCreatedAnnouncement('Dose')).toBe('Dose angelegt.')
   })
 })

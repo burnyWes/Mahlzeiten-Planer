@@ -2,22 +2,42 @@ import type { Quantity } from '../../shared/domain/quantity'
 import {
   applyRename,
   canonicalName,
-  knownItemsByName,
-  planKnownItemRename,
-  recordUse,
+  entriesByName,
+  hasName,
+  planCatalogRename,
+  recordCatalogUse,
   suggestFromCatalog,
-  withNamesInUse,
-  type KnownItemRename,
-} from './knownItem'
-import { normalizeItemName, type ShoppingItem } from './shoppingItem'
+  withCatalogNamesInUse,
+  type CatalogEntry,
+  type CatalogRename,
+} from './catalogEntry'
+import {
+  createItemName,
+  normalizeItemName,
+  type ShoppingItem,
+} from './shoppingItem'
 
-export type KnownUnit = { name: string; lastUsedAt: number; timesUsed: number }
+export type KnownUnit = CatalogEntry
 
-export type KnownUnitRename = KnownItemRename
+export type KnownUnitRename = CatalogRename<KnownUnit>
+
+export class KnownUnitAlreadyTaken extends Error {
+  knownUnit: string
+
+  constructor(knownUnit: string) {
+    super(knownUnit)
+    this.name = 'KnownUnitAlreadyTaken'
+    this.knownUnit = knownUnit
+  }
+}
 
 export const DEFAULT_UNITS = ['Stück', 'g', 'kg', 'ml', 'l', 'Pck.']
 
 const MINIMUM_TYPED_LENGTH = 1
+
+function newKnownUnit(entry: CatalogEntry): KnownUnit {
+  return entry
+}
 
 export function suggestUnits(
   knownUnits: readonly KnownUnit[],
@@ -46,14 +66,14 @@ export function recordUnitUse(
   unit: string,
   usedAt: number,
 ): readonly KnownUnit[] {
-  return recordUse(knownUnits, unit, usedAt)
+  return recordCatalogUse(knownUnits, unit, usedAt, newKnownUnit)
 }
 
 export function withUnitsInUse(
   knownUnits: readonly KnownUnit[],
   units: readonly string[],
 ): readonly KnownUnit[] {
-  return withNamesInUse(knownUnits, units)
+  return withCatalogNamesInUse(knownUnits, units, newKnownUnit)
 }
 
 export function planKnownUnitRename(
@@ -61,7 +81,7 @@ export function planKnownUnitRename(
   from: string,
   newName: string,
 ): KnownUnitRename | null {
-  return planKnownItemRename(knownUnits, from, newName)
+  return planCatalogRename(knownUnits, from, newName)
 }
 
 export function applyUnitRename(
@@ -71,10 +91,21 @@ export function applyUnitRename(
   return applyRename(knownUnits, rename)
 }
 
+export function knownUnitToAdd(
+  knownUnits: readonly KnownUnit[],
+  written: string,
+  now: number,
+): KnownUnit {
+  const name = createItemName(written)
+  const taken = knownUnits.find((knownUnit) => hasName(knownUnit, name))
+  if (taken !== undefined) throw new KnownUnitAlreadyTaken(taken.name)
+  return { name, lastUsedAt: now, timesUsed: 0 }
+}
+
 export function knownUnitsByName(
   knownUnits: readonly KnownUnit[],
 ): readonly KnownUnit[] {
-  return knownItemsByName(knownUnits)
+  return entriesByName(knownUnits)
 }
 
 type DatedUnit = { unit: string; usedAt: number }

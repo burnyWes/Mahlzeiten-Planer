@@ -3,6 +3,7 @@ import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
   categoriesListHeading,
   categoryAddedAnnouncement,
+  categoryCreatedAnnouncement,
   categoryDeletedAnnouncement,
   categoryDeletionNote,
   categoryRowLabel,
@@ -74,6 +75,7 @@ import {
   weekPlanTransferAnnouncement,
   weekViewShownAnnouncement,
 } from './announcements'
+import { CatalogCategoryAlreadyTaken } from './mealCategory'
 import { InvalidMeal, type MealItem, type NewMeal } from './meal'
 import { CategoryAlreadyTaken } from './mealCategory'
 import { InvalidSupply, type InvalidSupplyReason } from './supply'
@@ -1265,5 +1267,17 @@ describe('periodDaysPhrase', () => {
 
   it('speaks of several days in the plural', () => {
     expect(periodDaysPhrase(7)).toBe('7 Tage')
+  })
+})
+
+describe('meal category catalog', () => {
+  it('names a catalog category that is already taken', () => {
+    expect(mealFailureMessage(new CatalogCategoryAlreadyTaken('Pasta'))).toBe(
+      'Die Kategorie Pasta gibt es schon.',
+    )
+  })
+
+  it('confirms a created category', () => {
+    expect(categoryCreatedAnnouncement('Pasta')).toBe('Pasta angelegt.')
   })
 })

@@ -12,7 +12,7 @@ import {
   type DocumentData,
   type Firestore,
 } from 'firebase/firestore'
-import { knownItemIdOf } from '../domain/knownItem'
+import { catalogEntryIdOf } from '../domain/catalogEntry'
 import { knownUnitsFromHistory, type KnownUnit } from '../domain/knownUnit'
 import { ignoreFailure, inBatches } from './firestoreKnownItemsClient'
 import { toShoppingItem } from './firestoreShoppingListClient'
@@ -36,7 +36,7 @@ export function createFirestoreKnownUnitsClient(
   const knownUnits = collection(firestore, KNOWN_UNITS)
 
   function knownUnitDocument(unit: string) {
-    return doc(firestore, KNOWN_UNITS, knownItemIdOf(unit))
+    return doc(firestore, KNOWN_UNITS, catalogEntryIdOf(unit))
   }
 
   async function catalogIsEmptyOnServer(): Promise<boolean> {
@@ -91,6 +91,10 @@ export function createFirestoreKnownUnitsClient(
         { name: unit, lastUsedAt: usedAt, timesUsed: increment(1) },
         { merge: true },
       ).catch(ignoreFailure)
+    },
+
+    addKnownUnit(knownUnit) {
+      setDoc(knownUnitDocument(knownUnit.name), knownUnit).catch(ignoreFailure)
     },
 
     removeKnownUnit(unit) {

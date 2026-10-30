@@ -1,30 +1,6 @@
-import type { PointerEvent } from 'react'
 import type { AmountStep } from '../domain/quantity'
+import { SpinArrow } from './SpinArrow'
 import { SpinButton } from './SpinButton'
-
-function keepFocusWhereItIs(event: PointerEvent<HTMLButtonElement>) {
-  event.preventDefault()
-}
-
-type SpinArrowProps = {
-  symbol: string
-  onPress: () => void
-}
-
-function SpinArrow({ symbol, onPress }: SpinArrowProps) {
-  return (
-    <button
-      type="button"
-      className="spinArrow"
-      aria-hidden="true"
-      tabIndex={-1}
-      onPointerDown={keepFocusWhereItIs}
-      onClick={onPress}
-    >
-      {symbol}
-    </button>
-  )
-}
 
 type AmountSpinnerProps = {
   valueText: string

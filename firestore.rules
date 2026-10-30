@@ -30,6 +30,14 @@ service cloud.firestore {
       allow read, write: if isHousehold();
     }
 
+    match /itemCategories/{document} {
+      allow read, write: if isHousehold();
+    }
+
+    match /mealCategories/{document} {
+      allow read, write: if isHousehold();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

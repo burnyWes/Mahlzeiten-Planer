@@ -1,4 +1,4 @@
-import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
+import { ManagementHeader } from '../../shared/ui/ManagementHeader'
 import { categoriesListHeading } from '../domain/announcements'
 import type { CategoryOverview } from '../domain/mealCategory'
 import { CategoryListRow } from './CategoryListRow'
@@ -6,6 +6,7 @@ import { CategoryListRow } from './CategoryListRow'
 type CategoryListPageProps = {
   categories: readonly CategoryOverview[]
   onBack: () => void
+  onAddCategory: () => void
   onOpenCategory: (overview: CategoryOverview) => void
   onDeleteCategory: (overview: CategoryOverview) => void
 }
@@ -13,19 +14,20 @@ type CategoryListPageProps = {
 export function CategoryListPage({
   categories,
   onBack,
+  onAddCategory,
   onOpenCategory,
   onDeleteCategory,
 }: CategoryListPageProps) {
-  const heading = useHeadingFocus()
-
   return (
     <main className="page">
       <button type="button" onClick={onBack}>
         Zurück zu den Einstellungen
       </button>
-      <h1 ref={heading} tabIndex={-1}>
-        {categoriesListHeading(categories.length)}
-      </h1>
+      <ManagementHeader
+        heading={categoriesListHeading(categories.length)}
+        addLabel="Gerichtskategorie anlegen"
+        onAdd={onAddCategory}
+      />
       {categories.length === 0 ? (
         <p>Noch keine Kategorien.</p>
       ) : (

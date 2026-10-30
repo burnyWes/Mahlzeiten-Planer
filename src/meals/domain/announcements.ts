@@ -12,7 +12,11 @@ import {
   type MealKind,
   type NewMeal,
 } from './meal'
-import { CategoryAlreadyTaken, type CategoryOverview } from './mealCategory'
+import {
+  CatalogCategoryAlreadyTaken,
+  CategoryAlreadyTaken,
+  type CategoryOverview,
+} from './mealCategory'
 import type { MealFilter } from './mealFilter'
 import type {
   MainMealTimeRule,
@@ -63,6 +67,8 @@ export function invalidSupplyMessage(reason: InvalidSupplyReason): string {
 export function mealFailureMessage(error: unknown): string | null {
   if (error instanceof InvalidMeal) return invalidMealMessage(error.reason)
   if (error instanceof InvalidSupply) return invalidSupplyMessage(error.reason)
+  if (error instanceof CatalogCategoryAlreadyTaken)
+    return `Die Kategorie ${error.category} gibt es schon.`
   if (error instanceof CategoryAlreadyTaken)
     return `${error.category} ist schon eingetragen.`
   if (error instanceof InvalidQuantity)
@@ -626,4 +632,8 @@ export function supplyRemovedAnnouncement(
   remainingSupplies: number,
 ): string {
   return `${meal.name} entfernt, ${remainingSupplyPhrase(remainingSupplies)}.`
+}
+
+export function categoryCreatedAnnouncement(category: string): string {
+  return `${category} angelegt.`
 }

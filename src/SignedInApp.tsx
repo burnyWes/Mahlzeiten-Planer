@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { MealCategoriesClient } from './meals/api/mealCategoriesClient'
 import type { MealsClient } from './meals/api/mealsClient'
 import type { SuppliesClient } from './meals/api/suppliesClient'
 import type { WeekPlanClient } from './meals/api/weekPlanClient'
@@ -22,6 +23,7 @@ import { CategoriesArea } from './meals/ui/CategoriesArea'
 import { MealsArea } from './meals/ui/MealsArea'
 import { RollingRulesPage } from './meals/ui/RollingRulesPage'
 import { SuppliesArea } from './meals/ui/SuppliesArea'
+import { useMealCategories } from './meals/ui/useMealCategories'
 import { useMeals } from './meals/ui/useMeals'
 import { useSupplies } from './meals/ui/useSupplies'
 import { useWeekPlan } from './meals/ui/useWeekPlan'
@@ -35,12 +37,16 @@ import { PlateIcon } from './shared/ui/PlateIcon'
 import { SettingsIcon } from './shared/ui/SettingsIcon'
 import { SettingsPage, type SettingsEntry } from './shared/ui/SettingsPage'
 import { SnowflakeIcon } from './shared/ui/SnowflakeIcon'
+import type { ItemCategoriesClient } from './shopping/api/itemCategoriesClient'
 import type { KnownItemsClient } from './shopping/api/knownItemsClient'
 import type { KnownUnitsClient } from './shopping/api/knownUnitsClient'
 import type { ShoppingListClient } from './shopping/api/shoppingListClient'
 import { additionsAnnouncement } from './shopping/domain/announcements'
+import { canonicalName } from './shopping/domain/catalogEntry'
+import { suggestItemCategories } from './shopping/domain/itemCategory'
 import {
-  canonicalName,
+  assignedCounts,
+  isKnownName,
   suggestNames,
   withNamesInUse,
 } from './shopping/domain/knownItem'
@@ -50,9 +56,11 @@ import {
   withUnitsInUse,
 } from './shopping/domain/knownUnit'
 import type { NewShoppingItem } from './shopping/domain/shoppingItem'
+import { ItemCategoriesArea } from './shopping/ui/ItemCategoriesArea'
 import { KnownItemsArea } from './shopping/ui/KnownItemsArea'
 import { KnownUnitsArea } from './shopping/ui/KnownUnitsArea'
 import { ShoppingArea } from './shopping/ui/ShoppingArea'
+import { useItemCategories } from './shopping/ui/useItemCategories'
 import { useKnownItems } from './shopping/ui/useKnownItems'
 import { useKnownUnits } from './shopping/ui/useKnownUnits'
 import { useShoppingList } from './shopping/ui/useShoppingList'
@@ -69,6 +77,7 @@ type AreaId = (typeof AREAS)[number]['id']
 
 const ROLLING_RULES_ENTRY = 'rollingRules'
 const KNOWN_ITEMS_ENTRY = 'knownItems'
+const ITEM_CATEGORIES_ENTRY = 'itemCategories'
 const CATEGORIES_ENTRY = 'categories'
 const KNOWN_UNITS_ENTRY = 'knownUnits'
 
@@ -88,6 +97,9 @@ type SignedInAppProps = {
     onWriteFailure: (message: string) => void,
   ) => ShoppingListClient
   createMealsClient: (onWriteFailure: (message: string) => void) => MealsClient
+  createMealCategoriesClient: (
+    onWriteFailure: (message: string) => void,
+  ) => MealCategoriesClient
   createWeekPlanClient: (
     onWriteFailure: (message: string) => void,
   ) => WeekPlanClient
@@ -96,6 +108,7 @@ type SignedInAppProps = {
   ) => SuppliesClient
   createKnownItemsClient: () => KnownItemsClient
   createKnownUnitsClient: () => KnownUnitsClient
+  createItemCategoriesClient: () => ItemCategoriesClient
   appearance: Appearance
   announce: (text: string) => void
   random?: RandomSource
@@ -105,10 +118,12 @@ type SignedInAppProps = {
 export function SignedInApp({
   createShoppingListClient,
   createMealsClient,
+  createMealCategoriesClient,
   createWeekPlanClient,
   createSuppliesClient,
   createKnownItemsClient,
   createKnownUnitsClient,
+  createItemCategoriesClient,
   appearance,
   announce,
   random = Math.random,
@@ -124,14 +139,22 @@ export function SignedInApp({
   const knownItems = useKnownItems(knownItemsClient)
   const [knownUnitsClient] = useState(createKnownUnitsClient)
   const knownUnits = useKnownUnits(knownUnitsClient, mealsClient.unitsOnServer)
+  const [itemCategoriesClient] = useState(createItemCategoriesClient)
+  const itemCategories = useItemCategories(itemCategoriesClient)
   const shoppingList = useShoppingList(
     shoppingListClient,
     knownItemsClient,
     knownItems.knownItems,
     knownUnitsClient,
     knownUnits.knownUnits,
+    itemCategories.catalog,
+    knownItems.loaded && itemCategories.loaded,
   )
   const meals = useMeals(mealsClient)
+  const [mealCategoriesClient] = useState(() =>
+    createMealCategoriesClient(announce),
+  )
+  const mealCategories = useMealCategories(mealCategoriesClient)
   const today = planDateOf(clock())
   const weekPlanning = useWeekPlan(weekPlanClient, weekOf(today))
   const supplies = useSupplies(suppliesClient)
@@ -214,6 +237,7 @@ export function SignedInApp({
     },
     { kind: 'page', id: ROLLING_RULES_ENTRY, label: 'Regeln' },
     { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel' },
+    { kind: 'page', id: ITEM_CATEGORIES_ENTRY, label: 'Artikelkategorien' },
     { kind: 'page', id: KNOWN_UNITS_ENTRY, label: 'Einheiten' },
     { kind: 'page', id: CATEGORIES_ENTRY, label: 'Gerichtskategorien' },
   ]
@@ -240,6 +264,17 @@ export function SignedInApp({
     return (
       <KnownItemsArea
         knownItems={knownItems}
+        itemCategories={itemCategories}
+        announce={announce}
+        onBack={() => setSettingsEntry(null)}
+      />
+    )
+
+  if (activeArea === 'settings' && settingsEntry === ITEM_CATEGORIES_ENTRY)
+    return (
+      <ItemCategoriesArea
+        itemCategories={itemCategories}
+        assignedCounts={assignedCounts(knownItems.knownItems)}
         announce={announce}
         onBack={() => setSettingsEntry(null)}
       />
@@ -249,6 +284,7 @@ export function SignedInApp({
     return (
       <CategoriesArea
         meals={meals}
+        mealCategories={mealCategories}
         announce={announce}
         onBack={() => setSettingsEntry(null)}
       />
@@ -306,6 +342,7 @@ export function SignedInApp({
     return (
       <MealsArea
         meals={meals}
+        catalogCategories={mealCategories.names}
         announce={announce}
         navigation={navigation}
         onAddToShoppingList={addMealToShoppingList}
@@ -320,6 +357,13 @@ export function SignedInApp({
   return (
     <ShoppingArea
       shoppingList={shoppingList}
+      categoryChoice={{
+        isKnownName: (name) => isKnownName(knownItems.knownItems, name),
+        suggestCategories: (typed) =>
+          suggestItemCategories(itemCategories.catalog, typed),
+        planCategoryAssignment: itemCategories.planCategoryAssignment,
+        applyCategoryAssignment: itemCategories.applyCategoryAssignment,
+      }}
       announce={announce}
       navigation={navigation}
       suggestNames={(typed) => suggestKnownNames(typed, [])}

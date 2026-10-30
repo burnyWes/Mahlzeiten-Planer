@@ -9,26 +9,35 @@ import {
 import { AmountSpinner } from '../../shared/ui/AmountSpinner'
 import { NameSuggestions } from '../../shared/ui/NameSuggestions'
 import { additionFailureMessage } from '../domain/announcements'
-import type { ShoppingItemDraft } from '../domain/shoppingItem'
+import {
+  createShoppingItem,
+  type ShoppingItemDraft,
+} from '../domain/shoppingItem'
 
 type AddItemPageProps = {
+  initialDraft: ShoppingItemDraft
   addItem: (draft: ShoppingItemDraft) => string
+  isKnownName: (name: string) => boolean
+  onNewName: (draft: ShoppingItemDraft) => void
   announce: (text: string) => void
   onBack: () => void
   suggestNames: (typed: string) => readonly string[]
   suggestUnits: (typed: string) => readonly string[]
 }
 
-const EMPTY_DRAFT: ShoppingItemDraft = { name: '', amount: '', unit: '' }
+export const EMPTY_DRAFT: ShoppingItemDraft = { name: '', amount: '', unit: '' }
 
 export function AddItemPage({
+  initialDraft,
   addItem,
+  isKnownName,
+  onNewName,
   announce,
   onBack,
   suggestNames,
   suggestUnits,
 }: AddItemPageProps) {
-  const [draft, setDraft] = useState(EMPTY_DRAFT)
+  const [draft, setDraft] = useState(initialDraft)
   const [failureMessage, setFailureMessage] = useState('')
   const [suggestNamesOnOpen] = useState(() => suggestNames)
   const [suggestUnitsOnOpen] = useState(() => suggestUnits)
@@ -62,6 +71,11 @@ export function AddItemPage({
   function submitDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     try {
+      const item = createShoppingItem(draft, Date.now())
+      if (!isKnownName(item.name)) {
+        onNewName(draft)
+        return
+      }
       const confirmation = addItem(draft)
       setDraft(EMPTY_DRAFT)
       setFailureMessage('')

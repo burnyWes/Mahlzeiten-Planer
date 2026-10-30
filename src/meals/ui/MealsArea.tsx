@@ -14,7 +14,7 @@ import {
   type MealId,
   type NewMeal,
 } from '../domain/meal'
-import { mealCategories } from '../domain/mealCategory'
+import { mealCategories, withCatalogCategories } from '../domain/mealCategory'
 import {
   knownFilter,
   mealsMatching,
@@ -35,6 +35,7 @@ type MealsPage =
 
 type MealsAreaProps = {
   meals: Meals
+  catalogCategories: readonly string[]
   announce: (text: string) => void
   navigation: ReactNode
   onAddToShoppingList: (meal: Meal) => void
@@ -53,6 +54,7 @@ type MealsAreaProps = {
 
 export function MealsArea({
   meals,
+  catalogCategories,
   announce,
   navigation,
   onAddToShoppingList,
@@ -139,7 +141,7 @@ export function MealsArea({
         suggestNames={suggestNames}
         suggestUnits={suggestUnits}
         canonicalUnit={canonicalUnit}
-        knownCategories={categories}
+        knownCategories={withCatalogCategories(categories, catalogCategories)}
       />
     )
   }

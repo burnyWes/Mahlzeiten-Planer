@@ -1,14 +1,18 @@
 import { TrashIcon } from '../../shared/ui/TrashIcon'
+import { knownItemRowLabel } from '../domain/announcements'
+import type { ItemCategory } from '../domain/itemCategory'
 import type { KnownItem } from '../domain/knownItem'
 
 type KnownItemListRowProps = {
   knownItem: KnownItem
+  category: ItemCategory | null
   onOpenKnownItem: (knownItem: KnownItem) => void
   onDeleteKnownItem: (knownItem: KnownItem) => void
 }
 
 export function KnownItemListRow({
   knownItem,
+  category,
   onOpenKnownItem,
   onDeleteKnownItem,
 }: KnownItemListRowProps) {
@@ -19,7 +23,7 @@ export function KnownItemListRow({
         className="mealNameButton"
         onClick={() => onOpenKnownItem(knownItem)}
       >
-        {knownItem.name}
+        {knownItemRowLabel(knownItem, category)}
       </button>
       <button
         type="button"

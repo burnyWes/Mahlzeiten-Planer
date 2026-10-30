@@ -2,10 +2,15 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { accessibilityViolations } from '../../testSupport/accessibility'
+import {
+  createInMemoryMealCategoriesClient,
+  type InMemoryMealCategoriesClient,
+} from '../api/inMemoryMealCategoriesClient'
 import { createInMemoryMealsClient } from '../api/inMemoryMealsClient'
 import type { MealsClient } from '../api/mealsClient'
 import type { Meal } from '../domain/meal'
 import { CategoriesArea } from './CategoriesArea'
+import { useMealCategories } from './useMealCategories'
 import { useMeals } from './useMeals'
 
 function meal(id: string, categories: readonly string[]): Meal {
@@ -24,31 +29,39 @@ function meal(id: string, categories: readonly string[]): Meal {
 
 type CategoriesAreaUnderTestProps = {
   client: MealsClient
+  catalogClient: InMemoryMealCategoriesClient
   announce: (text: string) => void
   onBack: () => void
 }
 
 function CategoriesAreaUnderTest({
   client,
+  catalogClient,
   announce,
   onBack,
 }: CategoriesAreaUnderTestProps) {
   return (
     <CategoriesArea
       meals={useMeals(client)}
+      mealCategories={useMealCategories(catalogClient)}
       announce={announce}
       onBack={onBack}
     />
   )
 }
 
-function renderCategoriesArea(initialMeals: readonly Meal[] = []) {
+function renderCategoriesArea(
+  initialMeals: readonly Meal[] = [],
+  catalogNames: readonly string[] = [],
+) {
   const client = createInMemoryMealsClient(initialMeals)
+  const catalogClient = createInMemoryMealCategoriesClient(catalogNames)
   const announcements: string[] = []
   const departures: string[] = []
   const rendered = render(
     <CategoriesAreaUnderTest
       client={client}
+      catalogClient={catalogClient}
       announce={(text) => {
         announcements.push(text)
       }}
@@ -57,7 +70,7 @@ function renderCategoriesArea(initialMeals: readonly Meal[] = []) {
       }}
     />,
   )
-  return { client, announcements, departures, rendered }
+  return { client, catalogClient, announcements, departures, rendered }
 }
 
 function shownCategoryRows() {
@@ -318,6 +331,116 @@ describe('CategoriesArea', () => {
     const { rendered } = renderCategoriesArea(household)
 
     await askToDeleteCategory('Auflauf')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('creates a category without meals through the plus button', async () => {
+    const { catalogClient, announcements } = renderCategoriesArea(household)
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Gerichtskategorie anlegen' }),
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Kategorie anlegen' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('')
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+    await userEvent.type(screen.getByLabelText('Name'), 'Pasta')
+    await save()
+
+    expect(catalogClient.storedNames()).toEqual(['Pasta'])
+    expect(announcements).toContain('Pasta angelegt.')
+    expect(shownCategoryRows()).toEqual([
+      'Auflauf, 2',
+      'Nudelgericht, 1',
+      'Pasta, 0',
+      'Schnell, 1',
+    ])
+    expect(
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 4' }),
+    ).toHaveFocus()
+  })
+
+  it('refuses to create a category that is already known', async () => {
+    const { catalogClient, announcements } = renderCategoriesArea(household, [
+      'Pasta',
+    ])
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Gerichtskategorie anlegen' }),
+    )
+    await userEvent.type(screen.getByLabelText('Name'), 'auflauf')
+    await save()
+
+    expect(catalogClient.storedNames()).toEqual(['Pasta'])
+    expect(
+      screen.getByText('Die Kategorie Auflauf gibt es schon.'),
+    ).toBeInTheDocument()
+    expect(announcements).toContain('Die Kategorie Auflauf gibt es schon.')
+  })
+
+  it('renames a category without meals in the catalog', async () => {
+    const { client, catalogClient, announcements } = renderCategoriesArea(
+      household,
+      ['Pasta'],
+    )
+
+    await openCategory('Pasta, 0')
+    await renameTo('Nudeln')
+
+    expect(catalogClient.storedNames()).toEqual(['Nudeln'])
+    expect(client.storedMeals()).toEqual(household)
+    expect(announcements).toContain('Nudeln gespeichert.')
+  })
+
+  it('renames a used category in the catalog and in the meals', async () => {
+    const { client, catalogClient } = renderCategoriesArea(household, [
+      'Auflauf',
+    ])
+
+    await openCategory('Auflauf, 2')
+    await renameTo('Gratin')
+
+    expect(catalogClient.storedNames()).toEqual(['Gratin'])
+    expect(client.storedMeals().map((stored) => stored.categories)).toEqual([
+      ['Nudelgericht', 'Gratin'],
+      ['Gratin', 'Schnell'],
+    ])
+  })
+
+  it('deletes a category without meals from the catalog', async () => {
+    const { client, catalogClient, announcements } = renderCategoriesArea(
+      household,
+      ['Pasta'],
+    )
+
+    await askToDeleteCategory('Pasta')
+    await confirmDeletion()
+
+    expect(catalogClient.storedNames()).toEqual([])
+    expect(client.storedMeals()).toEqual(household)
+    expect(announcements).toContain('Pasta gelöscht, noch 3 Kategorien.')
+  })
+
+  it('deletes a used category from the catalog and the meals', async () => {
+    const { client, catalogClient } = renderCategoriesArea(household, [
+      'Schnell',
+    ])
+
+    await askToDeleteCategory('Schnell')
+    await confirmDeletion()
+
+    expect(catalogClient.storedNames()).toEqual([])
+    expect(client.storedMeals()[1].categories).toEqual(['Auflauf'])
+  })
+
+  it('has no accessibility violations on the creation form', async () => {
+    const { rendered } = renderCategoriesArea(household)
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Gerichtskategorie anlegen' }),
+    )
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
