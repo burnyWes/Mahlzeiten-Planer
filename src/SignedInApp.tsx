@@ -212,10 +212,10 @@ export function SignedInApp({
       enabled: appearance.invertedColors,
       onToggle: appearance.toggleInvertedColors,
     },
-    { kind: 'page', id: ROLLING_RULES_ENTRY, label: 'Regel-Verwaltung' },
-    { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel-Verwaltung' },
-    { kind: 'page', id: CATEGORIES_ENTRY, label: 'Kategorie-Verwaltung' },
-    { kind: 'page', id: KNOWN_UNITS_ENTRY, label: 'Einheiten-Verwaltung' },
+    { kind: 'page', id: ROLLING_RULES_ENTRY, label: 'Regeln' },
+    { kind: 'page', id: KNOWN_ITEMS_ENTRY, label: 'Artikel' },
+    { kind: 'page', id: KNOWN_UNITS_ENTRY, label: 'Einheiten' },
+    { kind: 'page', id: CATEGORIES_ENTRY, label: 'Gerichtskategorien' },
   ]
 
   const navigation = (

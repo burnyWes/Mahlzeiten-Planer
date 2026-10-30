@@ -26,7 +26,7 @@ function ruleSwitch(page: Page, name: string) {
 
 async function openRollingRules(page: Page) {
   await pressButton(page, 'Einstellungen')
-  await pressButton(page, 'Regel-Verwaltung')
+  await pressButton(page, 'Regeln')
 }
 
 test('remembers the main meal time for the household after a reload', async ({
@@ -202,14 +202,14 @@ test('merges a misspelt unit into the right one', async ({ page }) => {
   await expect.poll(knownUnitNamesOnServer).toContain('gr')
 
   await pressButton(page, 'Einstellungen')
-  await pressButton(page, 'Einheiten-Verwaltung')
+  await pressButton(page, 'Einheiten')
   await pressButton(page, 'gr')
   await page.getByLabel('Name', { exact: true }).fill('')
   await typeInto(page, 'Name', 'g')
   await pressButton(page, 'Speichern')
 
   await expect(
-    page.getByRole('heading', { name: /^Einheiten-Verwaltung/ }),
+    page.getByRole('heading', { name: /^Einheiten, / }),
   ).toBeVisible()
   await expect(
     shownItems(page).getByRole('button', { name: 'gr', exact: true }),

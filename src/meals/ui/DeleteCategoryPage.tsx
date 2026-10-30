@@ -18,7 +18,7 @@ export function DeleteCategoryPage({
   return (
     <main className="page">
       <button type="button" onClick={onCancel}>
-        Zurück zur Kategorie-Verwaltung
+        Zurück zu den Gerichtskategorien
       </button>
       <h1 ref={heading} tabIndex={-1}>
         {overview.name} löschen?

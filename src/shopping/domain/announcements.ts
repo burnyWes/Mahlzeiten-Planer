@@ -56,9 +56,7 @@ export function listHeading(openCount: number): string {
 }
 
 export function knownItemsHeading(knownItemCount: number): string {
-  return knownItemCount === 0
-    ? 'Artikel-Verwaltung, keine'
-    : `Artikel-Verwaltung, ${knownItemCount}`
+  return knownItemCount === 0 ? 'Artikel, keine' : `Artikel, ${knownItemCount}`
 }
 
 export function knownItemSavedAnnouncement(name: string): string {
@@ -81,8 +79,8 @@ export function knownItemDeletedAnnouncement(
 
 export function knownUnitsHeading(knownUnitCount: number): string {
   return knownUnitCount === 0
-    ? 'Einheiten-Verwaltung, keine'
-    : `Einheiten-Verwaltung, ${knownUnitCount}`
+    ? 'Einheiten, keine'
+    : `Einheiten, ${knownUnitCount}`
 }
 
 export function knownUnitSavedAnnouncement(name: string): string {

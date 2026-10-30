@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { InvalidQuantity } from '../../shared/domain/quantity'
 import {
-  categoriesManagementHeading,
+  categoriesListHeading,
   categoryAddedAnnouncement,
   categoryDeletedAnnouncement,
   categoryDeletionNote,
@@ -177,7 +177,7 @@ describe('mainMealTimeRuleName', () => {
 
 describe('rollingRulesHeading', () => {
   it('names the page of the rules', () => {
-    expect(rollingRulesHeading()).toBe('Regel-Verwaltung')
+    expect(rollingRulesHeading()).toBe('Regeln')
   })
 })
 
@@ -336,13 +336,13 @@ describe('categoryRemovedAnnouncement', () => {
   })
 })
 
-describe('categoriesManagementHeading', () => {
+describe('categoriesListHeading', () => {
   it('says that no category is known yet', () => {
-    expect(categoriesManagementHeading(0)).toBe('Kategorie-Verwaltung, keine')
+    expect(categoriesListHeading(0)).toBe('Gerichtskategorien, keine')
   })
 
   it('counts the known categories', () => {
-    expect(categoriesManagementHeading(3)).toBe('Kategorie-Verwaltung, 3')
+    expect(categoriesListHeading(3)).toBe('Gerichtskategorien, 3')
   })
 })
 

@@ -17,7 +17,7 @@ export function DeleteKnownUnitPage({
   return (
     <main className="page">
       <button type="button" onClick={onCancel}>
-        Zurück zur Einheiten-Verwaltung
+        Zurück zu den Einheiten
       </button>
       <h1 ref={heading} tabIndex={-1}>
         {knownUnit.name} löschen?

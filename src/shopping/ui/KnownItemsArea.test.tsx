@@ -105,7 +105,7 @@ describe('KnownItemsArea', () => {
       'Spaghetti',
     ])
     expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 3' }),
+      screen.getByRole('heading', { name: 'Artikel, 3' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Löschen, hackfleisch' }),
@@ -116,7 +116,7 @@ describe('KnownItemsArea', () => {
     renderKnownItemsArea()
 
     expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Artikel, keine' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Noch keine Vorschläge.')).toBeInTheDocument()
   })
@@ -129,6 +129,23 @@ describe('KnownItemsArea', () => {
     )
 
     expect(departures).toEqual(['settings'])
+  })
+
+  it('leads from the form and the deletion page back to the known items', async () => {
+    renderKnownItemsArea([known('Butter')])
+
+    await openKnownItem('Butter')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Artikeln' }),
+    )
+    await askToDeleteKnownItem('Butter')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Artikeln' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Artikel, 1' }),
+    ).toBeInTheDocument()
   })
 
   it('asks before deleting a known item', async () => {
@@ -150,7 +167,7 @@ describe('KnownItemsArea', () => {
 
     expect(storedNames(client)).toEqual(['Butter', 'Brot'])
     expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 2' }),
+      screen.getByRole('heading', { name: 'Artikel, 2' }),
     ).toBeInTheDocument()
   })
 
@@ -165,9 +182,7 @@ describe('KnownItemsArea', () => {
 
     expect(storedNames(client)).toEqual(['Brot'])
     expect(announcements).toContain('Butter gelöscht, noch 1 Vorschlag.')
-    expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 1' }),
-    ).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Artikel, 1' })).toHaveFocus()
   })
 
   it('returns to the list when the known item disappears', async () => {
@@ -179,7 +194,7 @@ describe('KnownItemsArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Artikel, keine' }),
     ).toBeInTheDocument()
   })
 
@@ -202,9 +217,7 @@ describe('KnownItemsArea', () => {
 
     expect(client.storedKnownItems()).toEqual([known('Hackfleisch', 3, 7)])
     expect(announcements).toContain('Hackfleisch gespeichert.')
-    expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 1' }),
-    ).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Artikel, 1' })).toHaveFocus()
   })
 
   it('merges a known item into an existing one', async () => {
@@ -257,7 +270,7 @@ describe('KnownItemsArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Artikel, keine' }),
     ).toBeInTheDocument()
   })
 

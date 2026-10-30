@@ -196,9 +196,7 @@ function mainMealTimeChoice() {
 
 async function openRollingRules() {
   await goToArea('Einstellungen')
-  await userEvent.click(
-    screen.getByRole('button', { name: 'Regel-Verwaltung' }),
-  )
+  await userEvent.click(screen.getByRole('button', { name: 'Regeln' }))
 }
 
 function ruleSwitch(name: string) {
@@ -1555,16 +1553,14 @@ describe('SignedInApp', () => {
     )
 
     await goToArea('Einstellungen')
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Artikel-Verwaltung' }),
-    )
+    await userEvent.click(screen.getByRole('button', { name: 'Artikel' }))
 
     expect(
-      screen.getByRole('heading', { name: 'Artikel-Verwaltung, 1' }),
+      screen.getByRole('heading', { name: 'Artikel, 1' }),
     ).toBeInTheDocument()
   })
 
-  it('opens the category management from the settings', async () => {
+  it('opens the meal categories from the settings', async () => {
     renderSignedInApp(
       [],
       [{ ...meal('bolognese', 'Bolognese'), categories: ['Nudelgericht'] }],
@@ -1572,57 +1568,55 @@ describe('SignedInApp', () => {
 
     await goToArea('Einstellungen')
     await userEvent.click(
-      screen.getByRole('button', { name: 'Kategorie-Verwaltung' }),
+      screen.getByRole('button', { name: 'Gerichtskategorien' }),
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 1' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 1' }),
     ).toBeInTheDocument()
   })
 
-  it('opens the unit management from the settings', async () => {
+  it('opens the units from the settings', async () => {
     renderSignedInApp()
 
     await goToArea('Einstellungen')
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Einheiten-Verwaltung' }),
-    )
+    await userEvent.click(screen.getByRole('button', { name: 'Einheiten' }))
 
     expect(
       screen.getByRole('heading', {
-        name: `Einheiten-Verwaltung, ${DEFAULT_UNITS.length}`,
+        name: `Einheiten, ${DEFAULT_UNITS.length}`,
       }),
     ).toBeInTheDocument()
   })
 
-  it('offers to invert the colours above the rule management', async () => {
+  it('offers to invert the colours above the rules', async () => {
     renderSignedInApp()
 
     await goToArea('Einstellungen')
 
     expect(shownItemNames()).toEqual([
       'Farben invertieren',
-      'Regel-Verwaltung',
-      'Artikel-Verwaltung',
-      'Kategorie-Verwaltung',
-      'Einheiten-Verwaltung',
+      'Regeln',
+      'Artikel',
+      'Einheiten',
+      'Gerichtskategorien',
     ])
     expect(
       screen.getByRole('switch', { name: 'Farben invertieren' }),
     ).not.toBeChecked()
   })
 
-  it('opens the rule management from the settings and puts the focus on its heading', async () => {
+  it('opens the rules from the settings and puts the focus on its heading', async () => {
     renderSignedInApp()
 
     await openRollingRules()
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Regel-Verwaltung' }),
+      screen.getByRole('heading', { level: 1, name: 'Regeln' }),
     ).toHaveFocus()
   })
 
-  it('leads from the rule management back to the settings', async () => {
+  it('leads from the rules back to the settings', async () => {
     renderSignedInApp()
 
     await openRollingRules()
@@ -1886,7 +1880,7 @@ describe('SignedInApp', () => {
     })
   })
 
-  it('rolls the main meal of the week at the time chosen in the rule management', async () => {
+  it('rolls the main meal of the week at the time chosen in the rules', async () => {
     const { weekPlanClient } = renderSignedInApp(
       [],
       [
@@ -1920,7 +1914,7 @@ describe('SignedInApp', () => {
     expect(announcements).toEqual([])
   })
 
-  it('has no accessibility violations on the rule management', async () => {
+  it('has no accessibility violations on the rules', async () => {
     const { rendered } = renderSignedInApp()
 
     await openRollingRules()
@@ -1928,7 +1922,7 @@ describe('SignedInApp', () => {
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
-  it('has no accessibility violations on the inverted rule management', async () => {
+  it('has no accessibility violations on the inverted rules page', async () => {
     const { rendered } = renderSignedInApp(
       [],
       [],

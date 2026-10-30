@@ -109,7 +109,7 @@ export function mainMealTimeRuleName(rule: MainMealTimeRule): string {
 }
 
 export function rollingRulesHeading(): string {
-  return 'Regel-Verwaltung'
+  return 'Regeln'
 }
 
 export function mainMealTimeHeading(): string {
@@ -228,10 +228,10 @@ export function categoryRemovedAnnouncement(
   return `${category} entfernt, ${remainingCategoryPhrase(remainingCategories)}.`
 }
 
-export function categoriesManagementHeading(categoryCount: number): string {
+export function categoriesListHeading(categoryCount: number): string {
   return categoryCount === 0
-    ? 'Kategorie-Verwaltung, keine'
-    : `Kategorie-Verwaltung, ${categoryCount}`
+    ? 'Gerichtskategorien, keine'
+    : `Gerichtskategorien, ${categoryCount}`
 }
 
 export function categoryRowLabel(category: CategoryOverview): string {

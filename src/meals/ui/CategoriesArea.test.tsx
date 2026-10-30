@@ -110,7 +110,7 @@ describe('CategoriesArea', () => {
       'Schnell, 1',
     ])
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 3' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 3' }),
     ).toBeInTheDocument()
     for (const name of ['Auflauf', 'Nudelgericht', 'Schnell'])
       expect(
@@ -118,11 +118,11 @@ describe('CategoriesArea', () => {
       ).toBeInTheDocument()
   })
 
-  it('shows an empty category management', () => {
+  it('shows empty meal categories', () => {
     renderCategoriesArea([meal('Suppe', [])])
 
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, keine' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Noch keine Kategorien.')).toBeInTheDocument()
   })
@@ -135,6 +135,23 @@ describe('CategoriesArea', () => {
     )
 
     expect(departures).toEqual(['settings'])
+  })
+
+  it('leads from the form and the deletion page back to the meal categories', async () => {
+    renderCategoriesArea(household)
+
+    await openCategory('Nudelgericht, 1')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Gerichtskategorien' }),
+    )
+    await askToDeleteCategory('Auflauf')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Gerichtskategorien' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 3' }),
+    ).toBeInTheDocument()
   })
 
   it('asks before deleting a category', async () => {
@@ -161,7 +178,7 @@ describe('CategoriesArea', () => {
 
     expect(client.storedMeals()).toEqual(household)
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 3' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 3' }),
     ).toHaveFocus()
   })
 
@@ -177,7 +194,7 @@ describe('CategoriesArea', () => {
     ])
     expect(announcements).toContain('Auflauf gelöscht, noch 2 Kategorien.')
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 2' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 2' }),
     ).toHaveFocus()
   })
 
@@ -193,7 +210,7 @@ describe('CategoriesArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 2' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 2' }),
     ).toBeInTheDocument()
   })
 
@@ -224,7 +241,7 @@ describe('CategoriesArea', () => {
     ])
     expect(announcements).toContain('Nudelgericht gespeichert.')
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, 2' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, 2' }),
     ).toHaveFocus()
   })
 
@@ -279,7 +296,7 @@ describe('CategoriesArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Kategorie-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Gerichtskategorien, keine' }),
     ).toBeInTheDocument()
   })
 
@@ -291,7 +308,7 @@ describe('CategoriesArea', () => {
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
-  it('has no accessibility violations on the category management', async () => {
+  it('has no accessibility violations on the meal categories', async () => {
     const { rendered } = renderCategoriesArea(household)
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])

@@ -173,7 +173,7 @@ describe('withRuleSwitched', () => {
 })
 
 describe('SWITCHABLE_RULES', () => {
-  it('lists the rules in the order of the rule management', () => {
+  it('lists the rules in the order of the rules page', () => {
     expect(SWITCHABLE_RULES).toEqual([
       'categories',
       'leftovers',

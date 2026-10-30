@@ -42,7 +42,7 @@ export function CategoryFormPage({
   return (
     <main className="page">
       <button type="button" onClick={onBack}>
-        Zurück zur Kategorie-Verwaltung
+        Zurück zu den Gerichtskategorien
       </button>
       <h1 ref={heading} tabIndex={-1}>
         Kategorie bearbeiten

@@ -167,7 +167,7 @@ test('keeps the supply when the household does not want it taken', async ({
   await page.goto('/')
   await signIn(page)
   await pressButton(page, 'Einstellungen')
-  await pressButton(page, 'Regel-Verwaltung')
+  await pressButton(page, 'Regeln')
   await page
     .getByRole('switch', { name: 'Vorrat, Auf die Einkaufsliste' })
     .focus()
@@ -408,7 +408,7 @@ test('rolls the main meal only in the evening when the household wants it so', a
   await signIn(page)
 
   await pressButton(page, 'Einstellungen')
-  await pressButton(page, 'Regel-Verwaltung')
+  await pressButton(page, 'Regeln')
   await page
     .getByRole('combobox', { name: 'Hauptgericht' })
     .selectOption({ label: 'Nur abends' })
@@ -446,7 +446,7 @@ test('rolls the leftovers of a meal into the next day', async ({ page }) => {
   await pressButton(page, 'Zurück zu den Gerichten')
 
   await pressButton(page, 'Einstellungen')
-  await pressButton(page, 'Regel-Verwaltung')
+  await pressButton(page, 'Regeln')
   await page
     .getByRole('combobox', { name: 'Hauptgericht' })
     .selectOption({ label: 'Nur abends' })

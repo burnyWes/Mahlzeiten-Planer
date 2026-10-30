@@ -42,7 +42,7 @@ export function KnownUnitFormPage({
   return (
     <main className="page">
       <button type="button" onClick={onBack}>
-        Zurück zur Einheiten-Verwaltung
+        Zurück zu den Einheiten
       </button>
       <h1 ref={heading} tabIndex={-1}>
         Einheit bearbeiten

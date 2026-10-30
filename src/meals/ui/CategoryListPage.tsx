@@ -1,5 +1,5 @@
 import { useHeadingFocus } from '../../shared/ui/useHeadingFocus'
-import { categoriesManagementHeading } from '../domain/announcements'
+import { categoriesListHeading } from '../domain/announcements'
 import type { CategoryOverview } from '../domain/mealCategory'
 import { CategoryListRow } from './CategoryListRow'
 
@@ -24,7 +24,7 @@ export function CategoryListPage({
         Zurück zu den Einstellungen
       </button>
       <h1 ref={heading} tabIndex={-1}>
-        {categoriesManagementHeading(categories.length)}
+        {categoriesListHeading(categories.length)}
       </h1>
       {categories.length === 0 ? (
         <p>Noch keine Kategorien.</p>

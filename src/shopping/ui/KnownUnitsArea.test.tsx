@@ -101,7 +101,7 @@ describe('KnownUnitsArea', () => {
 
     expect(shownKnownUnitNames()).toEqual(['g', 'kg', 'Zehe'])
     expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, 3' }),
+      screen.getByRole('heading', { name: 'Einheiten, 3' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Löschen, Zehe' }),
@@ -113,7 +113,7 @@ describe('KnownUnitsArea', () => {
     renderKnownUnitsArea([])
 
     expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Einheiten, keine' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Noch keine Einheiten.')).toBeInTheDocument()
   })
@@ -126,6 +126,23 @@ describe('KnownUnitsArea', () => {
     )
 
     expect(departures).toEqual(['settings'])
+  })
+
+  it('leads from the form and the deletion page back to the units', async () => {
+    renderKnownUnitsArea([known('Zehe')])
+
+    await openKnownUnit('Zehe')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Einheiten' }),
+    )
+    await askToDeleteKnownUnit('Zehe')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Einheiten' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Einheiten, 1' }),
+    ).toBeInTheDocument()
   })
 
   it('asks before deleting a unit', async () => {
@@ -152,7 +169,7 @@ describe('KnownUnitsArea', () => {
 
     expect(storedNames(client)).toEqual(['Zehe', 'g'])
     expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, 2' }),
+      screen.getByRole('heading', { name: 'Einheiten, 2' }),
     ).toBeInTheDocument()
   })
 
@@ -167,9 +184,7 @@ describe('KnownUnitsArea', () => {
 
     expect(storedNames(client)).toEqual(['g'])
     expect(announcements).toContain('Zehe gelöscht, noch 1 Einheit.')
-    expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, 1' }),
-    ).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Einheiten, 1' })).toHaveFocus()
   })
 
   it('returns to the list when the unit disappears', async () => {
@@ -181,7 +196,7 @@ describe('KnownUnitsArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Einheiten, keine' }),
     ).toBeInTheDocument()
   })
 
@@ -207,9 +222,7 @@ describe('KnownUnitsArea', () => {
 
     expect(client.storedKnownUnits()).toEqual([known('Zehe', 3, 7)])
     expect(announcements).toContain('Zehe gespeichert.')
-    expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, 1' }),
-    ).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Einheiten, 1' })).toHaveFocus()
   })
 
   it('merges a unit into an existing one', async () => {
@@ -258,7 +271,7 @@ describe('KnownUnitsArea', () => {
     })
 
     expect(
-      screen.getByRole('heading', { name: 'Einheiten-Verwaltung, keine' }),
+      screen.getByRole('heading', { name: 'Einheiten, keine' }),
     ).toBeInTheDocument()
   })
 

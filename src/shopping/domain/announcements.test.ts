@@ -122,11 +122,11 @@ describe('listHeading', () => {
 
 describe('knownItemsHeading', () => {
   it('counts the entries of the catalog', () => {
-    expect(knownItemsHeading(42)).toBe('Artikel-Verwaltung, 42')
+    expect(knownItemsHeading(42)).toBe('Artikel, 42')
   })
 
   it('says that the catalog is empty', () => {
-    expect(knownItemsHeading(0)).toBe('Artikel-Verwaltung, keine')
+    expect(knownItemsHeading(0)).toBe('Artikel, keine')
   })
 })
 
@@ -160,11 +160,11 @@ describe('knownItemSavedAnnouncement', () => {
 
 describe('knownUnitsHeading', () => {
   it('counts the units of the catalog', () => {
-    expect(knownUnitsHeading(7)).toBe('Einheiten-Verwaltung, 7')
+    expect(knownUnitsHeading(7)).toBe('Einheiten, 7')
   })
 
   it('says that the catalog is empty', () => {
-    expect(knownUnitsHeading(0)).toBe('Einheiten-Verwaltung, keine')
+    expect(knownUnitsHeading(0)).toBe('Einheiten, keine')
   })
 })
 

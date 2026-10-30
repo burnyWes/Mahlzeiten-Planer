@@ -357,7 +357,7 @@ test('deletes a category from every meal', async ({ page }) => {
   })
 
   await pressButton(page, 'Einstellungen')
-  await pressButton(page, 'Kategorie-Verwaltung')
+  await pressButton(page, 'Gerichtskategorien')
   await pressButton(page, 'Löschen, Nudelgericht')
   await pressButton(page, 'Löschen')
 
