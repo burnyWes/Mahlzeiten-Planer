@@ -5,7 +5,7 @@ branch: main
 story: MZP-048
 topic: "Artikelverwaltung: Kategorienfilter und Gerichte je Artikel"
 tags: [plan, shopping, meals, settings, ui, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-048 — Artikelverwaltung: Kategorienfilter und Gerichte je Artikel
@@ -456,7 +456,7 @@ Die Artikelliste lässt sich nach Kategorie und "Ohne Kategorie" filtern.
 - [x] `npm run build` läuft durch
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver: Das Auswahlfeld "Filter" öffnet die Liste mit
+- [x] Auf dem iPhone mit VoiceOver: Das Auswahlfeld "Filter" öffnet die Liste mit
   Kategorien und "Ohne Kategorie". Nach der Wahl kommt die Ansage, und die
   Überschrift wird als "Artikel, N von M" gelesen.
 
@@ -593,7 +593,7 @@ Mülleimer nimmt ihn aus dem Gericht.
 - [x] `npm run test:e2e` läuft grün, inklusive des neuen Tests
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver einen Artikel öffnen: Nach der Kategorie folgt
+- [x] Auf dem iPhone mit VoiceOver einen Artikel öffnen: Nach der Kategorie folgt
   "Gerichte, N", die Gerichte lassen sich durchwischen. Ein Doppeltipp auf "Entfernen,
   Pizza" sagt an, dass der Artikel entfernt wurde, und der VoiceOver-Cursor steht auf
   dem nächsten Gericht. Auf dem anderen Gerät fehlt der Artikel im Gericht.
@@ -648,7 +648,7 @@ Wer einen Artikel umbenennt, findet den neuen Namen auch in den Gerichten.
 - [x] `npm run build` läuft durch
 
 **Manuelle Verifikation**:
-- [ ] Auf dem Gerät einen Artikel umbenennen, der in Gerichten steckt: Die Ansage
+- [x] Auf dem Gerät einen Artikel umbenennen, der in Gerichten steckt: Die Ansage
   nennt die Zahl, im Gericht steht der neue Name. Beim Tippen eines Artikels taucht
   der alte Name nicht mehr in den Vorschlägen auf.
 
