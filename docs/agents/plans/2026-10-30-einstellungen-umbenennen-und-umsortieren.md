@@ -5,7 +5,7 @@ branch: main
 story: MZP-045
 topic: "Einstellungen umbenennen und umsortieren"
 tags: [plan, settings, shopping, meals, announcements, SignedInApp, KnownItemsArea, KnownUnitsArea, CategoriesArea, RollingRulesPage, voiceover, e2e]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-045 — Einstellungen umbenennen und umsortieren
@@ -236,12 +236,12 @@ oder Ähnliches.
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver die Einstellungen öffnen: Die Einträge werden als
+- [x] Auf dem iPhone mit VoiceOver die Einstellungen öffnen: Die Einträge werden als
       „Farben invertieren“, „Regeln“, „Artikel“, „Einheiten“ und „Gerichtskategorien“
       in dieser Reihenfolge vorgelesen
-- [ ] Jede der vier Unterseiten öffnen: Die Überschrift wird mit dem neuen Namen
+- [x] Jede der vier Unterseiten öffnen: Die Überschrift wird mit dem neuen Namen
       vorgelesen, bei Artikeln, Einheiten und Gerichtskategorien mit der Anzahl
-- [ ] Einen Artikel, eine Einheit und eine Gerichtskategorie zum Bearbeiten öffnen: Die
+- [x] Einen Artikel, eine Einheit und eine Gerichtskategorie zum Bearbeiten öffnen: Die
       Zurück-Knöpfe heißen „Zurück zu den Artikeln“, „Zurück zu den Einheiten“ und
       „Zurück zu den Gerichtskategorien“ und führen zur Liste zurück
 
