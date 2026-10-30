@@ -272,6 +272,11 @@ button[aria-disabled='true'] {
   border-radius: 6px;
 }
 
+.positionSpinner .spinArrow {
+  background-color: var(--accent);
+  border-color: var(--ink);
+}
+
 .positionValue {
   min-width: 4rem;
 }
@@ -305,7 +310,8 @@ button[aria-disabled='true'] {
 
 .itemList input[type='checkbox'],
 .ruleGroup input[type='checkbox'],
-.toggleField input[type='checkbox'] {
+.toggleField input[type='checkbox'],
+.sortSwitch input[type='checkbox'] {
   appearance: none;
   position: relative;
   box-sizing: border-box;
@@ -324,7 +330,8 @@ button[aria-disabled='true'] {
 
 .itemList input[type='checkbox']:checked::before,
 .ruleGroup input[type='checkbox']:checked::before,
-.toggleField input[type='checkbox']:checked::before {
+.toggleField input[type='checkbox']:checked::before,
+.sortSwitch input[type='checkbox']:checked::before {
   content: '';
   position: absolute;
   inset: 0;

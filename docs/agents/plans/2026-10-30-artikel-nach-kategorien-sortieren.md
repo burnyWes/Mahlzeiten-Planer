@@ -689,9 +689,9 @@ Abhängigkeiten: Phase 2
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: Die Überschriften lassen sich per Rotor
+- [x] Auf dem iPhone mit VoiceOver: Die Überschriften lassen sich per Rotor
   ("Überschriften") anspringen, die Ansage einer Zeile ist unverändert.
-- [ ] Mit zwei Geräten: Eine Kategorieänderung auf Gerät A verschiebt auf Gerät B
+- [x] Mit zwei Geräten: Eine Kategorieänderung auf Gerät A verschiebt auf Gerät B
   nichts, bis dort "Aufräumen" gedrückt wird.
 
 ### Phase 4: Kategorie-Dialog beim Hinzufügen
@@ -748,7 +748,7 @@ Abhängigkeiten: Phase 3
 
 **Manuelle Verifikation**:
 
-- [ ] Auf dem iPhone mit VoiceOver: Nach "Hinzufügen" eines neuen Artikels liegt der
+- [x] Auf dem iPhone mit VoiceOver: Nach "Hinzufügen" eines neuen Artikels liegt der
   Fokus im Feld "Kategorie", nach "Mit Kategorie hinzufügen" wieder im Feld "Name",
   und die Ansage nennt die Kategorie.
 
@@ -832,11 +832,11 @@ Abhängigkeiten: Phase 1 (`ManagementHeader`)
 
 **Manuelle Verifikation**:
 
-- [ ] Vor der Freigabe die Regeln von Hand ausrollen:
+- [x] Vor der Freigabe die Regeln von Hand ausrollen:
   `npx firebase deploy --only firestore:rules --project mahlzeiten-planer-ecd26`.
   Danach in der Produktion eine Artikelkategorie und eine Gerichtskategorie anlegen,
   und beide sind nach einem Neuladen noch da.
-- [ ] Auf dem iPhone mit VoiceOver: Das "+" ist auf allen vier Verwaltungsseiten
+- [x] Auf dem iPhone mit VoiceOver: Das "+" ist auf allen vier Verwaltungsseiten
   erreichbar und wird mit seinem Namen angesagt. Der Positions-Spinner lässt sich per
   Wischen nach oben und unten verstellen.
 
