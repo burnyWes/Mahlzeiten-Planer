@@ -1,5 +1,8 @@
 import { ManagementHeader } from '../../shared/ui/ManagementHeader'
-import { itemCategoriesHeading } from '../domain/announcements'
+import {
+  itemCategoriesHeading,
+  uncategorizedRowLabel,
+} from '../domain/announcements'
 import type {
   ItemCategory,
   ItemCategoryCatalog,
@@ -12,9 +15,11 @@ type ItemCategoryListPageProps = {
   assignedCounts: ReadonlyMap<ItemCategoryId, number>
   onBack: () => void
   onAddCategory: () => void
+  uncategorizedCount: number
   onSwitchSortByCategory: (on: boolean) => void
   onOpenCategory: (category: ItemCategory) => void
   onDeleteCategory: (category: ItemCategory) => void
+  onOpenUncategorized: () => void
 }
 
 export function ItemCategoryListPage({
@@ -22,9 +27,11 @@ export function ItemCategoryListPage({
   assignedCounts,
   onBack,
   onAddCategory,
+  uncategorizedCount,
   onSwitchSortByCategory,
   onOpenCategory,
   onDeleteCategory,
+  onOpenUncategorized,
 }: ItemCategoryListPageProps) {
   const { categories } = catalog
 
@@ -63,6 +70,19 @@ export function ItemCategoryListPage({
               onDeleteCategory={onDeleteCategory}
             />
           ))}
+        </ul>
+      )}
+      {uncategorizedCount > 0 && (
+        <ul className="itemList">
+          <li className="mealRow">
+            <button
+              type="button"
+              className="mealNameButton"
+              onClick={onOpenUncategorized}
+            >
+              {uncategorizedRowLabel(uncategorizedCount)}
+            </button>
+          </li>
         </ul>
       )}
     </main>

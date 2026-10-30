@@ -229,6 +229,14 @@ export function itemCategoryRowLabel(
   return `${placement.position}. ${category.name}, ${assignedCount} Artikel`
 }
 
+export function uncategorizedRowLabel(knownItemCount: number): string {
+  return `Ohne Kategorie, ${knownItemCount} Artikel`
+}
+
+export function assignedKnownItemsHeading(knownItemCount: number): string {
+  return knownItemCount === 0 ? 'Artikel, keine' : `Artikel, ${knownItemCount}`
+}
+
 export function itemCategoryPositionText(placement: CategoryPlacement): string {
   return `${placement.position} von ${placement.count}`
 }

@@ -10,11 +10,14 @@ import {
   itemCategoryPositionText,
 } from '../domain/announcements'
 import type { CategoryPlacement } from '../domain/itemCategory'
+import type { KnownItem } from '../domain/knownItem'
+import { AssignedKnownItems } from './AssignedKnownItems'
 
 type ItemCategoryFormPageProps = {
   heading: string
   initialName: string
   initialPlacement: CategoryPlacement
+  assignedKnownItems?: readonly KnownItem[]
   onSave: (name: string, position: number) => void
   onBack: () => void
   announce: (text: string) => void
@@ -24,6 +27,7 @@ export function ItemCategoryFormPage({
   heading,
   initialName,
   initialPlacement,
+  assignedKnownItems,
   onSave,
   onBack,
   announce,
@@ -94,6 +98,12 @@ export function ItemCategoryFormPage({
           <SpinArrow symbol="+" onPress={() => stepPosition(1)} />
         </SpinButton>
       </div>
+      {assignedKnownItems !== undefined && (
+        <AssignedKnownItems
+          knownItems={assignedKnownItems}
+          emptyText="Noch keine Artikel in dieser Kategorie."
+        />
+      )}
       <p id="itemCategoryFailure" className="failure">
         {failureMessage}
       </p>

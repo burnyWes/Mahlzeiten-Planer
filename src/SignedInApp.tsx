@@ -45,7 +45,6 @@ import { additionsAnnouncement } from './shopping/domain/announcements'
 import { canonicalName } from './shopping/domain/catalogEntry'
 import { suggestItemCategories } from './shopping/domain/itemCategory'
 import {
-  assignedCounts,
   isKnownName,
   suggestNames,
   withNamesInUse,
@@ -274,7 +273,7 @@ export function SignedInApp({
     return (
       <ItemCategoriesArea
         itemCategories={itemCategories}
-        assignedCounts={assignedCounts(knownItems.knownItems)}
+        knownItems={knownItems.knownItems}
         announce={announce}
         onBack={() => setSettingsEntry(null)}
       />

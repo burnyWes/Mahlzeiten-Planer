@@ -5,6 +5,7 @@ import {
   additionAnnouncement,
   additionFailureMessage,
   additionsAnnouncement,
+  assignedKnownItemsHeading,
   checkOffAnnouncement,
   cleanUpAnnouncement,
   categoryCreatedPhrase,
@@ -40,6 +41,7 @@ import {
   quantityChangedAnnouncement,
   removeItemHeading,
   reopenAnnouncement,
+  uncategorizedRowLabel,
 } from './announcements'
 import { ItemCategoryAlreadyTaken, ItemCategoryMissing } from './itemCategory'
 import { KnownItemAlreadyTaken } from './knownItem'
@@ -575,5 +577,25 @@ describe('withAssignedCategoryPhrase', () => {
 describe('knownUnitCreatedAnnouncement', () => {
   it('confirms the created unit', () => {
     expect(knownUnitCreatedAnnouncement('Dose')).toBe('Dose angelegt.')
+  })
+})
+
+describe('assignedKnownItemsHeading', () => {
+  it('speaks the number of items', () => {
+    expect(assignedKnownItemsHeading(3)).toBe('Artikel, 3')
+  })
+
+  it('says that there are no items', () => {
+    expect(assignedKnownItemsHeading(0)).toBe('Artikel, keine')
+  })
+})
+
+describe('uncategorizedRowLabel', () => {
+  it('speaks the number of items without a category', () => {
+    expect(uncategorizedRowLabel(8)).toBe('Ohne Kategorie, 8 Artikel')
+  })
+
+  it('speaks a single item', () => {
+    expect(uncategorizedRowLabel(1)).toBe('Ohne Kategorie, 1 Artikel')
   })
 })

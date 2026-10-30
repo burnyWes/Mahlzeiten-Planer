@@ -9,7 +9,11 @@ import {
   type CatalogEntry,
   type CatalogRename,
 } from './catalogEntry'
-import type { ItemCategoryId } from './itemCategory'
+import {
+  findItemCategory,
+  type ItemCategoryCatalog,
+  type ItemCategoryId,
+} from './itemCategory'
 import {
   createItemName,
   normalizeItemName,
@@ -140,6 +144,26 @@ export function knownItemsByName(
   knownItems: readonly KnownItem[],
 ): readonly KnownItem[] {
   return entriesByName(knownItems)
+}
+
+export function knownItemsInCategory(
+  knownItems: readonly KnownItem[],
+  categoryId: ItemCategoryId,
+): readonly KnownItem[] {
+  return knownItemsByName(
+    knownItems.filter((knownItem) => knownItem.categoryId === categoryId),
+  )
+}
+
+export function knownItemsWithoutCategory(
+  knownItems: readonly KnownItem[],
+  catalog: ItemCategoryCatalog,
+): readonly KnownItem[] {
+  return knownItemsByName(
+    knownItems.filter(
+      (knownItem) => findItemCategory(catalog, knownItem.categoryId) === null,
+    ),
+  )
 }
 
 export function suggestNames(

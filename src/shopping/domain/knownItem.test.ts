@@ -9,6 +9,8 @@ import {
   knownItemToAdd,
   knownItemsByName,
   knownItemsFromHistory,
+  knownItemsInCategory,
+  knownItemsWithoutCategory,
   planKnownItemRename,
   recordUse,
   suggestNames,
@@ -461,5 +463,54 @@ describe('assignedCounts', () => {
         ['k2', 1],
       ]),
     )
+  })
+})
+
+describe('knownItemsInCategory', () => {
+  it('lists the items of the category by name', () => {
+    expect(
+      knownItemsInCategory(
+        [
+          known('Birnen', 1, 1, 'k1'),
+          known('Pizza', 1, 1, 'k2'),
+          known('Äpfel', 1, 1, 'k1'),
+          known('Batterien'),
+        ],
+        'k1',
+      ),
+    ).toEqual([known('Äpfel', 1, 1, 'k1'), known('Birnen', 1, 1, 'k1')])
+  })
+
+  it('finds nothing for a category without items', () => {
+    expect(knownItemsInCategory([known('Pizza', 1, 1, 'k2')], 'k1')).toEqual([])
+  })
+})
+
+describe('knownItemsWithoutCategory', () => {
+  const catalog = {
+    categories: [{ id: 'k1', name: 'Obst/Gemüse' }],
+    sortByCategory: true,
+  }
+
+  it('lists items without a category and with a deleted one by name', () => {
+    expect(
+      knownItemsWithoutCategory(
+        [
+          known('Kaffee'),
+          known('Äpfel', 1, 1, 'k1'),
+          known('Backpapier', 1, 1, 'gone'),
+        ],
+        catalog,
+      ),
+    ).toEqual([known('Backpapier', 1, 1, 'gone'), known('Kaffee')])
+  })
+
+  it('counts every item as uncategorized while there are no categories', () => {
+    expect(
+      knownItemsWithoutCategory([known('Äpfel', 1, 1, 'k1'), known('Kaffee')], {
+        categories: [],
+        sortByCategory: true,
+      }),
+    ).toEqual([known('Äpfel', 1, 1, 'k1'), known('Kaffee')])
   })
 })

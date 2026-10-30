@@ -10,6 +10,7 @@ import type {
   ItemCategoryCatalog,
   ItemCategoryId,
 } from '../domain/itemCategory'
+import type { KnownItem } from '../domain/knownItem'
 import { ItemCategoriesArea } from './ItemCategoriesArea'
 import { useItemCategories } from './useItemCategories'
 
@@ -20,23 +21,36 @@ function catalogOf(...names: readonly string[]): ItemCategoryCatalog {
   }
 }
 
+function known(name: string, categoryId: ItemCategoryId | null): KnownItem {
+  return { name, timesUsed: 1, lastUsedAt: 1, categoryId }
+}
+
+function knownItemsIn(
+  categoryId: ItemCategoryId,
+  count: number,
+): readonly KnownItem[] {
+  return Array.from({ length: count }, (_, index) =>
+    known(`Artikel ${index + 1}`, categoryId),
+  )
+}
+
 type ItemCategoriesAreaUnderTestProps = {
   client: InMemoryItemCategoriesClient
-  assignedCounts: ReadonlyMap<ItemCategoryId, number>
+  knownItems: readonly KnownItem[]
   announce: (text: string) => void
   onBack: () => void
 }
 
 function ItemCategoriesAreaUnderTest({
   client,
-  assignedCounts,
+  knownItems,
   announce,
   onBack,
 }: ItemCategoriesAreaUnderTestProps) {
   return (
     <ItemCategoriesArea
       itemCategories={useItemCategories(client)}
-      assignedCounts={assignedCounts}
+      knownItems={knownItems}
       announce={announce}
       onBack={onBack}
     />
@@ -45,28 +59,38 @@ function ItemCategoriesAreaUnderTest({
 
 function renderItemCategoriesArea(
   catalog: ItemCategoryCatalog,
-  assignedCounts: ReadonlyMap<ItemCategoryId, number> = new Map(),
+  knownItems: readonly KnownItem[] = [],
 ) {
   const client = createInMemoryItemCategoriesClient(catalog)
   const announcements: string[] = []
   const departures: string[] = []
-  const rendered = render(
+  const areaWith = (shownKnownItems: readonly KnownItem[]) => (
     <ItemCategoriesAreaUnderTest
       client={client}
-      assignedCounts={assignedCounts}
+      knownItems={shownKnownItems}
       announce={(text) => {
         announcements.push(text)
       }}
       onBack={() => {
         departures.push('settings')
       }}
-    />,
+    />
   )
-  return { client, announcements, departures, rendered }
+  const rendered = render(areaWith(knownItems))
+  const knownItemsArriveFromElsewhere = (
+    arrivedKnownItems: readonly KnownItem[],
+  ) => rendered.rerender(areaWith(arrivedKnownItems))
+  return {
+    client,
+    announcements,
+    departures,
+    rendered,
+    knownItemsArriveFromElsewhere,
+  }
 }
 
 function shownRows() {
-  return within(screen.getByRole('main'))
+  return within(screen.getAllByRole('list')[0])
     .getAllByRole('listitem')
     .map((row) => within(row).getAllByRole('button')[0].textContent)
 }
@@ -105,6 +129,12 @@ function openCategory(rowLabel: string) {
   return userEvent.click(screen.getByRole('button', { name: rowLabel }))
 }
 
+function shownKnownItems() {
+  return within(screen.getByRole('list'))
+    .getAllByRole('listitem')
+    .map((row) => row.textContent)
+}
+
 function askToDeleteCategory(name: string) {
   return userEvent.click(
     screen.getByRole('button', { name: `Löschen, ${name}` }),
@@ -115,7 +145,7 @@ describe('ItemCategoriesArea', () => {
   it('lists the categories in their order with the number of items', () => {
     renderItemCategoriesArea(
       catalogOf('Obst/Gemüse', 'Backwaren'),
-      new Map([['c1', 12]]),
+      knownItemsIn('c1', 12),
     )
 
     expect(
@@ -272,7 +302,7 @@ describe('ItemCategoriesArea', () => {
   it('asks before deleting a category and names the items losing it', async () => {
     const { client } = renderItemCategoriesArea(
       catalogOf('Obst', 'Tiefkühlkost'),
-      new Map([['c2', 7]]),
+      knownItemsIn('c2', 7),
     )
 
     await askToDeleteCategory('Tiefkühlkost')
@@ -350,16 +380,148 @@ describe('ItemCategoriesArea', () => {
     })
   })
 
+  it('shows the items of the opened category by name', async () => {
+    renderItemCategoriesArea(catalogOf('Obst', 'Brot'), [
+      known('Bananen', 'c1'),
+      known('Baguette', 'c2'),
+      known('Äpfel', 'c1'),
+      known('Kaffee', null),
+    ])
+
+    await openCategory('1. Obst, 2 Artikel')
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Artikel, 2' }),
+    ).toBeInTheDocument()
+    expect(shownKnownItems()).toEqual(['Äpfel', 'Bananen'])
+    expect(
+      within(screen.getByRole('list')).queryByRole('button'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('says that the opened category has no items', async () => {
+    renderItemCategoriesArea(catalogOf('Obst'))
+
+    await openCategory('1. Obst, 0 Artikel')
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Artikel, keine' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Noch keine Artikel in dieser Kategorie.'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows no items while creating a category', async () => {
+    renderItemCategoriesArea(catalogOf('Obst'), [known('Äpfel', 'c1')])
+
+    await startCreating()
+
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+  })
+
+  it('updates the items of the opened category and keeps the typed name', async () => {
+    const { knownItemsArriveFromElsewhere } = renderItemCategoriesArea(
+      catalogOf('Obst'),
+      [known('Äpfel', 'c1')],
+    )
+
+    await openCategory('1. Obst, 1 Artikel')
+    await typeName('Obst und Gemüse')
+    knownItemsArriveFromElsewhere([known('Äpfel', 'c1'), known('Birnen', 'c1')])
+
+    expect(shownKnownItems()).toEqual(['Äpfel', 'Birnen'])
+    expect(screen.getByLabelText('Name')).toHaveValue('Obst und Gemüse')
+  })
+
+  it('offers the items without a valid category below the categories', () => {
+    renderItemCategoriesArea(catalogOf('Obst'), [
+      known('Äpfel', 'c1'),
+      known('Kaffee', null),
+      known('Backpapier', 'gone'),
+    ])
+
+    expect(shownRows()).toEqual(['1. Obst, 1 Artikel'])
+    expect(
+      screen.getByRole('button', { name: 'Ohne Kategorie, 2 Artikel' }),
+    ).toBeInTheDocument()
+  })
+
+  it('offers the items without a category while there are no categories', () => {
+    renderItemCategoriesArea(catalogOf(), [known('Kaffee', null)])
+
+    expect(screen.getByText('Noch keine Kategorien.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Ohne Kategorie, 1 Artikel' }),
+    ).toBeInTheDocument()
+  })
+
+  it('leaves out the uncategorized row when every item has a category', () => {
+    renderItemCategoriesArea(catalogOf('Obst'), [known('Äpfel', 'c1')])
+
+    expect(
+      screen.queryByRole('button', { name: /^Ohne Kategorie/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows the items without a category by name and leads back', async () => {
+    renderItemCategoriesArea(catalogOf('Obst'), [
+      known('Kaffee', null),
+      known('Äpfel', 'c1'),
+      known('Backpapier', 'gone'),
+    ])
+
+    await openCategory('Ohne Kategorie, 2 Artikel')
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Ohne Kategorie' }),
+    ).toHaveFocus()
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Artikel, 2' }),
+    ).toBeInTheDocument()
+    expect(shownKnownItems()).toEqual(['Backpapier', 'Kaffee'])
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Zurück zu den Artikelkategorien' }),
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Artikelkategorien, 1' }),
+    ).toBeInTheDocument()
+  })
+
+  it('stays on the uncategorized page when every item gets a category elsewhere', async () => {
+    const { knownItemsArriveFromElsewhere } = renderItemCategoriesArea(
+      catalogOf('Obst'),
+      [known('Kaffee', null)],
+    )
+
+    await openCategory('Ohne Kategorie, 1 Artikel')
+    knownItemsArriveFromElsewhere([known('Kaffee', 'c1')])
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Ohne Kategorie' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Artikel, keine' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Alle Artikel haben eine Kategorie.'),
+    ).toBeInTheDocument()
+  })
+
   it('has no accessibility violations on the list', async () => {
-    const { rendered } = renderItemCategoriesArea(catalogOf('Obst'))
+    const { rendered } = renderItemCategoriesArea(catalogOf('Obst'), [
+      known('Kaffee', null),
+    ])
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
 
   it('has no accessibility violations on the form', async () => {
-    const { rendered } = renderItemCategoriesArea(catalogOf('Obst'))
+    const { rendered } = renderItemCategoriesArea(catalogOf('Obst'), [
+      known('Äpfel', 'c1'),
+    ])
 
-    await openCategory('1. Obst, 0 Artikel')
+    await openCategory('1. Obst, 1 Artikel')
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })
@@ -368,6 +530,16 @@ describe('ItemCategoriesArea', () => {
     const { rendered } = renderItemCategoriesArea(catalogOf('Obst'))
 
     await askToDeleteCategory('Obst')
+
+    expect(await accessibilityViolations(rendered.container)).toEqual([])
+  })
+
+  it('has no accessibility violations on the uncategorized page', async () => {
+    const { rendered } = renderItemCategoriesArea(catalogOf('Obst'), [
+      known('Kaffee', null),
+    ])
+
+    await openCategory('Ohne Kategorie, 1 Artikel')
 
     expect(await accessibilityViolations(rendered.container)).toEqual([])
   })

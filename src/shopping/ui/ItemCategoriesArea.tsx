@@ -11,9 +11,16 @@ import {
   type ItemCategoryId,
   type PlacedItemCategory,
 } from '../domain/itemCategory'
+import {
+  assignedCounts,
+  knownItemsInCategory,
+  knownItemsWithoutCategory,
+  type KnownItem,
+} from '../domain/knownItem'
 import { DeleteItemCategoryPage } from './DeleteItemCategoryPage'
 import { ItemCategoryFormPage } from './ItemCategoryFormPage'
 import { ItemCategoryListPage } from './ItemCategoryListPage'
+import { UncategorizedKnownItemsPage } from './UncategorizedKnownItemsPage'
 import type { ItemCategories } from './useItemCategories'
 
 type ItemCategoriesPage =
@@ -21,22 +28,25 @@ type ItemCategoriesPage =
   | { kind: 'create' }
   | { kind: 'form'; id: ItemCategoryId }
   | { kind: 'delete'; id: ItemCategoryId }
+  | { kind: 'uncategorized' }
 
 type ItemCategoriesAreaProps = {
   itemCategories: ItemCategories
-  assignedCounts: ReadonlyMap<ItemCategoryId, number>
+  knownItems: readonly KnownItem[]
   announce: (text: string) => void
   onBack: () => void
 }
 
 export function ItemCategoriesArea({
   itemCategories,
-  assignedCounts,
+  knownItems,
   announce,
   onBack,
 }: ItemCategoriesAreaProps) {
   const [page, setPage] = useState<ItemCategoriesPage>({ kind: 'list' })
   const { catalog } = itemCategories
+  const countsByCategory = assignedCounts(knownItems)
+  const uncategorizedKnownItems = knownItemsWithoutCategory(knownItems, catalog)
   const placementAtTheEnd: CategoryPlacement = {
     position: catalog.categories.length + 1,
     count: catalog.categories.length + 1,
@@ -94,6 +104,10 @@ export function ItemCategoriesArea({
         heading="Kategorie bearbeiten"
         initialName={addressed.category.name}
         initialPlacement={addressed.placement}
+        assignedKnownItems={knownItemsInCategory(
+          knownItems,
+          addressed.category.id,
+        )}
         onSave={(name, position) =>
           showListAndAnnounce(
             itemCategories.changeCategory(
@@ -113,16 +127,25 @@ export function ItemCategoriesArea({
     return (
       <DeleteItemCategoryPage
         category={addressed.category}
-        assignedCount={assignedCounts.get(addressed.category.id) ?? 0}
+        assignedCount={countsByCategory.get(addressed.category.id) ?? 0}
         onDelete={() => deleteCategory(addressed.category)}
         onCancel={showList}
+      />
+    )
+
+  if (page.kind === 'uncategorized')
+    return (
+      <UncategorizedKnownItemsPage
+        knownItems={uncategorizedKnownItems}
+        onBack={showList}
       />
     )
 
   return (
     <ItemCategoryListPage
       catalog={catalog}
-      assignedCounts={assignedCounts}
+      assignedCounts={countsByCategory}
+      uncategorizedCount={uncategorizedKnownItems.length}
       onBack={onBack}
       onAddCategory={() => setPage({ kind: 'create' })}
       onSwitchSortByCategory={itemCategories.switchSortByCategory}
@@ -130,6 +153,7 @@ export function ItemCategoriesArea({
       onDeleteCategory={(category) =>
         setPage({ kind: 'delete', id: category.id })
       }
+      onOpenUncategorized={() => setPage({ kind: 'uncategorized' })}
     />
   )
 }
