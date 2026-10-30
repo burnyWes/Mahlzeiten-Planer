@@ -88,7 +88,7 @@ export function knownItemRowLabel(
 ): string {
   return category === null
     ? knownItem.name
-    : `${knownItem.name}, ${category.name}`
+    : `${knownItem.name} (${category.name})`
 }
 
 export type KnownItemFormMode = 'create' | 'edit'

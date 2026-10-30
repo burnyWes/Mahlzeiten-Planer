@@ -471,7 +471,7 @@ describe('knownItemRowLabel', () => {
 
   it('names the item with its category', () => {
     expect(knownItemRowLabel(apples, { id: 'k1', name: 'Obst/Gemüse' })).toBe(
-      'Äpfel, Obst/Gemüse',
+      'Äpfel (Obst/Gemüse)',
     )
   })
 

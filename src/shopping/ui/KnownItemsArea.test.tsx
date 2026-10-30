@@ -320,7 +320,7 @@ describe('KnownItemsArea', () => {
     )
 
     expect(shownKnownItemNames()).toEqual([
-      'Äpfel, Obst/Gemüse',
+      'Äpfel (Obst/Gemüse)',
       'Batterien',
       'Pizza',
     ])
@@ -329,7 +329,7 @@ describe('KnownItemsArea', () => {
   it('starts the form with the current category', async () => {
     renderKnownItemsArea([known('Äpfel', 1, 1, 'c1')], catalogOf('Obst/Gemüse'))
 
-    await openKnownItem('Äpfel, Obst/Gemüse')
+    await openKnownItem('Äpfel (Obst/Gemüse)')
 
     expect(
       screen.getByRole('heading', { name: 'Artikel bearbeiten' }),
@@ -372,7 +372,7 @@ describe('KnownItemsArea', () => {
 
     expect(client.storedKnownItems()).toEqual([known('Äpfel', 2, 5, 'c2')])
     expect(announcements).toContain('Äpfel gespeichert.')
-    expect(shownKnownItemNames()).toEqual(['Äpfel, Obst/Gemüse'])
+    expect(shownKnownItemNames()).toEqual(['Äpfel (Obst/Gemüse)'])
   })
 
   it('creates an unknown category at the end of the order', async () => {
@@ -402,7 +402,7 @@ describe('KnownItemsArea', () => {
       catalogOf('Obst'),
     )
 
-    await openKnownItem('Äpfel, Obst')
+    await openKnownItem('Äpfel (Obst)')
     await fillCategory('')
     await save()
 
