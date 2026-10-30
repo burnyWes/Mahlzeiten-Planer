@@ -5,7 +5,7 @@ branch: main
 story: MZP-046
 topic: "Artikel nach Reihenfolge im Laden sortieren"
 tags: [plan, shopping, meals, settings, firestore, ui, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-046 — Artikel nach Reihenfolge im Laden sortieren
