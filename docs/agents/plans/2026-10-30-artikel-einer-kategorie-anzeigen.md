@@ -5,7 +5,7 @@ branch: main
 story: MZP-047
 topic: "Artikel einer Artikelkategorie anzeigen"
 tags: [plan, shopping, settings, ui, voiceover]
-status: ready
+status: done
 ---
 
 # PLAN: MZP-047 — Artikel einer Artikelkategorie anzeigen
@@ -297,7 +297,7 @@ Katalogartikel statt der Zählungen.
 - [x] `npm run build` läuft durch
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver eine Kategorie öffnen: Nach dem Spinner "Position"
+- [x] Auf dem iPhone mit VoiceOver eine Kategorie öffnen: Nach dem Spinner "Position"
   folgen die Überschrift "Artikel, N" und die Namen. Über den Überschriften-Rotor ist
   die `h2` erreichbar.
 
@@ -364,7 +364,7 @@ den Artikeln ohne gültige Kategorie.
 - [x] `npm run build` läuft durch
 
 **Manuelle Verifikation**:
-- [ ] Auf dem iPhone mit VoiceOver: In "Artikelkategorien" folgt nach der letzten
+- [x] Auf dem iPhone mit VoiceOver: In "Artikelkategorien" folgt nach der letzten
   Kategorie die Zeile "Ohne Kategorie, N Artikel". Ein Doppeltipp öffnet die Seite,
   VoiceOver landet auf "Ohne Kategorie", und die Artikel lassen sich einzeln
   durchwischen.
